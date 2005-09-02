@@ -1,0 +1,67 @@
+NCID - Network CallerID
+
+See the doc directory for all documentation, including OS
+specific README's and INSTALL files, but the FreeBSD
+documentation is in the FreeBSD directory.
+
+See the tools directory for the documentation on ncidtools.
+
+The NCID package contains:
+	- a Network CalleID server: ncidd
+	  ncidd runs on Linux, TiVo, BSD UNIX, and Macintosh OS X
+	- a Network CallerID client: ncid
+	  ncid runs on UNIX/Linux/Windows/Macintosh using tcl/tk
+	- a set of scripts to work with the CID log: ncidtools
+	  ncidtools runs on UNIX and Linux, but not the TiVo
+
+NCIDD is a TCP/IP Caller ID Daemon.  It was initially based
+on the python CIDD program, which is part of the CID package
+from tummy.com:  http://www.tummy.com/cid/
+
+NCIDD monitors a modem or serial device for Caller ID and makes
+it available over the network.  It also makes use of aliases to
+change the NUMBER and/or NAME received, before it is sent to the
+NCID clients.
+
+NCID has the following features:
+
+	- The server allows a number of clients.
+	- The server does Name/Number aliases, so the display can be
+	  customized.  For example: "Wireless Caller" becomes "John on Cell".
+	- The server logs all calls.  Track who called when.
+	- The server has a config file to set most options and aliases.
+	- The server shares the modem for outgoing calls.
+    - The server supports CID devices like NetCallerID
+    - The server and client spport Distinctive Ring
+	- The server runs on Linux, UNIX, Macintosh OS X, and the TiVo.
+	- The client displays the Caller ID Log and adds to it whenever
+	  it receives the CID information from the server.
+	- The client runs on Windows, Linux, UNIX, and Macintosh OS X.
+	- The protocol is documented so additional clients can be added.
+
+Instructions to make and install the ncid package are in the
+file: doc/INSTALL.
+
+Instructions for using ncidd are in the man page: ncidd.8
+Instructions for configuring ncidd are in the man page: ncidd.conf.5
+Instructions for configuring ncidd aliases are in the man page: ncidd.alias.5
+Instructions for using ncid are in the man page: ncid.1
+Instructions for configuring ncid are in the man page: ncid.conf.5
+Instructions for using ncidtools are in the man page: tools/ncidtools.1
+Instructions for using ncidscripts are in the man page: scripts/ncidscripts.1
+Instructions for configuring ncidscripts are in the man page:
+    scripts/ncidscript.conf.5
+
+Formatted man pages are: ncid.man, ncid.conf.man, ncidd.man, ncidd.alias.man
+ncidd.conf.man, ncidtools.man, ncidscripts.man, ncidscript.conf.man
+
+The distributed configuration files are:
+    ncid.conf
+    ncidd.conf
+    ncidd.alias
+    ncidrotate.conf
+    ncidscript.conf
+
+NCID is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License located
+in a file called doc/LICENSE.

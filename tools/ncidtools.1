@@ -1,0 +1,71 @@
+.\" %W% %G%
+.TH NCIDTOOLS 1
+.SH NAME
+.B cidlog\^
+- view Caller ID log file
+.P
+.B cidalias\^
+- view Caller ID alias definitions
+.P
+.B cidlogupd\^
+- update Caller ID aliases in log file
+.SH SYNOPSIS
+.B cidlog\^
+[-r] [logfile]
+.P
+.B cidalias\^
+[-r] [aliasfile]
+.P
+.B cidlogupd\^
+[-a aliasfile] [-l logfile] [newlogfile]
+.SH DESCRIPTION
+The script,
+.BR cidlog ,
+displays the current CID log file.
+.P
+The script,
+.BR cidalias ,
+displays the aliases in the ncidd.alias file.
+.P
+The Script,
+.BR cidlogupd ,
+updates the CID log file using the aliases found in the ncidd.alias file.
+.SS "Options"
+.PD 0
+.TP 14
+.B -r
+Display the raw log file or alias definition.
+.br
+Default: format the log file or alias definition.
+.TP
+.B -a aliasfile
+Set the alias file to \fIaliasfile\fR
+.br
+Default: /etc/ncid/ncidd.alias
+.TP
+.B -l logfile
+Set the CID log file to \fIlogfile\fR
+.br
+Default: /var/log/cidcall.log
+.PD
+.SS "Arguments"
+.PD 0
+.TP 14
+.B logfile
+The CID log file.
+.br
+Default: /var/log/cidcall.log
+.TP
+.B configfile
+The ncidd configuration file.
+.br
+Default: /etc/ncid/ncidd.conf
+.TP
+.B newlogfile
+The updated CID log file.
+.br
+Default:
+.IR logfile .new
+.PD
+.SH SEE ALSO
+ncidd.conf.5, ncidd.alias.5

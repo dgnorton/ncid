@@ -1,0 +1,36 @@
+.\" %W% %G%
+.TH NCID.CONF 5
+.SH NAME
+.B ncid.conf\^
+- ncid configuration file
+.SH DESCRIPTION
+The \fIncid.conf\fR file contains the configuration information for
+\fIncid\fR, the Network Caller ID Client.
+.P
+The \fIncid.conf\fR file is a tcl/tk configuration file used to set options.
+.P
+The \fIncid.conf\fR file understands 3 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B command lines, beginning with 'set'
+.P
+See ncid.conf for a complete list of variables to set and
+what the default values are.
+.SH EXAMPLES
+Set the directory NCID uses to find the helper scripts:
+.RS 0
+	set ProgDir     /usr/local/share/ncid
+.RE
+.P
+Set a helper script to execute:
+.RS 0
+	set EXTPROG     ncid-speak
+.RE
+.SH SEE ALSO
+ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.alias.5,
+ncidd.conf.5

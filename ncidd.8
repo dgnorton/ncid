@@ -1,0 +1,234 @@
+.\" %W% %G%
+.TH NCIDD 8
+.SH NAME
+.B ncidd\^
+- Network Caller ID Server
+.SH SYNOPSIS
+.B ncidd\^
+[options]
+.P
+.I Options:\^
+.P
+.nf
+[-A aliasfile  | --alias aliasfile]
+[-C configfile | --config configfile]
+[-c logfile    | --cidlog logfile]
+[-D            | --debug]
+[-d logfile    | --datalog logfile]
+[-h            | --help]
+[-I modemstr   | --initstr modemstr]
+[-i cidstr     | --initcid cidstr]
+[-l lockfile   | --lockfile lockfile]
+[-n 0/1        | --nomodem 0/1]
+[-p portnumber | --port portnumber]
+[-S 0/1        | --ttyclocal 0/1]
+[-s datatype   | --send datatype]
+[-T ttyspeed   | --ttyspeed ttyspeed]
+[-t ttyport    | --ttyport ttyport]
+[-V            | --version]
+[-v            | --verbose]
+.fi
+.SH DESCRIPTION
+.B NCIDD
+collects Caller ID data form a modem on a telephone line.
+It formats the data on a single text line, and then sends it
+to one or more
+\fINetwork\fR \fICallerID\fR (\fINCID\fR)
+clients over TCP/IP.
+.B NCIDD
+also allows an alias for the number and an alias for the name.
+.P
+The telephone company limits names to 15 upper case characters,
+so by using the alias function, you can display the name as you
+would like to view it, or correct a name that was truncated.
+You can even change or mask a telephone number.
+.P
+.B NCIDD
+can also send a line number and ring count, in a call info line,
+each time the
+phone rings, and a ring count of zero when ringing has ended.
+This will allow, for example, a client to send the call information
+to a pager or cell phone on a specific ring count.  If the ring count
+is not reached, it is assumed the phone was answered and there is no
+need to send a page or cell phone notification.
+.SS "Options"
+.PD 0
+.TP 35
+.B -A <file> | --alias <file>
+Alias file.
+.br
+Default: /etc/ncid/ncidd.alias
+.TP
+.B -C <file> | --config <file>
+Config file.
+.br
+Default: /etc/ncid/ncidd.conf
+.TP
+.B -c <file> | --cidlog <file>
+Call log data file.
+.br
+Default: /var/log/cidcall.log
+.TP
+.B -D | --debug
+Debug mode.  Set option more than once for more debugging information
+.TP
+.B -d <file> | --datalog <file>
+Data log data file, usually from a modem.
+.br
+Default: /var/log/datalog.log
+.TP
+.B -h | --help
+Display a help message.
+.TP
+.B -I "string" | --initstr "string"
+Modem initialization string
+.br
+Default: ATE1V1Q0
+.TP
+.B -i "string" | --initcid "string"
+CID initialization string
+.br
+Default: AT+VCID=1
+.br
+if it fails: AT#CID=1
+.TP
+.B -l <file> | --lockfile <file>
+Modem lockfile.
+.br
+Default: /var/lock/LCK..modem
+.TP
+.B -n 0/1 | --nomodem 0/1
+modem (0) or no modem (1)
+.br
+Default: nomodem = 0
+.TP
+.B -p <port> | --port <port>
+Server port.
+.br
+Default: 3333
+.TP
+.B -S 0/1 | --ttyclocal 0/1
+Enable (0) or disable (1) modem control signals.
+.br
+Default: modem control signals disabled
+.TP
+.B -s datatype | --send datatype
+Send optional CID data to a client.
+Where \fIdatatype\fR is:
+.br
+.IR cidlog :
+sent when the client connects.
+If the CID call log gets too big, it will not be sent.
+.br
+.IR cidinfo :
+sent on each ring, to all clients,
+gives the current ring count.
+.br
+Default: Optional CID DATA is not sent
+.TP
+.B -T ttyspeed | --ttyspeed ttyspeed
+Set the tty port speed to one of: 19200, 9600, 4800
+.br
+Default: ttyspeed = 19200
+.TP
+.B -t <ttyport> | --ttyport <ttyport>
+Modem device file, or serial port that provides Caller ID information.
+.br
+Default: /dev/modem
+.TP
+.B -V | --version
+Display the version number.
+.TP
+.B -v | --verbose
+Output information, use with the -D option. 
+.PD
+.SH CONFIGURATION
+The ncidd.conf(5) file is used to set options or create aliases.
+The syntax of the ncidd.conf(5) file is discussed seperately,
+and should be consulted for detailed reference information.
+.SH "DATA LINE FORMAT EXAMPLES"
+These are three examples of the three types of lines sent to
+.I NCID
+clients. The first field is line identifier.
+.P
+The \fICID:\fR line gives the CID information of the current call.
+.P
+The \fICIDLOG:\fR line gives the CID information of a line in the
+CID log file.
+.P
+The \fIMSG:\fR line gives messages from the server.
+.P
+The \fIMSGLOG:\fR line gives a message logged in the CID log file.
+.P
+The \fICIDINFO:\fR line gives a line number and ring count from the server.
+The ring count starts at 1 and increases until ringing ends,
+at which time a count of 0 is sent.
+The line number default is 1, Distinctive Ring will add one of the
+letters: A B C D to indicate the virtual line called.
+Expect additional name/values pairs to be added in the future.
+.P
+The \fICID:\fR
+and \fICIDLOG:\fR lines are identical,
+with data stored as name and value pairs.
+Clients should always locate the line identifier,
+and then scan for a field name and get its value.
+It's possible that additional name/value pairs may be add in the future.
+.P
+The \fIMSG:\fR
+and \fIMSGLOG:\fR lines are identical,
+.P
+.nf
+CID: *DATE*mmddyyyy*TIME*hhmm*NMBR*number*MESG*NONE*NAME*name*
+CIDLOG: *DATE*mmddyyyy*TIME*hhmm*NMBR*number*MESG*NONE*NAME*name*
+CIDINFO: *LINE*line indicator*RING*ringcount*
+MSG: Too many clients connected: 15
+MSGLOG: Too many clients connected: 15
+.fi
+.SH DIAGNOSTICS
+.PD 0
+.TP 23
+.B "Return Code"
+.B Meaning
+.TP
+-----------
+-------
+.TP
+0
+Successful
+.TP
+-100
+Usage
+.TP
+-101
+Invalid port number
+.TP
+-102
+Modem is in use
+.TP
+-103
+Unable to set modem for Caller ID
+.TP
+-104
+Configuration file error
+.TP
+-105
+No modem found
+.TP
+-106
+Invalid data type.
+.TP
+-107
+Invalid number
+.TP
+-108
+Invalid tty port speed [set in config file]
+.TP
+-109
+Alias file error
+.TP
+other negative number
+System error
+.PD
+.SH SEE ALSO
+ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.conf.5, ncidd.alias.5,
+ncid.conf.5

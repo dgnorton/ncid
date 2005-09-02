@@ -1,0 +1,59 @@
+.\" %W% %G%
+.TH NCIDD.ALIAS 5
+.SH NAME
+.B ncidd.alias\^
+- ncidd alias file
+.SH DESCRIPTION
+The \fIncidd.alias\fR file contains the alias information for
+\fIncidd\fR, the Network Caller ID Server.
+.P
+The \fIncidd.alias\fR file is used to create aliases.
+A alias is set on a alias line.  A line is broken up into words.
+A word is either a string of non-blank characters, everything
+between double quotes, or an equal sign.
+.P
+The \fIncidd.alias\fR file understands 3 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B alias line, beginning with 'alias'
+alias [NMBR|NAME] "FROM" = "TO" [if "VALUE"]
+.RS 11
+where NMBR or NAME is a KEYWORD
+.br
+where FROM is a string or "*" when using "if"
+.br
+where TO is the "alias"
+.br
+where VALUE is a NAME if KEYWORD = NMBR
+.br
+where VALUE is a NMBR if KEYWORD = NAME
+.RE
+.SH EXAMPLES
+Change OUT-OF-AREA to UNAVAILABLE:
+.RS 0
+	alias OUT-OF-AREA = UNAVAILABLE
+.RE
+.P
+Change OUT-OF-AREA to UNAVAILABLE for a NAME:
+.RS 0
+	alias NAME OUT-OF-AREA = UNAVAILABLE
+.RE
+.P
+Change generic name to specific name for a phone number:
+.RS 0
+.nf
+	alias NAME * = "John on CELL" if 4075551212
+.fi
+.RE
+.P
+Mask a phone number:
+.RS 0
+	alias NMBR 4075551212 = "----------"
+.RE
+.SH SEE ALSO
+ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.conf.5

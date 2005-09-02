@@ -1,0 +1,143 @@
+# ncid - Network CallerID Server Config File
+
+################################
+# Definitions and Line formats #
+################################
+
+# lines can be blank, or start with the words: send, set #
+#
+# A line is divided into words, separated by spaces
+#
+# A word is either a string of non-blank characters, everything
+# between double quotes, or an equal sign.
+#
+# SEND LINE FORMAT:
+#   send DATATYPE [DATATYPE] ...
+#        where DATATYPE = cidlog, cidinfo
+#
+# SET LINE FORMAT:
+#   set ITEM = VALUE [ITEM = VALUE] ...
+#       where ITEM = cidalias, cidlog, datalog, initcid, initstr,
+#                    lockfile, port, ttyclocal, ttyport, ttyspeed,
+#                    nomodem
+
+############################
+# Log and Info for Clients #
+############################
+
+# Send the call log to a client when connected
+# The default is not to send the call log file
+send cidlog
+
+# Send call info (LINE and RING) to a client at each ring
+# The default is not to send the call info line
+send cidinfo
+
+############################
+# NCID Communications Port #
+############################
+
+# The default TCP/IP port is 3333
+# set port = 3333
+
+#######################
+# Alias and Log Files #
+#######################
+
+# The default CID alias file: /etc/ncid/ncidd.alias
+# set cidalias = /etc/ncid/ncidd.alias
+
+# The default CID call log file: /var/log/cidcall.log
+# the log file must exist, ncidd will not create it
+# (also make the change in /etc/logrotate.d/ncidd
+#  and also /etc/ncid/ncidrotate.conf)
+# set cidlog = /var/log/cidcall.log
+
+# The default tty data log file: /var/log/ciddata.log
+# the log file must exist, ncidd will not create it
+#  (also make the change in /etc/logrotate.d/ncidd
+#   and also /etc/ncid/ncidrotate.conf)
+# set datalog = /var/log/ciddata.log
+
+#####################
+# TTY Configuration #
+#####################
+
+# The default tty port: /dev/modem
+# set ttyport = /dev/cu.modem # Macintosh OS X
+# set ttyport = /dev/ttyS0
+
+# The default tty port speed: 19200
+# The tty speed can be one of: 38400, 19200, 9600, 4800
+# set ttyspeed = 4800 # NetCallerID port speed
+
+# Ignore tty control signals for internal modems and 3 wire serial cables
+#   Disable tty control signals: ttyclocal = 1
+#   Enable tty control signals: ttyclocal = 0 (default)
+# set ttyclocal = 1
+
+# The lockfile name is generated automatically
+# If tty port is /dev/modem, lockfile is: /var/lock/LCK..modem
+# set lockfile = /var/lock/LCK..ttyS0
+
+#####################
+# Modem or No Modem #
+#####################
+
+# Obtain CallerID from a CID device or a modem
+#  device: nomodem = 1 (do not send AT commands)
+#  modem: nomodem = 0 (default - send AT commands)
+# set nomodem = 1
+
+########################
+# Modem Initialization #
+########################
+
+# The default modem initialization is: "AT Z S0=0 E1 V1 Q0"
+# set initstr = "ATE1V1Q0"
+#
+# Alternate modem initialization string
+# set initstr = "AT&FE1V1Q0+VIP"
+
+# Addon strings to set modem for Distinctive Ring:
+#   http://www.modemsite.com/56k/dring.asp
+#
+# 3Com/USR/TI chipset: ATS41=1
+#   Reported Ring Codes: RING A, RING B, RING C
+# Rockwell/Conexant chipset: AT-SDR=7
+#   Reported Ring Codes: RING 1, RING 2, RING 3
+# Lucent/Agere chipset: AT+VDR=1,0
+#   Reported DROF/DRON messages: DRON=5 DROF=11, DRON=5 DROF=34
+#
+# Example adds 3Com DR to the default modem initialization
+# set initstr = "ATE1V1Q0S41=1"
+
+# The default for ncidd is to try two CID strings to setup
+# CallerID: "AT+VCID=1" and if that fails: "AT#CID=1".
+# set initcid = "AT#CID=1"
+#
+# Alternate CID strings to try if default does not work:
+# set initcid = "AT+FCLASS=8;+VCID=1"
+# set initcid = "AT-STE=1;+VCID=1"
+# set initcid = "AT-STE=1;#CID=1"
+
+#################
+# TiVo Settings #
+#################
+# set ttyclocal = 1 # TiVo requires CLOCAL
+# set ttyport = /dev/ttyS1 # TiVo Modem Port
+# set lockfile = /var/tmp/modemlock # needed for TiVo Modem Port
+#
+# To use a modem on the TiVo serial port
+#   Tivo (stereo mini jack) ->
+#   -> (stereo mini plug) TiVo serial cable (9-pin male) ->
+#   -> (9-pin Female) PC modem cable (25-pin Male ->
+#   -> (25-pin Female) Modem
+# if the modem has switches, disable DTR
+# Use this string to set the modem before attaching it to the TiVo:
+#   AT&F0&D0&B1&W
+#
+# set ttyport = /dev/ttyS3 # TiVo Serial Port
+#
+# End TiVo Settings
+

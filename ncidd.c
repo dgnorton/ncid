@@ -1,0 +1,1035 @@
+/*
+ * ncidd - Network Caller ID Daemon
+ *
+ * Copyright 2002, 2003, 2004, 2005 John L. Chmielewski <jlc@cfl.rr.com>
+ *
+ * This file is part of ncidd, a caller-id program for your TiVo.
+ * 
+ * ncidd is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * ncidd is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ */
+
+#include "ncidd.h"
+
+/* globals */
+char *cidlog = CIDLOG;
+char *datalog = DATALOG;
+char *ttyport = TTYPORT;
+char *initstr = INITSTR;
+char *initcid = INITCID1;
+char *version = VERSION;
+char *lockfile, *name;
+char *TTYspeed;
+int ttyspeed = TTYSPEED;
+int port = PORT;
+int ttyfd, debug, verbose, conferr, setcid, locked, sendlog, sendinfo;
+int ring, ringwait, ringcount, clocal, nomodem;
+
+struct pollfd polld[CONNECTIONS + 2];
+static struct termios otty, ntty;
+
+struct cid
+{
+    int status;
+    char ciddate[CIDSIZE];
+    char cidtime[CIDSIZE];
+    char cidnmbr[CIDSIZE];
+    char cidname[CIDSIZE];
+    char cidmesg[CIDSIZE];
+    char cidline[CIDSIZE];
+} cid = {0, "", "", "", "", NOMESG, ONELINE};
+
+void exit(), perror(), finish(), free();
+
+main(int argc, char *argv[])
+{
+    int events, mainsock, sd, argind;
+    char *ptr;
+    struct stat statbuf;
+    
+    signal(SIGHUP, finish);
+    signal(SIGTERM, finish);
+    signal(SIGINT, finish);
+    signal(SIGQUIT, finish);
+
+    /* global containing name of program */
+    name = strrchr(argv[0], (int) '/');
+    name = name ? name + 1 : argv[0];
+
+    /* process options from the command line */
+    argind = getOptions(argc, argv);
+
+    /*
+     * read config file, if present, exit on any errors
+     * do not override any options set on the command line
+     */
+    if (doConf()) errorExit(-104, 0, 0);
+
+    /*
+     * read alias file, if present, exit on any errors
+     */
+    if (doAlias()) errorExit(-109, 0, 0);
+
+    /*
+     * If the tty port speed was set, map it to the correct integer.
+     */
+    if (TTYspeed)
+    {
+        if (!strcmp(TTYspeed, "38400")) ttyspeed = B38400;
+        else if (!strcmp(TTYspeed, "19200")) ttyspeed = B19200;
+        else if (!strcmp(TTYspeed, "9600")) ttyspeed = B9600;
+        else if (!strcmp(TTYspeed, "4800")) ttyspeed = B4800;
+        else errorExit(-108, "Invalid TTY port speed set in config file",
+            TTYspeed);
+    }
+
+    if (verbose) fprintf(stderr, "CID logfile: %s\n", cidlog);
+    if (verbose) fprintf(stderr, "Data logfile: %s\n", datalog);
+
+    /* Create lock file name from TTY port device name */
+    if (!lockfile)
+    {
+        if (ptr = strrchr(ttyport, '/')) ptr++;
+        else ptr = ttyport;
+
+        if (lockfile = (char *) malloc(strlen(LOCKFILE) + strlen(ptr) + 1))
+            strcat(strcpy(lockfile, LOCKFILE), ptr);
+        else errorExit(-1, name, 0);
+    }
+
+    if (debug > 1)
+    {
+        int i;
+        if (alias[0].type) fprintf(stderr,
+            "Printing alias structure: ELEMENT TYPE [FROM] [TO] [DEPEND]\n");
+        for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+            fprintf(stderr, " %.2d %.2d [%-21s] [%-21s] [%-21s]\n", i,
+                alias[i].type,
+                alias[i].from,
+                alias[i].to,
+                alias[i].depend ? alias[i].depend : " ");
+    }
+
+    /* check TTY port lock file */
+    if (!stat(lockfile, &statbuf))
+        errorExit(-102, "Exiting - TTY port in use (lockfile exists)",
+                  lockfile);
+
+    /*
+     * Open tty port; tries to make sure the open does
+     * not hang if port in use, or not restored after use
+     */
+    if ((ttyfd = open(ttyport, O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
+        errorExit(-1, ttyport, 0);
+    if (fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0) & ~O_NDELAY) < 0)
+        errorExit(-1, ttyport, 0);
+
+    switch(ttyspeed)
+    {
+        case B4800:
+            TTYspeed = "4800";
+            break;
+        case B9600:
+            TTYspeed = "9600";
+            break;
+        case B19200:
+            TTYspeed = "19200";
+            break;
+        case B38400:
+            TTYspeed = "38400";
+            break;
+    }
+
+    if (verbose) fprintf(stderr, "TTY port opened: %s\n", ttyport);
+    if (verbose) fprintf(stderr, "TTY port speed: %s\n", TTYspeed);
+    if (verbose) fprintf(stderr, "TTY lock file: %s\n", lockfile);
+    if (verbose) fprintf(stderr, "TTY port control signals %s\n",
+        clocal ? "disabled" : "enabled");
+    if (verbose && nomodem)
+        fprintf(stderr, "CallerID from CID device, not AT modem\n");
+
+    /* Save tty port settings */
+    if (tcgetattr(ttyfd, &otty) < 0) return -1;
+
+    /* initialize tty port */
+    if (doTTY() < 0) errorExit(-1, ttyport, 0);
+
+    if (!debug)
+    {
+        /* fork and exit parent */
+        if(fork() != 0) return 0;
+
+        /* close stdin, and  and make fd 0 unavailable */
+        close(0);
+        if (open("/dev/null",  O_WRONLY | O_SYNC) < 0)
+        {
+            perror("/dev/null");
+            exit(errno);
+        }
+
+        /* become session leader */
+        setsid();
+    }
+
+    addPoll(ttyfd);
+
+    /* initialize server socket */
+    if ((mainsock = tcpOpen(port)) < 0) errorExit(-1, "socket", 0);
+
+    addPoll(mainsock);
+
+    /* Read and display data */
+    while (1)
+    {
+        switch (events = poll(polld, CONNECTIONS + 2, TIMEOUT))
+        {
+            case -1:    /* error */
+                errorExit(-1, "poll", 0);
+            case 0:        /* time out, without an event */
+                /* end of ringing */
+                if (ring)
+                {
+                    if (ringwait < RINGWAIT) ++ringwait;
+                    else
+                    {
+                        if (ringcount == ring)
+                        {
+                            ring = ringcount = ringwait = 0;
+                            sendInfo(mainsock);
+                        }
+                        else
+                        {
+                            ringwait = 0;
+                            ringcount = ring;
+                        }
+                    }
+                }
+                /* TTY port lockfile */
+                if (!stat(lockfile, &statbuf))
+                {
+                    if (debug && !locked)
+                        fprintf(stderr, "TTY port in use, waiting.\n");
+                    if (!locked) locked = 1;
+                }
+                else if (locked)
+                {
+                    if (debug) fprintf(stderr, "TTY port available.\n");
+                    tcsetattr(ttyfd, TCSANOW, &otty);
+                    if (doTTY() < 0) errorExit(-1, ttyport, 0);
+                    locked = 0;
+                }
+                break;
+            default:    /* 1 or more events reported */
+                doPoll(events, mainsock);
+                break;
+        }
+    }
+}
+
+int getOptions(int argc, char *argv[])
+{
+    int c, num;
+    int digit_optind = 0;
+    int option_index = 0;
+    static struct option long_options[] = {
+        {"alias", 1, 0, 'A'},
+        {"config", 1, 0, 'C'},
+        {"cidlog", 1, 0, 'c'},
+        {"datalog", 1, 0, 'd'},
+        {"debug", 0, 0, 'D'},
+        {"help", 0, 0, 'h'},
+        {"initcid", 1, 0, 'i'},
+        {"initstr", 1, 0, 'I'},
+        {"lockfile", 1, 0, 'l'},
+        {"nomodem", 1, 0, 'n'},
+        {"port", 1, 0, 'p'},
+        {"send", 1, 0, 's'},
+        {"ttyspeed", 1, 0, 'S'},
+        {"ttyclocal", 1, 0, 'T'},
+        {"ttyport", 1, 0, 't'},
+        {"verbose", 0, 0, 'v'},
+        {"version", 0, 0, 'V'},
+        {0, 0, 0, 0}
+    };
+
+    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:vA:C:DI:S:T:V",
+        long_options, &option_index)) != -1)
+    {
+        switch (c)
+        {
+            case 'A':
+                if (!(cidalias = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("cidalias")) >= 0) setword[num].type = 0;
+                break;
+            case 'C':
+                if (!(cidconf = strdup(optarg))) errorExit(-1, name, 0);
+                break;
+            case 'I':
+                if (!(initstr = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("initstr")) >= 0) setword[num].type = 0;
+                break;
+            case 'd':
+                if (!(datalog = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("datalog")) >= 0) setword[num].type = 0;
+                break;
+            case 'S':
+                if (!(TTYspeed = strdup(optarg))) errorExit(-1, name, 0);
+                if (!strcmp(TTYspeed, "38400")) ttyspeed = B38400;
+                else if (!strcmp(TTYspeed, "19200")) ttyspeed = B19200;
+                else if (!strcmp(TTYspeed, "9600")) ttyspeed = B9600;
+                else if (!strcmp(TTYspeed, "4800")) ttyspeed = B4800;
+                else errorExit(-108, "Invalid TTY port speed", TTYspeed);
+                if ((num = findWord("ttyspeed")) >= 0) setword[num].type = 0;
+                break;
+            case 'T':
+                clocal = atoi(optarg);
+                if (strlen(optarg) != 1 ||
+                    (!(clocal == 0 && *optarg == '0') && clocal != 1))
+                    errorExit(-107, "Invalid number", optarg);
+                if ((num = findWord("sttyclocal")) >= 0) setword[num].type = 0;
+                break;
+            case 'c':
+                if (!(cidlog = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("cidlog")) >= 0) setword[num].type = 0;
+                break;
+            case 'h': /* help message */
+                fprintf(stderr, DESC, name);
+                fprintf(stderr, USAGE, name);
+                exit(0);
+            case 'i':
+                if (!(initcid = strdup(optarg))) errorExit(-1, name, 0);
+                ++setcid;
+                if ((num = findWord("initcid")) >= 0) setword[num].type = 0;
+                break;
+            case 'l':
+                if (!(lockfile = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("lockfile")) >= 0) setword[num].type = 0;
+                break;
+            case 'n':
+                nomodem = atoi(optarg);
+                if (strlen(optarg) != 1 ||
+                    (!(nomodem == 0 && *optarg == '0') && nomodem != 1))
+                    errorExit(-107, "Invalid number", optarg);
+                if ((num = findWord("nomodem")) >= 0) setword[num].type = 0;
+                break;
+            case 'p':
+                if((port = atoi(optarg)) == 0)
+                    errorExit(-101, "Invalid port number", optarg);
+                if ((num = findWord("port")) >= 0) setword[num].type = 0;
+                break;
+            case 's':
+                if ((num = findSend(optarg)) < 0)
+                    errorExit(-106, "Invalid send data type", optarg);
+                ++(sendclient[num].value);
+                break;
+            case 't':
+                if (!(ttyport = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("tty")) >= 0) setword[num].type = 0;
+                break;
+            case 'v':
+                verbose++;
+                break;
+            case 'D':
+                debug++;
+                break;
+            case 'V': /* version */
+                fprintf(stderr, SHOWVER, name, version);
+                exit(0);
+            case '?': /* bad option */
+                fprintf(stderr, USAGE, name);
+                exit(-100);
+        }
+    }
+    return optind;
+}
+
+int doTTY()
+{
+
+    /* Setup tty port in raw mode */
+    if (tcgetattr(ttyfd, &ntty) <0) return -1;
+    ntty.c_lflag     &= ~(ICANON | ECHO | ECHOE | ISIG);
+    ntty.c_oflag     &= ~OPOST;
+    ntty.c_iflag = (IGNBRK | IGNPAR);
+    ntty.c_cflag = (ttyspeed | CS8 | CREAD | HUPCL | CRTSCTS);
+    if (clocal) ntty.c_cflag |= CLOCAL;
+    ntty.c_cc[VEOL] = '\r';
+    ntty.c_cc[VMIN]  = 0;
+    ntty.c_cc[VTIME] = CHARWAIT;
+    if (tcflush(ttyfd, TCIOFLUSH) < 0) return -1;
+    if (tcsetattr(ttyfd, TCSANOW, &ntty) < 0) return -1;
+
+    if (!nomodem)
+    {
+        /* initialize modem for CID */
+        if (doModem() < 0) errorExit(-1, ttyport, 0);
+    }
+
+    /* take tty port out of raw mode */
+    ntty.c_lflag = (ICANON);
+    if (tcsetattr(ttyfd, TCSANOW, &ntty) < 0) return -1;
+
+    if (nomodem)
+    {
+        if (verbose) fprintf(stderr, "CallerID TTY port initialized.\n");
+    }
+    else
+        if (verbose) fprintf(stderr, "Modem set for CallerID.\n");
+
+    return 0;
+}
+
+int doModem()
+{
+    int cnt, ret = 2;
+
+    /*
+     * Try to initialize modem, sometimes the modem
+     * fails to respond the 1st time, so try multiple
+     * times on a no response return code, before
+     * indicating no modem.
+     */
+    for (cnt = 0; ret == 2 && cnt < MODEMTRY; ++cnt)
+        if ((ret = initModem(initstr)) < 0) return -1;
+
+    if (ret)
+    {
+        tcsetattr(ttyfd, TCSANOW, &otty);
+        if (ret == 1) errorExit(-103, "Unable to initialize modem", ttyport);
+        else errorExit(-105, "No modem found", ttyport);
+    }
+
+    if (verbose) fprintf(stderr, "Modem initialized.\n");
+
+    /* Initialize CID */
+    if ((ret = initModem(initcid)) < 0) return -1;
+    if (ret)
+    {
+        if (!setcid)
+        {
+            if (!(initcid = strdup(INITCID2))) errorExit(-1, name, 0);
+            if ((ret = initModem(initcid)) < 0) return -1;
+        }
+
+        if (ret)
+        {
+            tcsetattr(ttyfd, TCSANOW, &otty);
+            errorExit(-103, "Unable to set modem CallerID", ttyport);
+        }
+    }
+
+    return 0;
+}
+
+int initModem(char *ptr)
+{
+    int num = 0, size = 0;
+    int try;
+    char buf[BUFSIZ], *bufp;
+
+    /* send string to modem */
+    strcat(strncpy(buf, ptr, BUFSIZ - 2), CR);
+    if (write(ttyfd, buf, strlen(buf)) < 0) return -1;
+
+    /* delay until response detected or number of tries exceeded */
+    for (try = 0; try < INITTRY; try++)
+    {
+        if ((num = read(ttyfd, buf + size, BUFSIZ - size - 1)) < 0) return -1;
+        if (num) break;
+        usleep(INITWAIT);
+    }
+
+    /* get rest of response */
+    while (num)
+    {
+        size += num;
+        if ((num = read(ttyfd, buf + size, BUFSIZ - size - 1)) < 0) return -1;
+    }
+
+    /* check response */
+    if (debug && size) write(STDOUT, buf, size);
+    buf[size] = 0;
+    if ((bufp = strrchr(buf, 'O')) != 0)
+        if (!strncmp(bufp, "OK", 2)) return 0;
+    if ((bufp = strrchr(buf, 'E')) != 0)
+        if (!strncmp(bufp, "ERROR", 5)) return 1;
+
+    /* no response */
+    return 2;
+}
+
+int tcpOpen(int mainsock)
+{
+    int     sd, ret, optval;
+    static struct  sockaddr_in bind_addr;
+    int socksize = sizeof(bind_addr);
+
+    optval = 1;
+    bind_addr.sin_family = AF_INET;
+    bind_addr.sin_addr.s_addr = 0;    /*  0.0.0.0  ==  this host  */
+    memset(bind_addr.sin_zero, 0, 8);
+    bind_addr.sin_port = htons(mainsock);
+    if ((sd = socket(AF_INET, SOCK_STREAM,0)) < 0)
+        return sd;
+    if((ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
+        &optval, sizeof(optval))) < 0)
+        return ret;
+    if((ret = setsockopt(sd, SOL_SOCKET, SO_KEEPALIVE,
+        &optval, sizeof(optval))) < 0)
+        return ret;
+    if ((ret = bind(sd, (struct sockaddr *)&bind_addr, socksize)) < 0)
+    {
+        close(sd);
+        return ret;
+    }
+    if ((ret = listen(sd, CONNECTIONS)) < 0)
+    {
+        close(sd);
+        return ret;
+    }
+    return sd;
+}
+
+int  tcpAccept(int sock)
+{
+    struct  sockaddr bind_addr;
+    unsigned int socksize = sizeof(bind_addr);
+
+    return accept(sock, &bind_addr, &socksize);
+}
+
+int addPoll(int pollfd)
+{
+    int added, pos;
+
+    for (added = pos = 0; pos < CONNECTIONS + 2; ++pos)
+    {
+        if (polld[pos].fd) continue;
+        polld[pos].revents = 0;
+        polld[pos].fd = pollfd;
+        polld[pos].events = (POLLIN | POLLPRI);
+        ++added;
+        break;
+    }
+    return added ? 0 : -1;
+}
+
+doPoll(int events, int mainsock)
+{
+    int num, pos, sd, cnt = 0;
+    char buf[BUFSIZ];
+
+    for (pos = 0; events && pos < CONNECTIONS + 2; ++pos)
+    {
+        if (!polld[pos].revents) continue; /* no events */
+        if (polld[pos].revents & POLLERR) /* Poll Error */
+        {
+            if (polld[pos].fd == ttyfd)
+            {
+                if (debug) fprintf(stderr, "Modem Error Condition.\n");
+                strncat(strcpy(buf, MSGLINE),
+                    "Modem Error Condition, Server Terminating",
+                    BUFSIZ -1);
+                writeLog(cidlog, buf);
+                writeClients(mainsock, buf);
+                errorExit(-1, ttyport, 0);
+            }
+            if (debug) fprintf(stderr, "Error Condition.\n");
+            polld[pos].fd = polld[pos].events = 0;
+            continue;
+        }
+        if (polld[pos].revents & POLLHUP) /* Hung up */
+        {
+            if (polld[pos].fd == ttyfd)
+            {
+                if (debug) fprintf(stderr, "Modem hung up.\n");
+                errorExit(-1, ttyport, 0);
+            }
+            if (debug) fprintf(stderr, "Hung Up.\n");
+            polld[pos].fd = polld[pos].events = 0;
+            continue;
+        }
+        if (polld[pos].revents & POLLNVAL) /* Invalid Request */
+        {
+            if (debug) fprintf(stderr,
+                "Invalid Request: File descriptor not open.\n");
+            polld[pos].fd = polld[pos].events = 0;
+            continue;
+        }
+
+        if (polld[pos].fd == ttyfd)
+        {
+            if (!locked)
+            {
+                /* Modem or device has data to read */
+                if ((num = read(ttyfd, buf, BUFSIZ-1)) < 0)
+                {
+                    perror("READ");
+                    continue;
+                }
+
+                /* Modem or device returned no data */
+                if (!num)
+                {
+                    if (debug) fprintf(stderr, "Modem returned no data.\n");
+                    polld[pos].revents = 0;
+                    cnt++;
+
+                    /* if no data 10 times in a row, something wrong */
+                    if (cnt == 10) errorExit(-1, ttyport, 0);
+                    continue;
+                }
+
+                cnt = 0;
+
+                /* strip <NL> or <CR> */
+                buf[num - 1] = '\0';
+
+                /* strip <CR> if there was a <CR><NL> */
+                if (buf[num - 2] == '\r') buf[num - 2] = '\0';
+
+                writeLog(datalog, buf);
+                formatCID(mainsock, buf);
+            }
+        }
+        else if (polld[pos].fd == mainsock)
+        {
+            /* TCP/IP Client Connection */
+            sd = tcpAccept(mainsock);
+            strcat(strcat(strcpy(buf, ANNOUNCE), VERSION), CRLF);
+            write(sd, buf, strlen(buf));
+            if (addPoll(sd) < 0)
+            {
+                if (verbose) fprintf(stderr, "%s\n", TOOMSG);
+                sprintf(buf, "%s: %d%s", TOOMSG, CONNECTIONS, CRLF);
+                write(sd, buf, strlen(buf));
+                close(sd);
+            }
+            if (sendlog) sendLog(sd, buf);
+        }
+        else
+        {
+            /* file descripter 0 treated as empty slot */
+            if (polld[pos].fd)
+            {
+                /* TCP/IP Client End Connection */
+                close(polld[pos].fd);
+                polld[pos].fd = polld[pos].events = 0;
+            }
+        }
+
+        polld[pos].revents = 0;
+        --events;
+    }
+}
+
+/*
+ * Format of data from modem:
+ *
+ * DATE = 0330            -or-  DATE=0330
+ * TIME = 1423            -or-  TIME=1423
+ * NMBR = 4075551212      -or-  NMBR=4075551212
+ * NAME = WIRELESS CALL   -or-  NAME=WIRELESS CALL
+ *
+ * Format of EXTRA line passed to TCP/IP clients by python cidd (not used)
+ *
+ * EXTRA: *DATE*0330*TIME*1423*NUMBER*4075551212*MESG*NONE*NAME*WIRELESS CALL*
+ *
+ * Format of CID line passed to TCP/IP clients by ncidd:
+ *
+ * CID: *DATE*03302002*TIME*1423*LINE*-*NMBR*4075551212*MESG*NONE*NAME*CALL*
+ *
+ * Format of data from NetCallerID for three types of calls and a message
+ *
+ * ###DATE03301423...NMBR4075551212...NAMEWIRELESS CALL+++\r
+ * ###DATE03301423...NMBR...NAME-UNKNOWN CALLER-+++\r
+ * ###DATE03301423..NMBR...NAME+++\r
+ * ###DATE...NMBR...NAME   -MSG OFF-+++\r
+ */
+
+formatCID(int mainsock, char *buf)
+{
+    char cidbuf[BUFSIZ], *ptr;
+    time_t t;
+
+    /*
+     * All Caller ID information is between the 1st and 2nd ring
+     * if RING is indicated, clear any Caller ID info received,
+     * unless NAME is the only thing missing.
+     */
+    if (strncmp(buf, "RING", 4) == 0)
+    {
+        /*
+         * If distinctive ring, save line indicator, it will be
+         * "RING A", "RING B", etc.
+         */
+         if (strlen(buf) == 6) strncpy(cid.cidline, buf + 5, 1);
+
+        /*
+         * If ring information is wanted, send it to the clients.
+         */
+        if (sendinfo)
+        {
+            ++ring;
+            sendInfo(mainsock);
+        }
+
+        /*
+         * if more than NAME is missing, clear
+         * incomplete CID
+         */
+        if ((cid.status & CIDALL3) != CIDALL3)
+        {
+            cid.status = 0;
+            return;
+        }
+
+        /*
+         * date, time, and number were received
+         * indicate No NAME, and process anyway
+         */
+        strncpy(cid.cidname, NONAME, CIDSIZE - 1);
+        cid.status |= CIDNAME;
+    }
+
+    /*
+     * sometimes bad charactors are received....
+     * replace unprintable charachers with a '?'
+     */
+    for (ptr = buf; *ptr; ptr++) if (!isprint(*ptr)) *ptr = '?';
+
+    /* Process Caller ID information */
+    if (strncmp(buf, "###", 3) == 0)
+    {
+        /* Found a NetCallerID box, all information on one line */
+        if (ptr = strstr(buf, "DATE"))
+        {
+            /*
+             * Found a message line, format it, log it, and send it:
+             *    MSG: message
+             */
+            if (*(ptr + 4) == '.')
+            {
+                if (ptr = strstr(buf, "NAME"))
+                {
+                    strncat(strcpy(cidbuf, MSGLINE), ptr + 4, BUFSIZ -1);
+                    if (ptr = strchr(cidbuf, '+')) *ptr = 0;
+                    writeLog(cidlog, cidbuf);
+                    writeClients(mainsock, cidbuf);
+                    cid.status = 0;
+                    return;
+                }
+            }
+
+            strncpy(cid.cidtime, ptr + 8, 4);
+            cid.cidtime[4] = 0;
+            cid.status |= CIDTIME;
+            strncpy(cid.ciddate, ptr + 4, 4);
+            cid.ciddate[4] = 0;
+            t = time(NULL);
+            ptr = ctime(&t);
+            *(ptr + 24) = 0;
+            strncat(cid.ciddate, ptr + 20, CIDSIZE - strlen(cid.ciddate) - 1);
+            cid.status |= CIDDATE;
+        }
+        if (ptr = strstr(buf, "NMBR"))
+        {
+            if (*(ptr + 5) == '.') strncpy(cid.cidnmbr, NONUMB, CIDSIZE - 1);
+            {
+                strncpy(cidbuf, ptr + 4, BUFSIZ -1);
+                ptr = strchr(cidbuf, '.');
+                if (ptr) *ptr = 0;
+                builtinAlias(cid.cidnmbr, cidbuf);
+            }
+            cid.status |= CIDNMBR;
+        }
+        if (ptr = strstr(buf, "NAME"))
+        {
+            if (*(ptr + 5) == '+') strncpy(cid.cidname, NONAME, CIDSIZE - 1);
+            else
+            {
+                strncpy(cidbuf, ptr + 4, BUFSIZ -1);
+                ptr = strchr(cidbuf, '+');
+                if (ptr) *ptr = 0;
+                builtinAlias(cid.cidname, cidbuf);
+            }
+            cid.status |= CIDNAME;
+        }
+    }
+    else if (strncmp(buf, "DATE", 4) == 0)
+    {
+        strncpy(cid.ciddate, buf[4] == '=' ? buf + 5 : buf + 7, CIDSIZE - 1);
+        t = time(NULL);
+        ptr = ctime(&t);
+        *(ptr + 24) = 0;
+        strncat(cid.ciddate, ptr + 20, CIDSIZE - strlen(cid.ciddate) - 1);
+        cid.status |= CIDDATE;
+    }
+    else if (strncmp(buf, "TIME", 4) == 0)
+    {
+        strncpy(cid.cidtime, buf[4] == '=' ? buf + 5 : buf + 7, CIDSIZE - 1);
+        cid.status |= CIDTIME;
+    }
+    else if (strncmp(buf, "NMBR", 4) == 0)
+    {
+        /* some systems send NMBR = ##########, then NMBR = O to mask it */
+        if (!(cid.status & CIDNMBR))
+        {
+            builtinAlias(cid.cidnmbr, buf[4] == '=' ? buf + 5 : buf + 7);
+            cid.status |= CIDNMBR;
+        }
+    }
+    else if (strncmp(buf, "NAME", 4) == 0)
+    {
+        /* if NAME already sent, discard the second one */
+        if (!(cid.status & CIDNAME))
+        {
+            /* remove any trailing spaces */
+            for (ptr = buf; *ptr; ++ptr);
+            for (--ptr; *ptr && *ptr == ' '; --ptr) *ptr = 0;
+
+            builtinAlias(cid.cidname, buf[4] == '=' ? buf + 5 : buf + 7);
+            cid.status |= CIDNAME;
+        }
+    }
+    else if (strncmp(buf, "MESG", 4) == 0)
+    {
+        strncpy(cid.cidmesg, buf[4] == '=' ? buf + 5 : buf + 7, CIDSIZE - 1);
+        cid.status |= CIDMESG;
+
+        /* some systems send MESG instead of NAME, set NONAME */
+        strncpy(cid.cidname, NONAME, CIDSIZE - 1);
+        cid.status |= CIDNAME;
+    }
+
+    /* Output Caller ID Information, if all Caller ID info received */
+    if ((cid.status & CIDALL4) == CIDALL4)
+    {
+        userAlias(cid.cidnmbr, cid.cidname);
+        sprintf(cidbuf, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s", CIDLINE,
+            DATE, cid.ciddate,
+            TIME, cid.cidtime,
+            LINE, cid.cidline,
+            NMBR, cid.cidnmbr,
+            MESG, cid.cidmesg,
+            NAME, cid.cidname,
+            STAR);
+        writeLog(cidlog, cidbuf);
+        writeClients(mainsock, cidbuf);
+        cid.status = 0;
+        strncpy(cid.cidmesg, NOMESG, CIDSIZE - 1);
+        strcpy(cid.cidline, ONELINE); /* default line */
+    }
+}
+
+/*
+ * Built-in Aliases for O, P, and A
+ */
+
+builtinAlias(char *to, char *from)
+{
+    if (!strcmp(from, "O")) strncpy(to, O, CIDSIZE - 1);
+    else if (!strcmp(from, "P")) strncpy(to, P, CIDSIZE - 1);
+    else if (!strcmp(from, "A")) strncpy(to, A, CIDSIZE - 1);
+    else strncpy(to, from, CIDSIZE - 1);
+}
+
+/*
+ * User defined aliases.
+ */
+
+userAlias(char *nmbr, char *name)
+{
+    int i;
+
+    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+    {
+        switch (alias[i].type)
+        {
+            case BOTH:
+                if (!strcmp(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
+                if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
+                break;
+            case NMBRONLY:
+                if (!strcmp(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
+                break;
+            case NMBRDEP:
+                if (!strcmp(name, alias[i].depend) &&
+                    (!strcmp(nmbr, alias[i].from) ||
+                    !strcmp(alias[i].from, "*")))
+                    strcpy(nmbr, alias[i].to);
+                break;
+            case NAMEONLY:
+                if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
+                break;
+            case NAMEDEP:
+                if (!strcmp(nmbr, alias[i].depend) &&
+                    (!strcmp(name, alias[i].from) ||
+                    !strcmp(alias[i].from, "*")))
+                    strcpy(name, alias[i].to);
+                break;
+        }
+    }
+}
+
+/*
+ * Send string to all TCP/IP CID clients.
+ */
+
+writeClients(int mainsock, char *buf)
+{
+    int pos;
+
+    for (pos = 0; pos < CONNECTIONS + 2; ++pos)
+    {
+        if (polld[pos].fd == 0 || polld[pos].fd == ttyfd ||
+            polld[pos].fd == mainsock) continue;
+        write(polld[pos].fd, buf, strlen(buf));
+        write(polld[pos].fd, CRLF, strlen(CRLF));
+    }
+}
+
+/*
+ * Send log, if log file exists.
+ */
+
+sendLog(int sd, char *buf)
+{
+    struct stat statbuf;
+    char *iptr, *optr, input[BUFSIZ];
+    FILE *fp;
+
+    if (!stat(cidlog, &statbuf))
+    {
+        if (statbuf.st_size > LOGMAX)
+        {
+            sprintf(buf, LOGMSG, statbuf.st_size, LOGMAX, CRLF);
+            write(sd, buf, strlen(buf));
+            if (verbose) fprintf(stderr, LOGMSG, statbuf.st_size, LOGMAX, NL);
+            return;
+        }
+    }
+
+    if ((fp = fopen(cidlog, "r")) == NULL)
+    {
+        if (debug > 1) perror(cidlog);
+        return;
+    }
+
+    /*
+     * read each line of file, one line at a time
+     * add "LOG" to line tag (CID: becomes CIDLOG:)
+     * send line to clients
+     */
+    while (fgets(input, BUFSIZ - sizeof(LINETYPE), fp) != NULL)
+    {
+        if ((iptr = strchr( input, '\n')) != NULL) *iptr = 0;
+        optr = buf;
+        if (strstr(input, ": ") != NULL)
+        {
+            /* copy line tag, skip ": " */
+            for(iptr = input; *iptr != ':';) *optr++ = *iptr++;
+            iptr += 2;
+        }
+        else iptr = input;
+        strcat(strcat(strcpy(optr, LOGLINE), iptr), CRLF);
+        write(sd, buf, strlen(buf));
+    }
+
+    (void) fclose(fp);
+
+    if (verbose) fprintf(stderr, "Sent call log: %s\n", cidlog);
+}
+
+/*
+ * Write log, if log file exists.
+ */
+
+writeLog(char *logfile, char *buf)
+{
+    int logfd;
+
+    if (debug || verbose > 1) fprintf(stderr, "%s\n", buf);
+
+    if ((logfd = open(logfile, O_WRONLY | O_APPEND)) < 0)
+    {
+        if (debug > 1) perror(logfile);
+    }
+    else
+    {
+        write(logfd, buf, strlen(buf));
+        write(logfd, NL, strlen(NL));
+        close(logfd);
+    }
+}
+
+/*
+ * Send call information
+ *
+ * Format of CIDINFO line passed to TCP/IP clients by ncidd:
+ *
+ * CIDINFO: *LINE*-*RING*1*
+ */
+
+sendInfo(int mainsock)
+{
+    char buf[BUFSIZ];
+
+    sprintf(buf, "%s%s%s%s%d%s%s", CIDINFO,
+            LINE, cid.cidline,
+            RING, ring,
+            STAR, CRLF);
+    writeClients(mainsock, buf);
+    if (debug || verbose > 1) fprintf(stderr, "%s\n", buf);
+}
+
+/*
+ * Close all file descriptors and restore tty parameters.
+ */
+
+cleanup()
+{
+    int pos;
+
+    /* restore tty parameters */
+    if (ttyfd > 2)
+    {
+        tcflush(ttyfd, TCIOFLUSH);
+        tcsetattr(ttyfd, TCSANOW, &otty);
+    }
+
+    /* close open files */
+    for (pos = 0; pos < CONNECTIONS + 2; ++pos)
+        if (polld[pos].fd != 0) close(polld[pos].fd);
+}
+
+/* signal exit */
+void finish(int sig)
+{
+    cleanup();
+    exit(0);
+}
+
+errorExit(int error, char *msg, char *arg)
+{
+
+    if (error == -1)
+    {
+        error = errno;
+        perror(msg);
+    }
+    else if (msg != 0) fprintf(stderr, "%s: %s\n", msg, arg);
+    cleanup();
+    exit(error);
+}

@@ -1,0 +1,57 @@
+.\" %W% %G%
+.TH NCIDD.CONF 5
+.SH NAME
+.B ncidd.conf\^
+- ncidd configuration file
+.SH DESCRIPTION
+The \fIncidd.conf\fR file contains the configuration information for
+\fIncidd\fR, the Network Caller ID Server.
+.P
+The \fIncidd.conf\fR file is used to set options.
+Options are set on a command line.
+A line is broken up into words.
+A word is either a string of non-blank characters, everything
+between double quotes, or an equal sign.
+.P
+The \fIncidd.conf\fR file understands 5 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B command lines, beginning with 'send'
+send DATATYPE
+.RS 11
+where DATATYPE = cidlog, cidinfo
+.RE
+.TP
+.B command lines, beginning with 'set'
+set ITEM = VALUE [ITEM = VALUE] [...]
+.RS 11
+where ITEM = cidlog, datalog, initcid, initstr, lockfile, port,
+ttyclocal, ttyport, ttyspeed, nomodem
+.RE
+.SH EXAMPLES
+Send the CID log to each client at connect:
+.RS 0
+	send cidlog
+.RE
+.P
+Send the ring count, at each ring, to each client
+.RS 0
+	send cidinfo
+.RE
+.P
+Set the modem CID string to avoid the default:
+.RS 0
+	set initcid = "AT#CID=1"
+.RE
+.P
+Set the modem port to avoid the default:
+.RS 0
+	set ttyport=/dev/ttyS2
+.RE
+.SH SEE ALSO
+ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.alias.5

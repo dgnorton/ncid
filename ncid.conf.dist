@@ -1,0 +1,50 @@
+# tcl/tk configuration file
+
+# Directory NCID uses to find the helper scripts
+set ProgDir     /usr/local/share/ncid
+
+# default helper script
+set EXTPROG     ncid-speak
+
+# Set Host to the NCID server address
+# Host defaults to 127.0.0.1
+set Host        127.0.0.1
+
+# The NCID port default is 3333
+set Port        3333
+
+# If the connection to the server is lost,
+# try every Delay seconds to reconnect
+# The Default: 60
+set Delay       60
+
+# If set to 1, display raw data received from the NCID server
+# If set to 0, do not display raw data received from the NCID server
+# Default: 0
+set Raw         0
+
+# If set to 1, output: date time number name
+# If set to 0, output: name number
+# Default: 0
+set All         0
+
+# If set to 1, display formatted CID, and CID log file on connect
+# If set to 0, ddo not isplay formatted CID, and CID log file on connect
+# Default: 0
+set Verbose     0
+
+# If set to 1, display information in terminal progran or external program
+# If set to 0, display information using a GUI
+# Default: 0
+set NoGUI       0
+
+# output name and number to external program
+# Default: 0
+set Callprog    0
+
+# ring number to call external program
+# Default: 0
+set CallOnRing  0
+
+# external called program
+set Program     [list $ProgDir/$EXTPROG]

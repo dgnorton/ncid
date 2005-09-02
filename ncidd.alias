@@ -1,0 +1,41 @@
+# ncid - Network CallerID Server Alias File
+
+###############################
+# Definitions and Line format #
+###############################
+
+# lines can be blank, or start with the word: alias #
+#
+# A line is divided into words, separated by spaces
+#
+# A word is either a string of non-blank characters, everything
+# between double quotes, or an equal sign.
+#
+# ALIAS LINES FORMAT:
+#    alias [NMBR|NAME] ["]FROM["] = ["]TO["] [if ["]VALUE["]]
+#        where  NMBR or NAME ia a KEYWORD
+#               FROM is a CID string, can be '*' when using 'if'
+#               TO is the alias for the FROM string
+#               VALUE is a name if KEYWORD = NMBR
+#               VALUE is a NMBR if KEYWORD = NAME
+
+##################
+# Alias Examples #
+##################
+
+# Change OUT-OF-AREA to UNAVAILABLE in both name and number fields:
+# alias OUT-OF-AREA = UNAVAILABLE
+#
+# Change OUT-OF-AREA to UNAVAILABLE in the name field only:
+# alias NAME OUT-OF-AREA = UNAVAILABLE
+#
+# Change generic name to specific name for a phone number:
+# alias NAME * = "John on CELL" if 4075551212
+#
+# Mask a phone number:
+# alias NMBR 4075551212 = "----------"
+
+####################
+# Add Aliases here #
+####################
+
