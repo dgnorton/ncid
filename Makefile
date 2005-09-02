@@ -134,7 +134,7 @@ freebsd:
 	$(MAKE) local WISH=/usr/local/bin/wish*.* TCLSH=/usr/local/bin/tclsh*.*
 
 install-freebsd:
-	$(MAKE) local install-base MAN=$(prefix)/man
+	$(MAKE) install-base MAN=$(prefix)/man
 	cd FreeBSD; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) MAN=$(prefix)/man
 
