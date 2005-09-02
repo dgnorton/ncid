@@ -1,0 +1,36 @@
+The files ncidd-errors.conf and ncidd-noerrors.conf are
+used to test the configuration of ncidd.  Neither config
+file will permit ncidd to run after the config file is read.
+
+-----------------------------------------------------------
+
+The file testscript.data is a test file for ncid helper scripts,
+like ncid-page and ncid-speak.
+
+To test ncid-page: cat testscript.data | ncidpage
+
+-----------------------------------------------------------
+
+The file "aliasfile" is used to test "cidalias".
+
+-----------------------------------------------------------
+
+The program testclient is a NCID test server used to send various
+NCID lines to test a client.  The test server uses port 3000.  It
+sends one or more lines from the testclient.data file with each
+press of <RETURN>.  The last <RETURN> will terminate the server.
+Blank lines are used to terminate a send initiated by <RETURN>.
+
+To test a client:
+	Start testclient (it will give instructions and send a 200 line)
+	Start the NCID client on port 3000 (it will receive the 200 line)
+	Press <RETURN> to send a MSG lines
+	Press <RETURN> to send a CIDLOG lines
+	Press <RETURN> to send one CID (call) line (there is more than one)
+	Press <RETURN> to send one CID and CIDINFO lines (there is more than one)
+	Press <RETURN> to end testclient
+
+	Usage: testclient [datafile]
+	Default Data File: testclient.data
+
+	NOTE: testclient and testclient.data must be in the same directory

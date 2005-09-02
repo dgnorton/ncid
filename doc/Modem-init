@@ -1,0 +1,16 @@
+Modem Caller ID Init Strings
+
+AT#CID=1
+
+# Caller ID (CID) formatted
+AT+VCID=1
+
+# Report Retrieved Caller ID (CID) formatted
+AT+VRID=0
+
+# Select Active Service Class (Voice Mode)
+AT+FCLASS=8
+
+AT+FCLASS=8;+VCID=1
+
+AT-STE=1;+VCID=1

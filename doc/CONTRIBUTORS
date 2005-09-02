@@ -1,0 +1,35 @@
+John L. Chmielewski:
+	Designed and wrote most of the programs.
+
+Mark Salyzyn:
+	Ported ncidd to BSD and Macintosh
+	wrote getopt.c and poll.c
+
+Mace Moneta:
+	wrote nciduser, which was the bases for ncid-speak
+	contributed ideas and code to ncid
+	contributed the Mac OS X portion of ncid-speak
+
+Dan Lawrence:
+	contributed to ncid-email so paging would work
+	contributed information on freewrap for ncid on Windows
+		http://freewrap.sourceforge.net/
+
+Aron Green:
+	helped fix termios settings to work with FreeBSD
+	contributed ncid.sh and ncidd.sh start/stop scripts for FreeBSD
+	contributed ideas for ncidd and ncid
+
+Troy Carpenter:
+	developed ncid-samba to send CID info to samba for a Windows opoup
+
+Lyman Epp:
+    wrote the first version of ncidrotate, in python.
+
+New Feature Requests, Bug Reports, testing fixes, and testing new features:
+	Troy Carpenter
+	Mace Moneta
+	Dan Lawrence
+	Nicholas Davies
+	Paul Miller
+	Aron Green

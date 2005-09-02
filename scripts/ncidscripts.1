@@ -1,0 +1,57 @@
+.\" %W% %G%
+.TH NCIDSCRIPTS 1
+.SH NAME
+.B ncidrotate\^
+- keep lines in logfile after it is rotated
+.P
+.B ncid-page\^
+- send CID to a pager or cell phone
+.P
+.B ncid-samba\^
+- send CID to samba to create a popup
+.P
+.B ncid-speak\^
+- send CID to a text-to-speach program
+.SH SYNOPSIS
+.B ncidrotate\^
+{prerotate|postrotate}
+.P
+.B ncid-page\^
+CIDdate CIDtime CIDnumber CIDname
+.P
+.B ncid-samba\^
+CIDdate CIDtime CIDnumber CIDname
+.P
+.B ncid-speak\^
+CIDdate CIDtime CIDnumber CIDname
+.SH DESCRIPTION
+These are helper scripts and are normally located in the
+.BR /usr/share/ncid
+directory.
+.P
+.B Ncidrotate
+is called by
+.I /etc/logrotate.d/ncidd
+and will keep a number of lines in the logfile after rotation.
+The default is 0 lines kept.  The configuration file for
+logrotate is
+.I /etc/ncid/ncidrotate.conf
+.P
+The client,
+.BR ncid ,
+can be configured to call
+.BR ncid-page ,
+.BR ncid-samba ,
+or
+.BR ncid-speak .
+The configuration file for the scripts is
+.I /etc/ncid/ncidscript.conf
+.PD
+.SH FILES
+/etc/ncid/ncidrotate.conf
+.br
+/etc/ncid/ncidscript.conf
+.SH SEE ALSO
+ncid.1,
+ncidscript.conf.5,
+ncidd.8

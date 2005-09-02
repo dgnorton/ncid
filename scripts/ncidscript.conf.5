@@ -1,0 +1,44 @@
+.\" %W% %G%
+.TH NCIDSCRIPT.CONF 5
+.SH NAME
+.B ncidscript.conf\^
+- ncid scripts configuration file
+.SH DESCRIPTION
+The \fIncidscript.conf\fR file contains the configuration information for
+\fIncid\fR, helper scripts and the init file.
+.P
+The \fIncidscript.conf\fR file is used to set options for
+.IR ncidpage ,
+.IR ncid-samba ,
+and
+.IR ncid-speak .
+.P
+The \fIncidscript.conf\fR file understands 3 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B shell variable set lines.
+.P
+See ncidscripts.conf for more details on the variables that
+can be set.
+.SH EXAMPLES
+Set ncid to call ncid-page:
+.RS 0
+	extprog="ncid-page"
+.RE
+.P
+set the email address for ncid-page:
+.RS 0
+	ADDRESS=cellphone@isp.com
+.RE
+.P
+set ncid-page to call the cell phone on ring 4:
+.RS 0
+	opts="$opts -r 4"
+.RE
+.SH SEE ALSO
+ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.alias.5

@@ -1,0 +1,202 @@
+# INSTALL ncid (tivocid) and ncidd on the TiVo
+
+The ncid client replaces the old tivocid package.  It
+functions exactly like TiVoCID, if it is called tivocid,
+or if it is given the proper options.  The ncid client
+requires the out2osd package to be installed to display
+the CID information on the TV screen.
+
+The NCID package includes both the client and server.
+For a series1, the server would normally be ignored unless
+you have a DirecTiVo, a hardware modified internal modem,
+or a modem connected to the serial port.
+
+-------------------------
+Install TiVoCID and ncidd
+-------------------------
+
+If you have a series 1 TiVo, Copy out2osd-VERSION.series1-tivo.tgz to the tivo.
+If you have a series 2 TiVo, Copy out2osd-VERSION.series2-tivo.tgz to the tivo.
+    - tar -xzvf ncid-VERSION.series?-tivo.tgz -C /var
+      EXAMPLE: tar -xzvf ncid-0.5.series2-tivo.tgz -C /var
+
+----------------------------------------
+Install the TiVo OUT2OSD display program 
+----------------------------------------
+
+Get and install the latest OUT2OSD display program.
+It is available as either a source tar file, or a
+TiVo binary tar package.
+
+--------------------------------------------------
+Configure ncidd, if you are running it on the TiVo
+--------------------------------------------------
+
+NCIDD is compiled to use directories under /var/hack.
+You can change this if you like, by using the
+command line to specify the location of the config
+file, and then using the config file to set the
+options for your new diectory structure.
+
+The ncidd.conf file is preconfigured for a TiVo.
+These are the lines enabled for a Series1 and a Series2:
+
+    set sttyclocal = 1
+    set modem = /dev/ttyS1 # TiVo Modem Port
+    set lockfile = /var/tmp/modemlock # needed for TiVo Modem Port
+
+If you are using a standalone series1 without the modem hardware
+modification to enable Caller ID, you need to uncoment the line:
+
+    # set modem = /dev/ttyS3 # TiVo Serial Port
+
+and comment out the line::
+
+    set modem = /dev/ttyS1 # TiVo Modem Port
+
+----------------------
+Start the ncid package
+----------------------
+
+If you are running the server and client on the TiVo
+
+    ncidd
+    tivocid &
+
+If you are only running the client on the TiVo:
+
+    tivocid IP.Server.Address &
+
+If the server is at 192.168.0.10, the above becomes:
+
+    tivocid 192.168.0.10 &
+
+Call yourself and see if it works, if not, kill off ncidd, if
+it is running, and continue reading the test sections.
+
+If everything is OK, add the line or lines to your rc file
+so NCID can start when the TiVo boots.
+
+----------
+Test ncidd
+----------
+
+The easiest way to test the setup is to run ncidd in debug mode,
+it will stay attached to the terminal and not go into deamon mode:
+    ncidd -D
+to get more information, add the verbose flag:
+    ncidd -Dv
+to also look at the alias structure
+    ncidd -DDv
+
+Call yourself and you should see the CallerID information.
+If you just see RING and no Caller ID lines, the modem does not
+support caller ID.
+If you see: /dev/ttyS1: No such file or directory
+you need to set sttyclocal in ncidd.conf
+                                                                  
+At any point, you can use command lines options to vary
+things like modem init and CID init.
+
+Once it works, you would normally start it:
+    ncidd
+or, if, for example, you use /hack instead of /var/hack:
+    ncidd -C /hack/etc/ncidd.conf
+
+-----------------------------------------------------------------
+Install ncidd on a separate computer, if not using it on the TiVo
+-----------------------------------------------------------------
+
+Get, install, and test the latest NCID server/client package
+for the computer you will run it on, if it is not the TiVo.
+
+NCID is available as either a source tar file, or a Redhat RPM package,
+
+------------------------
+Test the TiVo CID Client
+------------------------
+
+Start tivocid:
+
+	If ncidd is on the TiVo: tivocid -V
+	You should see the Server connect message.
+
+	If ncidd is on another computer: tivocid -V IP.Server.Address.
+	You should see the Server connect message.
+
+If it doesn't start, the error message should give you a clue.
+
+There is one report of tivocid aborting with a message simular to:
+
+    bash-2.02# Tmk Assertion Failure:
+    FsAllocateFunction, line 131 ()
+
+If tivosh dies in the wrong place, the tivo will restart:
+
+    Tmk Fatal Error: Thread tivosh <252> died due to signal -2
+    f9c51c 100df1c 100e18c 100e1dc dabe9c dab55c 400c50 108a0b0 Restarting
+    system.
+
+The fix is to start it this way:
+
+    tivosh ncid --no-gui --call-prog --program /var/hack/bin/out2osd &
+
+Call yourself.  The display should show up for 10 seconds
+and then erase itself.
+
+If tivocid doesn't display the Caller ID information,
+try: tivocid -R -V IP.Server.Address.
+This will show everything received from the server, and
+the CID information it processes.
+
+If tivocid works, kill off tivocid and restart it:
+
+	If ncidd is on the TiVo: tivocid &
+
+	If ncidd is on another computer: tivocid IP.Server.Address &
+
+-------------------------------------
+Files installed and modem information
+-------------------------------------
+
+The series1 tivo's require a hardware modification to support
+Caller ID, but you can hang a modem off of the serial port using
+the TiVo serial cable and a modem serial cable connected together.
+
+Series1 information on the hardware modification needed, various
+CID init strings, and another Caller ID program can be found here:
+http://www.tivocommunity.com/tivo-vb/showthread.php?s=&threadid=54469&highlight=Elseed
+
+TiVo-modem.txt gives some information about the TiVo modems.
+
+The tar files creates the following:
+
+                                     hack
+                                      |
+      --------------------------------------------------------------
+      |       |           |          |              |         |     |
+     bin    sbin         etc        log            doc       dev  share
+      |       |           |          |              |         |     |
+      |     ncidd      ncidd.conf  cidcall.log    ncidd            ncid
+      |                                             |               |
+   tivocid                                       README            ncid-page
+   ncid                                          ncid.man          ncid-samba
+                                                 ncidd.man         ncid-speak
+                                                 ncidd.conf.man    README
+                                                 ncidscripts.man
+                                                 ncidtools.man
+                                                 CHANGES
+                                                 CONTRIBUTORS
+                                                 INSTALL
+                                                 INSTALL-FreeBSD
+                                                 INSTALL-Mac
+                                                 INSTALL-TiVo
+                                                 INSTALL-Win
+                                                 LICENSE
+                                                 Modem-init
+                                                 NCID-DataFormats
+                                                 PROTOCOL
+                                                 README-FreeBSD
+                                                 TiVo-modem
+
+Note: tivocid is a symbolic link to ncidd

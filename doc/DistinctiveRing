@@ -1,0 +1,21 @@
+Email from Rick Matthews:
+
+------- From <http://www.modemsite.com/56k/dring.asp>-----------------
+
+You can find out whether your modem supports DR by connecting to its
+COM port via HyperTerminal and issuing the appropriate AT command;
+if it responds with an "OK", it does, otherwise it does not. The AT
+command to enable DR depends on the modem's chipset: for the
+3Com/USR/TI chipset it is "ATS41=1", for the Rockwell/Conexant
+chipset, it is "AT-SDR=7", and for the Lucent/Agere chipset it is
+"AT+VDR=1,0".
+
+Each chipset handles DR differently.
+
+3Com and Rockwell report ring codes ("RING A", "RING B", "RING C" for
+3Com; "RING 1", "RING 2", "RING 3" for Rockwell), while Lucent reports
+the actual ring cadence (the duration of the ringing and the silent
+periods) with DROF/DRON messages. For example, 3Com reports two short
+rings as "RING B", Rockwell as "RING 2", and Lucent as "DRON=5",
+"DROF=11", "DRON=5", "DROF=34" (for every "ring" made up of two short
+rings).

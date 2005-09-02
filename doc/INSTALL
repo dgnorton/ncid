@@ -1,0 +1,65 @@
+NCID - Network Caller ID Install
+
+Linux:
+The Makefile assumes a Redhat Linux environment
+	The programs go into $prefix/bin $prefix/sbin
+	The config file goes into $prefix2/etc
+	The init script goes into $prefix2/etc/rc.d/init.d
+	The modem link or driver is expected in /dev
+	The LOG file is expected in /var/log
+	The man pages go into $MAN, which is $prefix/share/man
+	The default is prefix=/usr/local, prefix2=$prefix
+
+Compile:
+
+	To configure programs and config file for /usr/local:
+		- make local
+
+	To configure for programs for /usr, and the config file for /etc:
+		- make package
+
+	To cross-compile for the TiVo:
+		- make tivo-series1 (requires TiVo cross-development:
+          /usr/local/tivo)
+		- make tivo-series2 (requires TiVo cross-development:
+          /usr/local/mips-tivo)
+
+INSTALL:
+
+	To install in /usr/local (man pages go into /usr/local/share/man):
+		- make install
+
+	To install in /usr/local (man pages go into /usr/local/man):
+		- make install MAN=/usr/local/man
+
+	To install programs in /usr, config file in /etc,
+		and man pages in /usr/share/man:
+		- make install prefix=/usr prefix2=
+
+    Note: The install target installs files into /etc/logrotate.d
+          and /etc/rc.d/init.d.  If you do not have these directories
+          use install-base instead of install in the above.
+
+          See the top of the Makefile for more information on targets.
+
+TEST:
+
+	Start ncid and ncidd
+	Call yourself
+
+	if you have problems, start ncidd in debug and verbose modes:
+		- ncidd -Dv
+
+    if ncidd aborts when you call yourself with something like:
+        Modem set for CallerID.
+        Modem Error Condition. (Phone rang here)
+        /dev/ttyS1: No such file or directory
+    You need to set ncidd to ignore modem signals.
+    Uncomment the following line in ncidd.conf:
+        # set sttyclocal = 1
+
+    If you only see RING for each ring, the modem does not support
+    Caller ID.  You should see the Caller ID lines betreen the
+    first and second RING.
+
+	Once you solve the problems, restart ncidd normally

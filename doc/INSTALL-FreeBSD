@@ -1,0 +1,107 @@
+# INSTALL ncid and ncidd on FreeBSD
+
+INSTALL:
+
+	- install tcl/tk
+	- make sure tcl calls tcl?.? and wish calls wish?.?,
+	  otherwise modify the TCLSH and WISH variables in ncid
+
+    - The NCID package normally installs in /usr/local:
+        /usr/local/sbin/ncidd
+        /usr/local/bin/ncid
+        /usr/local/bin/cidalias
+        /usr/local/bin/cidlog
+        /usr/local/bin/cidlogupd
+        /usr/local/share/ncid/README
+        /usr/local/share/ncid/ncid-page
+        /usr/local/share/ncid/ncid-samba
+        /usr/local/share/ncid/ncid-speak
+        /usr/local/share/ncid/ncidrotate
+        /usr/local/etc/ncidd.conf
+        /usr/local/man/man1/ncid.1
+        /usr/local/man/man1/ncidscripts.1
+        /usr/local/man/man1/ncidtools.1
+        /usr/local/man/man5/ncidd.conf.5
+        /usr/local/man/man8/ncidd.8
+        /var/log/cidcall.log
+    - If a binary package is available:
+        Copy ncid-VERSION.freebsd.tgz to the FreeBSD computer, then:
+            tar -xzvf ncid-VERSION.freebsd.tgz -C /
+            EXAMPLE: tar -xzvf ncid-0.50.freebsd.tgz -C /
+    - install NCID package:
+        - if there is no binary package, you need to compile the source:
+        gmake freebsd (compiles for /usr/local, see top of Makefile)
+        gmake install-freebsd
+
+GMAKE NOTE:
+
+    - The NCID source package requires gmake.
+
+	- The optional GNU getopt is installed from /usr/ports/devel/libgnugetopt:
+        cd /usr/ports/devel/gmake
+        make all install
+
+CONFIGURE:
+
+    - The default modem port in ncidd is /dev/modem.  This is just a
+      symbolic link to the real modem port.
+    - You should set the modem in ncidd.conf, if you are not using
+      /dev/modem.  Use one of cuaa0, cuaa2, cuaa3, cuaa4 in /dev which
+      corresponds to COM1, COM2, COM3, COM4
+    - If you are using COM1 then you would add this line to ncidd.cinf:
+        set modem = /dev/cuaa0
+
+START:
+
+    - If you are running the server and client on the same computer:
+        ncidd
+        ncid &
+
+    - Call yourself and see if it works, if not, kill off ncidd, if
+      it is running, and continue reading the test sections.
+
+    - If everything is OK, run at boot: /usr/local/etc/rc.d/ncidd
+      so NCID can start when FreeBSD boots.
+
+TEST
+
+    - The easiest way to test the setup is to run ncidd in debug mode,
+      it will stay attached to the terminal and not go into deamon mode:
+        ncidd -D
+      to get more information, add the verbose flag:
+        ncidd -Dv
+      to also look at the alias structure
+        ncidd -DDv
+
+    - The last line should be: Modem set for CallerID.
+    - If it says: ERROR
+      try the CID strings in ncidd.conf or in doc/CID-init
+
+    - Call yourself and you should see that the Caller ID lines.
+    - If you only see RING for each ring, the modem does not support
+      Caller ID.  You should see the Caller ID lines betreen the
+      first and second RING.
+    - If you see: /dev/ttyS1: No such file or directory
+      you need to set sttyclocal in ncidd.conf
+
+    - At any point, you can use command lines options to vary
+      things like modem init and CID init.
+
+    - Once it works, you would normally start it:
+        ncidd
+
+GETOPT NOTE:
+
+	- NCID will build as is.  It uses the included getopt_long(),
+
+      If you would like to use the optional GNU getopt,
+	  ncidd.h and getopt.c needs to have the __FreeBSD__
+      removed and the following needs to be done:
+
+	  The optional GNU getopt is installed from /usr/ports/devel/libgnugetopt:
+        cd /usr/ports/devel/libgnugetopt
+        make all install
+
+	  The Makefile needs these two lines included for GNU getopt:
+		MFLAGS = -I/usr/local/include
+		LDFLAGS = -L/usr/local/lib -lgnugetopt

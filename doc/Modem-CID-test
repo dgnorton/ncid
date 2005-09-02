@@ -1,0 +1,48 @@
+# Modem CID test
+# Thu Aug 11, 2005
+
+Start ncidd in test mode:
+
+	ncidd -Dv
+
+You should see something simular to (the important part is the last line):
+
+    Configured to send 'cidlog' to clients.
+    Configured to send 'cidinfo' to clients.
+    Processed config file: /etc/ncid/ncidd.conf
+    Processed alias file: /etc/ncid/ncidd.alias
+    CID logfile: /var/log/cidcall.log
+    Data logfile: /var/log/ciddata.log
+    TTY port opened: /dev/ttyS0
+    TTY port speed: 19200
+    TTY lock file: /var/lock/LCK..ttyS0
+    Modem control signals enabled
+	AT Z S0=0 E1 V1 Q0
+	OK
+	Modem initialized.
+	AT+VCID=1
+	OK
+	Modem set for CallerID.
+
+Next, call yourself, and you should see something like:
+
+	RING        (this is the 1st ring)
+
+	DATE = 1105
+	TIME = 2106
+	NMBR = 9495551212
+	NAME = Jesse James
+
+	RING        (this is the 2nd ring)
+
+	RING        (hangup at this point)
+
+However, if your modem does not support CID you will see something like:
+
+	RING
+
+	RING
+
+	RING	(hangup at this point)
+
+Do a <CTRL C> to break out and end the test.

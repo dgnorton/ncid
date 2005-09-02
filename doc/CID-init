@@ -1,0 +1,24 @@
+#CID=1               Used in USR, Texas Instruments, Rockwell compatible
+                     modems (excluding software modems and Rockwell HCF),
+                     Hayes, several Pace modems, PowerBit, GVC, PCTel,
+                     IDC (VR series) devices, Diamond Supra (Rockwell
+                     compatible).
+
++VCID=1 or
++FCLASS=8;+VCID=1    All IS-101 modems, Lucent LT, Rockwell
+                     HCF (V.90 or K56FLEX, e.g. PCI modems from Creative),
+                     some Pace modems (IS-101 compatible), Multitude,
+                     IDC, Cirrus Logic, most of IDC modems.
+
+#CLS=8#CID=1         Caller ID in voice mode in some 56K USR modems, some
+                     Rockwell compatible (Boca Research, Cardinal, voice Zoom).
+
+#CC1                 Older non-voice Aspen modems, older Cirrus Logic,
+                     Motorola Voice Surfer, Phoebe.
+
+*ID1                 Some Motorola modems
+%CCID=1 or
+%CCID=3              Practical Peripherals modems.
+
+$JSCID=4,1 or
+$JSCID=1,0           ELSA ML 56k Internet II (Netherlands)

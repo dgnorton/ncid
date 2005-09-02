@@ -1,0 +1,80 @@
+ncid - Network CallerID Client Install
+
+INSTALL:
+
+	Download the tcl/tk interpreter:
+		For Mac system 7 or greater, but not Mac OS X
+		- http://www.tcl.tk/software/mac/
+		For Mac OS X
+		- http://sourceforge.net/project/showfiles.php?group_id=10894
+
+	Install tcl/tk:
+		- Run the file downloaded
+
+	Install ncid:
+        - The NCID package normally installs in /usr/local:
+            /usr/local/sbin/ncidd
+            /usr/local/bin/ncid
+            /usr/local/bin/cidalias
+            /usr/local/bin/cidlog
+            /usr/local/bin/cidlogupd
+            /usr/local/share/ncid/README-page
+            /usr/local/share/ncid/ncid-page
+            /usr/local/share/ncid/ncid-samba
+            /usr/local/share/ncid/ncid-speak
+            /usr/local/share/ncid/ncidrotate
+            /usr/local/etc/ncidd.conf
+            /usr/local/man/man1/ncid.1
+            /usr/local/man/man1/ncidscripts.1
+            /usr/local/man/man1/ncidtools.1
+            /usr/local/man/man5/ncidd.conf.5
+            /usr/local/man/man8/ncidd.8
+            /var/log/cidcall.log
+        - If a binary package is available:
+            Copy ncid-VERSION.mac-osx.tgz to the mac, then:
+                tar -xzvf ncid-VERSION.mac-osx.tgz -C /
+                EXAMPLE: tar -xzvf ncid-0.50.mac-osx.tgz -C /
+        - if there is no binary package, you need to compile the source:
+            Copy ncid-VERSION.tar.gz
+            cd ncid
+            make mac (compiles for /usr/local, see top of Makefile)
+            make install-mac
+
+CONFIGURE:
+
+    The Makefile preconfigures ncidd.conf for the Mac, but you may
+    want to change some of the defaults.
+
+START:
+
+    - start the server and client:
+        ncidd
+        ncid &
+    - Call yourself and see if it works.
+
+TEST:
+
+    - The easiest way to test the setup is to run ncidd in debug mode,
+      it will stay attached to the terminal and not go into deamon mode:
+		ncidd -D
+    - to get more information, add the verbose flag:
+        ncidd -Dv
+    - to also look at the alias structure
+        ncidd -DDv
+
+    - The last line should be: Modem set for CallerID.
+    - If it says: ERROR
+      try the CID strings in ncidd.conf or in doc/CID-init
+
+    - Call yourself and you should see the CallerID lines.
+    - If you only see RING for each ring, the modem does not support
+      Caller ID.  You should see the Caller ID lines betreen the
+      first and second RING.
+    - If you see: /dev/ttyS1: No such file or directory
+      you need to set sttyclocal in ncidd.conf
+
+    - At any point, you can use command lines options to vary
+      things like modem init and CID init.
+
+	- Once it works, you would normally start it:
+        ncidd

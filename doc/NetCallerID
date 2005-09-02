@@ -1,0 +1,7 @@
+NetCallerID
+
+ttyport: 4800 8N1
+
+Output:
+    ###DATE08082225...NMBR14075551212...NAMEJOHN+++\r
+    ###DATE...NMBR...NAME   -MSG OFF-+++\r
