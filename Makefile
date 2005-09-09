@@ -47,6 +47,7 @@ INIT        = $(ETC)/rc.d/init.d
 CONFDIR     = $(ETC)/ncid
 DEV         = /dev
 LOG         = /var/log
+MAN         = /usr/share/man
 
 CONF        = $(CONFDIR)/ncidd.conf
 ALIAS       = $(CONFDIR)/ncidd.alias
