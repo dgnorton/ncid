@@ -51,12 +51,14 @@ struct cid
 } cid = {0, "", "", "", "", NOMESG, ONELINE};
 
 void exit(), perror(), finish(), free();
+char *strdate();
 
 main(int argc, char *argv[])
 {
     int events, mainsock, sd, argind;
     char *ptr;
     struct stat statbuf;
+    char buf[BUFSIZ];
     
     signal(SIGHUP, finish);
     signal(SIGTERM, finish);
@@ -189,6 +191,9 @@ main(int argc, char *argv[])
 
     addPoll(mainsock);
 
+    sprintf(buf, "%sStarted  %s", MSGLINE, strdate());
+    writeLog(cidlog, buf);
+
     /* Read and display data */
     while (1)
     {
@@ -218,15 +223,33 @@ main(int argc, char *argv[])
                 /* TTY port lockfile */
                 if (!stat(lockfile, &statbuf))
                 {
-                    if (debug && !locked)
-                        fprintf(stderr, "TTY port in use, waiting.\n");
-                    if (!locked) locked = 1;
+                    if (!locked)
+                    {
+                        sprintf(buf, "%sTTY in use, Waiting %s",
+                            MSGLINE, strdate());
+                        writeLog(cidlog, buf);
+                        writeClients(mainsock, buf);
+                        locked = 1;
+                    }
                 }
                 else if (locked)
                 {
-                    if (debug) fprintf(stderr, "TTY port available.\n");
+                    sprintf(buf, "%sTTY available, Active %s",
+                        MSGLINE, strdate());
+                    writeLog(cidlog, buf);
+                    writeClients(mainsock, buf);
                     tcsetattr(ttyfd, TCSANOW, &otty);
-                    if (doTTY() < 0) errorExit(-1, ttyport, 0);
+                    if (doTTY() < 0)
+                    {
+                        sprintf(buf,
+                          "%sCannot init TTY, Terminated %s",
+                        MSGLINE, strdate());
+                        writeLog(cidlog, buf);
+                        writeClients(mainsock, buf);
+                        tcsetattr(ttyfd, TCSANOW, &otty);
+                        cleanup();
+                        exit(-1);
+                    }
                     locked = 0;
                 }
                 break;
@@ -537,15 +560,14 @@ doPoll(int events, int mainsock)
         {
             if (polld[pos].fd == ttyfd)
             {
-                if (debug) fprintf(stderr, "Modem Error Condition.\n");
-                strncat(strcpy(buf, MSGLINE),
-                    "Modem Error Condition, Server Terminating",
-                    BUFSIZ -1);
+                sprintf(buf, "%sDevice Error, Terminated  %s",
+                    MSGLINE, strdate());
                 writeLog(cidlog, buf);
                 writeClients(mainsock, buf);
-                errorExit(-1, ttyport, 0);
+                cleanup();
+                exit(-1);
             }
-            if (debug) fprintf(stderr, "Error Condition.\n");
+            if (debug) fprintf(stderr, "Poll Error.\n");
             polld[pos].fd = polld[pos].events = 0;
             continue;
         }
@@ -553,8 +575,12 @@ doPoll(int events, int mainsock)
         {
             if (polld[pos].fd == ttyfd)
             {
-                if (debug) fprintf(stderr, "Modem hung up.\n");
-                errorExit(-1, ttyport, 0);
+                sprintf(buf, "%sDevice Hung Up, Terminated  %s",
+                    MSGLINE, strdate());
+                writeLog(cidlog, buf);
+                writeClients(mainsock, buf);
+                cleanup();
+                exit(-1);
             }
             if (debug) fprintf(stderr, "Hung Up.\n");
             polld[pos].fd = polld[pos].events = 0;
@@ -582,12 +608,20 @@ doPoll(int events, int mainsock)
                 /* Modem or device returned no data */
                 if (!num)
                 {
-                    if (debug) fprintf(stderr, "Modem returned no data.\n");
+                    if (debug) fprintf(stderr, "Device returned no data.\n");
                     polld[pos].revents = 0;
                     cnt++;
 
                     /* if no data 10 times in a row, something wrong */
-                    if (cnt == 10) errorExit(-1, ttyport, 0);
+                    if (cnt == 10)
+                    {
+                        sprintf(buf, "%sDevice returns no data, Terminated  %s",
+                            MSGLINE, strdate());
+                        writeLog(cidlog, buf);
+                        writeClients(mainsock, buf);
+                        cleanup();
+                        exit(-1);
+                    }
                     continue;
                 }
 
@@ -995,6 +1029,23 @@ sendInfo(int mainsock)
 }
 
 /*
+ * Returns the current date and time as a string in the format:
+ *      MM/DD/YYYY HH:MM
+ */
+char *strdate()
+{
+    static char buf[BUFSIZ];
+    struct tm *tm;
+    struct timeval *tv;
+
+    (void) gettimeofday(tv, 0);
+    tm = localtime(&tv->tv_sec);
+    sprintf(buf, "%.2d/%.2d/%.4d %.2d:%.2d", tm->tm_mon + 1, tm->tm_mday,
+        tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
+    return buf;
+}
+
+/*
  * Close all file descriptors and restore tty parameters.
  */
 
@@ -1017,6 +1068,10 @@ cleanup()
 /* signal exit */
 void finish(int sig)
 {
+    char buf[BUFSIZ];
+
+    sprintf(buf, "%sTerminated  %s", MSGLINE, strdate());
+    writeLog(cidlog, buf);
     cleanup();
     exit(0);
 }

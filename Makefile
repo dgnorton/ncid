@@ -1,29 +1,27 @@
 ########################################################################
-# make local           - builds for /usr/local and /var                #
-# make package         - builds for /usr, /etc, and /var               #
-# make install         - installs files                                #
+# make local            - builds for /usr/local and /var               #
+# make package          - builds for /usr, /etc, and /var              #
+# make install          - installs files                               #
+# make mandir           - builds man text and html files               #
+#                         (no install for the *.txt and *.html files)  #
 #                                                                      #
-# make tivo-series1    - builds for a ppc TiVo for /var/hack           #
-# make tivo-series2    - builds for a mips TiVo for /var/hack          #
+# make tivo-series1     - builds for a ppc TiVo for /var/hack          #
+# make tivo-series2     - builds for a mips TiVo for /var/hack         #
 #   uses the cross compilers at: http://tivoutils.sourceforge.net/     #
 #   usr.local.powerpc-tivo.tar.bz2 (x86 cross compiler for Series1)    #
 #   usr.local.mips-tivo.tar.bz2 (x86 cross compiler for Series2)       #
 #                                                                      #
-# make freebsd         - builds for FreeBSD in /usr/local              #
-# make install-freebsd - installs in /usr/local                        #
+# make freebsd          - builds for FreeBSD in /usr/local             #
+# make install-freebsd  - installs in /usr/local                       #
 #                                                                      #
-# make mac             - builds for Macintosh OS X in /usr/local       #
-# make install-mac     - installs in /usr/local                        #
+# make mac              - builds for Macintosh OS X in /usr/local      #
+# make install-mac      - installs in /usr/local                       #
 #                                                                      #
-# make cygwin          - builds for Windows using cygwin               #
-#                        (does not function yet)                       #
+# make cygwin           - builds for Windows using cygwin              #
+#                         (does not function yet)                      #
 ########################################################################
 
 PROG        = ncidd
-MANSRC1     = ncid.1
-MANSRC5     = ncid.conf.5 ncidd.conf.5 ncidd.alias.5
-MANSRC8     = ncidd.8
-MANSRC      = $(MANSRC1) $(MANSRC5) $(MANSRC8)
 SOURCE      = $(PROG).c nciddconf.c nciddalias.c getopt_long.c poll.c
 CLIENT      = ncid
 HEADER      = ncidd.h nciddconf.h nciddalias.h getopt_long.h poll.h
@@ -32,7 +30,7 @@ DOCFILE     = doc/CHANGES doc/COPYING README doc/README-FreeBSD \
               doc/NCID-FORMAT doc/PROTOCOL VERSION
 DIST        = $(CLIENT).dist ncidd.logrotate.dist ncidd.conf.dist \
               ncid.init.dist ncid.conf.dist
-FILES       = Makefile $(DIST) $(MANSRC) $(HEADER) $(SOURCE) \
+FILES       = Makefile $(DIST) $(HEADER) $(SOURCE) \
               $(DOCFILE) $(ETCFILE)
 
 prefix      = /usr/local
@@ -42,7 +40,6 @@ setname     = NONE
 
 BIN         = $(prefix)/bin
 SBIN        = $(prefix)/sbin
-MAN         = $(prefix)/share/man
 SCRIPT      = $(prefix)/share/ncid
 ETC         = $(prefix2)/etc
 ROTATE      = $(ETC)/logrotate.d
@@ -56,9 +53,6 @@ ALIAS       = $(CONFDIR)/ncidd.alias
 MODEMDEV    = $(DEV)/modem
 CALLLOG     = $(LOG)/cidcall.log
 DATALOG     = $(LOG)/ciddata.log
-MAN1        = $(MAN)/man1
-MAN5        = $(MAN)/man5
-MAN8        = $(MAN)/man8
 
 SITE        = $(DIST:.dist=)
 WISH        = wish
@@ -92,7 +86,7 @@ default:
 	@echo "    make install-mac"
 	@echo "    make cygwin"
 
-local: $(SITE) $(PROG) man tooldir scriptdir
+local: $(SITE) $(PROG) tooldir scriptdir
 
 $(PROG): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
@@ -100,29 +94,30 @@ $(PROG): $(OBJECTS)
 $(OBJECTS): $(HEADER)
 
 tooldir:
-	cd tools; $(MAKE) prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
+	cd tools; $(MAKE) tools prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
 
 scriptdir:
-	cd scripts; $(MAKE) prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
+	cd scripts; $(MAKE) scripts prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
 
 package:
 	$(MAKE) local prefix=/usr prefix2=
 
-tivo-series1: $(PROG).ppc-tivo man
+tivo-series1: $(PROG).ppc-tivo mandir
 
 $(PROG).ppc-tivo:
-	$(MAKE) local prefix=/var/hack LOG=/var/hack/log \
+	$(MAKE) local prefix=/var/hack \
 	CC="/usr/local/tivo/bin/gcc" \
+	MFLAGS=-D__need_timeval \
 	LD="/usr/local/tivo/bin/ld" \
 	RANLIB=/usr/local/tivo/bin/ranlib \
 	setname="TiVo requires CLOCAL" \
 	settag="TiVo Modem Port"
 	mv $(PROG) $(PROG).ppc-tivo
 
-tivo-series2: $(PROG).mips-tivo man
+tivo-series2: $(PROG).mips-tivo mandir
 
 $(PROG).mips-tivo:
-	$(MAKE) local prefix=/var/hack LOG=/var/hack/log \
+	$(MAKE) local prefix=/var/hack \
 	CC="/usr/local/mips-tivo/bin/gcc" \
 	LD="/usr/local/mips-tivo/bin/ld" \
 	RANLIB=/usr/local/mips-tivo/bin/ranlib \
@@ -148,16 +143,8 @@ cygwin:
 	$(MAKE) local LOG=c:/ncid CONF=c:/ncid/ncidd.conf MODEMDEV=/dev/com1 \
 	$(PROG)
 
-man: $(MANSRC)
-	nroff -man ncid.1 | col -bx > ncid.man
-	nroff -man ncidd.8 | col -bx > ncidd.man
-	nroff -man ncidd.alias.5 | col -bx > ncidd.alias.man
-	nroff -man ncidd.conf.5 | col -bx > ncidd.conf.man
-	nroff -man ncid.conf.5 | col -bx > ncid.conf.man
-	chmod 644 *.man
-	cd scripts; $(MAKE) $@ prefix=$(prefix) prefix2=$(prefix2) 
-	cd tools; $(MAKE) $@ prefix=$(prefix) prefix2=$(prefix2) 
-	touch man
+mandir:
+	cd man; $(MAKE) all prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
 
 $(FILES):
 	@if test -x $(BIN)/sccs; then $(BIN)/sccs $(GET) $@; fi
@@ -169,9 +156,6 @@ dirs:
 	@if ! test -d $(LOG); then mkdir -p $(LOG); fi
 	@if ! test -d $(ROTATE); then mkdir -p $(ROTATE); fi
 	@if ! test -d $(INIT); then mkdir -p $(INIT); fi
-	@if ! test -d $(MAN1); then mkdir -p $(MAN1); fi
-	@if ! test -d $(MAN5); then mkdir -p $(MAN5); fi
-	@if ! test -d $(MAN8); then mkdir -p $(MAN8); fi
 	@if ! test -d $(SCRIPT); then mkdir -p $(SCRIPT); fi
 	@if ! test -d $(CONFDIR); then mkdir -p $(CONFDIR); fi
 
@@ -222,28 +206,22 @@ install-tools:
 	cd tools; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) CONF=$(CONF) ALIAS=$(ALIAS)
 
-install-man: $(MANSRC)
-	cd $(MAN1); rm -f $(MANSRC1)
-	cd $(MAN5); rm -f $(MANSRC5)
-	cd $(MAN8); rm -f $(MANSRC8)
-	install -m 644 $(MANSRC1) $(MAN1)
-	install -m 644 $(MANSRC5) $(MAN5)
-	install -m 644 $(MANSRC8) $(MAN8)
-	cd scripts; $(MAKE) $@ prefix=$(prefix) prefix2=$(prefix2) 
-	cd tools; $(MAKE) $@ prefix=$(prefix) prefix2=$(prefix2) 
-	touch install-man
+install-man:
+	cd man; $(MAKE) install prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
 
 clean:
 	rm -f *.o
-	cd tools; $(MAKE) $@ prefix=$(prefix) prefix2=$(prefix2)
-	cd scripts; $(MAKE) $@ prefix=$(prefix) prefix2=$(prefix2)
+	cd man; $(MAKE) clean
+	cd tools; $(MAKE) clean
+	cd scripts; $(MAKE) clean
 
 clobber: clean
 	rm -f $(PROG) $(PROG).ppc-tivo $(PROG).mips-tivo $(PROG).tivo a.out
 	rm -f $(CLIENT) ncidd.logrotate ncid.conf ncidd.conf ncid.init *.zip
-	rm -f man *.man install-* *.log
-	cd tools; $(MAKE) $@ prefix=$(prefix) prefix2=$(prefix2)
-	cd scripts; $(MAKE) $@ prefix=$(prefix) prefix2=$(prefix2)
+	rm -f *.log
+	cd man; $(MAKE) clobber
+	cd tools; $(MAKE) clobber
+	cd scripts; $(MAKE) clobber
 
 files: $(FILES)
 

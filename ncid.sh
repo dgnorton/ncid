@@ -75,7 +75,7 @@ set Count       0
 set Ring        0
 set Try         0
 set Socket      0
-set Version     0.60
+set Version     0.61
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -275,7 +275,7 @@ proc formatCID {dataBlock} {
     }
     set cidtime [getField TIME $dataBlock]
     regsub {([0-9][0-9])([0-9][0-9])} $cidtime {\1:\2} cidtime
-    if [string match *LINE* $dataBlock] {
+    if [string match {*\*LINE\**} $dataBlock] {
         set cidline [getField LINE $dataBlock]
         regsub {(.*)} $cidline {<\1>} cidline
     } else {set cidline <>}
@@ -286,8 +286,7 @@ proc formatCID {dataBlock} {
 
 # get a field from the CID data
 proc getField {dataString dataBlock} {
-    set dataString "\\*$dataString\\*"
-    regsub .*$dataString $dataBlock {} result
+    regsub ".*\\*$dataString\\*" $dataBlock {} result
     regsub {([\w\s]*)\*.*} $result {\1} result
     return $result
 }
@@ -310,7 +309,7 @@ proc sendCID {cid} {
 }
 
 # display CID information
-# Input: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n"
+# Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
 proc displayCID {cid} {
     global Txt
 
@@ -320,7 +319,7 @@ proc displayCID {cid} {
 }
 
 # display Call Log
-# Input: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n"
+# Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
 proc displayLog {cid} {
     global Verbose
     global NoGUI

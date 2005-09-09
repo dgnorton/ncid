@@ -349,3 +349,34 @@ Version 0.60
     - tools/cidalias.pl: updated
     - tools/cidlogupd.pl: updated
     - tools/ncidtools.1: updated
+
+Version 0.61
+    - ncid: formatCID(): corrected reqular expression for finding LINE field
+            getField(): removed set dataString line, changed regsub line to
+                        regsub ".*\\*$dataString\\*" $dataBlock {} result
+            displayCID(): corrected comment line for INPUT:
+            displayLog(): corrected comment line for INPUT:
+     - ncidd.c: removed debug messages when same message sent as MSG line
+                doPoll(): Improved error messages, added hangup message,
+                          error messages sent as MSG lines
+                main(): added char buf[BUFSIZ], added error messages for
+                        when the TTY port is in use, active, or fails to
+                        initialize as MSG lines, added Server Startup MSG
+                        to logfile
+                getdate(): added to print date and time to server MSG lines
+     - ncidd.h: updated
+     - Makefile: removed "local" from  install-freebsd
+                 The TiVo builds now put the logfiles in /var/log
+                 Removed all man references, added man and install-man targets
+                 to go into the new man directory to build man stuff
+     - man/: created directory and moved all manpages here, Created Makefile
+             to build builds man text files, and man html files
+     - scripts/Makefile: removed all man references
+     - test/README: updated
+     - test/testlog: added
+     - test/testlog-display: added
+     - tools/Makefile: removed all man references
+     - tools/cidlog.pl: corrcted regular expression to obtain LINE field
+                        modified -r option to print all lines in the logfile
+                        added -m option to print MSG lines
+     - FreeBSD/Makefile: updated and corrected man sections

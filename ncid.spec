@@ -1,6 +1,6 @@
 Summary:    Network Caller ID server and clients
 Name:       ncid
-Version:    0.60
+Version:    0.61
 Release:    1
 Group:      System Environment/Daemons
 License:    GPL
@@ -26,7 +26,7 @@ to an external program.
 %setup -n %{name}
 
 %build
-make package
+make package mandir
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
@@ -66,7 +66,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %{_mandir}/man5/ncidscript.conf.5*
 %{_mandir}/man8/ncidd.8*
 %doc README VERSION
-%doc doc scripts/README screenshots test
+%doc doc man/*.html scripts/README screenshots test
 
 %post
 touch /var/log/cidcall.log

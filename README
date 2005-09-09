@@ -1,4 +1,3 @@
-// $Id$
 NCID - Network CallerID
 
 See the doc directory for all documentation, including OS
@@ -12,8 +11,9 @@ The NCID package contains:
 	  ncidd runs on Linux, TiVo, BSD UNIX, and Macintosh OS X
 	- a Network CallerID client: ncid
 	  ncid runs on UNIX/Linux/Windows/Macintosh using tcl/tk
-	- a set of scripts to work with the CID log: ncidtools
+	- tools to work with the CID log and alias files: ncidtools
 	  ncidtools runs on UNIX and Linux, but not the TiVo
+    - client output modules and a log rotate module: ncidscripts
 
 NCIDD is a TCP/IP Caller ID Daemon.  It was initially based
 on the python CIDD program, which is part of the CID package
@@ -33,28 +33,29 @@ NCID has the following features:
 	- The server has a config file to set most options and aliases.
 	- The server shares the modem for outgoing calls.
     - The server supports CID devices like NetCallerID
-    - The server and client spport Distinctive Ring
 	- The server runs on Linux, UNIX, Macintosh OS X, and the TiVo.
+    - The server and client spport Distinctive Ring
 	- The client displays the Caller ID Log and adds to it whenever
 	  it receives the CID information from the server.
 	- The client runs on Windows, Linux, UNIX, and Macintosh OS X.
 	- The protocol is documented so additional clients can be added.
 
-Instructions to make and install the ncid package are in the
-file: doc/INSTALL.
+Instructions to make and install the ncid package are the various
+INSTALL files in the doc directory.
 
+All man pages are in man
 Instructions for using ncidd are in the man page: ncidd.8
 Instructions for configuring ncidd are in the man page: ncidd.conf.5
 Instructions for configuring ncidd aliases are in the man page: ncidd.alias.5
 Instructions for using ncid are in the man page: ncid.1
 Instructions for configuring ncid are in the man page: ncid.conf.5
-Instructions for using ncidtools are in the man page: tools/ncidtools.1
-Instructions for using ncidscripts are in the man page: scripts/ncidscripts.1
-Instructions for configuring ncidscripts are in the man page:
-    scripts/ncidscript.conf.5
+Instructions for using ncidtools are in the man page: ncidtools.1
+Instructions for using ncidscripts are in the man page: ncidscripts.1
+Instructions for configuring ncidscripts are in the man page: ncidscript.conf.5
 
-Formatted man pages are: ncid.man, ncid.conf.man, ncidd.man, ncidd.alias.man
-ncidd.conf.man, ncidtools.man, ncidscripts.man, ncidscript.conf.man
+Formatted man pages are txt files and html files are created in the man
+directory after a "make mandir" in the top level directory, or a "make"
+in the man directory.
 
 The distributed configuration files are:
     ncid.conf

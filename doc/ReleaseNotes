@@ -1,28 +1,19 @@
-Source: ncid-0.60.tar.gz
-Fedora Core 4 package: ncid-0.60-1.i386.rpm
-TiVo Series1 package: ncid-0.60.series1-tivo.tgz
-TiVo Series2 package: ncid-0.60.series2-tivo.tgz
-Macintosh OS X package: ncid-0.60.mac-osx.tgz
-FreeBSD package: ncid-0.60.freebsd.tgz
-Windows client package: ncid-0.60.zip
+Source: ncid-0.61.tar.gz
+Fedora Core 4 package: ncid-0.61-1.i386.rpm
+TiVo Series1 package: ncid-0.61.series1-tivo.tgz
+TiVo Series2 package: ncid-0.61.series2-tivo.tgz
+Macintosh OS X package: ncid-0.61.mac-osx.tgz
+FreeBSD package: ncid-0.61.freebsd.tgz
+Windows client package: ncid-0.61.zip
 
-NOTE:
-    - ncidd requires the new ncidd.conf, the previous version will not work.
-    - ncidd requires aliase definitions inside ncidd.alias
-    - requires NCIDpop version 0.9.9.10 or later
+Fixed the ncid client to properly parse a message for a optional LINE
+field, when "LINE" is part of a caller name.
 
-Added support for the NetCallerID device.
+The server was modified to send additional MSG lines to clients and
+the logfile.  The MSG lines will indicate starup, termination, errors,
+when a another program takes control of the modem, and when the modem
+is free for use again.
 
-Added support for Distinctive Ring
-
-Added three more config files: ncid.conf, ncidscript.conf, and ncidrotate.conf
-
-Removed aliases from ncidd.conf and put them into ncidd.alias.
-The ncidd.conf file will not accept aliases anymore.
-
-Changed the way ncidd discovers a modem so it will work with slow
-responding ones.
-
-Changed some ncidd options and key words in the configuration file.
-
-A log file name has been changed: cidmodem.log is now ciddata.log
+TiVo Packages:
+    - The server cidcall.log file, has been moved from /var/hack/log
+      to /var/log.
