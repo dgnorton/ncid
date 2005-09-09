@@ -30,7 +30,7 @@ make package mandir
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
-make install prefix=${RPM_BUILD_ROOT}/usr prefix2=${RPM_BUILD_ROOT} LOG=${RPM_BUILD_ROOT}/var/log
+make install prefix=${RPM_BUILD_ROOT}/usr prefix2=${RPM_BUILD_ROOT} LOG=${RPM_BUILD_ROOT}/var/log MAN=${RPM_BUILD_ROOT}/usr/share/man
 rm -f ${RPM_BUILD_ROOT}/var/log/*.log
 
 %clean
