@@ -1,5 +1,6 @@
 /*
- * Copyright 2005 John L. Chmielewski <jlc@cfl.rr.com>
+ * Copyright (c) 2005, 2006
+ * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddalias.c is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,13 +33,14 @@ extern char *getWord();
 
 doAlias()
 {
-    char input[BUFSIZ], word[BUFSIZ], *inptr;
+    char input[BUFSIZ], word[BUFSIZ], buf[BUFSIZ], *inptr;
     int lc;
     FILE *fp;
 
     if ((fp = fopen(cidalias, "r")) == NULL)
     {
-        if (verbose) fprintf(stderr, "No alias file: %s\n", cidalias);
+        sprintf(buf, "No alias file: %s\n", cidalias);
+        logMsg(LEVEL1, buf);
         return 0;
     }
 
@@ -55,7 +57,9 @@ doAlias()
         else configError(cidalias, lc, word, ERRCMD);
     }
     (void) fclose(fp);
-    if (verbose) fprintf(stderr, "Processed alias file: %s\n", cidalias);
+    sprintf(buf, "Processed alias file: %s\n", cidalias);
+    logMsg(LEVEL1, buf);
+
     return errorStatus;
 }
 

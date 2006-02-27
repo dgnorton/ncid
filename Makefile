@@ -231,7 +231,7 @@ files: $(FILES)
         clean clobber files
 
 % : %.sh
-	sed '/ConfigDir/s,/usr/local,$(prefix2),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),' $< > $@
+	sed '/ProgDir/s,/usr/local,$(prefix),;/ConfigDir/s,/usr/local,$(prefix2),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),' $< > $@
 	chmod 755 $@
 
 % : %.dist

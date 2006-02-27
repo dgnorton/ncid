@@ -21,8 +21,8 @@ CLIENT=
 [ -f $ConfigFile ] && . $ConfigFile
 
 [ -z "$CLIENT" ] && {
-	echo "Set CLIENT to a windows computer name to send a SMB popup"
-	exit 1
+    echo "Set CLIENT to a windows computer name to send a SMB popup"
+    exit 1
 }
 
 read CIDDATE

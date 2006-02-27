@@ -1,4 +1,4 @@
-SCRIPTS = ncidrotate ncid-page ncid-samba ncid-speak
+SCRIPTS = ncidrotate ncid-page ncid-samba ncid-speak ncid-mythtv
 CONFIG  = ncidrotate.conf ncidscript.conf
 FILES   = Makefile $(SCRIPTS) $(CONFIG) $(MANSRC) README
 

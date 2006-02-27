@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# MythTV Display, see http://www.mythtv.info/moin.cgi/LittleGems
+
 # input is 4 lines obtained from ncid using the "-all" option
 # input: DATE\nTIME\nNUMBER\nNAME\n
 # ncid calls a external program with the "--call-prog" option
@@ -13,22 +15,16 @@
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidscript.conf
 
-# set ADDRESS to a pager or cell phone email address
-ADDRESS=
-
 [ -f $ConfigFile ] && . $ConfigFile
-
-[ -z "$ADDRESS" ] && {
-    echo "Set ADDRESS to a pager or cell phone email address"
-    exit 1
-}
 
 read CIDDATE
 read CIDTIME
 read CIDNMBR
 read CIDNAME
 
-echo -e "$CIDNAME\n$CIDNMBR\n$CIDTIME\n$CIDDATE\n" |
-    mail -s "Telephone Call" $ADDRESS
+mythtvosd --caller_name="$CIDNAME" \
+          --caller_number="$CIDNMBR" \
+          --caller_date="$CIDDATE" \
+          --caller_time="$CIDTIME"
 
 exit 0

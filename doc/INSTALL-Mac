@@ -58,9 +58,9 @@ TEST:
       it will stay attached to the terminal and not go into deamon mode:
 		ncidd -D
     - to get more information, add the verbose flag:
-        ncidd -Dv
+        ncidd -Dvv
     - to also look at the alias structure
-        ncidd -DDv
+        ncidd -Dvvv
 
     - The last line should be: Modem set for CallerID.
     - If it says: ERROR

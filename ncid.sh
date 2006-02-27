@@ -2,8 +2,8 @@
 
 # ncid - Network Caller-ID client
 
-# John L. Chmielewski <jlc@cfl.rr.com>
 # Copyright (c) 2001, 2002, 2003, 2004, 2005
+# by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # ncid is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ set Count       0
 set Ring        0
 set Try         0
 set Socket      0
-set Version     0.61
+set Version     0.62
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -92,7 +92,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
 set About \
 "
 Network Caller ID Client: NCID Version $Version
-Copyright (C) 2001, 2002, 2003, 2004, 2005
+Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
 by John L. Chmielewski
 "
 

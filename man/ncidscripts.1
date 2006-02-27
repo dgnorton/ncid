@@ -12,6 +12,9 @@
 .P
 .B ncid-speak\^
 - send CID to a text-to-speach program
+.P
+.B ncid-mythtv\^
+- display CID on MythTV
 .SH SYNOPSIS
 .B ncidrotate\^
 {prerotate|postrotate}
@@ -24,8 +27,11 @@ CIDdate CIDtime CIDnumber CIDname
 .P
 .B ncid-speak\^
 CIDdate CIDtime CIDnumber CIDname
+.P
+.B ncid-mythtv\^
+CIDdate CIDtime CIDnumber CIDname
 .SH DESCRIPTION
-These are helper scripts and are normally located in the
+These are CID output modules and are normally located in the
 .BR /usr/share/ncid
 directory.
 .P
@@ -42,8 +48,9 @@ The client,
 can be configured to call
 .BR ncid-page ,
 .BR ncid-samba ,
-or
 .BR ncid-speak .
+or
+.BR ncid-mythtv .
 The configuration file for the scripts is
 .I /etc/ncid/ncidscript.conf
 .PD

@@ -1,261 +1,86 @@
 ncid - Network CallerID
 
-Version 0.5
-    - Released
-
-Version 0.5.1
-    - Modem port open changed so it would not hang if
-      port in use, or if port was not restored after use.
-      It will fail sometimes.
-    - corrected MODEMLOG value in Makefile
-    - DATE field in CID line modified to include year: MMDDYYYY
-    - Changed FORMAT and ncidd.8 to reflect new DATE field.
-
-Version 0.6
-    - ncidd.c: increased the number of TCP connections from 9 to 15
-    - ncidd.c: added routines to send the CID call log file to clients
-    - ncidd.c: doModem(): eliminated pointer "ptr"
-    - ncidd.c: doModem(): added tcflush()
-    - ncidd.c: doModem(): added new error message "No modem found"
-      for no modem response
-    - ncidd.c: doModem(): put call to initialize modem in a for loop
-      to try 5 times, sometimes it failed to get a modem response
-      the 1st time
-    - ncidd.c doPoll(): added check; if fd == 0, set revents == 0
-      sometimes the poll seemed to get stuck on revents for fd = 0
-    - ncidd.c: doPoll(): modified "if (addPoll(sd) < 0)" to send
-      message to client, and write message to stderr if "verbose"
-    - ncidd.c doPoll(): added clear socker errors when client
-      disconnects
-    - ncidd.c: TIMEOUT 10 -> 50
-    - ncidd.c: CONNECTIONS + 3 -> CONNECTIONS + 2
-    - ncidd.c: cleanup(): added tcflush() before exit(), to eliminate
-      program hang when modem failed to respond
-    - ncidd.c: sendLog(): added
-    - ncidd.logrotate: changed cidmodem.log to ciddata.log
-    - ncid.8: added "SEE ALSO" section, and error code -105
-    - ncidd.conf: updated
-    - README: updated
-    - Makefile: updated
+Version 0.62
+    - Makefile: Added ProgDir substitute to "% : %.sh" rule
+    - README: Removed tabs so printing looks nicer
+    - VERSION: updated
     - ncid.spec: updated
-    - TiVo-modem: added
-    - INSTALL: updated
-    - INSTALL-TiVo: added
-    - INSTALL-Win: added
-    - ncid: added
-    - ncid.1: added
-    - changed FORMAT to NCID-FORMAT
-    - ncidd.c: main() converted stdin to output to "/dev/null" in
-      deamon mode to solve poll problems
+    - Updated Copyright information in most *.c and *.h files
+    - ncidd.c: strdate(): fixed null pointer in gettimeofday() call.
+               Replaced three tests of the type "if (!stat(FILE, &statbuf))"
+                 with "if (stat(FILE, &statbuf) == 0)" since stat also
+                 returns -1 on error.
+               main(): Made "TTY in use" and "TTY available" messages
+                       print to stderr when "debug > 1".  It was printing
+                       to the  cidcall log and clients.
+               logMsg() added, and replaced all debug and verbose fprintf()
+                        statements with sprintf() and logMsg()
+    - ncidd.h: added enum for LEVEL1 to LEVEL5 and extern for logMsg()
+               added: #include <stdlib.h>
+    - nciddconf.c: replaced all debug and verbose print statements to
+                   sprintf() and logMsg()
+    - nciddconf.h: removed extern for "debug" and "verbose"
+    - nciddalias.c: replaced all debug and verbose print statements to
+                   sprintf() and logMsg()
+    - getopt_long.h: added: #include <string.h>
+    - doc/CHANGES: file reformatted so most recent changes at top instead
+                   of bottom
+    - doc/CONTRIBUTIONS: updated
+    - doc/INSTALL-Mac: updated
+    - doc/INSTALL-FreeBSD: updated
+    - doc/INSTALL-TiVo: updated
+    - doc/TiVo-modem: updated
+    - doc/Modem-CID-test: cleaned up by removing tabs
+    - doc/Modem-init: added country setting information
+    - doc/PROTOCOL: cleaned up by removing tabs
+    - doc/ReleaseNotes: updated
+    - doc/TiVo-modem: cleaned up by removing tabs
+    - doc/TODO: added
+    - man/ncid.1: updated
+    - man/ncidd.8: updated
+    - man/ncidscripts.1: updated
+    - man/ncidscripts.conf.5: updated
+    - scripts/README: updated
+    - scripts/Makefile: updated
+    - scripts/ncid-mythtv.sh: added to display CID on MythTV
+    - scripts/ncid-page.sh: converted <TAB> to <SPACE>
+    - scripts/ncid-samba.sh: converted <TAB> to <SPACE>
+    - scripts/ncidscript.conf: updated
+    - Win/README: added
+    - Win/NCID.ini: added
+    - Win/NCID.nsi: added
+    - Win/NCID.ncid_splash.bmp: added
 
-Version 0.7
-    - ncidd.c split into multiple .c and .h files
-    - ncidd.c Ported to BSD and Macintosh, added getopt.c and poll.c
-    - ncidd.c formatCID: added MESG stuff
-    - ncidd.c formatCID: remove any trailing spaces from NAME field
-    - ncidd.c formatCID: modified to output Date, Time, and, Number
-      if no NAME field or MESG field found
-    - ncidd.c: TIMEOUT 50 -> 100
-    - ncid was rewritten and combined with tivocid to replace it
-    - added program ncid-speak
-    - added program ncid-page
-    - added files: ncid.spec, INSTALL-Mac, PROTOCOLS
-    - updated files: ncid.1, INSTALL, INSTALL-TiVo, INSTALL-Win,
-      NCID-FORMAT, README
-
-Version 0.8
-    - ncidd.h and getopt.c: fixed broken getopt
-    - Makefile: updated and improved
-    - nciddconf.c: fixed bad test for WORDFLAG,
-      corrected getAlias() line format comments
-    - ncidd.c initModem(): rewrote to eliminate race condition
-    - ncidd.c doModem(): changed termios settings so it also
-      works with FreeBSD
-    - ncidd.conf: added alternate CID settings, and comments on log files
-    - ncidd.init: corrected description
-    - ncid: fixed test for "--no-gui" to use "=" instead of "=="
-    - ncid: added $TCLSH and $WISH variables that are set in a local
-      modifications section for FreeBSD since tclsh is named tclVERSION
-      and wish is named wishVERSION, where VERSION is the version number
-    - ncid: modified to call external programs in background
-    - added README-FreeBSD
-    - ncid.1: updated
-    - ncidd.8: removed ncidd configuration information
-    - ncidd.conf.5: added (contains ncidd configuration information)
-    - README: updated
-    - INSTALL: updated
-    - ncid.init: added
-    - added the tools subdirectory:
-      added cidlog.pl, cidalias.pl, cidlogupd.pl
-      added ncidtools.1, README, and Makefile
-
-Version 0.9
-    - ncidd.c: formatCID(): patch to get modem data at either character
-      position 5 or 7 rathen than position 7 all the time
-    - ncidd.c: doALias(): allow "*" in alias[?].from field for
-      NMBRDEP and NAMEDEP cases
-    - ncidd.h: fixed 1st line of help message (-h)
-    - ncidd.conf.5: updated
-    - ncid.init: startup is in the background because of a hanging
-      problem.  Using "service ncid stop" fails.
-    - ncid.spec: updated
-    - README: updated
-    - CONTRIBUTORS: updated
-    - added file input.txt, to test ncid-page and ncid-speak
-
-Version 0.10
-    - ncidd.c: modified to send a CIDINFO line indicating the RING count
-      added 'send DATA' option and configuration, replaced sendlog option
-      and configuration
-    - ncidd.h: updated for send
-    - nciddconf.c: updated for send
-    - ncid: added ring option, updated comments
-    - ncid: sendCID(): corrected some comments, pass "\n" at the end
-      of the string sent to a external program, use catch with exec
-    - ncid: getField(): Fixed error in regex by always searching for
-      *FIELDNAME* instead of just FIELDNAME which was not always unique
-    - ncid.init: fixed start and stop, added variables
-    - Makefile: added passing of MAN variable to tools subdirectory for FreeBSD
-    - INSTALL: added a better description of Makefile variables.
-    - scripts/ncid-page: changed subject line from "phone number" to
-      "Telephone Call" updated wording to indicate cell phone use as
-      well as pager
-    - scripts/ncid-speak: added Mac OS X interface
-    - scripts/ncid-samba: added
-    - scripts/README: added
-    - test/testclient: server added to test clients using port 3000
-    - test/testclient.data: contains data to test a client, used by testclient
-    - test/testscript.data: added to test ncid-* scripts
-    - test/README: added
-    - test/cidtest.log: deleted
-    - test/ncidd-test1 renamed to ncid-errors.conf
-    - test/ncidd-test2 renamed to ncid-noerrors.conf
-    - test/ncidd-test3.conf: deleted
-    - test/ncidd-test4.conf: deleted
-    - test/ncid-testline: deleted
-    - doc/ncidd.8: updated for send cidlog or cidinfo
-    - doc/ncidd.conf.5: updated for send cidlog or cidinfo
-    - doc/ncid.1: updated for ring option
-    - doc/NCID-FORMAT: updated for CIDINFO lines
-    - doc/PROTOCOL: undated for CIDINFO lines
-    - doc/COPYING renamed to doc/LICENSE
-
-Version 0.11
-    - ncidd.h: increased MODEMTRY from 5 to 9 for linmodmes
-    - ncid: changed regex to account for 11 digit number (14075551212)
-    - tools/cidlog: changed regex to hanldle 10 and 11 digit numbers
-    - tools/cidalias: changed to format output, -r dumps raw lines
-    - tools/ncidtools.1: updated for cidalias
-    - test/aliasfile: added
-    - test/README: updated for aliasfile
-
-Version 0.12
-    - ncidd.h: increased RINGWAIT from 20 to 25 for Linmodems
-    - ncid.init: run tclsh directly instead of using initlog
-    - scripts/README: added note to hide user root when masquerading
-
-Version 0.20
-    - ncidd.c: main(): Moved modem lock check code to after doConf(),
-      so check was valid in case the default modem port was changed
-      by a command line option or configuration file.
-    - ncidd.logrotate: Changed the logfile script so the postrotate script
-      will only be run once, not once for each log which is rotated".
-      Modified it to use ncidrotate so lines can be retained in the logfile
-      after it is rotated.  Changed file name to ncidd.logrotate.dist so
-      Makefile can change location of cidrotate.
-    - Renamed File "NCID-FORMAT" to "NCID-DataFormats"
-    - nciddconf.h: changed CIDCONF from /etc/cidd.conf to /etc/ncidd.conf
-    - Makefile: added target to call scripts/Makefile
-      Added target to make ncidd.logrotate from ncidd.logrotate.dist
-    - ncid: Added directory, /usr/share/ncid, for helper scripts.
-      Changed command line option to add the directory path to the
-      helper program name given.  Added "raise ." to popup sequence
-      so window will be above all others.
-    - ncid.init: changed arguments to agree with the new ncid, and used
-      short args instead of long ones so ps -auxw will show all.
-    - ncid.spec: updated for ncid client changes
-    - scripts/Makefile: added
-    - scripts/ncidrotate: added for use in ncidd.logrotate script
-    - scripts/README: updated for ncidrotate
-    - doc/ncid.1: Some cleanup and updated for ncid.
-
-Version 0.30
-    - Makefile: updated and added TiVo targets to cross compile
-      for ppc and mips TiVo's
-    - ncidd.conf: added examples for aliases and told to place them
-      at the end of the file
-    - TiVo-modem: updated
-    - README: updated
-    - ncid.dist: updated version
-    - ncidd.h: updated version
-    - ncid.spec: updated version
-    - VERSION: updated version
-
-Version 0.40
-    - ncidd.c: doPoll(): added code to abort if modem unplugged [bug #780011]
-                         added code to handle poll errors
-               main(): Fixed lockfile name creation so name would follow
-                       command line or configuration file name change.
-                       Added more verbose statements.
-               getOptions(): added -S and --sttyclocal option
+Version 0.61
+    - ncid: formatCID(): corrected reqular expression for finding LINE field
+            getField(): removed set dataString line, changed regsub line to
+                        regsub ".*\\*$dataString\\*" $dataBlock {} result
+            displayCID(): corrected comment line for INPUT:
+            displayLog(): corrected comment line for INPUT:
+    - ncidd.c: removed debug messages when same message sent as MSG line
+                doPoll(): Improved error messages, added hangup message,
+                          error messages sent as MSG lines
+                main(): added char buf[BUFSIZ], added error messages for
+                        when the TTY port is in use, active, or fails to
+                        initialize as MSG lines, added Server Startup MSG
+                        to logfile
+                getdate(): added to print date and time to server MSG lines
     - ncidd.h: updated
-    - nciddconf.h: updated, added min and max to struct setword
-    - nciddconf.c: added sttylocal to structword[]
-                   doSet(): improved if (setword[num].type & WORDSTR) code
-    - Makefile: updated, added package and cygwin targets, added comments
-      to the begining of the makefile, explaining usage, updated tivo targets,
-      added targets: dirs, install-base, and updates install to use them,
-      corrected passing of prefix2 and prefix3 to tools and scripts directories
-    - tivomake: removed, replaced by "make tivo-series1" or "make tivo-series2"
-    - INSTALL-TiVoCID: corrected verbose and raw options, should be -V and -R
-    - ncidd.8: updated to show the -S and --sttyclocal option
-    - ncid.spec: updated version
-    - VERSION: updated version
-    - doc/INSTALL: updated
-    - doc/INSTALL-TiVo: updated
-    - doc/INSTALL-Mac: updated
-    - test/ncidd-noerrors.conf: added "set cidlog" and "set modemlog" lines
-
-Version 0.50
-    - poll.c: modified to usr "poll.h", events and revents were switched,
-      added case statement for the return value of select(), added mode
-      poll() defines, replaced tabs with spaces, changed logic of finding
-      FD that requires service.
-    - ncidd.c: changed global "char version[]" to "char *version"
-      formatCID(): changed code to only use first NAME or NMBR received
-      instead of the last.  A cell phone company sent NMBR twice, the first
-      was the number, the second was O for out-of-area; changed string
-      arrays in options to pointers using srtdup() instead of strcst()
-    - ncidd.h: modified to use "poll.h" and "getopt_long.h", when using
-      poll.c and getopt.c; changed cidlog[], modemlog[], modem[],initstr[],
-      initcid[], lockfile to *cidlog, *modemlog, *modem, *initstr, *initcid,
-      *lockfile;
-    - nciddconf.c: changed struct setword to use **buf instead of *buf
-      doSet(): use strdup to set WORDSTR strings
-      cpy2mem(): replaced perror() and exit() with errorExit
-    - nciddconf.h: changed *buf to **buf in struct setword
-    - getopt_long.c: renamed: was getopt.c, modified to use "getopt_long.h",
-      replaced tabs with spaces
-    - poll.h: added
-    - getopt_long.h: added
-    - ncidd.conf.dist: added: set modem /dev/cu.modem # Macintosh OS X
-    - Makefile: fixed problem passing prefix2 and prefix3, replaced "make"
-      with "$(MAKE) inside Makefile, added targets: mac, install-mac,
-      freebsd, install-freebsd, set TiVo default to modem port instead of
-      serial port for series1
-    - README: updated for FreeBSD
-    - ncid.dist: changed wish to $WISH and tclsh to $TCLSH
-    - scripts/ncid-page: updated comments
-    - scripts/ncid-samba: updated comments; added test for CLIENT
-    - scripts/ncid-speak: updated comments; added choice of Linux,
-      Freebsd, or MacOSX
-    - doc/INSTALL-FreeBSD: renamed README-FreeBSD and updated
-    - doc/INSTALL-Mac: updated
-    - doc/INSTALL-TiVo: updated
-    - doc/ReleaseNotes: added
-    - FreeBSD/ncid.sh: changed to call ncid-page instead of ncid-speak
-    - FreeBSD/README: updated
-    - FreeBSD/Makefile: added
+    - Makefile: removed "local" from  install-freebsd
+                 The TiVo builds now put the logfiles in /var/log
+                 Removed all man references, added man and install-man targets
+                 to go into the new man directory to build man stuff
+    - man/: created directory and moved all manpages here, Created Makefile
+             to build builds man text files, and man html files
+    - scripts/Makefile: removed all man references
+    - test/README: updated
+    - test/testlog: added
+    - test/testlog-display: added
+    - tools/Makefile: removed all man references
+    - tools/cidlog.pl: corrcted regular expression to obtain LINE field
+                        modified -r option to print all lines in the logfile
+                        added -m option to print MSG lines
+    - FreeBSD/Makefile: updated and corrected man sections
 
 Version 0.60
     - ncidd.logrotate.dist: rewrote to call ncidrotate in both the
@@ -350,33 +175,259 @@ Version 0.60
     - tools/cidlogupd.pl: updated
     - tools/ncidtools.1: updated
 
-Version 0.61
-    - ncid: formatCID(): corrected reqular expression for finding LINE field
-            getField(): removed set dataString line, changed regsub line to
-                        regsub ".*\\*$dataString\\*" $dataBlock {} result
-            displayCID(): corrected comment line for INPUT:
-            displayLog(): corrected comment line for INPUT:
-     - ncidd.c: removed debug messages when same message sent as MSG line
-                doPoll(): Improved error messages, added hangup message,
-                          error messages sent as MSG lines
-                main(): added char buf[BUFSIZ], added error messages for
-                        when the TTY port is in use, active, or fails to
-                        initialize as MSG lines, added Server Startup MSG
-                        to logfile
-                getdate(): added to print date and time to server MSG lines
-     - ncidd.h: updated
-     - Makefile: removed "local" from  install-freebsd
-                 The TiVo builds now put the logfiles in /var/log
-                 Removed all man references, added man and install-man targets
-                 to go into the new man directory to build man stuff
-     - man/: created directory and moved all manpages here, Created Makefile
-             to build builds man text files, and man html files
-     - scripts/Makefile: removed all man references
-     - test/README: updated
-     - test/testlog: added
-     - test/testlog-display: added
-     - tools/Makefile: removed all man references
-     - tools/cidlog.pl: corrcted regular expression to obtain LINE field
-                        modified -r option to print all lines in the logfile
-                        added -m option to print MSG lines
-     - FreeBSD/Makefile: updated and corrected man sections
+Version 0.50
+    - poll.c: modified to usr "poll.h", events and revents were switched,
+      added case statement for the return value of select(), added mode
+      poll() defines, replaced tabs with spaces, changed logic of finding
+      FD that requires service.
+    - ncidd.c: changed global "char version[]" to "char *version"
+      formatCID(): changed code to only use first NAME or NMBR received
+      instead of the last.  A cell phone company sent NMBR twice, the first
+      was the number, the second was O for out-of-area; changed string
+      arrays in options to pointers using srtdup() instead of strcst()
+    - ncidd.h: modified to use "poll.h" and "getopt_long.h", when using
+      poll.c and getopt.c; changed cidlog[], modemlog[], modem[],initstr[],
+      initcid[], lockfile to *cidlog, *modemlog, *modem, *initstr, *initcid,
+      *lockfile;
+    - nciddconf.c: changed struct setword to use **buf instead of *buf
+      doSet(): use strdup to set WORDSTR strings
+      cpy2mem(): replaced perror() and exit() with errorExit
+    - nciddconf.h: changed *buf to **buf in struct setword
+    - getopt_long.c: renamed: was getopt.c, modified to use "getopt_long.h",
+      replaced tabs with spaces
+    - poll.h: added
+    - getopt_long.h: added
+    - ncidd.conf.dist: added: set modem /dev/cu.modem # Macintosh OS X
+    - Makefile: fixed problem passing prefix2 and prefix3, replaced "make"
+      with "$(MAKE) inside Makefile, added targets: mac, install-mac,
+      freebsd, install-freebsd, set TiVo default to modem port instead of
+      serial port for series1
+    - README: updated for FreeBSD
+    - ncid.dist: changed wish to $WISH and tclsh to $TCLSH
+    - scripts/ncid-page: updated comments
+    - scripts/ncid-samba: updated comments; added test for CLIENT
+    - scripts/ncid-speak: updated comments; added choice of Linux,
+      Freebsd, or MacOSX
+    - doc/INSTALL-FreeBSD: renamed README-FreeBSD and updated
+    - doc/INSTALL-Mac: updated
+    - doc/INSTALL-TiVo: updated
+    - doc/ReleaseNotes: added
+    - FreeBSD/ncid.sh: changed to call ncid-page instead of ncid-speak
+    - FreeBSD/README: updated
+    - FreeBSD/Makefile: added
+
+Version 0.40
+    - ncidd.c: doPoll(): added code to abort if modem unplugged [bug #780011]
+                         added code to handle poll errors
+               main(): Fixed lockfile name creation so name would follow
+                       command line or configuration file name change.
+                       Added more verbose statements.
+               getOptions(): added -S and --sttyclocal option
+    - ncidd.h: updated
+    - nciddconf.h: updated, added min and max to struct setword
+    - nciddconf.c: added sttylocal to structword[]
+                   doSet(): improved if (setword[num].type & WORDSTR) code
+    - Makefile: updated, added package and cygwin targets, added comments
+      to the begining of the makefile, explaining usage, updated tivo targets,
+      added targets: dirs, install-base, and updates install to use them,
+      corrected passing of prefix2 and prefix3 to tools and scripts directories
+    - tivomake: removed, replaced by "make tivo-series1" or "make tivo-series2"
+    - INSTALL-TiVoCID: corrected verbose and raw options, should be -V and -R
+    - ncidd.8: updated to show the -S and --sttyclocal option
+    - ncid.spec: updated version
+    - VERSION: updated version
+    - doc/INSTALL: updated
+    - doc/INSTALL-TiVo: updated
+    - doc/INSTALL-Mac: updated
+    - test/ncidd-noerrors.conf: added "set cidlog" and "set modemlog" lines
+
+Version 0.30
+    - Makefile: updated and added TiVo targets to cross compile
+      for ppc and mips TiVo's
+    - ncidd.conf: added examples for aliases and told to place them
+      at the end of the file
+    - TiVo-modem: updated
+    - README: updated
+    - ncid.dist: updated version
+    - ncidd.h: updated version
+    - ncid.spec: updated version
+    - VERSION: updated version
+
+Version 0.20
+    - ncidd.c: main(): Moved modem lock check code to after doConf(),
+      so check was valid in case the default modem port was changed
+      by a command line option or configuration file.
+    - ncidd.logrotate: Changed the logfile script so the postrotate script
+      will only be run once, not once for each log which is rotated".
+      Modified it to use ncidrotate so lines can be retained in the logfile
+      after it is rotated.  Changed file name to ncidd.logrotate.dist so
+      Makefile can change location of cidrotate.
+    - Renamed File "NCID-FORMAT" to "NCID-DataFormats"
+    - nciddconf.h: changed CIDCONF from /etc/cidd.conf to /etc/ncidd.conf
+    - Makefile: added target to call scripts/Makefile
+      Added target to make ncidd.logrotate from ncidd.logrotate.dist
+    - ncid: Added directory, /usr/share/ncid, for helper scripts.
+      Changed command line option to add the directory path to the
+      helper program name given.  Added "raise ." to popup sequence
+      so window will be above all others.
+    - ncid.init: changed arguments to agree with the new ncid, and used
+      short args instead of long ones so ps -auxw will show all.
+    - ncid.spec: updated for ncid client changes
+    - scripts/Makefile: added
+    - scripts/ncidrotate: added for use in ncidd.logrotate script
+    - scripts/README: updated for ncidrotate
+    - doc/ncid.1: Some cleanup and updated for ncid.
+
+Version 0.12
+    - ncidd.h: increased RINGWAIT from 20 to 25 for Linmodems
+    - ncid.init: run tclsh directly instead of using initlog
+    - scripts/README: added note to hide user root when masquerading
+
+Version 0.11
+    - ncidd.h: increased MODEMTRY from 5 to 9 for linmodmes
+    - ncid: changed regex to account for 11 digit number (14075551212)
+    - tools/cidlog: changed regex to hanldle 10 and 11 digit numbers
+    - tools/cidalias: changed to format output, -r dumps raw lines
+    - tools/ncidtools.1: updated for cidalias
+    - test/aliasfile: added
+    - test/README: updated for aliasfile
+
+Version 0.10
+    - ncidd.c: modified to send a CIDINFO line indicating the RING count
+      added 'send DATA' option and configuration, replaced sendlog option
+      and configuration
+    - ncidd.h: updated for send
+    - nciddconf.c: updated for send
+    - ncid: added ring option, updated comments
+    - ncid: sendCID(): corrected some comments, pass "\n" at the end
+      of the string sent to a external program, use catch with exec
+    - ncid: getField(): Fixed error in regex by always searching for
+      *FIELDNAME* instead of just FIELDNAME which was not always unique
+    - ncid.init: fixed start and stop, added variables
+    - Makefile: added passing of MAN variable to tools subdirectory for FreeBSD
+    - INSTALL: added a better description of Makefile variables.
+    - scripts/ncid-page: changed subject line from "phone number" to
+      "Telephone Call" updated wording to indicate cell phone use as
+      well as pager
+    - scripts/ncid-speak: added Mac OS X interface
+    - scripts/ncid-samba: added
+    - scripts/README: added
+    - test/testclient: server added to test clients using port 3000
+    - test/testclient.data: contains data to test a client, used by testclient
+    - test/testscript.data: added to test ncid-* scripts
+    - test/README: added
+    - test/cidtest.log: deleted
+    - test/ncidd-test1 renamed to ncid-errors.conf
+    - test/ncidd-test2 renamed to ncid-noerrors.conf
+    - test/ncidd-test3.conf: deleted
+    - test/ncidd-test4.conf: deleted
+    - test/ncid-testline: deleted
+    - doc/ncidd.8: updated for send cidlog or cidinfo
+    - doc/ncidd.conf.5: updated for send cidlog or cidinfo
+    - doc/ncid.1: updated for ring option
+    - doc/NCID-FORMAT: updated for CIDINFO lines
+    - doc/PROTOCOL: undated for CIDINFO lines
+    - doc/COPYING renamed to doc/LICENSE
+
+Version 0.9
+    - ncidd.c: formatCID(): patch to get modem data at either character
+      position 5 or 7 rathen than position 7 all the time
+    - ncidd.c: doALias(): allow "*" in alias[?].from field for
+      NMBRDEP and NAMEDEP cases
+    - ncidd.h: fixed 1st line of help message (-h)
+    - ncidd.conf.5: updated
+    - ncid.init: startup is in the background because of a hanging
+      problem.  Using "service ncid stop" fails.
+    - ncid.spec: updated
+    - README: updated
+    - CONTRIBUTORS: updated
+    - added file input.txt, to test ncid-page and ncid-speak
+
+Version 0.8
+    - ncidd.h and getopt.c: fixed broken getopt
+    - Makefile: updated and improved
+    - nciddconf.c: fixed bad test for WORDFLAG,
+      corrected getAlias() line format comments
+    - ncidd.c initModem(): rewrote to eliminate race condition
+    - ncidd.c doModem(): changed termios settings so it also
+      works with FreeBSD
+    - ncidd.conf: added alternate CID settings, and comments on log files
+    - ncidd.init: corrected description
+    - ncid: fixed test for "--no-gui" to use "=" instead of "=="
+    - ncid: added $TCLSH and $WISH variables that are set in a local
+      modifications section for FreeBSD since tclsh is named tclVERSION
+      and wish is named wishVERSION, where VERSION is the version number
+    - ncid: modified to call external programs in background
+    - added README-FreeBSD
+    - ncid.1: updated
+    - ncidd.8: removed ncidd configuration information
+    - ncidd.conf.5: added (contains ncidd configuration information)
+    - README: updated
+    - INSTALL: updated
+    - ncid.init: added
+    - added the tools subdirectory:
+      added cidlog.pl, cidalias.pl, cidlogupd.pl
+      added ncidtools.1, README, and Makefile
+
+Version 0.7
+    - ncidd.c split into multiple .c and .h files
+    - ncidd.c Ported to BSD and Macintosh, added getopt.c and poll.c
+    - ncidd.c formatCID: added MESG stuff
+    - ncidd.c formatCID: remove any trailing spaces from NAME field
+    - ncidd.c formatCID: modified to output Date, Time, and, Number
+      if no NAME field or MESG field found
+    - ncidd.c: TIMEOUT 50 -> 100
+    - ncid was rewritten and combined with tivocid to replace it
+    - added program ncid-speak
+    - added program ncid-page
+    - added files: ncid.spec, INSTALL-Mac, PROTOCOLS
+    - updated files: ncid.1, INSTALL, INSTALL-TiVo, INSTALL-Win,
+      NCID-FORMAT, README
+
+Version 0.6
+    - ncidd.c: increased the number of TCP connections from 9 to 15
+    - ncidd.c: added routines to send the CID call log file to clients
+    - ncidd.c: doModem(): eliminated pointer "ptr"
+    - ncidd.c: doModem(): added tcflush()
+    - ncidd.c: doModem(): added new error message "No modem found"
+      for no modem response
+    - ncidd.c: doModem(): put call to initialize modem in a for loop
+      to try 5 times, sometimes it failed to get a modem response
+      the 1st time
+    - ncidd.c doPoll(): added check; if fd == 0, set revents == 0
+      sometimes the poll seemed to get stuck on revents for fd = 0
+    - ncidd.c: doPoll(): modified "if (addPoll(sd) < 0)" to send
+      message to client, and write message to stderr if "verbose"
+    - ncidd.c doPoll(): added clear socker errors when client
+      disconnects
+    - ncidd.c: TIMEOUT 10 -> 50
+    - ncidd.c: CONNECTIONS + 3 -> CONNECTIONS + 2
+    - ncidd.c: cleanup(): added tcflush() before exit(), to eliminate
+      program hang when modem failed to respond
+    - ncidd.c: sendLog(): added
+    - ncidd.logrotate: changed cidmodem.log to ciddata.log
+    - ncid.8: added "SEE ALSO" section, and error code -105
+    - ncidd.conf: updated
+    - README: updated
+    - Makefile: updated
+    - ncid.spec: updated
+    - TiVo-modem: added
+    - INSTALL: updated
+    - INSTALL-TiVo: added
+    - INSTALL-Win: added
+    - ncid: added
+    - ncid.1: added
+    - changed FORMAT to NCID-FORMAT
+    - ncidd.c: main() converted stdin to output to "/dev/null" in
+      deamon mode to solve poll problems
+
+Version 0.5.1
+    - Modem port open changed so it would not hang if
+      port in use, or if port was not restored after use.
+      It will fail sometimes.
+    - corrected MODEMLOG value in Makefile
+    - DATE field in CID line modified to include year: MMDDYYYY
+    - Changed FORMAT and ncidd.8 to reflect new DATE field.
+
+Version 0.5
+    - Released

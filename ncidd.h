@@ -1,5 +1,6 @@
 /*
- * Copyright 2002, 2003, 2004, 2005 John L. Chmielewski <jlc@cfl.rr.com>
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006
+ * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd.h is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +35,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 
 #if (defined(__MACH__))
 # include "poll.h"
@@ -53,7 +55,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.61"
+#define VERSION     "0.62"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -143,6 +145,16 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define CIDALL3      0x07
 #define CIDALL4      0x0F
 
+enum
+{
+    LEVEL1 = 1,
+    LEVEL2,
+    LEVEL3,
+    LEVEL4,
+    LEVEL5
+};
+
 extern char *ttyport, *TTYspeed;
 extern char *cidlog, *datalog, *initstr, *initcid, *lockfile, *ttyport;
 extern int setcid, port, sendlog, sendinfo, clocal, nomodem, ttyspeed;
+extern int logMsg(int level, char *message);

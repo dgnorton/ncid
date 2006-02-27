@@ -1,5 +1,6 @@
 /*
- * Copyright 2005 John L. Chmielewski <jlc@cfl.rr.com>
+ * Copyright (c) 2005, 2006
+ * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddalias.h is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

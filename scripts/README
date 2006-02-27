@@ -3,7 +3,7 @@ The following scripts require /etc/ncid/ncidscript.conf to be edited
 Script to keep lines in logfile, on Linux, after it is rotated:
     cidrotate
 
-Script to send CID to a pager or cell phone:
+Script to send CID to a cell phone, or pager:
     IMPORTANT: sendmail.cf must hide user root when masquerading is used.
     ncid-page
 
@@ -12,3 +12,6 @@ Script to send CID to samba to get a popup:
 
 Script to send CID to a text-to-speach program:
     ncid-speak
+
+Script to display caller ID on MythTV
+    ncid-mythtv

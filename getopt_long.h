@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 John L. Chmielewski <jlc@cfl.rr.com>
+ * Copyright (c) 2004, 2006
+ * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * getopt_long.h is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
  */
 
 #include <stdio.h> /* Definition of NULL */
+#include <string.h>
 
 struct option
 {

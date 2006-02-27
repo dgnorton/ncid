@@ -1,12 +1,12 @@
 NCIDD can be used on a TiVo in four cases:
 
-	- TiVo Serial Port Modem
-	- TiVo Series 1 Internal Modem
-	- TiVo Series 2 Internal Modem
-	- DirecTiVo Modem
+    - TiVo Serial Port Modem
+    - TiVo Series 1 Internal Modem
+    - TiVo Series 2 Internal Modem
+    - DirecTiVo Modem
 
 -------------------------------------------------------
-	TiVo Serial Port Modem
+    TiVo Serial Port Modem
 -------------------------------------------------------
 
 You can attach a modem to the serial port on the TiVo, but it
@@ -15,78 +15,78 @@ shown below.
 
 Use this string to set the modem before attaching it to the TiVo:
 
-	AT&F0&D0&B1#CID=1&W
+    AT&F0&D0&B1#CID=1&W
 
-	DB25    Headphone Plug
-	------ ----------------------
-	pin 2 ---> Tip (Center)
-	pin 3 ---> Ring (Middle)
-	pin 7 ---> Ground (Outside) 
+    DB25    Headphone Plug
+    ------ ----------------------
+    pin 2 ---> Tip (Center)
+    pin 3 ---> Ring (Middle)
+    pin 7 ---> Ground (Outside) 
 
 This string and wiring (excluding pin 2) was given by deebo in this thread:
 
-	http://www.tivocommunity.com/tivo-vb/showthread.php?s=&threadid=54469&perpage=20&pagenumber=7
+    http://www.tivocommunity.com/tivo-vb/showthread.php?s=&threadid=54469&perpage=20&pagenumber=7
 
 -------------------------------------------------------
 
 You could build a special cable, wiring diagrahm from dgrover, in this thread
-	http://www.tivocommunity.com/tivo-vb/showthread.php?s=&threadid=66115&perpage=20&pagenumber=5
+    http://www.tivocommunity.com/tivo-vb/showthread.php?s=&threadid=66115&perpage=20&pagenumber=5
 
-	Modem Tivo
-	2 "TD" <--- tip
-	3 "RD" ---> ring
-	7 Gnd <--> shield
+    Modem Tivo
+    2 "TD" <--- tip
+    3 "RD" ---> ring
+    7 Gnd <--> shield
 
-	4 "RTS" <--\
-	5 "CTS" ---/
+    4 "RTS" <--\
+    5 "CTS" ---/
 
-	6 "DSR" ---\
-	20 "DTR" <-/
+    6 "DSR" ---\
+    20 "DTR" <-/
 
 -------------------------------------------------------
 
 Attach the modem to the TiVo and test it using:
 
-	ncidd -DDv -I AT
+    ncidd -D -I AT
 
 Call yourself and verify that it works, then <CTRL><c> out of it.
 
 -------------------------------------------------------
-	TiVo Series 1 Internal Modem
+    TiVo Series 1 Internal Modem
 -------------------------------------------------------
 
 The TiVo series 1 does not support CID without a hardware modification
 as given by ElectricLegs and drawn by Saturn49:
 
-	/------------# #--------------------------------|47K ohm|-----\
-	|            | |                                              #
-	|     14    11 10                  1                          |
-	|      | | | | | | | | | | | | | |                          ------
-	|      ---------------------------                          | Q3 |
-	|      |                        *|                          ------  
-	|      |         K2 952          |                           |  |
-	|      |                         |
-	|      ---------------------------
-	|      | | | | | | | | | | | | | |
-	|     15        20               28
-	|                |
-	|                |           (-)
-	\----|JUMPER|---#---------------| C29 |-
+    /------------# #--------------------------------|47K ohm|-----\
+    |            | |                                              #
+    |     14    11 10                  1                          |
+    |      | | | | | | | | | | | | | |                          ------
+    |      ---------------------------                          | Q3 |
+    |      |                        *|                          ------  
+    |      |         K2 952          |                           |  |
+    |      |                         |
+    |      ---------------------------
+    |      | | | | | | | | | | | | | |
+    |     15        20               28
+    |                |
+    |                |           (-)
+    \----|JUMPER|---#---------------| C29 |-
 
-	The #'s are points that would have to be soldered to the TiVo's board.
+    The #'s are points that would have to be soldered to the TiVo's board.
 
 This was also in the thread:
 
-	http://www.tivocommunity.com/tivo-vb/showthread.php?s=&threadid=54469&perpage=20&pagenumber=7
+    http://www.tivocommunity.com/tivo-vb/showthread.php?s=&threadid=54469&perpage=20&pagenumber=7
 
 Please note that the internal modem does not seem to be reliable for CallerID.
 
 -------------------------------------------------------
-	DirecTiVo Modem
+    DirecTiVo Modem
 -------------------------------------------------------
 
 It seems that some (most) modems in DirecTivo work with CallerID.
 
 This is also in the thread:
 
-	http://www.tivocommunity.com/tivo-vb/showthread.php?s=&threadid=54469&perpage=20&pagenumber=1
+    http://www.tivocommunity.com/tivo-vb/showthread.php?s=&threadid=54469&perpage=20&pagenumber=1

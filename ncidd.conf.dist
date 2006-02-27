@@ -1,4 +1,4 @@
-# ncid - Network CallerID Server Config File
+# NCID - Network CallerID Server Config File
 
 ################################
 # Definitions and Line formats #
@@ -98,6 +98,12 @@ send cidinfo
 #
 # Alternate modem initialization string
 # set initstr = "AT&FE1V1Q0+VIP"
+
+# The U.S.Robotics USR5631 56K Faxmodem has a +GCI command to set the
+# country code to adjust parameters for a particular telephone network
+# (perhaps other modems do also).  See the following on how to set +GCI
+#   http://www.usr.com/support/5631/5631-ug/generic.htm
+#   doc/Modem-init (has a copy of the information needed to set +GCI)
 
 # Addon strings to set modem for Distinctive Ring:
 #   http://www.modemsite.com/56k/dring.asp

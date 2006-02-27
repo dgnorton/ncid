@@ -1,19 +1,26 @@
-Source: ncid-0.61.tar.gz
-Fedora Core 4 package: ncid-0.61-1.i386.rpm
-TiVo Series1 package: ncid-0.61.series1-tivo.tgz
-TiVo Series2 package: ncid-0.61.series2-tivo.tgz
-Macintosh OS X package: ncid-0.61.mac-osx.tgz
-FreeBSD package: ncid-0.61.freebsd.tgz
-Windows client package: ncid-0.61.zip
+Source: ncid-0.62.tar.gz
+Fedora Core 4 package: ncid-0.62-1.i386.rpm
+TiVo Series1 package: ncid-0.62.series1-tivo.tgz
+TiVo Series2 package: ncid-0.62.series2-tivo.tgz
+Macintosh OS X package: ncid-0.62.mac-osx.tgz
+FreeBSD package: ncid-0.62.freebsd.tgz
+Windows client installer: ncid-0.62-setup.exe
 
-Fixed the ncid client to properly parse a message for a optional LINE
-field, when "LINE" is part of a caller name.
+Added ncid client output module for MythTV.
 
-The server was modified to send additional MSG lines to clients and
-the logfile.  The MSG lines will indicate starup, termination, errors,
-when a another program takes control of the modem, and when the modem
-is free for use again.
+Created a installer package for the windows ncid client.
 
-TiVo Packages:
-    - The server cidcall.log file, has been moved from /var/hack/log
-      to /var/log.
+Fixed bus error problem caused by a NULL pointer in the server.
+
+Eliminated the server "TTY in use" and "TTY available messages" from
+the cidcall.log and clients.  They are only available in debug mode.
+
+Added modem country setting information to the doc/Modem-init file.
+
+Organized all server debug messages to print through a single function.
+
+The server debug syntax changed: For maximum output it is -Dvvv instead
+of the previous -DDv.
+
+Added a TODO list, in the source, to indicate possible directions, and
+to encourage suggestions and submissions of patches for new features.

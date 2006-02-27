@@ -2,29 +2,47 @@ John L. Chmielewski:
 	Designed and wrote most of the programs.
 
 Mark Salyzyn:
-	Ported ncidd to BSD and Macintosh
-	wrote getopt.c and poll.c
+	Ported ncidd to BSD and Macintosh.
+	Wrote getopt.c and poll.c.
 
 Mace Moneta:
-	wrote nciduser, which was the bases for ncid-speak
-	contributed ideas and code to ncid
-	contributed the Mac OS X portion of ncid-speak
+	Wrote nciduser, which was the bases for ncid-speak.
+	Contributed ideas and code to ncid.
+	Contributed the Mac OS X portion of ncid-speak.
 
 Dan Lawrence:
-	contributed to ncid-email so paging would work
-	contributed information on freewrap for ncid on Windows
+	Contributed to ncid-email so paging would work.
+	Contributed information on freewrap for ncid on Windows:
 		http://freewrap.sourceforge.net/
 
 Aron Green:
-	helped fix termios settings to work with FreeBSD
-	contributed ncid.sh and ncidd.sh start/stop scripts for FreeBSD
-	contributed ideas for ncidd and ncid
+	Helped fix termios settings to work with FreeBSD.
+	Contributed ncid.sh and ncidd.sh start/stop scripts for FreeBSD.
+	Contributed ideas for ncidd and ncid.
 
 Troy Carpenter:
-	developed ncid-samba to send CID info to samba for a Windows opoup
+	Developed ncid-samba to send CID info to samba for a Windows opoup
 
 Lyman Epp:
-    wrote the first version of ncidrotate, in python.
+    Wrote the first version of ncidrotate, in python.
+
+Rick Matthews:
+    Provided information on distinctive ring.
+
+Michael Nygren:
+    Provided information on the +GCI modem code, so CID will
+    work with modems that need a country code.
+
+Mitch Riley
+    Provided information needed to create the ncid-mythtv script.
+
+Roger Knobber
+    Provided patch for strdate() in ncidd.c to fix null pointer in
+    gettimeofday() in version 0.61.
+
+Rich West
+    Provided a NSIS script to for a basic installer for the ncid
+    windows client.
 
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
 	Troy Carpenter

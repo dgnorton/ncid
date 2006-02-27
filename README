@@ -7,12 +7,12 @@ documentation is in the FreeBSD directory.
 See the tools directory for the documentation on ncidtools.
 
 The NCID package contains:
-	- a Network CalleID server: ncidd
-	  ncidd runs on Linux, TiVo, BSD UNIX, and Macintosh OS X
-	- a Network CallerID client: ncid
-	  ncid runs on UNIX/Linux/Windows/Macintosh using tcl/tk
-	- tools to work with the CID log and alias files: ncidtools
-	  ncidtools runs on UNIX and Linux, but not the TiVo
+    - a Network CalleID server: ncidd
+      ncidd runs on Linux, TiVo, BSD UNIX, and Macintosh OS X
+    - a Network CallerID client: ncid
+      ncid runs on UNIX/Linux/Windows/Macintosh using tcl/tk
+    - tools to work with the CID log and alias files: ncidtools
+      ncidtools runs on UNIX and Linux, but not the TiVo
     - client output modules and a log rotate module: ncidscripts
 
 NCIDD is a TCP/IP Caller ID Daemon.  It was initially based
@@ -26,19 +26,19 @@ NCID clients.
 
 NCID has the following features:
 
-	- The server allows a number of clients.
-	- The server does Name/Number aliases, so the display can be
-	  customized.  For example: "Wireless Caller" becomes "John on Cell".
-	- The server logs all calls.  Track who called when.
-	- The server has a config file to set most options and aliases.
-	- The server shares the modem for outgoing calls.
+    - The server allows a number of clients.
+    - The server does Name/Number aliases, so the display can be
+      customized.  For example: "Wireless Caller" becomes "John on Cell".
+    - The server logs all calls.  Track who called when.
+    - The server has a config file to set most options and aliases.
+    - The server shares the modem for outgoing calls.
     - The server supports CID devices like NetCallerID
-	- The server runs on Linux, UNIX, Macintosh OS X, and the TiVo.
+    - The server runs on Linux, UNIX, Macintosh OS X, and the TiVo.
     - The server and client spport Distinctive Ring
-	- The client displays the Caller ID Log and adds to it whenever
-	  it receives the CID information from the server.
-	- The client runs on Windows, Linux, UNIX, and Macintosh OS X.
-	- The protocol is documented so additional clients can be added.
+    - The client displays the Caller ID Log and adds to it whenever
+      it receives the CID information from the server.
+    - The client runs on Windows, Linux, UNIX, and Macintosh OS X.
+    - The protocol is documented so additional clients can be added.
 
 Instructions to make and install the ncid package are the various
 INSTALL files in the doc directory.

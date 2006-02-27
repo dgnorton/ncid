@@ -1,10 +1,10 @@
 Summary:    Network Caller ID server and clients
 Name:       ncid
-Version:    0.61
+Version:    0.62
 Release:    1
 Group:      System Environment/Daemons
 License:    GPL
-Url:        http://pvrhack.sonnik.com/tivo/jlc/
+Url:        http://ncid.sourceforge.net
 Source:     %{name}-%{version}.tar.gz
 BuildRoot:  %{_tmppath}/%{name}-root
 Prereq:     /sbin/chkconfig
@@ -46,6 +46,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/sbin/ncidd
 /usr/share/ncid/README
 /usr/share/ncid/ncidrotate
+/usr/share/ncid/ncid-mythtv
 /usr/share/ncid/ncid-page
 /usr/share/ncid/ncid-samba
 /usr/share/ncid/ncid-speak

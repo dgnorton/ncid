@@ -1,10 +1,12 @@
-# ncid - Network CallerID Server Alias File
+# NCID - Network CallerID Server Alias File
 
 ###############################
 # Definitions and Line format #
 ###############################
 
-# lines can be blank, or start with the word: alias #
+# Types of lines: blank, comment, or command
+#   A comment line starts with: #
+#   A command line begins with the word: alias
 #
 # A line is divided into words, separated by spaces
 #
@@ -30,7 +32,7 @@
 # alias NAME OUT-OF-AREA = UNAVAILABLE
 #
 # Change generic name to specific name for a phone number:
-# alias NAME * = "John on CELL" if 4075551212
+# alias NAME * = "John on cell" if 4075551212
 #
 # Mask a phone number:
 # alias NMBR 4075551212 = "----------"

@@ -42,8 +42,8 @@ runs on Linux and Windows 98, ME, XP, 2000, NT.  In the GUI mode, it
 will pop up, and go on top whenever a call comes in.  In addition,
 it will display itself on whatever desktop is active in Linux.
 If \fIncid\fR is given the --no-gui option, it will either output
-to a external program or use the verbose mode to display the CID
-information in a terminal window.
+to a external program, output module, or use the verbose mode to
+display the CID information in a terminal window.
 .P
 If \fIncid\fR is named \fItivocid\fR, it will start in a no-gui mode
 and output to a external program called \fIout2osd\fR which displays
@@ -55,10 +55,13 @@ it will terminate with a error message.
 .P
 The configuration file for \fIncid\fR is /etc/ncid/ncid.conf.
 .P
-Three external scripts are provided, customize as needed in the
+Four output modules are provided, customize as needed in the
 /etc/ncid/ncidscript.conf file:
-.TP 11
+.TP 12
 .PD 0
+.B ncid-mythtv
+Displays Caller ID on a TV using MythTV.
+.TP
 .B ncid-page
 Sends a page or cell phone notification, with the CID information,
 when a call is received.
@@ -104,7 +107,7 @@ output: date time number name
 Default output: name number
 .TP
 .B --call-prog | -C
-output name and number to external program
+output name and number to external program, or output module
 .br
 Default: does not output to external program unless name is tivocid
 .TP
@@ -126,9 +129,9 @@ display data received from the CID Server
 Default: raw data not displayed
 .TP
 .B --ring count | -r count
-call external program on ring count
+call output module on ring count
 .br
-Default: external program called as soon as CID received
+Default: output module called as soon as CID received
 .TP
 .B --verbose | -V
 display formatted CID information, including CID log file
@@ -156,13 +159,13 @@ Default: 3333
 .nf
 # run ncid in a terminal window, server on remote host
 ncid --no-gui tardis.drwho.home
-# output Caller ID to external program
+# output Caller ID to output module
 ncid --no-gui --call-prog --program ncid-speak
-# output NAME & NUMBER to GUI and external program
+# output NAME & NUMBER to GUI and output module
 ncid --call-prog --program /usr/local/bin/ncid-speak
-# output NAME & NUMBER to GUI and all CID info to external program
+# output NAME & NUMBER to GUI and all CID info to output module
 ncid --all --call-prog --program ncid-page
-# output all CID info to external program after third ring
+# output all CID info to output module after third ring
 ncid --no-gui --all --call-prog --ring 3 --program ncid-page
 # run ncid on a TiVo, server on remote host
 tivocid 192.168.0.1

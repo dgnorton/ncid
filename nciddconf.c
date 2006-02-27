@@ -1,5 +1,6 @@
 /*
- * Copyright 2002, 2003, 2004, 2005 John L. Chmielewski <jlc@cfl.rr.com>
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006
+ * by  John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddconf.c is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,13 +51,14 @@ struct sendclient sendclient[] = {
 
 doConf()
 {
-    char input[BUFSIZ], word[BUFSIZ], *inptr;
+    char input[BUFSIZ], word[BUFSIZ], buf[BUFSIZ], *inptr;
     int lc;
     FILE *fp;
 
     if ((fp = fopen(cidconf, "r")) == NULL)
     {
-        if (verbose) fprintf(stderr, "No config file: %s\n", cidconf);
+        sprintf(buf, "No config file: %s\n", cidconf);
+        logMsg(LEVEL1, buf);
         return 0;
     }
 
@@ -74,7 +76,9 @@ doConf()
         else configError(cidconf, lc, word, ERRCMD);
     }
     (void) fclose(fp);
-    if (verbose) fprintf(stderr, "Processed config file: %s\n", cidconf);
+    sprintf(buf, "Processed config file: %s\n", cidconf);
+    logMsg(LEVEL1, buf);
+
     return errorStatus;
 }
 
@@ -86,7 +90,7 @@ doConf()
 doSet(char *inptr, int lc)
 {
     int num;
-    char word[BUFSIZ];
+    char word[BUFSIZ], buf[BUFSIZ];
 
     /* process configuration parameters */
     while (inptr = getWord(inptr, word, lc))
@@ -147,9 +151,12 @@ doSet(char *inptr, int lc)
                     configError(cidconf, lc, word, ERRNUM);
             }
         }
-        else if (debug) fprintf(stderr,
-            "Skipping: set %s    From config file: %s\n",
-            setword[num].word, cidconf);
+        else
+        {
+            sprintf(buf, "Skipping: set %s    From config file: %s\n",
+                setword[num].word, cidconf);
+            logMsg(LEVEL1, buf);
+        }
     }
 }
 
@@ -171,7 +178,7 @@ int findWord(char *wdptr)
 doSend(char *inptr, int lc)
 {
     int num;
-    char word[BUFSIZ];
+    char word[BUFSIZ], buf[BUFSIZ];
 
     /* process configuration parameters */
     while (inptr = getWord(inptr, word, lc))
@@ -185,9 +192,9 @@ doSend(char *inptr, int lc)
         }
 
         ++(*sendclient[num].value);
-        if (debug) fprintf(stderr,
-            "Configured to send '%s' to clients.\n",
+        sprintf(buf, "Configured to send '%s' to clients.\n",
             sendclient[num].word);
+        logMsg(LEVEL1, buf);
     }
 }
 
