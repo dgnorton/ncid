@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# MythTV Display, see http://www.mythtv.info/moin.cgi/LittleGems
+# MythTV Display, see http://www.mythtv.org/wiki/index.php/Little_Gems
 
 # input is 4 lines obtained from ncid using the "-all" option
 # input: DATE\nTIME\nNUMBER\nNAME\n

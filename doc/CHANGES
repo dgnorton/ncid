@@ -1,5 +1,60 @@
 ncid - Network CallerID
 
+Version 0.63
+    - README: revised, corrected spelling errors, and updated
+    - Makefile: updated
+    - ncidd.h: added new mask CIDALT3, updated
+    - ncidd.c: changed the "verbose" global variable from 0 to 1
+               added and changed messages and log levels
+               changed start, stop, and status messages to logfile not cidlog
+               main(): added "fopen LOGFILE" to create/open logfile
+               logMsg(): modified for logfile and debug output
+               doPoll(): fixed some possible problems, changed some logic,
+                         added a logMsg() to print "events", added test
+                         of read() return: "0" - client disconnected;
+                         "> 0" - client sent message
+               getOptions(): changed verbose option to take numeric argument
+                             added -L and --logfile options
+               addPoll() return changd  from 0 or -1 to "pos" or -1
+               main(): save pollpos when adding tty to poll
+                       switch statement: when lock appears, save tty
+                       events and remove tty poll, when lock goes away
+                       restore tty poll events
+               formatCID(): added test for CIDALT3 to process missing number
+                            line, arranged tests for CIDALL3, CIDALT3, and
+                            RING by itself
+    - nciddconf.c: configError(): changed fprintf() to sprintf() and logMsg()
+    - ncidd.conf.dist: updated
+    - ncidd.logrotate.dist: added /var/log/ncidd.log
+    - ncid.spec: updated
+    - ncid.sh: added initMSG {}, handleMSG {}, handleGUIMSG {}
+               to be able to send a MSG in GUI and non-GUI modes,
+               also changes some tk window names
+    - VERSION: added current version number
+    - doc/INSTALL: updated
+    - doc/INSTALL-FreeBSD: updated
+    - doc/INSTALL-Mac: updated
+    - doc/INSTALL-TiVo: updated
+    - doc/INSTALL-Win: updated
+    - doc/Modem-CID-test: updated
+    - doc/ReleaseNotes: updated
+    - doc/PROTOCOL: updated by adding information on sending messages
+    - doc/TODO: updated
+    - man/ncid.1: updated
+    - man/ncidtools.1: updated
+    - man/ncidd.8: updated
+    - man/ncidd.conf.5: updated
+    - screenshots: added ncid-call-mesg.jpg
+    - scripts/ncid-mythtv.sh: corrected MythTV URL for command "mythtvosd"
+    - tools/Makefile: changed default target from "default:" to "tools:",
+                      removed man page references
+    - tools/Makefile: updated
+    - tools/cidcall.pl: renamed cidlog.pl, changed variable names
+                        modified -r option to print all lines in the logfile
+                        added -m option to print MSG lines
+    - tools/cidupdate.pl: renamed cidlogupd.pl, changed variable names
+    - Win/NCID.nsi: updated
+
 Version 0.62
     - Makefile: Added ProgDir substitute to "% : %.sh" rule
     - README: Removed tabs so printing looks nicer

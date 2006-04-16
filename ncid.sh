@@ -75,7 +75,7 @@ set Count       0
 set Ring        0
 set Try         0
 set Socket      0
-set Version     0.62
+set Version     0.63
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -192,8 +192,8 @@ proc getCID {} {
             return
         }
         set Try 0
-        # remove <CR> should be \r$ instead of .$, but doesn't work on TiVo
-        regsub {(.*).$} $dataBlock {\1} dataBlock
+        # get rid of non-printable characters at start/end of string
+        set dataBlock [string trim $dataBlock]
 
         if $Raw {
             # output NCID data line
@@ -329,10 +329,10 @@ proc displayLog {cid} {
         }
     } else {
         set cid "[lindex $cid 0] [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]\n"
-        .vl configure -state normal
-        .vl insert end $cid
-        .vl yview moveto 1.0
-        .vl configure -state disabled
+        .vh configure -state normal
+        .vh insert end $cid
+        .vh yview moveto 1.0
+        .vh configure -state disabled
 
     }
 }
@@ -350,7 +350,7 @@ proc connectCID {Host Port} {
     } else {
         # set socket to binary I/O and non-blocking
         fconfigure $Socket -translation {binary binary} -blocking 0 
-        # get response from server as event
+        # get response from server as an event
         fileevent $Socket readable getCID
         if $NoGUI { displayLog "Connecting to $Host:$Port"
         } else { displayCID "Connecting to\n$Host:$Port"}
@@ -430,24 +430,35 @@ proc makeWindow {} {
     frame .menubar -relief raised -bd 2
     pack .menubar -in .fr -fill x
 
-    label .vc -textvariable Txt -font {Helvetica -14 bold}
-    pack .vc
+    # create and place: call and server message display
+    label .md -textvariable Txt -font {Helvetica -14 bold}
+    pack .md -side bottom
 
-    text .vl -width 62 -height 5 -yscrollcommand ".ys set" \
+    # create and place: CID history scroll window
+    text .vh -width 62 -height 4 -yscrollcommand ".ys set" \
         -state disabled -font {Courier -14 bold}
-    scrollbar .ys -command ".vl yview"
-    pack .vl .ys -in .fr -side left -fill y
+    scrollbar .ys -command ".vh yview"
+    pack .vh .ys -in .fr -side left -fill y
 
+    # create and place: user message window with a label
+    label .spacer -width 10
+    label .ml -text "Send Message: "
+    text .im -width 25 -height 1 -font {Courier -14}
+    pack .spacer .ml .im -side left
+
+    # create menu bar with File and Help
     menubutton .menubar.file -text File -underline 0 -menu .menubar.file.menu
     pack .menubar.file -side left
     menubutton .menubar.help -text Help -underline 0 -menu .menubar.help.menu
     pack .menubar.help -side right
 
+    # create file menu items
     menu .menubar.file.menu -tearoff 0
     .menubar.file.menu add command -label "Clear Log" -command clearLog
     .menubar.file.menu add command -label "Reconnect" -command reconnect
     .menubar.file.menu add command -label Quit -command exit
 
+    # create help menu
     menu .menubar.help.menu -tearoff 0
     .menubar.help.menu add command -label About -command aboutPopup
 }
@@ -462,10 +473,10 @@ proc aboutPopup {} {
 
 proc clearLog {} {
 
-    .vl configure -state normal
-    .vl delete 1.0 end
-    .vl yview moveto 0.0
-    .vl configure -state disabled
+    .vh configure -state normal
+    .vh delete 1.0 end
+    .vh yview moveto 0.0
+    .vh configure -state disabled
 }
 
 proc reconnect {} {
@@ -495,6 +506,51 @@ proc reconnect {} {
     retryConnect
 }
 
+# initialize for MSG
+proc initMSG {} {
+  global NoGUI
+
+  # setup to handle messages
+  if {$NoGUI} {
+    # set stdin to non-blocking
+    fconfigure stdin -blocking 0 
+    # get response from stdin as an event
+    fileevent stdin readable handleMSG
+  } else {bind .im <KeyPress-Return> handleGUIMSG}
+}
+
+# Handle MSG from stdin
+proc handleMSG {} {
+  global Socket
+
+  # get and send MSG
+  while {[gets stdin line] >= 0} {
+    # get rid of non-printable characters at start/end of string
+    set line [string trim $line]
+    # send MSG, if $line not empty
+    if {[string length $line] > 0} {
+      puts $Socket $line
+      flush $Socket
+    }
+  }
+}
+
+# Handle MSG from GUI
+proc handleGUIMSG {} {
+  global Socket
+
+  # get MSG and clear text input box
+  set line [.im get 1.0 end]
+  .im delete 1.0 end
+  # get rid of non-printable characters at start/end of string
+  set line [string trim $line]
+  # send MSG, if $line not empty
+  if {[string length $line] > 0} {
+    puts $Socket $line
+    flush $Socket
+  }
+}
+
 getArg
 if {!$NoGUI} makeWindow
 if $Callprog {
@@ -505,6 +561,7 @@ if $Callprog {
     } else { exitMsg 3 "Program Not Found: $Program" }
 } else { set Verbose 1 }
 connectCID $Host $Port
+initMSG
 
 # enter event loop
 vwait forever

@@ -85,9 +85,9 @@ The easiest way to test the setup is to run ncidd in debug mode,
 it will stay attached to the terminal and not go into deamon mode:
     ncidd -D
 to get more information, add the verbose flag:
-    ncidd -Dvv
+    ncidd -Dv3
 to also look at the alias structure
-    ncidd -Dvvv
+    ncidd -Dv5
 
 Call yourself and you should see the CallerID information.
 If you just see RING and no Caller ID lines, the modem does not

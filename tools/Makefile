@@ -1,4 +1,4 @@
-SOURCE		= cidlog.pl cidalias.pl cidlogupd.pl
+SOURCE		= cidcall.pl cidalias.pl cidupdate.pl
 FILES		= Makefile $(SOURCE) $(MANSRC)
 
 prefix		= /usr/local
@@ -14,6 +14,7 @@ CONF		= $(CONFDIR)/ncidd.conf
 ALIAS		= $(CONFDIR)/ncidd.alias
 CALLLOG		= $(LOG)/cidcall.log
 DATALOG		= $(LOG)/ciddata.log
+MAN1		= $(MAN)/man1
 
 SCRIPT = $(SOURCE:.pl=)
 
@@ -23,11 +24,13 @@ install: install-script
 
 install-script: $(SCRIPT)
 	install -m 755 $(SCRIPT) $(BIN)
+	touch install-script
 
 clean:
 
 clobber: clean
 	rm -f $(SCRIPT)
+	rm -f man *.man install-*
 
 files:	$(FILES)
 

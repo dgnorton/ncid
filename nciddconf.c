@@ -36,6 +36,7 @@ struct setword setword[] = {
     {"ttyclocal",  WORDNUM,            0,         &clocal,   OFF, ON},
     {"ttyspeed",   WORDSTR,            &TTYspeed, 0,         0,    0},
     {"nomodem",    WORDNUM,            0,         &nomodem,  OFF, ON},
+    {"verbose",    WORDNUM,            0,         &verbose,  1,    9},
     {0,            0,                  0,         0,         0,    0}
 };
 
@@ -210,8 +211,11 @@ int findSend(char *wdptr)
 
 configError(char *file, int lc, char *word, char *mesg)
 {
+    char buf[BUFSIZ];
+
     if (*word == 0) return;
-    fprintf(stderr, "%s: Line %d; %s %s\n", file, lc, mesg, word);
+    sprintf(buf, "%s: Line %d; %s %s\n", file, lc, mesg, word);
+    logMsg(LEVEL1, buf);
     ++errorStatus;
 }
 

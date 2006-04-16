@@ -47,8 +47,12 @@ TEST:
 	Start ncid and ncidd
 	Call yourself
 
-	if you have problems, start ncidd in debug and verbose modes:
-		- ncidd -Dv
+	if you have problems, start ncidd in debug mode:
+		- ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
 
     if ncidd aborts when you call yourself with something like:
         Modem set for CallerID.

@@ -24,21 +24,25 @@
 #include "ncidd.h"
 
 /* globals */
-char *cidlog = CIDLOG;
+char *cidlog  = CIDLOG;
 char *datalog = DATALOG;
 char *ttyport = TTYPORT;
 char *initstr = INITSTR;
 char *initcid = INITCID1;
 char *version = VERSION;
+char *logfile = LOGFILE;
 char *lockfile, *name;
 char *TTYspeed;
 int ttyspeed = TTYSPEED;
 int port = PORT;
-int ttyfd, debug, verbose, conferr, setcid, locked, sendlog, sendinfo;
+int debug, conferr, setcid, locked, sendlog, sendinfo;
+int ttyfd, pollpos, pollevents;
 int ring, ringwait, ringcount, clocal, nomodem;
+int verbose = 1;
 
 struct pollfd polld[CONNECTIONS + 2];
 static struct termios otty, ntty;
+FILE *logptr;
 
 struct cid
 {
@@ -51,7 +55,7 @@ struct cid
     char cidline[CIDSIZE];
 } cid = {0, "", "", "", "", NOMESG, ONELINE};
 
-void exit(), perror(), finish(), free();
+void exit(), finish(), free();
 char *strdate();
 
 main(int argc, char *argv[])
@@ -72,6 +76,19 @@ main(int argc, char *argv[])
 
     /* process options from the command line */
     argind = getOptions(argc, argv);
+
+    /* open or create logfile */
+    if ((logptr = fopen(logfile, "a")) == NULL)
+    {
+        sprintf(buf, "%s: %s\n", logfile, strerror(errno));
+        logMsg(LEVEL4, buf);
+    }
+
+    sprintf(buf, "Started  %s\n", strdate());
+    logMsg(LEVEL1, buf);
+
+    sprintf(buf, "ncidd logfile: %s\n", logfile);
+    logMsg(LEVEL2, buf);
 
     /*
      * read config file, if present, exit on any errors
@@ -98,9 +115,9 @@ main(int argc, char *argv[])
     }
 
     sprintf(buf, "CID logfile: %s\n", cidlog);
-    logMsg(LEVEL1, buf);
+    logMsg(LEVEL2, buf);
     sprintf(buf, "Data logfile: %s\n", datalog);
-    logMsg(LEVEL1, buf);
+    logMsg(LEVEL2, buf);
 
     /* Create lock file name from TTY port device name */
     if (!lockfile)
@@ -117,7 +134,7 @@ main(int argc, char *argv[])
     {
         sprintf(buf,
             "Printing alias structure: ELEMENT TYPE [FROM] [TO] [DEPEND]\n");
-        logMsg(LEVEL3, buf);
+        logMsg(LEVEL5, buf);
     }
     for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
     {
@@ -126,7 +143,7 @@ main(int argc, char *argv[])
             alias[i].from,
             alias[i].to,
             alias[i].depend ? alias[i].depend : " ");
-        logMsg(LEVEL3, buf);
+        logMsg(LEVEL5, buf);
     }
 
     /* check TTY port lock file */
@@ -160,18 +177,18 @@ main(int argc, char *argv[])
     }
 
     sprintf(buf, "TTY port opened: %s\n", ttyport);
-    logMsg(LEVEL1, buf);
+    logMsg(LEVEL2, buf);
     sprintf(buf, "TTY port speed: %s\n", TTYspeed);
-    logMsg(LEVEL1, buf);
+    logMsg(LEVEL2, buf);
     sprintf(buf, "TTY lock file: %s\n", lockfile);
-    logMsg(LEVEL1, buf);
+    logMsg(LEVEL2, buf);
     sprintf(buf, "TTY port control signals %s\n",
         clocal ? "disabled" : "enabled");
-    logMsg(LEVEL1, buf);
+    logMsg(LEVEL2, buf);
     if (nomodem)
     {
-        fprintf(stderr, "CallerID from CID device, not AT modem\n");
-        logMsg(LEVEL1, buf);
+        sprintf(buf, "CallerID from CID device, not AT modem\n");
+        logMsg(LEVEL2, buf);
     }
 
     /* Save tty port settings */
@@ -189,23 +206,19 @@ main(int argc, char *argv[])
         close(0);
         if (open("/dev/null",  O_WRONLY | O_SYNC) < 0)
         {
-            perror("/dev/null");
-            exit(errno);
+            errorExit(-1, "/dev/null", 0);
         }
 
         /* become session leader */
         setsid();
     }
 
-    addPoll(ttyfd);
+    pollpos = addPoll(ttyfd);
 
     /* initialize server socket */
     if ((mainsock = tcpOpen(port)) < 0) errorExit(-1, "socket", 0);
 
     addPoll(mainsock);
-
-    sprintf(buf, "%sStarted  %s", MSGLINE, strdate());
-    writeLog(cidlog, buf);
 
     /* Read and display data */
     while (1)
@@ -238,29 +251,36 @@ main(int argc, char *argv[])
                 {
                     if (!locked)
                     {
-                        sprintf(buf, "%sTTY in use, Waiting %s",
+                        /* save TTY events */
+                        pollevents = polld[pollpos].events;
+                        /* remove TTY poll events */
+                        polld[pollpos].events = polld[pollpos].revents = 0;
+                        sprintf(buf, "%sTTY in use, Waiting %s\n",
                             MSGLINE, strdate());
-                        logMsg(LEVEL2, buf);
+                        logMsg(LEVEL4, buf);
                         locked = 1;
                     }
                 }
                 else if (locked)
                 {
-                    sprintf(buf, "%sTTY available, Active %s",
+                    sprintf(buf, "%sTTY available, Active %s\n",
                         MSGLINE, strdate());
-                    logMsg(LEVEL2, buf);
+                    logMsg(LEVEL4, buf);
                     tcsetattr(ttyfd, TCSANOW, &otty);
                     if (doTTY() < 0)
                     {
-                        sprintf(buf, "%sCannot init TTY, Terminated %s",
+                        sprintf(buf, "%sCannot init TTY, Terminated %s\n",
                             MSGLINE, strdate());
-                        writeLog(cidlog, buf);
                         writeClients(mainsock, buf);
+                        strcat(buf, NL);
+                        logMsg(LEVEL1, buf + strlen(MSGLINE));
                         tcsetattr(ttyfd, TCSANOW, &otty);
                         cleanup();
                         exit(-1);
                     }
                     locked = 0;
+                    /* restore tty poll events */
+                    polld[pollpos].events = pollevents;
                 }
                 break;
             default:    /* 1 or more events reported */
@@ -285,18 +305,19 @@ int getOptions(int argc, char *argv[])
         {"initcid", 1, 0, 'i'},
         {"initstr", 1, 0, 'I'},
         {"lockfile", 1, 0, 'l'},
+        {"logfile", 1, 0, 'L'},
         {"nomodem", 1, 0, 'n'},
         {"port", 1, 0, 'p'},
         {"send", 1, 0, 's'},
         {"ttyspeed", 1, 0, 'S'},
         {"ttyclocal", 1, 0, 'T'},
         {"ttyport", 1, 0, 't'},
-        {"verbose", 0, 0, 'v'},
+        {"verbose", 1, 0, 'v'},
         {"version", 0, 0, 'V'},
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:vA:C:DI:S:T:V",
+    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:v:A:C:DI:L:S:T:V",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -312,9 +333,8 @@ int getOptions(int argc, char *argv[])
                 if (!(initstr = strdup(optarg))) errorExit(-1, name, 0);
                 if ((num = findWord("initstr")) >= 0) setword[num].type = 0;
                 break;
-            case 'd':
-                if (!(datalog = strdup(optarg))) errorExit(-1, name, 0);
-                if ((num = findWord("datalog")) >= 0) setword[num].type = 0;
+            case 'L':
+                if (!(logfile = strdup(optarg))) errorExit(-1, name, 0);
                 break;
             case 'S':
                 if (!(TTYspeed = strdup(optarg))) errorExit(-1, name, 0);
@@ -335,6 +355,10 @@ int getOptions(int argc, char *argv[])
             case 'c':
                 if (!(cidlog = strdup(optarg))) errorExit(-1, name, 0);
                 if ((num = findWord("cidlog")) >= 0) setword[num].type = 0;
+                break;
+            case 'd':
+                if (!(datalog = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("datalog")) >= 0) setword[num].type = 0;
                 break;
             case 'h': /* help message */
                 fprintf(stderr, DESC, name);
@@ -371,7 +395,13 @@ int getOptions(int argc, char *argv[])
                 if ((num = findWord("tty")) >= 0) setword[num].type = 0;
                 break;
             case 'v':
-                verbose++;
+                verbose = atoi(optarg);
+                /* valid range: 1-9 */
+                if (strlen(optarg) != 1 || (verbose == 0))
+                {
+                    verbose = 1;
+                    errorExit(-107, "Invalid number", optarg);
+                }
                 break;
             case 'D':
                 debug = 1;
@@ -416,7 +446,7 @@ int doTTY()
 
     if (nomodem) sprintf(buf, "CallerID TTY port initialized.\n");
     else sprintf(buf, "Modem set for CallerID.\n");
-    logMsg(LEVEL1, buf);
+    logMsg(LEVEL2, buf);
 
     return 0;
 }
@@ -491,7 +521,7 @@ int initModem(char *ptr)
     }
 
     /* check response */
-    if (size) logMsg(LEVEL1, buf);
+    if (size) logMsg(LEVEL3, buf);
     buf[size] = 0;
     if ((bufp = strrchr(buf, 'O')) != 0)
         if (!strncmp(bufp, "OK", 2)) return 0;
@@ -555,131 +585,199 @@ int addPoll(int pollfd)
         ++added;
         break;
     }
-    return added ? 0 : -1;
+    return added ? pos : -1;
 }
 
 doPoll(int events, int mainsock)
 {
-    int num, pos, sd, cnt = 0;
-    char buf[BUFSIZ];
+  int num, pos, sd, cnt = 0;
+  char buf[BUFSIZ];
 
-    for (pos = 0; events && pos < CONNECTIONS + 2; ++pos)
+  for (pos = 0; events && pos < CONNECTIONS + 2; ++pos)
+  {
+    if (!polld[pos].revents) continue; /* no events */
+
+    /* log event flags */
+    sprintf(buf, "polld[%d].revents: 0x%X, fd: %d\n",
+      pos, polld[pos].revents, polld[pos].fd);
+    logMsg(LEVEL4, buf);
+
+    if (polld[pos].revents & POLLERR) /* Poll Error */
     {
-        if (!polld[pos].revents) continue; /* no events */
-        if (polld[pos].revents & POLLERR) /* Poll Error */
+      if (polld[pos].fd == ttyfd)
+      {
+        sprintf(buf, "%sDevice Error, Terminated  %s\n",
+          MSGLINE, strdate());
+        writeClients(mainsock, buf);
+        strcat(buf, NL);
+        logMsg(LEVEL1, buf + strlen(MSGLINE));
+        cleanup();
+        exit(-1);
+      }
+        sprintf(buf, "Poll Error, sd: %d\n", polld[pos].fd);
+        logMsg(LEVEL1, buf);
+        close(polld[pos].fd);
+        polld[pos].fd = polld[pos].events = 0;
+    }
+    else if (polld[pos].revents & POLLHUP) /* Hung up */
+    {
+      if (polld[pos].fd == ttyfd)
+      {
+        sprintf(buf, "%sDevice Hung Up, Terminated  %s\n",
+          MSGLINE, strdate());
+        writeClients(mainsock, buf);
+        strcat(buf, NL);
+        logMsg(LEVEL1, buf + strlen(MSGLINE));
+        cleanup();
+        exit(-1);
+      }
+      sprintf(buf, "Hung Up, sd: %d\n", polld[pos].fd);
+        logMsg(LEVEL2, buf);
+      close(polld[pos].fd);
+      polld[pos].fd = polld[pos].events = 0;
+    }
+    else if (polld[pos].revents & POLLNVAL) /* Invalid Request */
+    {
+      sprintf(buf, "Invalid Request: File descriptor not open, sd: %d\n",
+        polld[pos].fd);
+      logMsg(LEVEL1, buf);
+      polld[pos].fd = polld[pos].events = 0;
+    }
+
+    /*
+     * Revents was either POLLIN or POLLPRI, so only need to
+     * check polld[pos].fd from here on.
+     */
+
+    else if (polld[pos].fd == ttyfd)
+    {
+      if (!locked)
+      {
+        /* Modem or device has data to read */
+        if ((num = read(ttyfd, buf, BUFSIZ-1)) < 0)
         {
-            if (polld[pos].fd == ttyfd)
-            {
-                sprintf(buf, "%sDevice Error, Terminated  %s",
-                    MSGLINE, strdate());
-                writeLog(cidlog, buf);
-                writeClients(mainsock, buf);
-                cleanup();
-                exit(-1);
-            }
-            sprintf(buf, "Poll Error.\n");
-            logMsg(LEVEL1, buf);
-            polld[pos].fd = polld[pos].events = 0;
-            continue;
+          sprintf(buf, "READ: %s\n", strerror(errno));
+          logMsg(LEVEL1, buf);
         }
-        if (polld[pos].revents & POLLHUP) /* Hung up */
+
+        /* Modem or device returned no data */
+        else if (!num)
         {
-            if (polld[pos].fd == ttyfd)
-            {
-                sprintf(buf, "%sDevice Hung Up, Terminated  %s",
-                    MSGLINE, strdate());
-                writeLog(cidlog, buf);
-                writeClients(mainsock, buf);
-                cleanup();
-                exit(-1);
-            }
-            sprintf(buf, "Hung Up.\n");
-            logMsg(LEVEL1, buf);
-            polld[pos].fd = polld[pos].events = 0;
-            continue;
-        }
-        if (polld[pos].revents & POLLNVAL) /* Invalid Request */
-        {
-            sprintf(buf, "Invalid Request: File descriptor not open.\n");
-            logMsg(LEVEL1, buf);
-            polld[pos].fd = polld[pos].events = 0;
-            continue;
-        }
+          sprintf(buf, "Device returned no data, fd: %d\n", ttyfd);
+          logMsg(LEVEL2, buf);
+          cnt++;
 
-        if (polld[pos].fd == ttyfd)
-        {
-            if (!locked)
-            {
-                /* Modem or device has data to read */
-                if ((num = read(ttyfd, buf, BUFSIZ-1)) < 0)
-                {
-                    perror("READ");
-                    continue;
-                }
-
-                /* Modem or device returned no data */
-                if (!num)
-                {
-                    sprintf(buf, "Device returned no data.\n");
-                    logMsg(LEVEL1, buf);
-                    polld[pos].revents = 0;
-                    cnt++;
-
-                    /* if no data 10 times in a row, something wrong */
-                    if (cnt == 10)
-                    {
-                        sprintf(buf, "%sDevice returns no data, Terminated  %s",
-                            MSGLINE, strdate());
-                        writeLog(cidlog, buf);
-                        writeClients(mainsock, buf);
-                        cleanup();
-                        exit(-1);
-                    }
-                    continue;
-                }
-
-                cnt = 0;
-
-                /* strip <NL> or <CR> */
-                buf[num - 1] = '\0';
-
-                /* strip <CR> if there was a <CR><NL> */
-                if (buf[num - 2] == '\r') buf[num - 2] = '\0';
-
-                writeLog(datalog, buf);
-                formatCID(mainsock, buf);
-            }
-        }
-        else if (polld[pos].fd == mainsock)
-        {
-            /* TCP/IP Client Connection */
-            sd = tcpAccept(mainsock);
-            strcat(strcat(strcpy(buf, ANNOUNCE), VERSION), CRLF);
-            write(sd, buf, strlen(buf));
-            if (addPoll(sd) < 0)
-            {
-                sprintf(buf, "%s\n", TOOMSG);
-                logMsg(LEVEL1, buf);
-                sprintf(buf, "%s: %d%s", TOOMSG, CONNECTIONS, CRLF);
-                write(sd, buf, strlen(buf));
-                close(sd);
-            }
-            if (sendlog) sendLog(sd, buf);
+          /* if no data 10 times in a row, something wrong */
+          if (cnt == 10)
+          {
+            sprintf(buf, "%sDevice returns no data, Terminated  %s\n",
+              MSGLINE, strdate());
+            writeClients(mainsock, buf);
+            strcat(buf, NL);
+            logMsg(LEVEL1, buf + strlen(MSGLINE));
+            cleanup();
+            exit(-1);
+          }
         }
         else
         {
-            /* file descripter 0 treated as empty slot */
-            if (polld[pos].fd)
-            {
-                /* TCP/IP Client End Connection */
-                close(polld[pos].fd);
-                polld[pos].fd = polld[pos].events = 0;
-            }
-        }
+          cnt = 0;
 
-        polld[pos].revents = 0;
-        --events;
+          /* strip <NL> or <CR> */
+          buf[num - 1] = '\0';
+
+          /* strip <CR> if there was a <CR><NL> */
+          if (buf[num - 2] == '\r') buf[num - 2] = '\0';
+
+          writeLog(datalog, buf);
+          formatCID(mainsock, buf);
+        }
+      }
     }
+    else if (polld[pos].fd == mainsock)
+    {
+      /* TCP/IP Client Connection */
+      if ((sd = tcpAccept(mainsock)) < 0)
+      {
+        sprintf(buf, "Connect Error: %s, sd: %d\n",
+          strerror(errno), sd);
+        logMsg(LEVEL1, buf);
+      }
+      else
+      {
+        /* Client connected */
+
+        if (fcntl(sd, F_SETFL, O_NONBLOCK) < 0)
+        {
+          sprintf(buf, "NONBLOCK Error: %s, sd: %d\n",
+            strerror(errno), sd);
+          logMsg(LEVEL1, buf);
+          close(sd);
+        }
+        else
+        {
+          strcat(strcat(strcpy(buf, ANNOUNCE), VERSION), CRLF);
+          write(sd, buf, strlen(buf));
+          if (addPoll(sd) < 0)
+          {
+            sprintf(buf, "%s\n", TOOMSG);
+            logMsg(LEVEL1, buf);
+            sprintf(buf, "%s: %d%s", TOOMSG, CONNECTIONS, CRLF);
+            write(sd, buf, strlen(buf));
+            close(sd);
+          }
+          if (sendlog)
+          {
+            /* Client connect message in sendLog() */
+            sendLog(sd, buf);
+          }
+          else
+          {
+            /* Client connected, CID log not sent */
+            sprintf(buf, "Client Connected, sd: %d\n", sd);
+            logMsg(LEVEL3, buf);
+          }
+        }
+      }
+    }
+    else
+    {
+      if (polld[pos].fd)
+      {
+        strcpy(buf, MSGLINE);
+        if ((num = read(polld[pos].fd, buf + strlen(MSGLINE), BUFSIZ-1)) < 0)
+        {
+          sprintf(buf, "Client READ: %s\n", strerror(errno));
+          logMsg(LEVEL1, buf);
+        }
+        /* read will return 0 for a disconnect */
+        if (num == 0)
+        {
+          /* TCP/IP Client End Connection */
+          sprintf(buf, "Client disconnected, sd: %d\n", polld[pos].fd);
+            logMsg(LEVEL3, buf);
+          close(polld[pos].fd);
+          polld[pos].fd = polld[pos].events = 0;
+        }
+        else
+        {
+          /*
+           * client sent message to server
+           */
+          /* remove <CR> */
+          buf[num + strlen(MSGLINE) - 1] = '\0';
+          /* write message to logfile and other clientsd */
+          writeLog(cidlog, buf);
+          writeClients(mainsock, buf);
+        }
+      }
+      /* file descripter 0 treated as empty slot */
+      else polld[pos].fd = polld[pos].events = 0;
+    }
+
+    polld[pos].revents = 0;
+    --events;
+  }
 }
 
 /*
@@ -733,22 +831,32 @@ formatCID(int mainsock, char *buf)
             sendInfo(mainsock);
         }
 
-        /*
-         * if more than NAME is missing, clear
-         * incomplete CID
-         */
-        if ((cid.status & CIDALL3) != CIDALL3)
+        if ((cid.status & CIDALL3) == CIDALL3)
         {
+            /*
+            * date, time, and number were received
+            * indicate No NAME, and process anyway
+            */
+            strncpy(cid.cidname, NONAME, CIDSIZE - 1);
+            cid.status |= CIDNAME;
+        }
+        else if ((cid.status & CIDALT3) == CIDALT3)
+        {
+            /*
+            * date, time, and name were received
+            * indicate No Number, and process anyway
+            */
+            strncpy(cid.cidnmbr, NONUMB, CIDSIZE - 1);
+            cid.status |= CIDNMBR;
+        }
+        else
+        {
+            /*
+            * make sure CID is clear, since we are at a RING
+            */
             cid.status = 0;
             return;
         }
-
-        /*
-         * date, time, and number were received
-         * indicate No NAME, and process anyway
-         */
-        strncpy(cid.cidname, NONAME, CIDSIZE - 1);
-        cid.status |= CIDNAME;
     }
 
     /*
@@ -942,7 +1050,8 @@ writeClients(int mainsock, char *buf)
     for (pos = 0; pos < CONNECTIONS + 2; ++pos)
     {
         if (polld[pos].fd == 0 || polld[pos].fd == ttyfd ||
-            polld[pos].fd == mainsock) continue;
+            polld[pos].fd == mainsock)
+            continue;
         write(polld[pos].fd, buf, strlen(buf));
         write(polld[pos].fd, CRLF, strlen(CRLF));
     }
@@ -973,7 +1082,7 @@ sendLog(int sd, char *logbuf)
     if ((fp = fopen(cidlog, "r")) == NULL)
     {
         sprintf(buf, "cidlog: %s\n", strerror(errno));
-        logMsg(LEVEL2, buf);
+        logMsg(LEVEL4, buf);
         return;
     }
 
@@ -999,8 +1108,8 @@ sendLog(int sd, char *logbuf)
 
     (void) fclose(fp);
 
-    sprintf(buf, "Sent call log: %s\n", cidlog);
-    logMsg(LEVEL1, buf);
+    sprintf(buf, "Client connected, sd: %d, Sent call log: %s\n", sd, cidlog);
+    logMsg(LEVEL3, buf);
 }
 
 /*
@@ -1013,12 +1122,12 @@ writeLog(char *logfile, char *logbuf)
     char buf[BUFSIZ];
 
     sprintf(buf, "%s\n", logbuf);
-    logMsg(LEVEL1, buf);
+    logMsg(LEVEL3, buf);
 
     if ((logfd = open(logfile, O_WRONLY | O_APPEND)) < 0)
     {
         sprintf(buf, "%s: %s\n", logfile, strerror(errno));
-        logMsg(LEVEL2, buf);
+        logMsg(LEVEL4, buf);
     }
     else
     {
@@ -1045,7 +1154,7 @@ sendInfo(int mainsock)
             RING, ring,
             STAR, CRLF);
     writeClients(mainsock, buf);
-    logMsg(LEVEL1, buf);
+    logMsg(LEVEL3, buf);
 }
 
 /*
@@ -1083,6 +1192,9 @@ cleanup()
     /* close open files */
     for (pos = 0; pos < CONNECTIONS + 2; ++pos)
         if (polld[pos].fd != 0) close(polld[pos].fd);
+
+    /* close log file, if open */
+    if (logptr) fclose(logptr);
 }
 
 /* signal exit */
@@ -1090,31 +1202,54 @@ void finish(int sig)
 {
     char buf[BUFSIZ];
 
-    sprintf(buf, "%sTerminated  %s", MSGLINE, strdate());
-    writeLog(cidlog, buf);
+    sprintf(buf, "Terminated  %s\n", strdate());
+    logMsg(LEVEL1, buf);
     cleanup();
     exit(0);
 }
 
 errorExit(int error, char *msg, char *arg)
 {
+    char buf[BUFSIZ];
 
     if (error == -1)
     {
+        /* system error */
         error = errno;
-        perror(msg);
+        sprintf(buf, "%s: %s\n", msg, strerror(errno));
+        logMsg(LEVEL1, buf);
     }
-    else if (msg != 0) fprintf(stderr, "%s: %s\n", msg, arg);
+    else if (msg != 0)
+    {
+        /* internal program error */
+        sprintf(buf, "%s: %s\n", msg, arg);
+        logMsg(LEVEL1, buf);
+    }
+
+    /* do not print terminated message if option error */
+    if (error != -108 && error != -107 && error != -101 && error != 106 &&
+        error != 100)
+    {
+        sprintf(buf, "Terminated  %s\n", strdate());
+        logMsg(LEVEL1, buf);
+    }
+
     cleanup();
     exit(error);
 }
 
 /*
  * The printing of messages needs to be improved.
- * Logging to a logfile needs to be added.
  */
 logMsg(int level, char *message)
 {
-    if (!verbose) verbose = 1;
-    if (debug && verbose >= level) fprintf(stderr, message);
+    /* write to stderr in debug mode */
+    if (debug && verbose >= level) fputs(message, stderr);
+
+    /* write to logfile */
+    if (logptr && verbose >= level)
+    {
+        fputs(message, logptr);
+        fflush(logptr);
+    }
 }

@@ -1,6 +1,6 @@
 Summary:    Network Caller ID server and clients
 Name:       ncid
-Version:    0.62
+Version:    0.63
 Release:    1
 Group:      System Environment/Daemons
 License:    GPL
@@ -40,9 +40,9 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %files
 %defattr(-,root,root)
 /usr/bin/ncid
-/usr/bin/cidlog
+/usr/bin/cidcall
 /usr/bin/cidalias
-/usr/bin/cidlogupd
+/usr/bin/cidupdate
 /usr/sbin/ncidd
 /usr/share/ncid/README
 /usr/share/ncid/ncidrotate

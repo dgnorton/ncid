@@ -4,7 +4,7 @@ file will permit ncidd to run after the config file is read.
 
 -----------------------------------------------------------
 
-The file testscript.data is a test file for ncid output modules,
+The file testscript.data is a test file for ncid helper scripts,
 like ncid-page and ncid-speak.
 
 To test ncid-page: cat testscript.data | ncidpage
@@ -34,12 +34,3 @@ To test a client:
 	Default Data File: testclient.data
 
 	NOTE: testclient and testclient.data must be in the same directory
-
------------------------------------------------------------
-
-The file testlog is a cidcall.log test file for clients and tools that
-display the logfile.  Normally you would start the server and tell it
-to use this logfile and look at the client display.  You could use
-cidlog to display the file.
-
-The file testlog-display is how ncid will display it.

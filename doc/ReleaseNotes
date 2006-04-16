@@ -1,26 +1,31 @@
-Source: ncid-0.62.tar.gz
-Fedora Core 4 package: ncid-0.62-1.i386.rpm
-TiVo Series1 package: ncid-0.62.series1-tivo.tgz
-TiVo Series2 package: ncid-0.62.series2-tivo.tgz
-Macintosh OS X package: ncid-0.62.mac-osx.tgz
-FreeBSD package: ncid-0.62.freebsd.tgz
-Windows client installer: ncid-0.62-setup.exe
+Source: ncid-0.63.tar.gz
+Fedora Core 4 package: ncid-0.63-1.i386.rpm
+TiVo Series1 package: ncid-0.63.series1-tivo.tgz
+TiVo Series2 package: ncid-0.63.series2-tivo.tgz
+Macintosh OS X package: ncid-0.63.mac-osx.tgz
+FreeBSD package: ncid-0.63.freebsd.tgz
+Windows client installer: ncid-0.63-setup.exe
 
-Added ncid client output module for MythTV.
+Added support for CID systems that will output a name but
+not a telephone number when call is PRIVATE or BLOCKED.
 
-Created a installer package for the windows ncid client.
+Message support has been added to ncidd and ncid.  The ncid
+client, can send a short single line message to all connected
+clients using the ncidd server.
 
-Fixed bus error problem caused by a NULL pointer in the server.
+Any text sent to port 3333 is considered a message.  Message support
+is really intended for applications to send messages.  Here is a example
+of a script for a 10 minute food timer using netcat to send the message:
 
-Eliminated the server "TTY in use" and "TTY available messages" from
-the cidcall.log and clients.  They are only available in debug mode.
+    sleep 600; echo "Check food ready" | nc localhost 3333
 
-Added modem country setting information to the doc/Modem-init file.
+Added a logfile for ncidd.  The configuration file has a variable
+called verbose that controls how much content goes into it.  The
+default is 1, but the range is 1-9.
 
-Organized all server debug messages to print through a single function.
+The server debug syntax changed: For maximum output it is -Dv5 instead
+of the previous -Dvvv.  The default output for -D is at the level set by
+verbose.  The verbose default is 1 so -D is usually the same as -Dv1.
 
-The server debug syntax changed: For maximum output it is -Dvvv instead
-of the previous -DDv.
-
-Added a TODO list, in the source, to indicate possible directions, and
-to encourage suggestions and submissions of patches for new features.
+Applied some fixes to ncidd to prevent it from hanging when certain
+programs took control of the modem.

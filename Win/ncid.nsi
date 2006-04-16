@@ -1,7 +1,7 @@
 ;NCIDpop Windows Client installer
 ;Written by Rich West 01/27/2006
 ;Updated by Lyman Epp 02/11/2006
-;Updated by John Chmielewski 02/14/2006
+;Updated by John Chmielewski 04/14/2006
 
 ;--------------------------------
 ;Include Modern UI
@@ -12,9 +12,9 @@
 
 ;Application
 
-	!define NAME            NCID
+	!define NAME            ncid
+	!define VERSION         0.63
 	!define PROG            "${NAME}.exe"
-	!define VERSION         0.62
 	!define LICENSE_FILE    "LICENSE.txt"
 	!define WEB_PAGE        "http://ncid.sourceforge.net"
 	!define SPLASH_IMAGE    "ncid_splash.bmp"

@@ -1,4 +1,4 @@
-/var/log/cidcall.log /var/log/ciddata.log {
+/var/log/ncidd.log /var/log/cidcall.log /var/log/ciddata.log {
     sharedscripts
     missingok
     monthly

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# cidlog - caller ID report
+# cidupdate - update Caller ID aliases in alias file
 
 # Created by Aron Green on Mon Nov 25, 2002
 # based on cidlog and cidalias
@@ -8,22 +8,24 @@
 # Changed $CONFIG value on Sat May 21, 2005 by John L. Chmielewski
 # Modified by John L. Chmielewski on Sat Aug 13, 2005
 #   - Changed from using config file to alias file
+# Modified by John L. Chmielewski on Fri Apr 14, 2006
+#   - Changed name from cidlogupd to cidupdate, updated variable names
 
 use Getopt::Std;
 
 $ALIAS = "/etc/ncid/ncidd.alias";
-$LOG = "/var/log/cidcall.log";
+$CIDLOG = "/var/log/cidcall.log";
 
 getopts('a:l:') ||
-    die "Usage: cidlogupd [-a aliasfile] [-l logfile] [newlogfile]\n";
+    die "Usage: cidupdate [-a aliasfile] [-c cidlog] [newcidlog]\n";
 
 ($alias = $opt_a) || ($alias = $ALIAS);
-($log = $opt_l) || ($log = $LOG);
-($newlog = shift) || ($newlog = sprintf("%s.new", $log));
+($cidlog = $opt_c) || ($cidlog = $CIDLOG);
+($newcidlog = shift) || ($newcidlog = sprintf("%s.new", $cidlog));
 
 open(ALIASFILE, $alias) || die "Could not open $alias\n";
-open(LOGFILE, $log) || die "Could not open $log\n";
-open(NEWLOGFILE, ">$newlog") || die "Could not open $newlog\n";
+open(CIDLOG, $cidlog) || die "Could not open $cidlog\n";
+open(NEWCIDLOG, ">$newcidlog") || die "Could not open $newcidlog\n";
 
 while (<ALIASFILE>) {
     if (/^alias/) {
@@ -36,7 +38,7 @@ while (<ALIASFILE>) {
 
 #CID: *DATE*11242002*TIME*2112*LINE*1*NMBR*9549142285*MESG*NONE*NAME*Cell*
 
-while (<LOGFILE>) {
+while (<CIDLOG>) {
     if (/CID|EXTRA/) {
         ($date, $time, $number, $mesg, $name) = 
             /.*DATE.(\d+).*TIME.(\d+).*NU*MBE*R.([-\w\s]+).*MESG.(\w+).*NAME.(.*)\*+$/;
@@ -54,10 +56,10 @@ while (<LOGFILE>) {
             if ($type eq "NMBR" && $number eq $from) {$number = $to;}
         }
     }
-    printf(NEWLOGFILE
+    printf(NEWCIDLOG
         "CID: *DATE*%s*TIME*%s*LINE*%s*NMBR*%s*MESG*%s*NAME*%s*\n",
         $date, $time, $line, $number, $mesg, $name);
     } else {
-        printf(NEWLOGFILE);
+        printf(NEWCIDLOG);
     }
 }

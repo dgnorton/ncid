@@ -19,7 +19,15 @@
 #   set ITEM = VALUE [ITEM = VALUE] ...
 #       where ITEM = cidalias, cidlog, datalog, initcid, initstr,
 #                    lockfile, port, ttyclocal, ttyport, ttyspeed,
-#                    nomodem
+#                    nomodem, verbose
+
+##########################
+# Log file verbose level #
+##########################
+
+# Set the verbose level
+# The default value is 1, the range is 1-9
+# set verbose 3
 
 ############################
 # Log and Info for Clients #

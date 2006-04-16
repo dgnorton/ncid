@@ -1,9 +1,9 @@
 # Modem CID test
 # Thu Aug 11, 2005
 
-Start ncidd in test mode:
+Start ncidd in test mode and verbose level 2:
 
-    ncidd -Dv
+    ncidd -Dv2
 
 You should see something simular to (the important part is the last line):
 

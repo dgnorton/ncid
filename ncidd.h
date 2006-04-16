@@ -55,7 +55,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.62"
+#define VERSION     "0.63"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -67,6 +67,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
              [-h            | --help]\n\
              [-I modemstr   | --initstr modemstr]\n\
              [-i cidstr     | --initcid cidstr]\n\
+             [-L logfile    | --logfile logfile]\n\
              [-l lockfile   | --lockfile lockfile]\n\
              [-n 0/1        | --nomodem 0/1]\n\
              [-p portnumber | --port portnumber]\n\
@@ -75,7 +76,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
              [-T 0/1        | --sttyclocal 0/1]\n\
              [-t ttyport    | --ttyport ttyport]\n\
              [-V            | --version]\n\
-             [-v            | --verbose]\n\
+             [-v 1-9        | --verbose 1-9]\n\
 "
 
 #ifndef TTYPORT
@@ -86,6 +87,9 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #endif
 #ifndef DATALOG
 #define DATALOG     "/var/log/ciddata.log"
+#endif
+#ifndef LOGFILE
+#define LOGFILE     "/var/log/ncidd.log"
 #endif
 
 #define STDOUT      1
@@ -143,6 +147,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define CIDNAME      0x08
 #define CIDMESG      0x10
 #define CIDALL3      0x07
+#define CIDALT3      0x0B
 #define CIDALL4      0x0F
 
 enum
@@ -151,10 +156,14 @@ enum
     LEVEL2,
     LEVEL3,
     LEVEL4,
-    LEVEL5
+    LEVEL5,
+    LEVEL6,
+    LEVEL7,
+    LEVEL8,
+    LEVEL9
 };
 
 extern char *ttyport, *TTYspeed;
 extern char *cidlog, *datalog, *initstr, *initcid, *lockfile, *ttyport;
-extern int setcid, port, sendlog, sendinfo, clocal, nomodem, ttyspeed;
+extern int setcid, port, sendlog, sendinfo, clocal, nomodem, ttyspeed, verbose;
 extern int logMsg(int level, char *message);

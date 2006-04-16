@@ -18,6 +18,7 @@
 [-h            | --help]
 [-I modemstr   | --initstr modemstr]
 [-i cidstr     | --initcid cidstr]
+[-L logfile    | --logfile logfile]
 [-l lockfile   | --lockfile lockfile]
 [-n 0/1        | --nomodem 0/1]
 [-p portnumber | --port portnumber]
@@ -26,7 +27,7 @@
 [-T ttyspeed   | --ttyspeed ttyspeed]
 [-t ttyport    | --ttyport ttyport]
 [-V            | --version]
-[-v            | --verbose]
+[-v 1-9        | --verbose 1-9]
 .fi
 .SH DESCRIPTION
 .B NCIDD
@@ -51,6 +52,10 @@ This will allow, for example, a client to send the call information
 to a pager or cell phone on a specific ring count.  If the ring count
 is not reached, it is assumed the phone was answered and there is no
 need to send a page or cell phone notification.
+.P
+.B NCIDD
+will accept a text message for a client, and then send it to all
+connected clients, including the one that sent it.
 .SS "Options"
 .PD 0
 .TP 35
@@ -91,6 +96,11 @@ CID initialization string
 Default: AT+VCID=1
 .br
 if it fails: AT#CID=1
+.TP
+.B -L <file> | --logfile <file>
+Server logfile.
+.br
+Default: /var/log/ncidd.log
 .TP
 .B -l <file> | --lockfile <file>
 Modem lockfile.
@@ -139,9 +149,9 @@ Default: /dev/modem
 .B -V | --version
 Display the version number.
 .TP
-.B -v | --verbose
-Output information, use with the -D option. 
-Set option more than once for more output.
+.B -v 1-9 | --verbose 1-9
+Output information, used for the logfile and the -D option.
+Set higher number for more information.  The range is 1-9.
 .PD
 .SH CONFIGURATION
 The ncidd.conf(5) file is used to set options or create aliases.

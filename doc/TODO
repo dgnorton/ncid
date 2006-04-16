@@ -10,16 +10,13 @@ The current TODO list (in no particular order)
     - Make the ncid client handle multiple modules.
       or an easy way to start multiple ncid clients with separate modules
     - Add support for PBX.
-    - Clean up web site
+    - Redo web site
     - Improve NCID documentation and installation.
-    - Add a server log file, called ncidd.log.  It would log messages if
-      the log file exists, and have multiple levels of content.
 
 The MAYBE TODO list (in no particular order)
 
     - Add ringtone support.
     - Add a firefox module.
-    - Provide a way to send user messages to all clients.
     - Add SSL between server and client for secure use over Internet.
     - Rewrite the ncid client and split it into two:
         a GUI client using GTK+

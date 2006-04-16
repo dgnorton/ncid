@@ -19,6 +19,7 @@ To implement a client:
         - parse CID and CIDLOG lines based on name fields, so if fields
           is added, the old client will still work
         - clients are allowed to connect and disconnect as they please
+        - clients are allowed to send a text message to the server
 
 To implement a server:
         - listen to port 3333 for a connection,
@@ -32,3 +33,4 @@ To implement a server:
         - send a CIDINFO line after ringing stops, with a ring count of 0
         - maintain a constant TCP connection with the clients
         - detect clients as they come and go
+        - if client sends text, sent it to all connected clients

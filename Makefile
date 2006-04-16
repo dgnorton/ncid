@@ -54,6 +54,7 @@ ALIAS       = $(CONFDIR)/ncidd.alias
 MODEMDEV    = $(DEV)/modem
 CALLLOG     = $(LOG)/cidcall.log
 DATALOG     = $(LOG)/ciddata.log
+LOGFILE     = $(LOG)/ncidd.log
 
 SITE        = $(DIST:.dist=)
 WISH        = wish
@@ -66,7 +67,8 @@ DEFINES = -DCIDCONF=\"$(CONF)\" \
           -DCIDALIAS=\"$(ALIAS)\" \
           -DCIDLOG=\"$(CALLLOG)\" \
           -DTTYPORT=\"$(MODEMDEV)\" \
-          -DDATALOG=\"$(DATALOG)\"
+          -DDATALOG=\"$(DATALOG)\" \
+          -DLOGFILE=\"$(LOGFILE)\"
 
 CFLAGS  = -O $(DEFINES) $(MFLAGS)
 
@@ -87,7 +89,7 @@ default:
 	@echo "    make install-mac"
 	@echo "    make cygwin"
 
-local: $(SITE) $(PROG) tooldir scriptdir
+local: $(PROG) $(SITE) tooldir scriptdir
 
 $(PROG): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
