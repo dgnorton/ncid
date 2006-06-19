@@ -1,8 +1,11 @@
 The ncidtools are perl scripts that run under Linux and UNIX.
 
-cidalias	- list alias definitions in the ncidd alias file
-cidcall		- list calls in the CID call file
-cidupdate	- update aliases in the CID alias file
+cidalias	   - list alias definitions in the ncidd alias file
+cidcall		   - list calls in the CID call file
+cidupdate	   - update aliases in the CID alias file
+ncidsip        - client that sends a CID Message Line to the server
+ncidsip-init   - init file for ncidsip
+ncidsip.conf   - configuration file for ncidsip-init
 
 The Makefile is used to create the runable scripts.
 

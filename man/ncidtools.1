@@ -3,34 +3,34 @@
 .SH NAME
 .B cidlog\^
 - view Caller ID log file
-.P
+.PP
 .B cidalias\^
 - view Caller ID alias definitions
-.P
+.PP
 .B cidlogupd\^
 - update Caller ID aliases in log file
 .SH SYNOPSIS
 .B cidcall\^
 [-r | -m] [cidlog]
-.P
+.PP
 .B cidalias\^
 [-r] [aliasfile]
-.P
+.PP
 .B cidupdate\^
 [-a aliasfile] [-l cidlog] [newcidlog]
 .SH DESCRIPTION
 The script,
 .BR cidcall ,
 displays the current CID call file.
-.P
+.PP
 The script,
 .BR cidalias ,
 displays the aliases in the ncidd.alias file.
-.P
+.PP
 The Script,
 .BR cidupdate ,
 updates the CID log file using the aliases found in the ncidd.alias file.
-.SS "Options"
+.SH "OPTIONS"
 .PD 0
 .TP 14
 .B -r

@@ -1,0 +1,99 @@
+ncid - Network CallerID Cygwin Install
+
+NOTES:
+    The server has been tested with ncidsip running on a Linux
+    system.
+
+    - The server does not function with a modem so it is configured
+      for "noserial".  It requires ncidsip to function.
+    - The supplied ncidsip client requires perl and the Net-Pcap module
+      http://search.cpan.org/CPAN/authors/S/SA/SAPER/Net-Pcap-0.12/Pcap.tar.gz
+    - Net-Pcap requires WinPcap: http://www.winpcap.org/
+    - The Net-Pcap module has not been successfully built under cygwin
+
+INSTALL:
+
+	Install Cygwin from http://cygwin.com/
+		- download setup.exe into a empty folder
+        - Run setup.exe
+        - select a download site
+        - Look at the Perl catagory and set to install Perl
+        - Let setup download and install cygwin
+
+	Install ncid:
+        - The NCID package normally installs in /usr/local:
+            /usr/local/bin/ncidd
+            /usr/local/bin/ncidsip
+            /usr/local/bin/ncid
+            /usr/local/bin/cidalias
+            /usr/local/bin/cidlog
+            /usr/local/bin/cidlogupd
+            /usr/local/etc/ncid/ncidd.conf
+            /usr/local/etc/ncid/ncidd.alias
+            /usr/local/etc/ncid/ncid.conf
+            /usr/local/etc/ncid/ncidrotate.conf
+            /usr/local/etc/ncid/ncidscript.conf
+            /usr/local/etc/ncid/ncidsip.conf
+            /usr/local/etc/rc.d/init.d/ncid
+            /usr/local/etc/rc.d/init.d/ncidd
+            /usr/local/etc/rc.d/init.d/ncidsip
+            /usr/local/share/ncid/README-page
+            /usr/local/share/ncid/ncid-page
+            /usr/local/share/ncid/ncid-samba
+            /usr/local/share/ncid/ncid-speak
+            /usr/local/share/ncid/ncidrotate
+            /usr/local/share/man/man1/ncid.1
+            /usr/local/share/man/man1/ncidscripts.1
+            /usr/local/share/man/man1/ncidtools.1
+            /usr/local/share/man/man5/ncidd.conf.5
+            /usr/local/share/man/man8/ncidd.8
+            /usr/local/share/man/man8/ncidsip.8
+            /var/log/cidcall.log
+        - If a binary package is available:
+            Copy ncid-VERSION-cygwin.tgz to cygwin, then:
+                tar -xzvf ncid-VERSION-cygwin.tgz -C /
+                EXAMPLE: tar -xzvf ncid-0.64-cygwin.tgz -C /
+        - if there is no binary package, you need to compile the source:
+            Copy ncid-VERSION.tar.gz
+            cd ncid
+            make cygwin (compiles for /usr/local, see top of Makefile)
+            make install-cygwin
+
+CONFIGURE:
+
+    The Makefile preconfigures ncidd.conf for the Cygwin, but you may
+    want to change some of the defaults.
+
+START:
+
+    - start the server and client:
+        ncidd
+        ncid &
+    - Call yourself and see if it works.
+
+TEST:
+
+    - The easiest way to test the setup is to run ncidd in debug mode,
+      it will stay attached to the terminal and not go into deamon mode:
+		ncidd -D
+    - to get more information, add the verbose flag:
+        ncidd -Dv3
+    - to also look at the alias structure
+        ncidd -Dv5
+
+    - The last line should be: Modem set for CallerID.
+    - If it says: ERROR
+      try the CID strings in ncidd.conf or in doc/CID-init
+
+    - Call yourself and you should see the CallerID lines.
+    - If you only see RING for each ring, the modem does not support
+      Caller ID.  You should see the Caller ID lines betreen the
+      first and second RING.
+    - If you see: /dev/ttyS0: No such file or directory
+      you need to set sttyclocal in ncidd.conf
+
+    - At any point, you can use command lines options to vary
+      things like modem init and CID init.
+
+	- Once it works, you would normally start it:
+        ncidd

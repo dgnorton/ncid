@@ -36,6 +36,7 @@ struct setword setword[] = {
     {"ttyclocal",  WORDNUM,            0,         &clocal,   OFF, ON},
     {"ttyspeed",   WORDSTR,            &TTYspeed, 0,         0,    0},
     {"nomodem",    WORDNUM,            0,         &nomodem,  OFF, ON},
+    {"noserial",   WORDNUM,            0,         &noserial, OFF, ON},
     {"verbose",    WORDNUM,            0,         &verbose,  1,    9},
     {0,            0,                  0,         0,         0,    0}
 };
@@ -193,9 +194,6 @@ doSend(char *inptr, int lc)
         }
 
         ++(*sendclient[num].value);
-        sprintf(buf, "Configured to send '%s' to clients.\n",
-            sendclient[num].word);
-        logMsg(LEVEL1, buf);
     }
 }
 

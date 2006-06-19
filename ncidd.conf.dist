@@ -19,7 +19,7 @@
 #   set ITEM = VALUE [ITEM = VALUE] ...
 #       where ITEM = cidalias, cidlog, datalog, initcid, initstr,
 #                    lockfile, port, ttyclocal, ttyport, ttyspeed,
-#                    nomodem, verbose
+#                    nomodem, noserial, verbose
 
 ##########################
 # Log file verbose level #
@@ -27,7 +27,7 @@
 
 # Set the verbose level
 # The default value is 1, the range is 1-9
-# set verbose 3
+# set verbose = 3
 
 ############################
 # Log and Info for Clients #
@@ -87,6 +87,16 @@ send cidinfo
 # The lockfile name is generated automatically
 # If tty port is /dev/modem, lockfile is: /var/lock/LCK..modem
 # set lockfile = /var/lock/LCK..ttyS0
+
+#######################
+# Serial or No Serial #
+#######################
+
+# Require a serial device for startup.  This is useful if you are
+# using a network based plugin
+#  network: noserial = 1 (do not try to initialize a serial port)
+#  serial: noserial = 0 (default - Look for a serial port)
+# set noserial = 1
 
 #####################
 # Modem or No Modem #

@@ -1,4 +1,4 @@
-ncid - Network CallerID Client Install
+ncid - Network CallerID Install
 
 INSTALL:
 
@@ -14,6 +14,7 @@ INSTALL:
 	Install ncid:
         - The NCID package normally installs in /usr/local:
             /usr/local/sbin/ncidd
+            /usr/local/sbin/ncidsip
             /usr/local/bin/ncid
             /usr/local/bin/cidalias
             /usr/local/bin/cidlog
@@ -24,16 +25,21 @@ INSTALL:
             /usr/local/share/ncid/ncid-speak
             /usr/local/share/ncid/ncidrotate
             /usr/local/etc/ncidd.conf
+            /usr/local/etc/ncidd.alias
+            /usr/local/etc/ncid.conf
+            /usr/local/share/ncid/ncidscript.conf
+            /usr/local/share/ncid/ncidsip.conf
             /usr/local/man/man1/ncid.1
             /usr/local/man/man1/ncidscripts.1
             /usr/local/man/man1/ncidtools.1
             /usr/local/man/man5/ncidd.conf.5
             /usr/local/man/man8/ncidd.8
+            /usr/local/man/man8/ncidsip.8
             /var/log/cidcall.log
         - If a binary package is available:
             Copy ncid-VERSION.mac-osx.tgz to the mac, then:
-                tar -xzvf ncid-VERSION.mac-osx.tgz -C /
-                EXAMPLE: tar -xzvf ncid-0.50.mac-osx.tgz -C /
+                tar -xzvf ncid-VERSION-mac-osx.tgz -C /
+                EXAMPLE: tar -xzvf ncid-0.64.mac-osx.tgz -C /
         - if there is no binary package, you need to compile the source:
             Copy ncid-VERSION.tar.gz
             cd ncid
@@ -58,9 +64,9 @@ TEST:
       it will stay attached to the terminal and not go into deamon mode:
 		ncidd -D
     - to get more information, add the verbose flag:
-        ncidd -Dvv3
+        ncidd -Dv3
     - to also look at the alias structure
-        ncidd -Dvv5
+        ncidd -Dv5
 
     - The last line should be: Modem set for CallerID.
     - If it says: ERROR

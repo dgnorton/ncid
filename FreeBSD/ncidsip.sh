@@ -16,7 +16,7 @@
 #   NetBSD 1.5+ rcorder script lines.  The format of the following two
 #   lines is very strict -- please don't add additional spaces!
 #
-# PROVIDE: ncid 
+# PROVIDE: ncidsip
 # REQUIRE: DAEMON
 #
 
@@ -87,25 +87,25 @@ else
 fi
 
 #
-# See if the NCID client (ncid) is running...
+# See if the NCID client (ncidsip) is running...
 #
 
 case "`uname`" in
 	HP-UX* | AIX* | SINIX*)
-		pid=`ps -e | awk '{if (match($5, ".*/ncid$") || $5 == "ncid") print $1}'`
+		pid=`ps -e | awk '{if (match($5, ".*/ncidsip$") || $5 == "ncidsip") print $1}'`
 		;;
 	IRIX* | SunOS*)
-		pid=`ps -e | nawk '{if (match($5, ".*/ncid$") || $5 == "ncid") print $1}'`
+		pid=`ps -e | nawk '{if (match($5, ".*/ncidsip$") || $5 == "ncidsip") print $1}'`
 		;;
 	UnixWare*)
-		pid=`ps -e | awk '{if (match($7, ".*/ncid$") || $7 == "ncid") print $1}'`
+		pid=`ps -e | awk '{if (match($7, ".*/ncidsip$") || $7 == "ncidsip") print $1}'`
 		. /etc/TIMEZONE
 		;;
 	OSF1*)
-		pid=`ps -e | awk '{if (match($6, ".*/ncid$") || $6 == "ncid") print $1}'`
+		pid=`ps -e | awk '{if (match($6, ".*/ncidsip$") || $6 == "ncidsip") print $1}'`
 		;;
 	Linux* | *BSD* | Darwin*)
-		pid=`ps ax | awk '{if (match($6, ".*/ncid$") || $6 == "ncid") print $1}'`
+		pid=`ps ax | awk '{if (match($6, ".*/ncidsip$") || $6 == "ncidsip") print $1}'`
 		;;
 	*)
 		pid=""
@@ -118,42 +118,41 @@ esac
 
 case $1 in
 	start | restart | reload)
-		if $IS_ON ncid; then
+		if $IS_ON ncidsip; then
 			if test "$pid" != ""; then
 				kill -HUP $pid
 			else
 				prefix=/usr/local
 				exec_prefix=/usr/local
-				opts="--no-gui -r 3 -C -P"
-				extprog="ncid-page"
+				opts=""
                 [ -f $ConfigFile ] && . $ConfigFile
-				${exec_prefix}/bin/ncid ${options} ${extprog} &
+				${exec_prefix}/bin/ncidsip ${options} &
 			fi
-#			$ECHO "ncid: client ${1}ed."
-			echo -n "ncid "
+#			$ECHO "ncidsip: client ${1}ed."
+			echo -n "ncidsip "
 		else
-			$ECHO "ncid: client stopped."
+			$ECHO "ncidsip: client stopped."
 		fi
 		;;
 
 	stop)
 		if test "$pid" != ""; then
 			kill $pid
-#			$ECHO "ncid: client stopped."
-			echo -n "ncid "
+#			$ECHO "ncidsip: client stopped."
+			echo -n "ncidsip "
 		fi
 		;;
 
 	status)
 		if test "$pid" != ""; then
-			echo "ncid: client is running."
+			echo "ncidsip: client is running."
 		else
-			echo "ncid: client is not running."
+			echo "ncidsip: client is not running."
 		fi
 		;;
 
 	*)
-		echo "Usage: ncid {reload|restart|start|status|stop}"
+		echo "Usage: ncidsip {reload|restart|start|status|stop}"
 		exit 1
 		;;
 esac

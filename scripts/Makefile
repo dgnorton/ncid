@@ -36,5 +36,5 @@ clobber: clean
 files:	$(FILES)
 
 % : %.sh
-	sed '/ConfigDir/s,/usr/local,$(prefix2),' $< > $@
+	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod 755 $@

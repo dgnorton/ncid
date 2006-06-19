@@ -32,18 +32,18 @@ Syntax
 Defined Values
 
 The supported countries are:
-Country Code Country Code Country Code
-Austria     0A  Iceland     52  Poland  8A
-Belgium     0F  Ireland     57  Portugal    8B
-Cyprus  2D  Israel  58  Spain   A0
-Czech Republic  2E  Italy   59  Slovakia    FB
-Denmark     31  Latvia  F8  Slovenia    FC
-Estonia     F9  Liechtenstein   68  Sweden  A5
-Finland     3C  Lithuania   F7  Switzerland     A6
-France  3D  Luxembourg  69  TBR-21(Default)     F6
-Germany     42  Malta   B4  Turkey  AE
-Greece  46  Netherlands     7B  United Kingdom  B4
-Hungary     51  Norway  82       
+Country        Code Country       Code Country        Code
+Austria         0A  Iceland        52  Poland          8A
+Belgium         0F  Ireland        57  Portugal        8B
+Cyprus          2D  Israel         58  Spain           A0
+Czech Republic  2E  Italy          59  Slovakia        FB
+Denmark         31  Latvia         F8  Slovenia        FC
+Estonia         F9  Liechtenstein  68  Sweden          A5
+Finland         3C  Lithuania      F7  Switzerland     A6
+France          3D  Luxembourg     69  TBR-21(Default) F6
+Germany         42  Malta          B4  Turkey          AE
+Greece          46  Netherlands    7B  United Kingdom  B4
+Hungary         51  Norway         82       
 
 Default The Factory default is F6 (TBR-21).
 

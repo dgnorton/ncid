@@ -1,5 +1,6 @@
 FreeBSD Init scripts:
 ncidd.sh
 ncid.sh
+ncidsip.sh
 
 See Doc/INSTALL-FreeBSD for install instructions

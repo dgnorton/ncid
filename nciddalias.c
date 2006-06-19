@@ -68,6 +68,7 @@ doAlias()
  *        alias from = to
  *        alias NMBR from = to [if name_value]
  *        alias NAME from = to [if number_value]
+ *        alias LINE from = to
  */
 
 getAlias(char *inptr, int lc)
@@ -80,7 +81,8 @@ getAlias(char *inptr, int lc)
 
     if (!strcmp(word, "NMBR")) setAlias(inptr, lc, word, NMBRONLY);
     else if (!strcmp(word, "NAME")) setAlias(inptr, lc, word, NAMEONLY);
-    else setAlias(inptr, lc, word, BOTH);
+    else if (!strcmp(word, "LINE")) setAlias(inptr, lc, word, LINEONLY);
+    else setAlias(inptr, lc, word, NMBRNAME);
 }
 
 setAlias(char *inptr, int lc, char *wdptr, int type)
@@ -89,7 +91,7 @@ setAlias(char *inptr, int lc, char *wdptr, int type)
     char *mem;
 
     if ((cnt = nextAlias(lc)) < 0) return 0;
-    if (type == BOTH || (inptr = getWord(inptr, wdptr, lc)))
+    if (type == NMBRNAME || (inptr = getWord(inptr, wdptr, lc)))
     {
         mem = cpy2mem(wdptr, mem);
         alias[cnt].from = mem;
@@ -101,7 +103,7 @@ setAlias(char *inptr, int lc, char *wdptr, int type)
                 {
                     mem = cpy2mem(wdptr, mem);
                     alias[cnt].to = mem;
-                    if (type == BOTH) alias[cnt].type = type;
+                    if (type == NMBRNAME) alias[cnt].type = type;
                     else
                     {
                         if (inptr = getWord(inptr, wdptr, lc))

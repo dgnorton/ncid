@@ -44,6 +44,11 @@ Rich West
     Provided a NSIS script to for a basic installer for the ncid
     windows client.
 
+Clayton O'Neill
+    Modified ncidd to be able to run with no serial device.
+    Added the ability to inject CID from clients
+    Contributed the ncid-sipinject program which was renamed ncidsip
+
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
 	Troy Carpenter
 	Mace Moneta
@@ -55,3 +60,5 @@ New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Ken Appell
     Matt Short
     Rick Matthews
+    Phil Fitzpatrick
+    Adam 'Starblazer' Romberg

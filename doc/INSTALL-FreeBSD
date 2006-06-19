@@ -8,6 +8,7 @@ INSTALL:
 
     - The NCID package normally installs in /usr/local:
         /usr/local/sbin/ncidd
+        /usr/local/sbin/ncidsip
         /usr/local/bin/ncid
         /usr/local/bin/cidalias
         /usr/local/bin/cidlog
@@ -18,16 +19,21 @@ INSTALL:
         /usr/local/share/ncid/ncid-speak
         /usr/local/share/ncid/ncidrotate
         /usr/local/etc/ncidd.conf
+        /usr/local/etc/ncidd.alias
+        /usr/local/etc/ncid.conf
+        /usr/local/share/ncid/ncidscript.conf
+        /usr/local/share/ncid/ncidsip.conf
         /usr/local/man/man1/ncid.1
         /usr/local/man/man1/ncidscripts.1
         /usr/local/man/man1/ncidtools.1
         /usr/local/man/man5/ncidd.conf.5
         /usr/local/man/man8/ncidd.8
+        /usr/local/man/man8/ncidsip.8
         /var/log/cidcall.log
     - If a binary package is available:
         Copy ncid-VERSION.freebsd.tgz to the FreeBSD computer, then:
-            tar -xzvf ncid-VERSION.freebsd.tgz -C /
-            EXAMPLE: tar -xzvf ncid-0.50.freebsd.tgz -C /
+            tar -xzvf ncid-VERSION-freebsd.tgz -C /
+            EXAMPLE: tar -xzvf ncid-0.64-freebsd.tgz -C /
     - install NCID package:
         - if there is no binary package, you need to compile the source:
         gmake freebsd (compiles for /usr/local, see top of Makefile)

@@ -1,5 +1,103 @@
 ncid - Network CallerID
 
+Version 0.64
+    - README: updated for ncidsip
+    - Makefile: chenged make freebsd to gmake freebsd
+    - ncidd.h: "noserial" to USAGE define, added: extern int noserial;
+               increased MODEMTRY from 2 to 6
+    - ncidd.c: added global variable "noserial"
+               changed "buf" to "msgbuf" for most logMsg() calls
+               added "if (!noserial)" in several places
+               changed LEVEL2 to LEVEL1 for some logMSG() calls
+               added logMsg() calls
+               getOptions() - added options: -n and --noserial
+                            - case 'v': added findword("verbose") line
+                            - case 's': changed to increment a pointer
+               tcpOpen() - changed AF_INET to PF_INET
+               writeLog() - changed logMsg() to write message, not contents
+               doPoll() - added "Client sent message" to logMsg()
+                        - in tests for error conditions, "if else" were
+                          changed to "if"
+                        - added "if" for POLLIN and POLLPRI because of the
+                          error test change
+                        - /* Modem or device returned data */: changed
+                          Terminate String and strip <CR> and <LF>
+                        - /* Client sent message to server */, added
+                          strip <CR> and <LF>
+               formatCID() - added else in NetCallerID code NMBR field
+                           - added test for LINE field in NetCallerID
+                           - identified format for Message CID line
+                           - added 3rd argument to userAlias() call
+               main() - while loop: changed TCSANOW to TCSAFLUSH,
+                        TTY in use and available from LEVEL4 to LEVEL1
+                      - added for loop to indicate send configured messages
+               initModem() - added LEVEL3 message to MODEMTRY for statement
+                           - added test for '\n' in modem output
+               sendLog() - look at return of write() and retry if error
+                           is EAGAIN, added logMsg for errors not EAGAIN
+               userAlias() - added third argument: char *line
+                           - changed 'BOTH' to 'NMBRNAME'
+                           - added case LINEONLY
+    - ncidconf.c: added "noserial" to setword structure
+                  moved configured messages from doSend() to ncidd.c:main()
+    - ncidalias.h: - changed BOTH to NMBRNAME
+                   - added LINEONLY define
+    - ncidalias.c: getalias() - changed BOTH to NMBRNAME
+                              - added strcmp(word, "LINE") line
+                   setalias() - changed BOTH to NMBRNAME
+    - ncid.init.dist: changed /var/lock/subsys/$shell to /var/lock/subsys/$prog
+    - ncidd.alias: added comment  and example for the new LINE alias
+    - ncid.init.dist: removed the -A option
+    - ncid.sh: sendCID() - added the --tivo/-T option
+                         - made default output same as -All, but added cidline
+    - ncid.spec: updated
+    - doc/CONTRIBUTORS: updated
+    - doc/INSTALL-Cygwin: added
+    - doc/INSTALL-FreeBSD: updated
+    - doc/INSTALL-Mac: updated
+    - doc/Modem-CID-test: updated for ncid release 0.63 and newer
+    - doc/Modem-init: Formatted country code table
+    - doc/NCID-DataFormats: updated to include MSG CID line format
+                            and ncid default output change
+    - doc/PROTOCOL: updated
+    - doc/ReleaseNotes: updated
+    - doc/TODO: updated
+    - FreeBSD/README: updated
+    - FreeBSD/Makefile: updated
+    - FreeBSD/ncid.sh: updated
+    - FreeBSD/ncidsip.sh: added
+    - man/Makefile: changed txt and html names to include man page section
+                    added ncidsip.8
+    - man/ncid.1:changed for improved html version
+    - man/ncidscripts.1:changed for improved html version
+    - man/ncidtools.1:changed for improved html version
+    - man/ncid.conf.5:changed for improved html version
+    - man/ncidd.alias.5:changed for improved html version
+    - man/ncidd.conf.5:changed for improved html version
+    - man/ncidscript.conf.5:changed for improved html version
+    - man/ncidd.8: corrected, updated, and changed for improved html version
+    - man/ncidsip.8: new
+    - scripts/ncidscript.conf: - removed the first lien: #! /bin/sh
+                               - remove the -A options from $opts
+                               - moved the "extprog=" lines to before the
+                                 "opts=" line
+    - scripts/ncid-mythtv.sh: removed references to -All and added read CIDLINE
+    - scripts/ncid-page.sh: removed references to -All and added read CIDLINE
+                            added test for CIDLINE to see if it is the default
+    - scripts/ncid-samba.sh: removed references to -All and added read CIDLINE
+    - scripts/ncid-speak.sh: removed references to -All and added read CIDLINE
+    - tools/Makefile: updated
+    - tools/ncidsip.pl: added
+    - tools/ncidsip.init.dist: added
+    - tools/ncidsip.conf: added
+    - test/README: reformatted and updated
+    - test/testclient: changed 'nc -lp 3000' to '|nc -l localhost 3000'
+    - test/testclient.data: updated for the 'LINE' field
+    - test/testlog: removed messages that appear in ncidd.log
+    - test/testlog-display: removed messages that appear in ncidd.log
+    - test/testserver: added
+    - Win/ncid.nsi: updated version number
+
 Version 0.63
     - README: revised, corrected spelling errors, and updated
     - Makefile: updated

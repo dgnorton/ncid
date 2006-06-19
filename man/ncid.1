@@ -6,12 +6,12 @@
 .SH SYNOPSIS
 .B ncid\^
 [options] [arguments]
-.P
+.PP
 .B tivocid\^
 [options] [arguments]
-.P
+.PP
 .I Options:\^
-.P
+.PP
 .nf
 [--no-gui]
 [--all             | -A]
@@ -22,9 +22,9 @@
 [--verbose         | -V]
 [--ring count      | -r count]
 .fi
-.P
+.PP
 .I Arguments:\^
-.P
+.PP
 .nf
 [IP_ADDRESS | HOSTNAME]
 [PORT_NUMBER]
@@ -36,11 +36,11 @@ In the default GUI mode, if the server is configured to send the
 CID Call Log, it will load the call log in the CID log window at
 startup.  The call log is updated by \fIncid\fR whenever a call
 is received.
-.P
+.PP
 .B NCID
 also has a message window that will send a single line message
 to the server which, in turn, will send it to all connected clients.
-.P
+.PP
 .B NCID
 runs on Linux and Windows 98, ME, XP, 2000, NT.  In the GUI mode, it
 will pop up, and go on top whenever a call comes in.  In addition,
@@ -48,21 +48,21 @@ it will display itself on whatever desktop is active in Linux.
 If \fIncid\fR is given the --no-gui option, it will either output
 to a external program, output module, or use the verbose mode to
 display the CID information in a terminal window.
-.P
+.PP
 If \fIncid\fR is named \fItivocid\fR, it will start in a no-gui mode
 and output to a external program called \fIout2osd\fR which displays
 the Caller ID on a TV using a TiVo.
-.P
+.PP
 If \fIncid\fR is configured to output to a external program, it will
 test for it, and if it is not found, or if it is not executable,
 it will terminate with a error message.
-.P
+.PP
 The configuration file for \fIncid\fR is /etc/ncid/ncid.conf.
-.P
+.PP
 Four output modules are provided, customize as needed in the
 /etc/ncid/ncidscript.conf file:
-.TP 12
 .PD 0
+.TP 12
 .B ncid-mythtv
 Displays Caller ID on a TV using MythTV.
 .TP
@@ -78,14 +78,14 @@ Script can be modified to speak any of the CID information.
 .B ncid-samba
 Send a SMB popup message containing the Caller ID information.
 .PD
-.P
+.PP
 Whenever the server connection is broken, \fIncid\fR will try to reconnect
 once a minute.  It provides a visual record of the countdown and number
 of tries.
-.P
+.PP
 The file menu provides three menu items in the GUI mode:
-.TP 11
 .PD 0
+.TP 11
 .B reconnect
 provides an immediate reconnect and a reload of the call log file.
 This provides a way to synchronize \fIncid\fR with the server call log in
@@ -97,7 +97,7 @@ clears the call log
 .B quit
 terminates \fIncid\fR.
 .PD
-.SS "Options"
+.SH "OPTIONS"
 .PD 0
 .TP 30
 .B --no-gui

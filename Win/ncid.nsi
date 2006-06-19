@@ -13,7 +13,7 @@
 ;Application
 
 	!define NAME            ncid
-	!define VERSION         0.63
+	!define VERSION         0.64
 	!define PROG            "${NAME}.exe"
 	!define LICENSE_FILE    "LICENSE.txt"
 	!define WEB_PAGE        "http://ncid.sourceforge.net"
@@ -186,8 +186,10 @@ Section "${NAME} (Required)" Sec${NAME}
 	; Put file there
 	File "${PROG}"
 	File "README.txt"
-	File "ncid.txt"
-	File "ncid.htm"
+	File "ncid.1.txt"
+	File "ncid.1.html"
+	File "ncid.conf.5.txt"
+	File "ncid.conf.5.html"
 	File "Install-Win.txt"
 	
 	; Write the installation path into the registry
@@ -224,10 +226,14 @@ Section -Shortcuts
 		"$INSTDIR\Uninstall.exe"
 	CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\README.lnk" \
 		"$INSTDIR\README.txt"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID text.lnk" \
-		"$INSTDIR\ncid.txt"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID html.lnk" \
-		"$INSTDIR\ncid.htm"
+        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1 text.lnk" \
+		"$INSTDIR\ncid.1.txt"
+        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.1 text.lnk" \
+		"$INSTDIR\ncid.conf.5.txt"
+        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1 html.lnk" \
+		"$INSTDIR\ncid.1.html"
+        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.5 html.lnk" \
+		"$INSTDIR\ncid.conf.5.html"
 	CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID Web Page.lnk" \
 		${WEB_PAGE}
         ; CreateShortCut "$SMPROGRAMS\Startup\${NAME}.lnk" "$INSTDIR\${PROG}" "$R0"

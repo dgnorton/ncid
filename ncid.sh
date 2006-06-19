@@ -2,7 +2,7 @@
 
 # ncid - Network Caller-ID client
 
-# Copyright (c) 2001, 2002, 2003, 2004, 2005
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006
 # by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # ncid is free software; you can redistribute it and/or modify it
@@ -29,7 +29,7 @@ WISH=wish
 # set nice value on TiVo, if "setpri" found \
 type setpri > /dev/null 2>&1 && setpri rr 1 $$
 # set up TiVo options \
-OPTSTIVO="--no-gui --call-prog --program /var/hack/bin/out2osd"
+OPTSTIVO="--no-gui --tivo --call-prog --program /var/hack/bin/out2osd"
 # if name is tivocid, exec tivosh (for backward compatibility) \
 case $0 in *tivocid) exec tivosh "$0" $OPTSTIVO "$@"; esac
 # look for the --no-gui option \
@@ -64,6 +64,7 @@ set Verbose     0
 set NoGUI       0
 set Callprog    0
 set CallOnRing  0
+set TiVo        0
 
 if {[file exists $ConfigFile]} {
     catch [source $ConfigFile]
@@ -75,7 +76,7 @@ set Count       0
 set Ring        0
 set Try         0
 set Socket      0
-set Version     0.63
+set Version     0.64
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -85,6 +86,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
                [--program PROGRAM | -P PROGRAM]
                [--raw             | -R]
                [--ring count      | -r count]
+               [--tivo            | -T]
                [--verbose         | -V]
          ARGS: [IP_ADDRESS        | HOSTNAME]
                [PORT_NUMBER]}
@@ -292,20 +294,25 @@ proc getField {dataString dataBlock} {
 }
 
 # pass the CID information to an external program
-# Output: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n"
+# Input: "$ciddate\n$cidtime\n$cidnumber\n$cidname\ncidline\n"
 proc sendCID {cid} {
     global All
     global Program
+    global TiVo
 
     if $All {
-        # pass DATE\nTIME\nNUMBER\nNAME\n
+      # pass DATE\nTIME\nNUMBER\nNAME\n
+      catch {exec [lindex $Program 0] << \
+        "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n" &} oops
+      # pass NAME NUMBER
+      } elseif $TiVo {
         catch {exec [lindex $Program 0] << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n" &} oops
-        # pass NAME NUMBER
-        } else {
-            catch {exec [lindex $Program 0] << \
-                "[lindex $cid 3] [lindex $cid 2]\n" &} oops
-        }
+          "[lindex $cid 3] [lindex $cid 2]\n" &} oops
+      } else {
+        # pass DATE\nTIME\nNUMBER\nNAME\nLINE\n
+        catch {exec [lindex $Program 0] << \
+          "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n" &} oops
+      }
 }
 
 # display CID information
@@ -373,6 +380,7 @@ proc getArg {} {
     global Ring
     global CallOnRing
     global ProgDir
+    global TiVo
 
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
@@ -408,6 +416,8 @@ proc getArg {} {
                     set Program [list $optarg]
                 } else {set Program [list $ProgDir/$optarg]}
             }
+            {^-T$} -
+            {^--tivo$} {set TiVo 1}
             {^-V$} -
             {^--verbose$} {set Verbose 1}
             {^-R$} -

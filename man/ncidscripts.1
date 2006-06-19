@@ -3,38 +3,38 @@
 .SH NAME
 .B ncidrotate\^
 - keep lines in logfile after it is rotated
-.P
+.PP
 .B ncid-page\^
 - send CID to a pager or cell phone
-.P
+.PP
 .B ncid-samba\^
 - send CID to samba to create a popup
-.P
+.PP
 .B ncid-speak\^
 - send CID to a text-to-speach program
-.P
+.PP
 .B ncid-mythtv\^
 - display CID on MythTV
 .SH SYNOPSIS
 .B ncidrotate\^
 {prerotate|postrotate}
-.P
+.PP
 .B ncid-page\^
 CIDdate CIDtime CIDnumber CIDname
-.P
+.PP
 .B ncid-samba\^
 CIDdate CIDtime CIDnumber CIDname
-.P
+.PP
 .B ncid-speak\^
 CIDdate CIDtime CIDnumber CIDname
-.P
+.PP
 .B ncid-mythtv\^
 CIDdate CIDtime CIDnumber CIDname
 .SH DESCRIPTION
 These are CID output modules and are normally located in the
 .BR /usr/share/ncid
 directory.
-.P
+.PP
 .B Ncidrotate
 is called by
 .I /etc/logrotate.d/ncidd
@@ -42,7 +42,7 @@ and will keep a number of lines in the logfile after rotation.
 The default is 0 lines kept.  The configuration file for
 logrotate is
 .I /etc/ncid/ncidrotate.conf
-.P
+.PP
 The client,
 .BR ncid ,
 can be configured to call

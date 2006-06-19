@@ -1,6 +1,6 @@
 MANSRC1 = ncid.1 ncidscripts.1 ncidtools.1
 MANSRC5 = ncid.conf.5 ncidd.conf.5 ncidd.alias.5 ncidscript.conf.5
-MANSRC8 = ncidd.8
+MANSRC8 = ncidd.8 ncidsip.8
 MANSRC  = $(MANSRC1) $(MANSRC5) $(MANSRC8)
 FILES   = Makefile $(MANSRC)
 
@@ -16,11 +16,11 @@ all: txt html
 
 man:
 
-txt: $(MANSRC1:.1=.txt) $(MANSRC5:.5=.txt) $(MANSRC8:.8=.txt)
+txt: $(MANSRC1:.1=.1.txt) $(MANSRC5:.5=.5.txt) $(MANSRC8:.8=.8.txt)
 	chmod 644 *.txt
 	touch txt
 
-html: $(MANSRC1:.1=.html) $(MANSRC5:.5=.html) $(MANSRC8:.8=.html)
+html: $(MANSRC1:.1=.1.html) $(MANSRC5:.5=.5.html) $(MANSRC8:.8=.8.html)
 
 install: install-man
 
@@ -44,20 +44,20 @@ clobber: clean
 
 files: $(FILES)
 
-%.txt : %.1
+%.1.txt : %.1
 	nroff -man $< | col -bx > $@
 
-%.txt : %.5
+%.5.txt : %.5
 	nroff -man $< | col -bx > $@
 
-%.txt : %.8
+%.8.txt : %.8
 	nroff -man $< | col -bx > $@
 
-%.html : %.1
+%.1.html : %.1
 	man2html $< > $@
 
-%.html : %.5
+%.5.html : %.5
 	man2html $< > $@
 
-%.html : %.8
+%.8.html : %.8
 	man2html $< > $@

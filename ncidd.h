@@ -55,7 +55,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.63"
+#define VERSION     "0.64"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -69,10 +69,11 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
              [-i cidstr     | --initcid cidstr]\n\
              [-L logfile    | --logfile logfile]\n\
              [-l lockfile   | --lockfile lockfile]\n\
+             [-N 0/1        | --noserial 0/1]\n\
              [-n 0/1        | --nomodem 0/1]\n\
              [-p portnumber | --port portnumber]\n\
              [-S ttyspeed   | --ttyspeed ttyspeed]\n\
-             [-s datatype   | --send datatype]\n\
+             [-s datatype   | --send cidlog|cidinfo]\n\
              [-T 0/1        | --sttyclocal 0/1]\n\
              [-t ttyport    | --ttyport ttyport]\n\
              [-V            | --version]\n\
@@ -97,7 +98,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define CHARWAIT    2       /* deciseconds */
 #define INITWAIT    100000  /* microseconds */
 #define INITTRY     10      /* number of times to INITWAIT for a character */
-#define MODEMTRY    2
+#define MODEMTRY    6
 #define TTYSPEED    B19200
 #define LOCKFILE    "/var/lock/LCK.."
 #define ANNOUNCE    "200 Network CallerID Server Version "
@@ -166,4 +167,5 @@ enum
 extern char *ttyport, *TTYspeed;
 extern char *cidlog, *datalog, *initstr, *initcid, *lockfile, *ttyport;
 extern int setcid, port, sendlog, sendinfo, clocal, nomodem, ttyspeed, verbose;
+extern int noserial;
 extern int logMsg(int level, char *message);

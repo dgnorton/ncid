@@ -37,7 +37,7 @@ int ttyspeed = TTYSPEED;
 int port = PORT;
 int debug, conferr, setcid, locked, sendlog, sendinfo;
 int ttyfd, pollpos, pollevents;
-int ring, ringwait, ringcount, clocal, nomodem;
+int ring, ringwait, ringcount, clocal, nomodem, noserial;
 int verbose = 1;
 
 struct pollfd polld[CONNECTIONS + 2];
@@ -63,8 +63,8 @@ main(int argc, char *argv[])
     int events, mainsock, sd, argind, i;
     char *ptr;
     struct stat statbuf;
-    char buf[BUFSIZ];
-    
+    char msgbuf[BUFSIZ];
+
     signal(SIGHUP, finish);
     signal(SIGTERM, finish);
     signal(SIGINT, finish);
@@ -80,15 +80,15 @@ main(int argc, char *argv[])
     /* open or create logfile */
     if ((logptr = fopen(logfile, "a")) == NULL)
     {
-        sprintf(buf, "%s: %s\n", logfile, strerror(errno));
-        logMsg(LEVEL4, buf);
+        sprintf(msgbuf, "%s: %s\n", logfile, strerror(errno));
+        logMsg(LEVEL1, msgbuf);
     }
 
-    sprintf(buf, "Started  %s\n", strdate());
-    logMsg(LEVEL1, buf);
+    sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(), name, version);
+    logMsg(LEVEL1, msgbuf);
 
-    sprintf(buf, "ncidd logfile: %s\n", logfile);
-    logMsg(LEVEL2, buf);
+    sprintf(msgbuf, "ncidd logfile: %s\n", logfile);
+    logMsg(LEVEL2, msgbuf);
 
     /*
      * read config file, if present, exit on any errors
@@ -97,105 +97,132 @@ main(int argc, char *argv[])
     if (doConf()) errorExit(-104, 0, 0);
 
     /*
+     * indicate what is configured to send to the clients
+     */
+    for (i = 0; sendclient[i].word; i++)
+        if (*sendclient[i].value)
+        {
+            sprintf(msgbuf, "Configured to send '%s' to clients.\n",
+                sendclient[i].word);
+            logMsg(LEVEL1, msgbuf);
+        }
+
+    /*
      * read alias file, if present, exit on any errors
      */
     if (doAlias()) errorExit(-109, 0, 0);
 
-    /*
-     * If the tty port speed was set, map it to the correct integer.
-     */
-    if (TTYspeed)
-    {
-        if (!strcmp(TTYspeed, "38400")) ttyspeed = B38400;
-        else if (!strcmp(TTYspeed, "19200")) ttyspeed = B19200;
-        else if (!strcmp(TTYspeed, "9600")) ttyspeed = B9600;
-        else if (!strcmp(TTYspeed, "4800")) ttyspeed = B4800;
-        else errorExit(-108, "Invalid TTY port speed set in config file",
-            TTYspeed);
-    }
-
-    sprintf(buf, "CID logfile: %s\n", cidlog);
-    logMsg(LEVEL2, buf);
-    sprintf(buf, "Data logfile: %s\n", datalog);
-    logMsg(LEVEL2, buf);
-
-    /* Create lock file name from TTY port device name */
-    if (!lockfile)
-    {
-        if (ptr = strrchr(ttyport, '/')) ptr++;
-        else ptr = ttyport;
-
-        if (lockfile = (char *) malloc(strlen(LOCKFILE) + strlen(ptr) + 1))
-            strcat(strcpy(lockfile, LOCKFILE), ptr);
-        else errorExit(-1, name, 0);
-    }
-
     if (alias[0].type)
     {
-        sprintf(buf,
+        sprintf(msgbuf,
             "Printing alias structure: ELEMENT TYPE [FROM] [TO] [DEPEND]\n");
-        logMsg(LEVEL5, buf);
+        logMsg(LEVEL5, msgbuf);
     }
     for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
     {
-        sprintf(buf, " %.2d %.2d [%-21s] [%-21s] [%-21s]\n", i,
+        sprintf(msgbuf, " %.2d %.2d [%-21s] [%-21s] [%-21s]\n", i,
             alias[i].type,
             alias[i].from,
             alias[i].to,
             alias[i].depend ? alias[i].depend : " ");
-        logMsg(LEVEL5, buf);
+        logMsg(LEVEL5, msgbuf);
     }
 
-    /* check TTY port lock file */
-    if (stat(lockfile, &statbuf) == 0)
-        errorExit(-102, "Exiting - TTY port in use (lockfile exists)",
-                  lockfile);
+    sprintf(msgbuf, "Verbose level: %d\n", verbose);
+    logMsg(LEVEL1, msgbuf);
+    sprintf(msgbuf, "CID logfile: %s\n", cidlog);
+    logMsg(LEVEL2, msgbuf);
+    sprintf(msgbuf, "Data logfile: %s\n", datalog);
+    logMsg(LEVEL2, msgbuf);
 
     /*
-     * Open tty port; tries to make sure the open does
-     * not hang if port in use, or not restored after use
+     * noserial = 1: serial port not used
+     * noserial = 0: serial port used for Caller ID
      */
-    if ((ttyfd = open(ttyport, O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
-        errorExit(-1, ttyport, 0);
-    if (fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0) & ~O_NDELAY) < 0)
-        errorExit(-1, ttyport, 0);
 
-    switch(ttyspeed)
+    if (!noserial)
     {
-        case B4800:
-            TTYspeed = "4800";
-            break;
-        case B9600:
-            TTYspeed = "9600";
-            break;
-        case B19200:
-            TTYspeed = "19200";
-            break;
-        case B38400:
-            TTYspeed = "38400";
-            break;
-    }
+        /*
+        * If the tty port speed was set, map it to the correct integer.
+        */
+        if (TTYspeed)
+        {
+            if (!strcmp(TTYspeed, "38400")) ttyspeed = B38400;
+            else if (!strcmp(TTYspeed, "19200")) ttyspeed = B19200;
+            else if (!strcmp(TTYspeed, "9600")) ttyspeed = B9600;
+            else if (!strcmp(TTYspeed, "4800")) ttyspeed = B4800;
+            else errorExit(-108, "Invalid TTY port speed set in config file",
+                TTYspeed);
+        }
 
-    sprintf(buf, "TTY port opened: %s\n", ttyport);
-    logMsg(LEVEL2, buf);
-    sprintf(buf, "TTY port speed: %s\n", TTYspeed);
-    logMsg(LEVEL2, buf);
-    sprintf(buf, "TTY lock file: %s\n", lockfile);
-    logMsg(LEVEL2, buf);
-    sprintf(buf, "TTY port control signals %s\n",
-        clocal ? "disabled" : "enabled");
-    logMsg(LEVEL2, buf);
-    if (nomodem)
+        /* Create lock file name from TTY port device name */
+        if (!lockfile)
+        {
+            if (ptr = strrchr(ttyport, '/')) ptr++;
+            else ptr = ttyport;
+
+            if (lockfile = (char *) malloc(strlen(LOCKFILE) + strlen(ptr) + 1))
+                strcat(strcpy(lockfile, LOCKFILE), ptr);
+            else errorExit(-1, name, 0);
+        }
+
+        /* check TTY port lock file */
+        if (stat(lockfile, &statbuf) == 0)
+            errorExit(-102, "Exiting - TTY port in use (lockfile exists)",
+                  lockfile);
+
+        /*
+        * Open tty port; tries to make sure the open does
+        * not hang if port in use, or not restored after use
+        */
+        if ((ttyfd = open(ttyport, O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
+            errorExit(-1, ttyport, 0);
+        if (fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0) & ~O_NDELAY) < 0)
+            errorExit(-1, ttyport, 0);
+
+        switch(ttyspeed)
+        {
+            case B4800:
+                TTYspeed = "4800";
+                break;
+            case B9600:
+                TTYspeed = "9600";
+                break;
+            case B19200:
+                TTYspeed = "19200";
+                break;
+            case B38400:
+                TTYspeed = "38400";
+                break;
+        }
+
+        sprintf(msgbuf, "TTY port opened: %s\n", ttyport);
+        logMsg(LEVEL2, msgbuf);
+        sprintf(msgbuf, "TTY port speed: %s\n", TTYspeed);
+        logMsg(LEVEL2, msgbuf);
+        sprintf(msgbuf, "TTY lock file: %s\n", lockfile);
+        logMsg(LEVEL2, msgbuf);
+        sprintf(msgbuf, "TTY port control signals %s\n",
+            clocal ? "disabled" : "enabled");
+        logMsg(LEVEL2, msgbuf);
+
+        if (nomodem)
+        {
+            sprintf(msgbuf, "CallerID from CID device, not AT modem\n");
+            logMsg(LEVEL1, msgbuf);
+        }
+
+        /* Save tty port settings */
+        if (tcgetattr(ttyfd, &otty) < 0) return -1;
+
+        /* initialize tty port */
+        if (doTTY() < 0) errorExit(-1, ttyport, 0);
+    }
+    else
     {
-        sprintf(buf, "CallerID from CID device, not AT modem\n");
-        logMsg(LEVEL2, buf);
+        sprintf(msgbuf, "CallerID from CID client(s) only\n");
+        logMsg(LEVEL1, msgbuf);
     }
-
-    /* Save tty port settings */
-    if (tcgetattr(ttyfd, &otty) < 0) return -1;
-
-    /* initialize tty port */
-    if (doTTY() < 0) errorExit(-1, ttyport, 0);
 
     if (!debug)
     {
@@ -213,7 +240,7 @@ main(int argc, char *argv[])
         setsid();
     }
 
-    pollpos = addPoll(ttyfd);
+    if (!noserial) pollpos = addPoll(ttyfd);
 
     /* initialize server socket */
     if ((mainsock = tcpOpen(port)) < 0) errorExit(-1, "socket", 0);
@@ -246,41 +273,48 @@ main(int argc, char *argv[])
                         }
                     }
                 }
-                /* TTY port lockfile */
-                if (stat(lockfile, &statbuf) == 0)
+                /* if no serial port, skip TTY code */
+                if (!noserial)
                 {
-                    if (!locked)
+                    /* TTY port lockfile */
+                    if (stat(lockfile, &statbuf) == 0)
                     {
-                        /* save TTY events */
-                        pollevents = polld[pollpos].events;
-                        /* remove TTY poll events */
-                        polld[pollpos].events = polld[pollpos].revents = 0;
-                        sprintf(buf, "%sTTY in use, Waiting %s\n",
-                            MSGLINE, strdate());
-                        logMsg(LEVEL4, buf);
-                        locked = 1;
+                        if (!locked)
+                        {
+                            /* save TTY events */
+                            pollevents = polld[pollpos].events;
+                            /* remove TTY poll events */
+                            polld[pollpos].events = polld[pollpos].revents = 0;
+                            polld[pollpos].fd = 0;
+                            sprintf(msgbuf, "TTY in use: releasing modem %s\n",
+                                strdate());
+                            logMsg(LEVEL1, msgbuf);
+                            locked = 1;
+                        }
                     }
-                }
-                else if (locked)
-                {
-                    sprintf(buf, "%sTTY available, Active %s\n",
-                        MSGLINE, strdate());
-                    logMsg(LEVEL4, buf);
-                    tcsetattr(ttyfd, TCSANOW, &otty);
-                    if (doTTY() < 0)
+                    else if (locked)
                     {
-                        sprintf(buf, "%sCannot init TTY, Terminated %s\n",
-                            MSGLINE, strdate());
-                        writeClients(mainsock, buf);
-                        strcat(buf, NL);
-                        logMsg(LEVEL1, buf + strlen(MSGLINE));
-                        tcsetattr(ttyfd, TCSANOW, &otty);
-                        cleanup();
-                        exit(-1);
+                        sprintf(msgbuf, "TTY free: using modem again %s\n",
+                            strdate());
+                        logMsg(LEVEL1, msgbuf);
+                        tcflush(ttyfd, TCIOFLUSH);
+                        if (doTTY() < 0)
+                        {
+                            sprintf(msgbuf,
+                                "%sCannot init TTY, Terminated %s\n",
+                                MSGLINE, strdate());
+                            writeClients(mainsock, msgbuf);
+                            strcat(msgbuf, NL);
+                            logMsg(LEVEL1, msgbuf + strlen(MSGLINE));
+                            tcsetattr(ttyfd, TCSANOW, &otty);
+                            cleanup();
+                            exit(-1);
+                        }
+                        locked = 0;
+                        /* restore tty poll events */
+                        polld[pollpos].fd = ttyfd;
+                        polld[pollpos].events = pollevents;
                     }
-                    locked = 0;
-                    /* restore tty poll events */
-                    polld[pollpos].events = pollevents;
                 }
                 break;
             default:    /* 1 or more events reported */
@@ -307,6 +341,7 @@ int getOptions(int argc, char *argv[])
         {"lockfile", 1, 0, 'l'},
         {"logfile", 1, 0, 'L'},
         {"nomodem", 1, 0, 'n'},
+        {"noserial", 1, 0, 'N'},
         {"port", 1, 0, 'p'},
         {"send", 1, 0, 's'},
         {"ttyspeed", 1, 0, 'S'},
@@ -317,7 +352,7 @@ int getOptions(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:v:A:C:DI:L:S:T:V",
+    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:v:A:C:DI:L:N:S:T:V",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -329,12 +364,22 @@ int getOptions(int argc, char *argv[])
             case 'C':
                 if (!(cidconf = strdup(optarg))) errorExit(-1, name, 0);
                 break;
+            case 'D':
+                debug = 1;
+                break;
             case 'I':
                 if (!(initstr = strdup(optarg))) errorExit(-1, name, 0);
                 if ((num = findWord("initstr")) >= 0) setword[num].type = 0;
                 break;
             case 'L':
                 if (!(logfile = strdup(optarg))) errorExit(-1, name, 0);
+                break;
+            case 'N':
+                noserial = atoi(optarg);
+                if (strlen(optarg) != 1 ||
+                    (!(noserial == 0 && *optarg == '0') && noserial != 1))
+                    errorExit(-107, "Invalid number", optarg);
+                if ((num = findWord("noserial")) >= 0) setword[num].type = 0;
                 break;
             case 'S':
                 if (!(TTYspeed = strdup(optarg))) errorExit(-1, name, 0);
@@ -352,6 +397,9 @@ int getOptions(int argc, char *argv[])
                     errorExit(-107, "Invalid number", optarg);
                 if ((num = findWord("sttyclocal")) >= 0) setword[num].type = 0;
                 break;
+            case 'V': /* version */
+                fprintf(stderr, SHOWVER, name, version);
+                exit(0);
             case 'c':
                 if (!(cidlog = strdup(optarg))) errorExit(-1, name, 0);
                 if ((num = findWord("cidlog")) >= 0) setword[num].type = 0;
@@ -388,7 +436,7 @@ int getOptions(int argc, char *argv[])
             case 's':
                 if ((num = findSend(optarg)) < 0)
                     errorExit(-106, "Invalid send data type", optarg);
-                ++(sendclient[num].value);
+                ++(*sendclient[num].value);
                 break;
             case 't':
                 if (!(ttyport = strdup(optarg))) errorExit(-1, name, 0);
@@ -402,13 +450,8 @@ int getOptions(int argc, char *argv[])
                     verbose = 1;
                     errorExit(-107, "Invalid number", optarg);
                 }
+                if ((num = findWord("verbose")) >= 0) setword[num].type = 0;
                 break;
-            case 'D':
-                debug = 1;
-                break;
-            case 'V': /* version */
-                fprintf(stderr, SHOWVER, name, version);
-                exit(0);
             case '?': /* bad option */
                 fprintf(stderr, USAGE, name);
                 exit(-100);
@@ -419,7 +462,7 @@ int getOptions(int argc, char *argv[])
 
 int doTTY()
 {
-    char buf[BUFSIZ];
+    char msgbuf[BUFSIZ];
 
     /* Setup tty port in raw mode */
     if (tcgetattr(ttyfd, &ntty) <0) return -1;
@@ -444,9 +487,9 @@ int doTTY()
     ntty.c_lflag = (ICANON);
     if (tcsetattr(ttyfd, TCSANOW, &ntty) < 0) return -1;
 
-    if (nomodem) sprintf(buf, "CallerID TTY port initialized.\n");
-    else sprintf(buf, "Modem set for CallerID.\n");
-    logMsg(LEVEL2, buf);
+    if (nomodem) sprintf(msgbuf, "CallerID TTY port initialized.\n");
+    else sprintf(msgbuf, "Modem set for CallerID.\n");
+    logMsg(LEVEL1, msgbuf);
 
     return 0;
 }
@@ -454,7 +497,7 @@ int doTTY()
 int doModem()
 {
     int cnt, ret = 2;
-    char buf[BUFSIZ];
+    char msgbuf[BUFSIZ];
 
     /*
      * Try to initialize modem, sometimes the modem
@@ -463,7 +506,11 @@ int doModem()
      * indicating no modem.
      */
     for (cnt = 0; ret == 2 && cnt < MODEMTRY; ++cnt)
+    {
         if ((ret = initModem(initstr)) < 0) return -1;
+        sprintf(msgbuf, "Try %d to init modem: return = %d.\n", cnt + 1, ret);
+        logMsg(LEVEL3, msgbuf);
+    }
 
     if (ret)
     {
@@ -472,8 +519,8 @@ int doModem()
         else errorExit(-105, "No modem found", ttyport);
     }
 
-    sprintf(buf, "Modem initialized.\n");
-    logMsg(LEVEL1, buf);
+    sprintf(msgbuf, "Modem initialized.\n");
+    logMsg(LEVEL1, msgbuf);
 
     /* Initialize CID */
     if ((ret = initModem(initcid)) < 0) return -1;
@@ -500,6 +547,7 @@ int initModem(char *ptr)
     int num = 0, size = 0;
     int try;
     char buf[BUFSIZ], *bufp;
+    char msgbuf[BUFSIZ];
 
     /* send string to modem */
     strcat(strncpy(buf, ptr, BUFSIZ - 2), CR);
@@ -519,16 +567,30 @@ int initModem(char *ptr)
         size += num;
         if ((num = read(ttyfd, buf + size, BUFSIZ - size - 1)) < 0) return -1;
     }
+    buf[size] = 0;
+
+    /* Remove CRLF at end of string */
+    if (buf[size - 1] == '\n' || buf[size - 1] == '\r') buf[size - 1] = '\0';
+    if (buf[size - 2] == '\r' || buf[size - 2] == '\n') buf[size - 2] = '\0';
+
+    if (size)
+    {
+        sprintf(msgbuf, "%s\n", buf);
+        logMsg(LEVEL3, msgbuf);
+    }
+    else
+    {
+        sprintf(msgbuf, "No Modem Response\n");
+        logMsg(LEVEL3, msgbuf);
+    }
 
     /* check response */
-    if (size) logMsg(LEVEL3, buf);
-    buf[size] = 0;
     if ((bufp = strrchr(buf, 'O')) != 0)
         if (!strncmp(bufp, "OK", 2)) return 0;
     if ((bufp = strrchr(buf, 'E')) != 0)
         if (!strncmp(bufp, "ERROR", 5)) return 1;
 
-    /* no response */
+    /* no response, or other response */
     return 2;
 }
 
@@ -539,11 +601,11 @@ int tcpOpen(int mainsock)
     int socksize = sizeof(bind_addr);
 
     optval = 1;
-    bind_addr.sin_family = AF_INET;
+    bind_addr.sin_family = PF_INET;
     bind_addr.sin_addr.s_addr = 0;    /*  0.0.0.0  ==  this host  */
     memset(bind_addr.sin_zero, 0, 8);
     bind_addr.sin_port = htons(mainsock);
-    if ((sd = socket(AF_INET, SOCK_STREAM,0)) < 0)
+    if ((sd = socket(PF_INET, SOCK_STREAM,0)) < 0)
         return sd;
     if((ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
         &optval, sizeof(optval))) < 0)
@@ -591,37 +653,26 @@ int addPoll(int pollfd)
 doPoll(int events, int mainsock)
 {
   int num, pos, sd, cnt = 0;
-  char buf[BUFSIZ];
+  char buf[BUFSIZ], msgbuf[BUFSIZ];;
+
+  /*
+   * Poll is configured for POLLIN and POLLPRI events
+   * POLLERR, POLLHUP, POLLNVAL events can also happen
+   * Poll is not configured for the POLLOUT event
+   */
 
   for (pos = 0; events && pos < CONNECTIONS + 2; ++pos)
   {
     if (!polld[pos].revents) continue; /* no events */
 
     /* log event flags */
-    sprintf(buf, "polld[%d].revents: 0x%X, fd: %d\n",
+    sprintf(msgbuf, "polld[%d].revents: 0x%X, fd: %d\n",
       pos, polld[pos].revents, polld[pos].fd);
-    logMsg(LEVEL4, buf);
+    logMsg(LEVEL4, msgbuf);
 
-    if (polld[pos].revents & POLLERR) /* Poll Error */
+    if (polld[pos].revents & POLLHUP) /* Hung up */
     {
-      if (polld[pos].fd == ttyfd)
-      {
-        sprintf(buf, "%sDevice Error, Terminated  %s\n",
-          MSGLINE, strdate());
-        writeClients(mainsock, buf);
-        strcat(buf, NL);
-        logMsg(LEVEL1, buf + strlen(MSGLINE));
-        cleanup();
-        exit(-1);
-      }
-        sprintf(buf, "Poll Error, sd: %d\n", polld[pos].fd);
-        logMsg(LEVEL1, buf);
-        close(polld[pos].fd);
-        polld[pos].fd = polld[pos].events = 0;
-    }
-    else if (polld[pos].revents & POLLHUP) /* Hung up */
-    {
-      if (polld[pos].fd == ttyfd)
+      if (!noserial && polld[pos].fd == ttyfd)
       {
         sprintf(buf, "%sDevice Hung Up, Terminated  %s\n",
           MSGLINE, strdate());
@@ -631,148 +682,215 @@ doPoll(int events, int mainsock)
         cleanup();
         exit(-1);
       }
-      sprintf(buf, "Hung Up, sd: %d\n", polld[pos].fd);
-        logMsg(LEVEL2, buf);
+      sprintf(msgbuf, "Hung Up, sd: %d\n", polld[pos].fd);
+        logMsg(LEVEL2, msgbuf);
       close(polld[pos].fd);
-      polld[pos].fd = polld[pos].events = 0;
+      polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
     }
-    else if (polld[pos].revents & POLLNVAL) /* Invalid Request */
+
+    if (polld[pos].revents & POLLERR) /* Poll Error */
     {
-      sprintf(buf, "Invalid Request: File descriptor not open, sd: %d\n",
+      if (!noserial && polld[pos].fd == ttyfd)
+      {
+        sprintf(buf, "%sDevice Error, Terminated  %s\n",
+          MSGLINE, strdate());
+        writeClients(mainsock, buf);
+        strcat(buf, NL);
+        logMsg(LEVEL1, buf + strlen(MSGLINE));
+        cleanup();
+        exit(-1);
+      }
+        sprintf(msgbuf, "Poll Error, sd: %d\n", polld[pos].fd);
+        logMsg(LEVEL1, msgbuf);
+    }
+
+    if (polld[pos].revents & POLLNVAL) /* Invalid Request */
+    {
+      sprintf(msgbuf, "Invalid Request: File descriptor not open, sd: %d\n",
         polld[pos].fd);
-      logMsg(LEVEL1, buf);
-      polld[pos].fd = polld[pos].events = 0;
+      logMsg(LEVEL1, msgbuf);
+      polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
     }
 
-    /*
-     * Revents was either POLLIN or POLLPRI, so only need to
-     * check polld[pos].fd from here on.
-     */
-
-    else if (polld[pos].fd == ttyfd)
+    if (polld[pos].revents & (POLLIN | POLLPRI))
     {
-      if (!locked)
+      if (!noserial && polld[pos].fd == ttyfd)
       {
-        /* Modem or device has data to read */
-        if ((num = read(ttyfd, buf, BUFSIZ-1)) < 0)
+        if (!locked)
         {
-          sprintf(buf, "READ: %s\n", strerror(errno));
-          logMsg(LEVEL1, buf);
-        }
-
-        /* Modem or device returned no data */
-        else if (!num)
-        {
-          sprintf(buf, "Device returned no data, fd: %d\n", ttyfd);
-          logMsg(LEVEL2, buf);
-          cnt++;
-
-          /* if no data 10 times in a row, something wrong */
-          if (cnt == 10)
+          /* Modem or device has data to read */
+          if ((num = read(ttyfd, buf, BUFSIZ-1)) < 0)
           {
-            sprintf(buf, "%sDevice returns no data, Terminated  %s\n",
-              MSGLINE, strdate());
-            writeClients(mainsock, buf);
-            strcat(buf, NL);
-            logMsg(LEVEL1, buf + strlen(MSGLINE));
-            cleanup();
-            exit(-1);
+            sprintf(msgbuf, "READ: %s\n", strerror(errno));
+            logMsg(LEVEL1, msgbuf);
           }
-        }
-        else
-        {
-          cnt = 0;
 
-          /* strip <NL> or <CR> */
-          buf[num - 1] = '\0';
-
-          /* strip <CR> if there was a <CR><NL> */
-          if (buf[num - 2] == '\r') buf[num - 2] = '\0';
-
-          writeLog(datalog, buf);
-          formatCID(mainsock, buf);
-        }
-      }
-    }
-    else if (polld[pos].fd == mainsock)
-    {
-      /* TCP/IP Client Connection */
-      if ((sd = tcpAccept(mainsock)) < 0)
-      {
-        sprintf(buf, "Connect Error: %s, sd: %d\n",
-          strerror(errno), sd);
-        logMsg(LEVEL1, buf);
-      }
-      else
-      {
-        /* Client connected */
-
-        if (fcntl(sd, F_SETFL, O_NONBLOCK) < 0)
-        {
-          sprintf(buf, "NONBLOCK Error: %s, sd: %d\n",
-            strerror(errno), sd);
-          logMsg(LEVEL1, buf);
-          close(sd);
-        }
-        else
-        {
-          strcat(strcat(strcpy(buf, ANNOUNCE), VERSION), CRLF);
-          write(sd, buf, strlen(buf));
-          if (addPoll(sd) < 0)
+          /* Modem or device returned no data */
+          else if (!num)
           {
-            sprintf(buf, "%s\n", TOOMSG);
-            logMsg(LEVEL1, buf);
-            sprintf(buf, "%s: %d%s", TOOMSG, CONNECTIONS, CRLF);
-            write(sd, buf, strlen(buf));
-            close(sd);
-          }
-          if (sendlog)
-          {
-            /* Client connect message in sendLog() */
-            sendLog(sd, buf);
+            sprintf(msgbuf, "Device returned no data, fd: %d\n", ttyfd);
+            logMsg(LEVEL2, msgbuf);
+            cnt++;
+
+            /* if no data 10 times in a row, something wrong */
+            if (cnt == 10)
+            {
+              sprintf(buf, "%sDevice returns no data, Terminated  %s\n",
+                MSGLINE, strdate());
+              writeClients(mainsock, buf);
+              strcat(buf, NL);
+              logMsg(LEVEL1, buf + strlen(MSGLINE));
+              cleanup();
+              exit(-1);
+            }
           }
           else
           {
-            /* Client connected, CID log not sent */
-            sprintf(buf, "Client Connected, sd: %d\n", sd);
-            logMsg(LEVEL3, buf);
+            /* Modem or device returned data */
+
+            char *ptr;
+
+            cnt = 0;
+
+            /* Terminate String */
+            buf[num] = '\0';
+
+            /* strip <CR> and <LF> */
+            if (ptr = strchr(buf, '\r')) *ptr = '\0';
+            if (ptr = strchr(buf, '\n')) *ptr = '\0';
+
+            writeLog(datalog, buf);
+            formatCID(mainsock, buf);
           }
         }
       }
-    }
-    else
-    {
-      if (polld[pos].fd)
+      else if (polld[pos].fd == mainsock)
       {
-        strcpy(buf, MSGLINE);
-        if ((num = read(polld[pos].fd, buf + strlen(MSGLINE), BUFSIZ-1)) < 0)
+        /* TCP/IP Client Connection */
+        if ((sd = tcpAccept(mainsock)) < 0)
         {
-          sprintf(buf, "Client READ: %s\n", strerror(errno));
-          logMsg(LEVEL1, buf);
-        }
-        /* read will return 0 for a disconnect */
-        if (num == 0)
-        {
-          /* TCP/IP Client End Connection */
-          sprintf(buf, "Client disconnected, sd: %d\n", polld[pos].fd);
-            logMsg(LEVEL3, buf);
-          close(polld[pos].fd);
-          polld[pos].fd = polld[pos].events = 0;
+          sprintf(msgbuf, "Connect Error: %s, sd: %d\n", strerror(errno), sd);
+          logMsg(LEVEL1, msgbuf);
         }
         else
         {
-          /*
-           * client sent message to server
-           */
-          /* remove <CR> */
-          buf[num + strlen(MSGLINE) - 1] = '\0';
-          /* write message to logfile and other clientsd */
-          writeLog(cidlog, buf);
-          writeClients(mainsock, buf);
+          /* Client connected */
+
+          if (fcntl(sd, F_SETFL, O_NONBLOCK) < 0)
+          {
+            sprintf(msgbuf, "NONBLOCK Error: %s, sd: %d\n",
+              strerror(errno), sd);
+            logMsg(LEVEL1, msgbuf);
+            close(sd);
+          }
+          else
+          {
+            strcat(strcat(strcpy(buf, ANNOUNCE), VERSION), CRLF);
+            write(sd, buf, strlen(buf));
+            if (addPoll(sd) < 0)
+            {
+              sprintf(msgbuf, "%s\n", TOOMSG);
+              logMsg(LEVEL1, msgbuf);
+              sprintf(buf, "%s: %d%s", TOOMSG, CONNECTIONS, CRLF);
+              write(sd, buf, strlen(buf));
+              close(sd);
+            }
+            if (sendlog)
+            {
+              /* Client connect message in sendLog() */
+              sendLog(sd, buf);
+            }
+            else
+            {
+              /* Client connected, CID log not sent */
+              sprintf(msgbuf, "Client Connected, sd: %d\n", sd);
+              logMsg(LEVEL3, msgbuf);
+            }
+          }
         }
       }
-      /* file descripter 0 treated as empty slot */
-      else polld[pos].fd = polld[pos].events = 0;
+      else
+      {
+        if (polld[pos].fd)
+        {
+          strcpy(buf, MSGLINE);
+          if ((num = read(polld[pos].fd, buf + strlen(MSGLINE), BUFSIZ-1)) < 0)
+          {
+            sprintf(msgbuf, "Client READ: %s\n", strerror(errno));
+            logMsg(LEVEL1, msgbuf);
+          }
+          /* read will return 0 for a disconnect */
+          if (num == 0)
+          {
+            /* TCP/IP Client End Connection */
+            sprintf(msgbuf, "Client disconnected, sd: %d\n", polld[pos].fd);
+              logMsg(LEVEL3, msgbuf);
+            close(polld[pos].fd);
+            polld[pos].fd = polld[pos].events = 0;
+          }
+          else
+          {
+            /*
+             * Client sent message to server
+             */
+
+            char *ptr;
+
+            /* Terminate String */
+            buf[num + strlen(MSGLINE)] = '\0';
+
+            /* strip <CR> and <LF> */
+            if (ptr = strchr(buf, '\r')) *ptr = '\0';
+            if (ptr = strchr(buf, '\n')) *ptr = '\0';
+
+            /*
+             * Check first character is a 7-bit unsigned char value
+             * if not, assume entire line is not wanted.  This may
+             * need to be improved, but this gets rid of telnet binary.
+             */
+             if (isascii((int) buf[strlen(MSGLINE)]) == 0)
+             {
+                buf[strlen(MSGLINE)] = '\0';
+                sprintf(msgbuf, "Message deleted, not 7-bit ASCII, sd: %d\n",
+                  polld[pos].fd);
+                logMsg(LEVEL3, msgbuf);
+             }
+
+            /* Make sure there is data in the message line */
+            if (strncmp(buf, MSGLINE, strlen(buf)) != 0)
+            {
+
+              sprintf(msgbuf, "%s%s###", MSGLINE, CIDLINE);
+              if (strncmp(buf, msgbuf, strlen(msgbuf)) == 0)
+              {
+                /*
+                 * Found a CID Message Line
+                 * See comments for formatCID for line format
+                 */
+
+                sprintf(msgbuf, "Client sent CID message, sd: %d\n",
+                  polld[pos].fd);
+                logMsg(LEVEL3, msgbuf);
+
+                writeLog(datalog, buf);
+                formatCID(mainsock, buf + strlen(MSGLINE) + strlen(CIDLINE));
+              }
+              else
+              {
+                /* Write message to cidlog and all clients */
+
+                sprintf(msgbuf, "Client sent text message, sd: %d\n",
+                  polld[pos].fd);
+                logMsg(LEVEL3, msgbuf);
+                writeLog(cidlog, buf);
+                writeClients(mainsock, buf);
+              }
+            }
+          }
+        }
+        /* file descripter 0 treated as empty slot */
+        else polld[pos].fd = polld[pos].events = 0;
+      }
     }
 
     polld[pos].revents = 0;
@@ -802,11 +920,15 @@ doPoll(int events, int mainsock)
  * ###DATE03301423...NMBR...NAME-UNKNOWN CALLER-+++\r
  * ###DATE03301423..NMBR...NAME+++\r
  * ###DATE...NMBR...NAME   -MSG OFF-+++\r
+ *
+ * CID Message Line Format:
+ *
+ * ###DATEmmddhhss...LINEidentifier...NMBRnumber...NAMEwords+++\r
  */
 
 formatCID(int mainsock, char *buf)
 {
-    char cidbuf[BUFSIZ], *ptr;
+    char cidbuf[BUFSIZ], *ptr, *sptr;
     time_t t;
 
     /*
@@ -852,12 +974,23 @@ formatCID(int mainsock, char *buf)
         else
         {
             /*
-            * make sure CID is clear, since we are at a RING
+            * At a RING
+            * CID already processed or is incomplete
+            * Make sure status is clear
             */
             cid.status = 0;
             return;
         }
     }
+
+    /*
+     * A Mac Mini Motorola Jump  modem sends "^PR^PX\n\n" before the CID
+     * information.  It also sends "^P.^XNAME"
+     */
+     if (ptr = strstr(buf, "\020R\020X"))
+     {
+        cid.status = 0;
+     }
 
     /*
      * sometimes bad charactors are received....
@@ -868,7 +1001,16 @@ formatCID(int mainsock, char *buf)
     /* Process Caller ID information */
     if (strncmp(buf, "###", 3) == 0)
     {
-        /* Found a NetCallerID box, all information on one line */
+        /*
+         * Found a NetCallerID box, or a CID Message Line
+         * All information on one line
+         * The CID Message LINE has a LINE field
+         * The NetCallerID box does not have a LINE field
+         */
+
+        /* Make sure the status field is zero */
+        cid.status = 0;
+
         if (ptr = strstr(buf, "DATE"))
         {
             /*
@@ -899,9 +1041,21 @@ formatCID(int mainsock, char *buf)
             strncat(cid.ciddate, ptr + 20, CIDSIZE - strlen(cid.ciddate) - 1);
             cid.status |= CIDDATE;
         }
+        if (ptr = strstr(buf, "LINE"))
+        {
+            /* this field is only in a CID Message Line */
+            if (*(ptr + 5) == '.') strncpy(cid.cidline, ONELINE, CIDSIZE - 1);
+            else
+            {
+                strncpy(cid.cidline, ptr + 4, CIDSIZE -1);
+                ptr = strchr(cid.cidline, '.');
+                if (ptr) *ptr = 0;
+            }
+        }
         if (ptr = strstr(buf, "NMBR"))
         {
             if (*(ptr + 5) == '.') strncpy(cid.cidnmbr, NONUMB, CIDSIZE - 1);
+            else
             {
                 strncpy(cidbuf, ptr + 4, BUFSIZ -1);
                 ptr = strchr(cidbuf, '.');
@@ -946,16 +1100,21 @@ formatCID(int mainsock, char *buf)
             cid.status |= CIDNMBR;
         }
     }
-    else if (strncmp(buf, "NAME", 4) == 0)
+    /*
+     * Using strstr() instead of strncmp() because a Mac
+     * Mini Jump modem sent '^P.^PXNAME' instead of 'NAME'.
+     * At this point the string was converted to '?.?XNAME'
+     */
+    else if ((ptr = strstr(buf, "NAME")))
     {
         /* if NAME already sent, discard the second one */
         if (!(cid.status & CIDNAME))
         {
             /* remove any trailing spaces */
-            for (ptr = buf; *ptr; ++ptr);
-            for (--ptr; *ptr && *ptr == ' '; --ptr) *ptr = 0;
+            for (sptr = buf; *sptr; ++sptr);
+            for (--sptr; *sptr && *sptr == ' '; --sptr) *sptr = 0;
 
-            builtinAlias(cid.cidname, buf[4] == '=' ? buf + 5 : buf + 7);
+            builtinAlias(cid.cidname, *(ptr + 4) == '=' ? ptr + 5 : ptr + 7);
             cid.status |= CIDNAME;
         }
     }
@@ -969,11 +1128,15 @@ formatCID(int mainsock, char *buf)
         cid.status |= CIDNAME;
     }
 
-    /* Output Caller ID Information, if all Caller ID info received */
     if ((cid.status & CIDALL4) == CIDALL4)
     {
-        userAlias(cid.cidnmbr, cid.cidname);
-        sprintf(cidbuf, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s", CIDLINE,
+        /*
+         * All Caller ID information received.
+         * Send Caller ID Information to clients.
+         */
+        userAlias(cid.cidnmbr, cid.cidname, cid.cidline);
+        sprintf(cidbuf, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+            CIDLINE,
             DATE, cid.ciddate,
             TIME, cid.cidtime,
             LINE, cid.cidline,
@@ -983,6 +1146,8 @@ formatCID(int mainsock, char *buf)
             STAR);
         writeLog(cidlog, cidbuf);
         writeClients(mainsock, cidbuf);
+
+        /* Reset status, mesg, and line. */
         cid.status = 0;
         strncpy(cid.cidmesg, NOMESG, CIDSIZE - 1);
         strcpy(cid.cidline, ONELINE); /* default line */
@@ -1005,7 +1170,7 @@ builtinAlias(char *to, char *from)
  * User defined aliases.
  */
 
-userAlias(char *nmbr, char *name)
+userAlias(char *nmbr, char *name, char *line)
 {
     int i;
 
@@ -1013,7 +1178,7 @@ userAlias(char *nmbr, char *name)
     {
         switch (alias[i].type)
         {
-            case BOTH:
+            case NMBRNAME:
                 if (!strcmp(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
                 if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
                 break;
@@ -1035,6 +1200,9 @@ userAlias(char *nmbr, char *name)
                     !strcmp(alias[i].from, "*")))
                     strcpy(name, alias[i].to);
                 break;
+            case LINEONLY:
+                if (!strcmp(line, alias[i].from)) strcpy(line, alias[i].to);
+                break;
         }
     }
 }
@@ -1046,6 +1214,7 @@ userAlias(char *nmbr, char *name)
 writeClients(int mainsock, char *buf)
 {
     int pos;
+    char *ptr;
 
     for (pos = 0; pos < CONNECTIONS + 2; ++pos)
     {
@@ -1064,8 +1233,9 @@ writeClients(int mainsock, char *buf)
 sendLog(int sd, char *logbuf)
 {
     struct stat statbuf;
-    char *iptr, *optr, input[BUFSIZ], buf[BUFSIZ];
+    char *iptr, *optr, input[BUFSIZ], msgbuf[BUFSIZ];
     FILE *fp;
+    int ret;
 
     if (stat(cidlog, &statbuf) == 0)
     {
@@ -1073,16 +1243,16 @@ sendLog(int sd, char *logbuf)
         {
             sprintf(logbuf, LOGMSG, statbuf.st_size, LOGMAX, CRLF);
             write(sd, logbuf, strlen(logbuf));
-            sprintf(buf, LOGMSG, statbuf.st_size, LOGMAX, NL);
-            logMsg(LEVEL1, buf);
+            sprintf(msgbuf, LOGMSG, statbuf.st_size, LOGMAX, NL);
+            logMsg(LEVEL1, msgbuf);
             return;
         }
     }
 
     if ((fp = fopen(cidlog, "r")) == NULL)
     {
-        sprintf(buf, "cidlog: %s\n", strerror(errno));
-        logMsg(LEVEL4, buf);
+        sprintf(msgbuf, "cidlog: %s\n", strerror(errno));
+        logMsg(LEVEL4, msgbuf);
         return;
     }
 
@@ -1103,37 +1273,52 @@ sendLog(int sd, char *logbuf)
         }
         else iptr = input;
         strcat(strcat(strcpy(optr, LOGLINE), iptr), CRLF);
-        write(sd, logbuf, strlen(logbuf));
+        if ((ret = write(sd, logbuf, strlen(logbuf))) == -1)
+        {
+            while (ret == -1 && errno == EAGAIN)
+                ret = write(sd, logbuf, strlen(logbuf));
+
+            if (ret == -1 && errno != EAGAIN)
+            {
+                sprintf(msgbuf, "sending log: %d %s\n", errno, strerror(errno));
+                logMsg(LEVEL1, msgbuf);
+            }
+        }
     }
 
     (void) fclose(fp);
 
-    sprintf(buf, "Client connected, sd: %d, Sent call log: %s\n", sd, cidlog);
-    logMsg(LEVEL3, buf);
+    sprintf(msgbuf, "Client connected, sd: %d, Sent call log: %s\n",
+        sd, cidlog);
+    logMsg(LEVEL3, msgbuf);
 }
 
 /*
  * Write log, if log file exists.
  */
 
-writeLog(char *logfile, char *logbuf)
+writeLog(char *logf, char *logbuf)
 {
     int logfd;
-    char buf[BUFSIZ];
+    char msgbuf[BUFSIZ];
 
-    sprintf(buf, "%s\n", logbuf);
-    logMsg(LEVEL3, buf);
-
-    if ((logfd = open(logfile, O_WRONLY | O_APPEND)) < 0)
+    if ((logfd = open(logf, O_WRONLY | O_APPEND)) < 0)
     {
-        sprintf(buf, "%s: %s\n", logfile, strerror(errno));
-        logMsg(LEVEL4, buf);
+        sprintf(msgbuf, "%s: %s\n", logf, strerror(errno));
+        logMsg(LEVEL4, msgbuf);
     }
     else
     {
-        write(logfd, buf, strlen(logbuf));
+        write(logfd, logbuf, strlen(logbuf));
         write(logfd, NL, strlen(NL));
         close(logfd);
+
+        /* log to server log, if not blank */
+        if (*logbuf)
+        {
+            sprintf(msgbuf, "%s\n", logbuf);
+            logMsg(LEVEL3, msgbuf);
+        }
     }
 }
 
@@ -1147,13 +1332,20 @@ writeLog(char *logfile, char *logbuf)
 
 sendInfo(int mainsock)
 {
-    char buf[BUFSIZ];
+    char buf[BUFSIZ], *ptr;
 
     sprintf(buf, "%s%s%s%s%d%s%s", CIDINFO,
             LINE, cid.cidline,
             RING, ring,
             STAR, CRLF);
     writeClients(mainsock, buf);
+
+    /* strip <CR> */
+    if (ptr = strchr(buf, '\r'))
+    {
+        *ptr++ = '\n';
+        *ptr = '\0';
+    }
     logMsg(LEVEL3, buf);
 }
 
@@ -1200,38 +1392,38 @@ cleanup()
 /* signal exit */
 void finish(int sig)
 {
-    char buf[BUFSIZ];
+    char msgbuf[BUFSIZ];
 
-    sprintf(buf, "Terminated  %s\n", strdate());
-    logMsg(LEVEL1, buf);
+    sprintf(msgbuf, "Terminated: %s\n", strdate());
+    logMsg(LEVEL1, msgbuf);
     cleanup();
     exit(0);
 }
 
 errorExit(int error, char *msg, char *arg)
 {
-    char buf[BUFSIZ];
+    char msgbuf[BUFSIZ];
 
     if (error == -1)
     {
         /* system error */
         error = errno;
-        sprintf(buf, "%s: %s\n", msg, strerror(errno));
-        logMsg(LEVEL1, buf);
+        sprintf(msgbuf, "%s: %s\n", msg, strerror(errno));
+        logMsg(LEVEL1, msgbuf);
     }
     else if (msg != 0)
     {
         /* internal program error */
-        sprintf(buf, "%s: %s\n", msg, arg);
-        logMsg(LEVEL1, buf);
+        sprintf(msgbuf, "%s: %s\n", msg, arg);
+        logMsg(LEVEL1, msgbuf);
     }
 
     /* do not print terminated message if option error */
     if (error != -108 && error != -107 && error != -101 && error != 106 &&
         error != 100)
     {
-        sprintf(buf, "Terminated  %s\n", strdate());
-        logMsg(LEVEL1, buf);
+        sprintf(msgbuf, "Terminated:  %s\n", strdate());
+        logMsg(LEVEL1, msgbuf);
     }
 
     cleanup();

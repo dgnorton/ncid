@@ -1,0 +1,81 @@
+.\" %W% %G%
+.TH NCIDSIP 1
+.SH NAME
+.B ncidsip\^
+- Inject CID info by snooping SIP invites
+.SH SYNOPSIS
+.B ncidsip\^
+[--sip│-s <[host][:port]>]
+[--ncid│-n <host[:port]>]
+[--debug]
+[--dumpfile <filename>]
+[-i│--interface <interface>]
+[--help│-h]
+[--version│-V]
+[--verbose│-v]
+.SH DESCRIPTION
+Snoops SIP INVITES via libpcap and injects the caller id information
+found to the NCID server specified.  Uses Net::Pcap to interface with
+the libpcap library and snoops only udp traffic on the specified SIP
+host and port.
+.PP
+The configuration file for \fIncidsip\fR is /etc/ncid/ncidsip.conf.
+.SH "OPTIONS"
+.TP
+.B -s, --sip=<[host][:port]>
+Specifies the hostname of the SIP devie to snoop.  You may also specify
+the UDP port by suffixing the hostname with :<port>, or if no hostname
+is wanted, just :<port>.  If you do not specify a host, it defaults to
+the network interface.  If you do not specify a port, it defaults to
+<5061> (Vonage default).
+.TP
+.B -n, --ncid=<host[:port]>
+Specifies the NCID server to connect to.  Port may be specified by
+suffixing the hostname with :<port>.  By default it will connect to
+port 3333 on "localhost".
+.TP
+.B -i, --interface=<interface>
+Specifies the network interface to snoop on.  If this is not specified
+then libpcap will pick a network interface.  This will generally be
+the first ethernet interface found.
+.TP
+.B -h, --help
+Prints this help
+.TP
+.B --debug
+Display the payload of all packets that matched the libpcap filter.
+.TP
+.B --dumpfile <filename>
+Read packets from a libpcap capture file instead of the network.
+Mostly only useful for development purposes.
+.TP
+.B -V, --version
+Displays the version
+.TP
+.B -v, --verbose
+Displays status.  Use this option to run interactive.
+.SH FILES
+/etc/ncid/ncidsip.conf
+.SH CID MESSAGE FORMAT
+.nf
+MSG: CID: ###DATEmmddhhss...LINEidentifier...NMBRnumber...NAMEwords+++
+.fi
+.SS Example
+.nf
+MSG: CID: ###DATE05311233...LINE1122...NMBR13215551212...NAMEBig John+++
+.fi
+.SH EXAMPLES
+.nf
+# run ncidsip as root and view status
+ncidsip -v
+
+# run ncidsip as root and view SIP packets
+ncidsip --debug
+
+# run sip from the init file at boot
+ncidsip
+.fi
+.SH SEE ALSO
+lcdncid.1, out2osd.1, ncidd.8, ncidd.conf.5 ncidd.alias.5
+.SH AUTHOR
+Clayton O’Neill <claytononeill@users.sourceforge.net>

@@ -1,6 +1,6 @@
 MANSRC1     =
 MANSRC      = $(MANSRC1)
-SCRIPTS     = ncidd.sh ncid.sh
+SCRIPTS     = ncidd.sh ncid.sh ncidsip.sh
 FILES       = Makefile $(SCRIPTS) $(MANSRC) README
 
 prefix  = /usr/local

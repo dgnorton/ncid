@@ -25,11 +25,12 @@
 #endif
 
 #define ALIASSIZE   200
-#define BOTH        0x01
+#define NMBRNAME    0x01
 #define NMBRONLY    0x10
 #define NMBRDEP     0x11
 #define NAMEONLY    0x20
 #define NAMEDEP     0x21
+#define LINEONLY    0x40
 
 #define ERRIF       "missing 'if' before word:"
 #define ERRALIAS    "too many aliases"

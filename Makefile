@@ -1,7 +1,8 @@
 ########################################################################
 # make local            - builds for /usr/local and /var               #
+# make install          - installs files in /usr/local and /var        #
 # make package          - builds for /usr, /etc, and /var              #
-# make install          - installs files                               #
+# make install-package  - installs files in /usr, /etc, and /var       #
 # make mandir           - builds man text and html files               #
 #                         (no install for the *.txt and *.html files)  #
 #                                                                      #
@@ -11,14 +12,15 @@
 #   usr.local.powerpc-tivo.tar.bz2 (x86 cross compiler for Series1)    #
 #   usr.local.mips-tivo.tar.bz2 (x86 cross compiler for Series2)       #
 #                                                                      #
-# make freebsd          - builds for FreeBSD in /usr/local             #
-# make install-freebsd  - installs in /usr/local                       #
+# gmake freebsd         - builds for FreeBSD in /usr/local             #
+# gmake install-freebsd - installs in /usr/local                       #
 #                                                                      #
 # make mac              - builds for Macintosh OS X in /usr/local      #
 # make install-mac      - installs in /usr/local                       #
 #                                                                      #
 # make cygwin           - builds for Windows using cygwin              #
-#                         (does not function yet)                      #
+#                         (does not function with modem or comm port)  #
+# make install-cygwin   - installs files in /usr/local, and /var       #
 ########################################################################
 
 PROG        = ncidd
@@ -40,14 +42,14 @@ setname     = NONE
 
 BIN         = $(prefix)/bin
 SBIN        = $(prefix)/sbin
-SCRIPT      = $(prefix)/share/ncid
+SCRIPTDIR   = $(prefix)/share/ncid
 ETC         = $(prefix2)/etc
 ROTATE      = $(ETC)/logrotate.d
 INIT        = $(ETC)/rc.d/init.d
 CONFDIR     = $(ETC)/ncid
 DEV         = /dev
 LOG         = /var/log
-MAN         = /usr/share/man
+MAN         = $(prefix)/share/man
 
 CONF        = $(CONFDIR)/ncidd.conf
 ALIAS       = $(CONFDIR)/ncidd.alias
@@ -72,7 +74,7 @@ DEFINES = -DCIDCONF=\"$(CONF)\" \
 
 CFLAGS  = -O $(DEFINES) $(MFLAGS)
 
-LDFLAGS = -s
+# jlc LDFLAGS = -s
 
 OBJECTS = $(SOURCE:.c=.o)
 
@@ -83,8 +85,8 @@ default:
 	@echo "    make install"
 	@echo "    make tivo-series1"
 	@echo "    make tivo-series2"
-	@echo "    make freebsd"
-	@echo "    make install-freebsd"
+	@echo "    gmake freebsd"
+	@echo "    gmake install-freebsd"
 	@echo "    make mac"
 	@echo "    make install-mac"
 	@echo "    make cygwin"
@@ -97,35 +99,40 @@ $(PROG): $(OBJECTS)
 $(OBJECTS): $(HEADER)
 
 tooldir:
-	cd tools; $(MAKE) tools prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
+	cd tools; $(MAKE) tools prefix=$(prefix) prefix2=$(prefix2) \
+                      MAN=$(MAN) LOG=$(LOG) SBIN=$(SBIN)
 
 scriptdir:
-	cd scripts; $(MAKE) scripts prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
+	cd scripts; $(MAKE) scripts prefix=$(prefix) prefix2=$(prefix2) \
+                      MAN=$(MAN) LOG=$(LOG) SBIN=$(SBIN)
 
 package:
 	$(MAKE) local prefix=/usr prefix2=
+
+install-package:
+	$(MAKE) install prefix=/usr prefix2=
 
 tivo-series1: $(PROG).ppc-tivo mandir
 
 $(PROG).ppc-tivo:
 	$(MAKE) local prefix=/var/hack \
-	CC="/usr/local/tivo/bin/gcc" \
-	MFLAGS=-D__need_timeval \
-	LD="/usr/local/tivo/bin/ld" \
-	RANLIB=/usr/local/tivo/bin/ranlib \
-	setname="TiVo requires CLOCAL" \
-	settag="TiVo Modem Port"
+	        CC="/usr/local/tivo/bin/gcc" \
+	        MFLAGS=-D__need_timeval \
+	        LD="/usr/local/tivo/bin/ld" \
+	        RANLIB=/usr/local/tivo/bin/ranlib \
+	        setname="TiVo requires CLOCAL" \
+	        settag="TiVo Modem Port"
 	mv $(PROG) $(PROG).ppc-tivo
 
 tivo-series2: $(PROG).mips-tivo mandir
 
 $(PROG).mips-tivo:
 	$(MAKE) local prefix=/var/hack \
-	CC="/usr/local/mips-tivo/bin/gcc" \
-	LD="/usr/local/mips-tivo/bin/ld" \
-	RANLIB=/usr/local/mips-tivo/bin/ranlib \
-	setname="TiVo requires CLOCAL" \
-	settag="TiVo Modem Port"
+	        CC="/usr/local/mips-tivo/bin/gcc" \
+	        LD="/usr/local/mips-tivo/bin/ld" \
+	        RANLIB=/usr/local/mips-tivo/bin/ranlib \
+	        setname="TiVo requires CLOCAL" \
+	        settag="TiVo Modem Port"
 	mv $(PROG) $(PROG).mips-tivo
 
 freebsd:
@@ -143,8 +150,16 @@ install-mac:
 	$(MAKE) install-base MAN=$(prefix)/man
 
 cygwin:
-	$(MAKE) local LOG=c:/ncid CONF=c:/ncid/ncidd.conf MODEMDEV=/dev/com1 \
-	$(PROG)
+	$(MAKE) local \
+            SBIN=$(prefix)/bin \
+            settag="set noserial" \
+            MODEMDEV=$(DEV)/com1
+
+install-cygwin:
+	$(MAKE) install \
+            SBIN=$(prefix)/bin \
+            settag="set noserial" \
+            MODEMDEV=$(DEV)/com1
 
 mandir:
 	cd man; $(MAKE) all prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
@@ -159,7 +174,7 @@ dirs:
 	@if ! test -d $(LOG); then mkdir -p $(LOG); fi
 	@if ! test -d $(ROTATE); then mkdir -p $(ROTATE); fi
 	@if ! test -d $(INIT); then mkdir -p $(INIT); fi
-	@if ! test -d $(SCRIPT); then mkdir -p $(SCRIPT); fi
+	@if ! test -d $(SCRIPTDIR); then mkdir -p $(SCRIPTDIR); fi
 	@if ! test -d $(CONFDIR); then mkdir -p $(CONFDIR); fi
 
 install-base: dirs install-prog install-man install-etc install-log \
@@ -220,8 +235,8 @@ clean:
 
 clobber: clean
 	rm -f $(PROG) $(PROG).ppc-tivo $(PROG).mips-tivo $(PROG).tivo a.out
-	rm -f $(CLIENT) ncidd.logrotate ncid.conf ncidd.conf ncid.init *.zip
-	rm -f *.log
+	rm -f $(SITE)
+	rm -f *.log *.zip *.tar.gz
 	cd man; $(MAKE) clobber
 	cd tools; $(MAKE) clobber
 	cd scripts; $(MAKE) clobber
@@ -233,7 +248,7 @@ files: $(FILES)
         clean clobber files
 
 % : %.sh
-	sed '/ProgDir/s,/usr/local,$(prefix),;/ConfigDir/s,/usr/local,$(prefix2),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),' $< > $@
+	sed '/ProgDir/s,/usr/local/share/ncid,$(SCRIPTDIR),;/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),' $< > $@
 	chmod 755 $@
 
 % : %.dist

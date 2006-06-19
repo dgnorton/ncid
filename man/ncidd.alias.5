@@ -6,12 +6,12 @@
 .SH DESCRIPTION
 The \fIncidd.alias\fR file contains the alias information for
 \fIncidd\fR, the Network Caller ID Server.
-.P
+.PP
 The \fIncidd.alias\fR file is used to create aliases.
 A alias is set on a alias line.  A line is broken up into words.
 A word is either a string of non-blank characters, everything
 between double quotes, or an equal sign.
-.P
+.PP
 The \fIncidd.alias\fR file understands 3 types of lines:
 .TP
 .B blank line
@@ -38,19 +38,19 @@ Change OUT-OF-AREA to UNAVAILABLE:
 .RS 0
 	alias OUT-OF-AREA = UNAVAILABLE
 .RE
-.P
+.PP
 Change OUT-OF-AREA to UNAVAILABLE for a NAME:
 .RS 0
 	alias NAME OUT-OF-AREA = UNAVAILABLE
 .RE
-.P
+.PP
 Change generic name to specific name for a phone number:
 .RS 0
 .nf
 	alias NAME * = "John on CELL" if 4075551212
 .fi
 .RE
-.P
+.PP
 Mask a phone number:
 .RS 0
 	alias NMBR 4075551212 = "----------"

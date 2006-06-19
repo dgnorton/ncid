@@ -6,14 +6,14 @@
 .SH DESCRIPTION
 The \fIncidscript.conf\fR file contains the configuration information for
 \fIncid\fR, helper scripts and the init file.
-.P
+.PP
 The \fIncidscript.conf\fR file is used to set options for
 .IR ncidpage ,
 .IR ncid-samba ,
 .IR ncid-speak .
 and
 .IR ncid-mythtv .
-.P
+.PP
 The \fIncidscript.conf\fR file understands 3 types of lines:
 .TP
 .B blank line
@@ -23,20 +23,20 @@ skip it
 skip it
 .TP
 .B shell variable set lines.
-.P
+.PP
 See ncidscripts.conf for more details on the variables that
 can be set.
 .SH EXAMPLES
 Set ncid to call ncid-page:
 .RS 0
-	extprog="ncid-page"
+	extprog=ncid-page
 .RE
-.P
+.PP
 set the email address for ncid-page:
 .RS 0
 	ADDRESS=cellphone@isp.com
 .RE
-.P
+.PP
 set ncid-page to call the cell phone on ring 4:
 .RS 0
 	opts="$opts -r 4"

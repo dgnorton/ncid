@@ -1,6 +1,6 @@
 Summary:    Network Caller ID server and clients
 Name:       ncid
-Version:    0.63
+Version:    0.64
 Release:    1
 Group:      System Environment/Daemons
 License:    GPL
@@ -15,11 +15,16 @@ Requires:   tcl tk
 
 %description
 NCID is a TCP client/server program for distributing Caller ID
-information.  The server, ncidd, listens on a modem line for the
-Caller-ID data, formats it, and sends it via a TCP socket to
-mutiple clients.  The ncid client, displays the Caller ID data
-and the Server Caller-ID log.  It can also output the CID data
-to an external program.
+information.
+
+The server, ncidd, listens on a modem line for the Caller-ID data,
+formats it, and sends it via a TCP socket to mutiple clients.
+
+The ncid client, displays the Caller ID data and the Server Caller-ID
+log.  It can also output the CID data to an external program.
+
+The ncidsip client gets the Caller ID information from SIP Invite,
+and send a formatted CID message to the server.
 
 %prep
 
@@ -44,6 +49,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/bin/cidalias
 /usr/bin/cidupdate
 /usr/sbin/ncidd
+/usr/sbin/ncidsip
 /usr/share/ncid/README
 /usr/share/ncid/ncidrotate
 /usr/share/ncid/ncid-mythtv
@@ -55,8 +61,10 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %config /etc/ncid/ncidd.alias
 %config /etc/ncid/ncidrotate.conf
 %config /etc/ncid/ncidscript.conf
+%config /etc/ncid/ncidsip.conf
 /etc/rc.d/init.d/ncidd
 /etc/rc.d/init.d/ncid
+/etc/rc.d/init.d/ncidsip
 /etc/logrotate.d/ncidd
 %{_mandir}/man1/ncid.1*
 %{_mandir}/man1/ncidscripts.1*
@@ -66,6 +74,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %{_mandir}/man5/ncid.conf.5*
 %{_mandir}/man5/ncidscript.conf.5*
 %{_mandir}/man8/ncidd.8*
+%{_mandir}/man8/ncidsip.8*
 %doc README VERSION
 %doc doc man/*.html scripts/README screenshots test
 
@@ -76,9 +85,11 @@ chmod 644 /var/log/cidcall.log
 
 %preun
 /sbin/service ncid stop >/dev/null 2>&1 || true
+/sbin/service ncidsip stop >/dev/null 2>&1 || true
 /sbin/service ncidd stop >/dev/null 2>&1 || true
 if [ $1 = 0 ] ; then
     /sbin/chkconfig --del ncid
+    /sbin/chkconfig --del ncidsip
     /sbin/chkconfig --del ncidd
 fi
 

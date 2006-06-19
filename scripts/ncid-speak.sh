@@ -3,20 +3,22 @@
 # most of this program is taken from nciduser by Mace Moneta
 # requires festival: http://www.cstr.ed.ac.uk/projects/festival
 
-# input is 4 lines obtained from ncid using the "-all" option
-# input: DATE\nTIME\nNUMBER\nNAME
+# input is 5 lines obtained from ncid
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
+#
 # ncid calls a external program with the "--call-prog" option
 # default program: /usr/share/ncid/ncid-page
 #
 # ncid usage examples:
-#   ncid --all --call-prog
-#   ncid --all --call-prog --program ncid-speak
-#   ncid --no-gui --all --call-prog --program ncid-speak
+#   ncid --call-prog
+#   ncid --call-prog --program ncid-speak
+#   ncid --no-gui --call-prog --program ncid-speak
 
 read CIDDATE
 read CIDTIME
 read CIDNMBR
 read CIDNAME
+read CIDLINE
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidscript.conf

@@ -1,31 +1,63 @@
-Source: ncid-0.63.tar.gz
-Fedora Core 4 package: ncid-0.63-1.i386.rpm
-TiVo Series1 package: ncid-0.63.series1-tivo.tgz
-TiVo Series2 package: ncid-0.63.series2-tivo.tgz
-Macintosh OS X package: ncid-0.63.mac-osx.tgz
-FreeBSD package: ncid-0.63.freebsd.tgz
-Windows client installer: ncid-0.63-setup.exe
+Source: ncid-0.64.tar.gz
+Fedora Core 5 package: ncid-0.64-1.i386.rpm
+TiVo Series1 package: ncid-0.64-series1-tivo.tgz
+TiVo Series2 package: ncid-0.64-series2-tivo.tgz
+Macintosh OS X package: ncid-0.64-mac-osx.tgz
+FreeBSD package: ncid-0.64-freebsd.tgz
+Cygwin Windows package: ncid-0.64-cygwin.tgz
+Windows client installer: ncid-0.64-setup.exe
 
-Added support for CID systems that will output a name but
-not a telephone number when call is PRIVATE or BLOCKED.
+There is now a Cygwin package that runs under windows.  It is
+limited.  It will not handle a modem, but works with a CID client
+on another computer.  The distributed CID client requires a perl
+module: Net::Pcap which does not seem to build under cygwin.
 
-Message support has been added to ncidd and ncid.  The ncid
-client, can send a short single line message to all connected
-clients using the ncidd server.
+The server can now receive Caller ID information from a client
+that sends a CID message to the server.  There is one client
+available that can send a CID message, but others are possible,
+including ones to monitor modems on different platforms.
 
-Any text sent to port 3333 is considered a message.  Message support
-is really intended for applications to send messages.  Here is a example
-of a script for a 10 minute food timer using netcat to send the message:
+NCID has a SIP Invite client called 'ncidsip'.  It uses SIP Invite
+to get the CID information for a VoIP call and sends it to the server
+as a CID Message.  It handles multiple VoIP lines, and has been tested
+with Vonage.
 
-    sleep 600; echo "Check food ready" | nc localhost 3333
+NCID can handle multiple VoIP lines and one normal telephone line.
+It can also handle multiple VoIP lines and multiple distinctive
+ring numbers.  It can also handle multiple clients that send CID
+messages.
 
-Added a logfile for ncidd.  The configuration file has a variable
-called verbose that controls how much content goes into it.  The
-default is 1, but the range is 1-9.
+A new option called "noserial" tells ncidd there is no modem or serial
+device attached to it.  A CID device is no longer a requirement if a
+client supplies the CID.
 
-The server debug syntax changed: For maximum output it is -Dv5 instead
-of the previous -Dvvv.  The default output for -D is at the level set by
-verbose.  The verbose default is 1 so -D is usually the same as -Dv1.
+Line identifiers can now be aliased in ncidd.  Distinctive Ring and
+the SIP client produce line identifiers which can be changed by an
+alias.  If there is no line indicator, ncidd generates a default one
+to send to its clients.  The default one is not displayed by ncid.
+You can alias the default line identifier so it will be displayed
+by ncid, and you can alias a received line indicator to the default
+so ncid will not display it.  Usage is in the ncidd.alias file.
 
-Applied some fixes to ncidd to prevent it from hanging when certain
-programs took control of the modem.
+The client by default outputs 5 lines to a output module.  The --all
+option is still there but should not be used as it will be removed.  A
+new option, --tivo, outputs the single line that was the default.
+
+All ncid output modules were rewritten to read 5 input lines.  So
+far, only ncid-page makes use of the new LINE indicator input.  All
+references to --all were removed from all output modules.
+
+Fixed very important problems in ncidd polling.
+
+Fixed the '-s' option.
+
+Fixed ncidd so it will recover, in most cases, when it resumes from a
+program that takes over the modem but leaves data in the modem buffer
+when it terminates.  The program "qpage" will still cause ncidd not to
+recover unless a simple fix is applied to qpage.
+
+Fixed ncidd so it will not truncate some large files when sent to clients.
+
+Improved server logging and output from the various verbose levels.
+
+Modified ncidd to work with the motorola modems in a Mini Mac.

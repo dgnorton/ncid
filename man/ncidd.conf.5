@@ -6,13 +6,13 @@
 .SH DESCRIPTION
 The \fIncidd.conf\fR file contains the configuration information for
 \fIncidd\fR, the Network Caller ID Server.
-.P
+.PP
 The \fIncidd.conf\fR file is used to set options.
 Options are set on a command line.
 A line is broken up into words.
 A word is either a string of non-blank characters, everything
 between double quotes, or an equal sign.
-.P
+.PP
 The \fIncidd.conf\fR file understands 5 types of lines:
 .TP
 .B blank line
@@ -38,17 +38,17 @@ Send the CID log to each client at connect:
 .RS 0
 	send cidlog
 .RE
-.P
+.PP
 Send the ring count, at each ring, to each client
 .RS 0
 	send cidinfo
 .RE
-.P
+.PP
 Set the modem CID string to avoid the default:
 .RS 0
 	set initcid = "AT#CID=1"
 .RE
-.P
+.PP
 Set the modem port to avoid the default:
 .RS 0
 	set ttyport=/dev/ttyS2

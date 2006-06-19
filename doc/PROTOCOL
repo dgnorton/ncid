@@ -20,6 +20,8 @@ To implement a client:
           is added, the old client will still work
         - clients are allowed to connect and disconnect as they please
         - clients are allowed to send a text message to the server
+	    - clients are allowed to send CID info in the Message CID Line
+          format by prefixing the line with 'CID: ###'
 
 To implement a server:
         - listen to port 3333 for a connection,
@@ -33,4 +35,6 @@ To implement a server:
         - send a CIDINFO line after ringing stops, with a ring count of 0
         - maintain a constant TCP connection with the clients
         - detect clients as they come and go
-        - if client sends text, sent it to all connected clients
+	    - if client sends text, sent it to all connected clients
+	    - if client sends a line prefixed with CID:, then treat it as
+          CID info from a modem

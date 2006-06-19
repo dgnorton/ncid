@@ -6,9 +6,9 @@
 .SH SYNOPSIS
 .B ncidd\^
 [options]
-.P
+.PP
 .I Options:\^
-.P
+.PP
 .nf
 [-A aliasfile  | --alias aliasfile]
 [-C configfile | --config configfile]
@@ -20,6 +20,7 @@
 [-i cidstr     | --initcid cidstr]
 [-L logfile    | --logfile logfile]
 [-l lockfile   | --lockfile lockfile]
+[-N 0/1        | --noserial 0/1]
 [-n 0/1        | --nomodem 0/1]
 [-p portnumber | --port portnumber]
 [-S 0/1        | --ttyclocal 0/1]
@@ -31,19 +32,26 @@
 .fi
 .SH DESCRIPTION
 .B NCIDD
-collects Caller ID data form a modem on a telephone line.
+collects Caller ID data from:
+.PP
+.nf
+    - a modem or CID device on a telephone line
+    - a client on the network using SIP Invite
+    - or both
+.fi
+.PP
 It formats the data on a single text line, and then sends it
 to one or more
 \fINetwork\fR \fICallerID\fR (\fINCID\fR)
 clients over TCP/IP.
 .B NCIDD
 also allows an alias for the number and an alias for the name.
-.P
+.PP
 The telephone company limits names to 15 upper case characters,
 so by using the alias function, you can display the name as you
 would like to view it, or correct a name that was truncated.
 You can even change or mask a telephone number.
-.P
+.PP
 .B NCIDD
 can also send a line number and ring count, in a call info line,
 each time the
@@ -52,11 +60,11 @@ This will allow, for example, a client to send the call information
 to a pager or cell phone on a specific ring count.  If the ring count
 is not reached, it is assumed the phone was answered and there is no
 need to send a page or cell phone notification.
-.P
+.PP
 .B NCIDD
 will accept a text message for a client, and then send it to all
 connected clients, including the one that sent it.
-.SS "Options"
+.SH "OPTIONS"
 .PD 0
 .TP 35
 .B -A <file> | --alias <file>
@@ -107,6 +115,11 @@ Modem lockfile.
 .br
 Default: /var/lock/LCK..modem
 .TP
+.B -N 0/1 | --noserial 0/1
+serial device (0) or no serial device (1)
+.br
+Default: noserial = 0
+.TP
 .B -n 0/1 | --nomodem 0/1
 modem (0) or no modem (1)
 .br
@@ -152,42 +165,50 @@ Display the version number.
 .B -v 1-9 | --verbose 1-9
 Output information, used for the logfile and the -D option.
 Set higher number for more information.  The range is 1-9.
+.br
+Default: verbose = 1
+.br
+Most Useful: verbose = 3
 .PD
 .SH CONFIGURATION
-The ncidd.conf(5) file is used to set options or create aliases.
+The ncidd.conf(5) file is used to set options.
 The syntax of the ncidd.conf(5) file is discussed seperately,
+and should be consulted for detailed reference information.
+.PP
+The ncidd.alias(5) file is used to create aliases.
+The syntax of the ncidd.alias(5) file is discussed seperately,
 and should be consulted for detailed reference information.
 .SH "DATA LINE FORMAT EXAMPLES"
 These are three examples of the three types of lines sent to
 .I NCID
 clients. The first field is line identifier.
-.P
+.PP
 The \fICID:\fR line gives the CID information of the current call.
-.P
+.PP
 The \fICIDLOG:\fR line gives the CID information of a line in the
 CID log file.
-.P
+.PP
 The \fIMSG:\fR line gives messages from the server.
-.P
+.PP
 The \fIMSGLOG:\fR line gives a message logged in the CID log file.
-.P
+.PP
 The \fICIDINFO:\fR line gives a line number and ring count from the server.
 The ring count starts at 1 and increases until ringing ends,
 at which time a count of 0 is sent.
 The line number default is 1, Distinctive Ring will add one of the
 letters: A B C D to indicate the virtual line called.
 Expect additional name/values pairs to be added in the future.
-.P
+.PP
 The \fICID:\fR
 and \fICIDLOG:\fR lines are identical,
 with data stored as name and value pairs.
 Clients should always locate the line identifier,
 and then scan for a field name and get its value.
 It's possible that additional name/value pairs may be add in the future.
-.P
+.PP
 The \fIMSG:\fR
 and \fIMSGLOG:\fR lines are identical,
-.P
+.PP
 .nf
 CID: *DATE*mmddyyyy*TIME*hhmm*NMBR*number*MESG*NONE*NAME*name*
 CIDLOG: *DATE*mmddyyyy*TIME*hhmm*NMBR*number*MESG*NONE*NAME*name*
@@ -195,51 +216,35 @@ CIDINFO: *LINE*line indicator*RING*ringcount*
 MSG: Too many clients connected: 15
 MSGLOG: Too many clients connected: 15
 .fi
-.SH DIAGNOSTICS
+.SH LOG FILES
 .PD 0
-.TP 23
-.B "Return Code"
-.B Meaning
+.TP 15
+.B cidcall.log
+Contains CID and MSG lines
 .TP
------------
--------
+.B ciddata.log
+Contains the output from the modem or CID device
 .TP
-0
-Successful
-.TP
--100
-Usage
-.TP
--101
-Invalid port number
-.TP
--102
-Modem is in use
-.TP
--103
-Unable to set modem for Caller ID
-.TP
--104
-Configuration file error
-.TP
--105
-No modem found
-.TP
--106
-Invalid data type.
-.TP
--107
-Invalid number
-.TP
--108
-Invalid tty port speed [set in config file]
-.TP
--109
-Alias file error
-.TP
-other negative number
-System error
+.B ncidd.log
+Server log file.  Contents controlled by verbose.
 .PD
+.SH DIAGNOSTICS
+.nf
+    Return Code    Meaning
+    -----------    -------
+         0         Successful
+      -100         Usage
+      -101         Invalid port number
+      -102         Modem is in use
+      -103         Unable to set modem for Caller ID
+      -104         Configuration file error
+      -105         No modem found
+      -106         Invalid data type.
+      -107         Invalid number
+      -108         Invalid tty port speed [set in config file]
+      -109         Alias file error
+        -?         System error
+.fi
 .SH SEE ALSO
 ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.conf.5, ncidd.alias.5,
 ncid.conf.5
