@@ -20,17 +20,17 @@ shell="perl"
 opts=""
 
 ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/ncidtool.conf
+ConfigFile=$ConfigDir/ncidsip.conf
 
 # source ncidinit.conf file
 [ -f $ConfigFile ] && . $ConfigFile
 
-[ -f /usr/bin/$prog ] || exit 0
+[ -f /usr/sbin/$prog ] || exit 0
 
 start() {
         # Start daemons.
         echo -n $"Starting $prog: "
-        $shell /usr/bin/$prog $opts &
+        $shell /usr/sbin/$prog $opts &
         RETVAL=$?
         [ $RETVAL -eq 0 ] &&
         success $"$prog startup" ||

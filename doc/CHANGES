@@ -1,5 +1,9 @@
 ncid - Network CallerID
 
+Version 0.64.1
+    - tools/ncidsip.init.dist: ncidtool.conf -> ncidsip.conf,
+      /usr/bin -> /usr/sbin
+
 Version 0.64
     - README: updated for ncidsip
     - Makefile: chenged make freebsd to gmake freebsd

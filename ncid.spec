@@ -1,7 +1,7 @@
 Summary:    Network Caller ID server and clients
 Name:       ncid
 Version:    0.64
-Release:    1
+Release:    2
 Group:      System Environment/Daemons
 License:    GPL
 Url:        http://ncid.sourceforge.net
