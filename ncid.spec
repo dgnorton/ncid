@@ -1,7 +1,7 @@
 Summary:    Network Caller ID server and clients
 Name:       ncid
-Version:    0.64
-Release:    2
+Version:    0.65
+Release:    1
 Group:      System Environment/Daemons
 License:    GPL
 Url:        http://ncid.sourceforge.net
@@ -81,13 +81,15 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %post
 touch /var/log/cidcall.log
 chmod 644 /var/log/cidcall.log
-/sbin/chkconfig --add ncidd
+if [ $1 = 1 ]; then
+    /sbin/chkconfig --add ncidd
+fi
 
 %preun
-/sbin/service ncid stop >/dev/null 2>&1 || true
-/sbin/service ncidsip stop >/dev/null 2>&1 || true
-/sbin/service ncidd stop >/dev/null 2>&1 || true
 if [ $1 = 0 ] ; then
+    /sbin/service ncid stop >/dev/null 2>&1 || true
+    /sbin/service ncidsip stop >/dev/null 2>&1 || true
+    /sbin/service ncidd stop >/dev/null 2>&1 || true
     /sbin/chkconfig --del ncid
     /sbin/chkconfig --del ncidsip
     /sbin/chkconfig --del ncidd
@@ -96,4 +98,6 @@ fi
 %postun
 if [ "$1" -ge "1" ]; then
     /etc/rc.d/init.d/ncidd condrestart >/dev/null 2>&1 || true
+    /etc/rc.d/init.d/ncidsip condrestart >/dev/null 2>&1 || true
+    /etc/rc.d/init.d/ncid condrestart >/dev/null 2>&1 || true
 fi

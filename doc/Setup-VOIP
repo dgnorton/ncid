@@ -20,6 +20,9 @@ As root run: ncidsip -v --debug
 If ncidsip terminates you should be able to see why and fix it.
 (ncidsip --help will give a detailed usage message)
 
+If you do not see any SIP packets, change to port 10000 and try again:
+As root run: ncidsip -s :10000 -v --debug
+
 You should see something like:
 
   NCIDsip Version 0.2.0

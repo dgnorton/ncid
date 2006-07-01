@@ -1,5 +1,28 @@
 ncid - Network CallerID
 
+Version 0.65
+    - ncidd.c: main() - while (1): if (ring) -> if (ring > 0)
+               formatCID() - if (sendinfo(): added: if (ring < -1) ring = 0;
+               doPoll() -  added check and code for INFO MSG
+    - ncidd.alias: changed "# alias 1122 = -" to "# alias LINE 1122 = -"
+    - ncid.sh: --ring option: added test for -1 and removed 2nd digit
+               - changed variable 'TiVo' to 'TifoFlag'
+               - added sendMSG{} for a TiVo message display
+               - initMSG -> if {!$TivoFlag} initMSG
+               - sendCID{}: added line indicator to TiVo display on line2
+    - ncid.spec: updated %post, %preun, and %postun sections
+    - man/ncid.1: updated --ring count option, gives count values allowed
+    - man/ncidsip.8: updated, gives Vonage INVITE ports
+    - tools/ncidsip.pl: - changed test for INVITE to execute block of code
+                          to create and send CID line to server
+                        - added test for CANCEL to execute block of code
+                          to create and send CIDINFO line to server
+                        - changed regular expressions to accept a blank
+                          name field.
+                        - changed logic of code that gets last 4 digits
+                          of phone number
+    - Win/ncid.nsi: updated version number
+
 Version 0.64.1
     - tools/ncidsip.init.dist: ncidtool.conf -> ncidsip.conf,
       /usr/bin -> /usr/sbin

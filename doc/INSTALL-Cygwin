@@ -22,33 +22,6 @@ INSTALL:
 
 	Install ncid:
         - The NCID package normally installs in /usr/local:
-            /usr/local/bin/ncidd
-            /usr/local/bin/ncidsip
-            /usr/local/bin/ncid
-            /usr/local/bin/cidalias
-            /usr/local/bin/cidlog
-            /usr/local/bin/cidlogupd
-            /usr/local/etc/ncid/ncidd.conf
-            /usr/local/etc/ncid/ncidd.alias
-            /usr/local/etc/ncid/ncid.conf
-            /usr/local/etc/ncid/ncidrotate.conf
-            /usr/local/etc/ncid/ncidscript.conf
-            /usr/local/etc/ncid/ncidsip.conf
-            /usr/local/etc/rc.d/init.d/ncid
-            /usr/local/etc/rc.d/init.d/ncidd
-            /usr/local/etc/rc.d/init.d/ncidsip
-            /usr/local/share/ncid/README-page
-            /usr/local/share/ncid/ncid-page
-            /usr/local/share/ncid/ncid-samba
-            /usr/local/share/ncid/ncid-speak
-            /usr/local/share/ncid/ncidrotate
-            /usr/local/share/man/man1/ncid.1
-            /usr/local/share/man/man1/ncidscripts.1
-            /usr/local/share/man/man1/ncidtools.1
-            /usr/local/share/man/man5/ncidd.conf.5
-            /usr/local/share/man/man8/ncidd.8
-            /usr/local/share/man/man8/ncidsip.8
-            /var/log/cidcall.log
         - If a binary package is available:
             Copy ncid-VERSION-cygwin.tgz to cygwin, then:
                 tar -xzvf ncid-VERSION-cygwin.tgz -C /

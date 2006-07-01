@@ -64,7 +64,7 @@ set Verbose     0
 set NoGUI       0
 set Callprog    0
 set CallOnRing  0
-set TiVo        0
+set TivoFlag    0
 
 if {[file exists $ConfigFile]} {
     catch [source $ConfigFile]
@@ -76,7 +76,7 @@ set Count       0
 set Ring        0
 set Try         0
 set Socket      0
-set Version     0.64
+set Version     0.65
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -177,6 +177,7 @@ proc getCID {} {
     global Try
     global VersionInfo
     global NoGUI
+    global TivoFlag
     global Callprog
     global Ring
     global CallOnRing
@@ -220,6 +221,7 @@ proc getCID {} {
                 # found MSG line
                 regsub {MSG: (.*)} $dataBlock {\1} msg
                 displayLog [list $msg]
+                if {$TivoFlag} {sendMSG [list $msg]}
             } else {
                 # found CID, EXTRA, or CIDLOG line
                 set cid [formatCID $dataBlock]
@@ -280,8 +282,10 @@ proc formatCID {dataBlock} {
     if [string match {*\*LINE\**} $dataBlock] {
         set cidline [getField LINE $dataBlock]
         regsub {(.*)} $cidline {<\1>} cidline
-    } else {set cidline <>}
-    regsub {<-*>} $cidline {} cidline
+    # set default line indicator
+    } else {set cidline <->}
+    # make default line indicator a blank
+    regsub {<->} $cidline {} cidline
 
     return [list $ciddate $cidtime $cidnumber $cidname $cidline]
 }
@@ -298,21 +302,30 @@ proc getField {dataString dataBlock} {
 proc sendCID {cid} {
     global All
     global Program
-    global TiVo
+    global TivoFlag
 
     if $All {
       # pass DATE\nTIME\nNUMBER\nNAME\n
       catch {exec [lindex $Program 0] << \
         "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n" &} oops
-      # pass NAME NUMBER
-      } elseif $TiVo {
+      } elseif $TivoFlag {
+        # pass NAME NUMBER LINE
         catch {exec [lindex $Program 0] << \
-          "[lindex $cid 3] [lindex $cid 2]\n" &} oops
+          "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n" &} oops
       } else {
         # pass DATE\nTIME\nNUMBER\nNAME\nLINE\n
         catch {exec [lindex $Program 0] << \
           "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n" &} oops
       }
+}
+
+# pass the MSG information to an external program
+# Input: "$msg0 $msg1 $msg2 $msg3 sg4\n"
+proc sendMSG {msg} {
+    global Program
+
+    catch {exec [lindex $Program 0] << \
+      "[lindex $msg 0] [lindex $msg 1] [lindex $msg 2] [lindex $msg 3] [lindex $msg 4]\n" &} oops
 }
 
 # display CID information
@@ -380,7 +393,7 @@ proc getArg {} {
     global Ring
     global CallOnRing
     global ProgDir
-    global TiVo
+    global TivoFlag
 
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
@@ -389,7 +402,8 @@ proc getArg {} {
             {^--ring$} {
                 incr cnt
                 if {$optarg != ""
-                    && [regexp {^[023456789][0-9]?$} $optarg]} {
+                    && $optarg == -1
+                    || [regexp {^[023456789]$} $optarg]} {
                     set Ring $optarg
                     set CallOnRing 1
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
@@ -417,7 +431,7 @@ proc getArg {} {
                 } else {set Program [list $ProgDir/$optarg]}
             }
             {^-T$} -
-            {^--tivo$} {set TiVo 1}
+            {^--tivo$} {set TivoFlag 1}
             {^-V$} -
             {^--verbose$} {set Verbose 1}
             {^-R$} -
@@ -571,7 +585,7 @@ if $Callprog {
     } else { exitMsg 3 "Program Not Found: $Program" }
 } else { set Verbose 1 }
 connectCID $Host $Port
-initMSG
+if {!$TivoFlag} initMSG
 
 # enter event loop
 vwait forever

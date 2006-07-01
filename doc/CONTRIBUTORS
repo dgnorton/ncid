@@ -49,6 +49,11 @@ Clayton O'Neill
     Added the ability to inject CID from clients
     Contributed the ncid-sipinject program which was renamed ncidsip
 
+David LaPorte
+    Improved ncidsip to work with a missing name and to detect outgoing
+    calls that also have a SIP REGISTER packet so they are not treated
+    as incoming calls.
+
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
 	Troy Carpenter
 	Mace Moneta
@@ -62,3 +67,4 @@ New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Rick Matthews
     Phil Fitzpatrick
     Adam 'Starblazer' Romberg
+    Michael Lasevich

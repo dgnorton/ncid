@@ -10,7 +10,7 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case_always);
 use Pod::Usage;
 
-our $VERSION = "0.2.0";
+our $VERSION = "0.2.1";
 
 my ($host, $port) = ('localhost', 3333);
 my ($siphost, $sipport) = ('', 5061);
@@ -20,6 +20,7 @@ my $debug = 0;
 my $verbose = '';
 my ($help, $version);
 my $sock = undef;
+my @locals;
 
 my $result = GetOptions("ncid=s" => \$host,
                "dumpfile=s" => \$dumpfile,
@@ -80,6 +81,8 @@ sub processPacket {
   my $iplen = (unpack('C', $ip) & 0x0F) * 4;
   my $udp = substr($ip, $iplen);
   my $sip = substr($udp, 8);
+  my $name;
+  my $line;
 
   print $sip,"\n" if $debug;
 
@@ -89,22 +92,39 @@ sub processPacket {
   if ($! == 0 || !defined $sock) {&connectNCID};
   return if !defined $sock;
 
-  return if $sip !~ /^INVITE/o;
+  if ($sip =~ /^INVITE/o) {
+    if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
+      my ($number) = $1;
+      return if (grep(/^$number$/, @locals));
 
-  if ($sip =~ /^From:\s+\"?(.+?)"?\s+<sip:(.+?)@/imo) {
-    my ($name, $number) = ($1, $2);
+      if ($sip =~ /^From:\s+\"?(.+?)"?\s+<sip:/imo) {
+        $name = $1;
+      } else {$name = "NO NAME";}
 
-    if ($sip =~ /^To:\s+<sip:.+(\d\d\d\d)@/imo) {
-      my $line = $1;
+      if ($sip =~ /^To:\s+<sip:.+(\d\d\d\d)@/imo) {
+        $line = $1;
+      } else {$line = "UNKNOWN";}
 
       my $date = strftime("%m%d%H%M", localtime($header->{tv_sec}));
       my $msg = sprintf("CID: ###DATE%s...LINE%s...NMBR%s...NAME%s+++",
-          $date, $line, $number,$name);
+        $date, $line, $number,$name);
 
       print $msg, "\n" if $verbose;
+      print $sock $msg, "\r\n";
+
+    } else {print "failed to find calling number in 'From' line\n" if $debug;}
+
+  } elsif ($sip =~ /^CANCEL/o) {
+      my $msg = sprintf("CIDINFO: ###CANCEL");
+      print $msg, "\n" if $verbose;
       print $sock $msg, "\r\n"
-    } else { print "To: failed to find number called\n" if $debug; }
-  } else { print "From: failed to find name and number\n" if $debug; }
+  } elsif ($sip =~ /CSeq.*REGISTER/o) {
+      $sip =~ /^From:\s+.*?<sip:(.+?)@/imo;
+      if (!grep(/^$1$/, @locals)) {
+        push(@locals, $1);
+        print "Adding $1 to local number list\n" if ($debug);
+      }
+  }
 }
 
 sub connectNCID {

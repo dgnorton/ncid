@@ -45,7 +45,8 @@ to one or more
 \fINetwork\fR \fICallerID\fR (\fINCID\fR)
 clients over TCP/IP.
 .B NCIDD
-also allows an alias for the number and an alias for the name.
+also allows an alias for the number, an alias for the name,
+and an alias for the line identifier.
 .PP
 The telephone company limits names to 15 upper case characters,
 so by using the alias function, you can display the name as you
@@ -53,7 +54,7 @@ would like to view it, or correct a name that was truncated.
 You can even change or mask a telephone number.
 .PP
 .B NCIDD
-can also send a line number and ring count, in a call info line,
+can also send a line number and ring count in a call info line,
 each time the
 phone rings, and a ring count of zero when ringing has ended.
 This will allow, for example, a client to send the call information
@@ -64,6 +65,17 @@ need to send a page or cell phone notification.
 .B NCIDD
 will accept a text message for a client, and then send it to all
 connected clients, including the one that sent it.
+.PP
+.B NCIDD
+will accept a CID message from a client.  A CID message contains the
+Caller ID information from a CID client instead of a serial device
+or modem.
+.PP
+.B NCIDD
+will accept a CIDINFO message from a client.  A SIP client will send
+a CIDINFO message when it receives a CANCEL command.  The server will
+then send a ring count of -1 to its clients to indicate a hangup with
+no answer.
 .SH "OPTIONS"
 .PD 0
 .TP 35
@@ -179,7 +191,7 @@ The ncidd.alias(5) file is used to create aliases.
 The syntax of the ncidd.alias(5) file is discussed seperately,
 and should be consulted for detailed reference information.
 .SH "DATA LINE FORMAT EXAMPLES"
-These are three examples of the three types of lines sent to
+These are five examples of the three types of lines sent to
 .I NCID
 clients. The first field is line identifier.
 .PP

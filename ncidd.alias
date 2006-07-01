@@ -47,7 +47,7 @@
 # If you are using the SIP Invite client and only have one line
 # and do not want a line indicator displayed, for example '1122':
 # Change the line indicator '1122' to '-'
-# alias 1122 = -
+# alias LINE 1122 = -
 
 ####################
 # Add Aliases here #

@@ -27,7 +27,8 @@ Specifies the hostname of the SIP devie to snoop.  You may also specify
 the UDP port by suffixing the hostname with :<port>, or if no hostname
 is wanted, just :<port>.  If you do not specify a host, it defaults to
 the network interface.  If you do not specify a port, it defaults to
-<5061> (Vonage default).
+<5061> (Vonage default).  Other Vonage ports are 5060 and 10000.  The
+new Vonage default appears to be <10000>.
 .TP
 .B -n, --ncid=<host[:port]>
 Specifies the NCID server to connect to.  Port may be specified by
@@ -77,5 +78,3 @@ ncidsip
 .fi
 .SH SEE ALSO
 lcdncid.1, out2osd.1, ncidd.8, ncidd.conf.5 ncidd.alias.5
-.SH AUTHOR
-Clayton O’Neill <claytononeill@users.sourceforge.net>

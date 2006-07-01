@@ -28,6 +28,16 @@ Get and install the latest OUT2OSD display program.
 It is available as either a source tar file, or a
 TiVo binary tar package.
 
+----------------------
+Optional: Install Perl
+----------------------
+
+If you would like to use the cidcall, cidalias, and update
+scripts, you need to get and install Prel into /var/hack/bin
+
+If you would like to use the ncidsip CID client, you need
+to get and install Perl, the Net-Pcap Perl module and libpcap.
+
 --------------------------------------------------
 Configure ncidd, if you are running it on the TiVo
 --------------------------------------------------
@@ -177,26 +187,15 @@ The tar files creates the following:
       |       |           |          |              |         |     |
      bin    sbin         etc        log            doc       dev  share
       |       |           |          |              |         |     |
-      |     ncidd      ncidd.conf  cidcall.log    ncidd            ncid
-      |                                             |               |
-   tivocid                                       README            ncid-page
-   ncid                                          ncid.man          ncid-samba
-                                                 ncidd.man         ncid-speak
-                                                 ncidd.conf.man    README
-                                                 ncidscripts.man
-                                                 ncidtools.man
-                                                 CHANGES
-                                                 CONTRIBUTORS
-                                                 INSTALL
-                                                 INSTALL-FreeBSD
-                                                 INSTALL-Mac
-                                                 INSTALL-TiVo
-                                                 INSTALL-Win
-                                                 LICENSE
-                                                 Modem-init
-                                                 NCID-DataFormats
-                                                 PROTOCOL
-                                                 README-FreeBSD
-                                                 TiVo-modem
+      |     ncidd       ncid       cidcall.log    ncidd            ncid
+      |     cidsip        |                         |               |
+   tivocid             ncid.conf                 README            ncid-page
+   ncid                ncidd.conf                CHANGES           ncid-samba
+   cidcall             ncidd.alias               CONTRIBUTORS      ncid-speak
+   cidalias            ncidscript.conf           ReleaseNotes      README
+   cidupdate           ncidsip.conf              INSTALL notes    
+                                                 Documentation   
+                                                 man pages (.txt)
+                                                 man pages (.html)
 
 Note: tivocid is a symbolic link to ncidd

@@ -256,7 +256,7 @@ main(int argc, char *argv[])
                 errorExit(-1, "poll", 0);
             case 0:        /* time out, without an event */
                 /* end of ringing */
-                if (ring)
+                if (ring > 0)
                 {
                     if (ringwait < RINGWAIT) ++ringwait;
                     else
@@ -877,13 +877,38 @@ doPoll(int events, int mainsock)
               }
               else
               {
-                /* Write message to cidlog and all clients */
+                sprintf(msgbuf, "%s%s###", MSGLINE, CIDINFO);
+                if (strncmp(buf, msgbuf, strlen(msgbuf)) == 0)
+                {
+                  /*
+                   * Found a CIDINFO MSG Line
+                   *
+                   * CIDINFO Message Line Format:
+                   * CIDINFO: ###CANCEL
+                   */
 
-                sprintf(msgbuf, "Client sent text message, sd: %d\n",
-                  polld[pos].fd);
-                logMsg(LEVEL3, msgbuf);
-                writeLog(cidlog, buf);
-                writeClients(mainsock, buf);
+                  sprintf(msgbuf, "Client sent CIDINFO message, sd: %d\n",
+                    polld[pos].fd);
+                  logMsg(LEVEL3, msgbuf);
+
+                  writeLog(datalog, buf);
+                  if (strstr(buf, "CANCEL"))
+                  {
+                    ring = -1;
+                    sendInfo(mainsock);
+                    ring = 0;
+                  }
+                }
+                else
+                {
+                  /* Write message to cidlog and all clients */
+
+                  sprintf(msgbuf, "Client sent text message, sd: %d\n",
+                    polld[pos].fd);
+                  logMsg(LEVEL3, msgbuf);
+                  writeLog(cidlog, buf);
+                  writeClients(mainsock, buf);
+                }
               }
             }
           }
@@ -949,6 +974,8 @@ formatCID(int mainsock, char *buf)
          */
         if (sendinfo)
         {
+            /* ring == -1 means SIP CANCEL */
+            if (ring < -1) ring = 0;
             ++ring;
             sendInfo(mainsock);
         }
