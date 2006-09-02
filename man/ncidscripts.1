@@ -14,22 +14,28 @@
 - send CID to a text-to-speach program
 .PP
 .B ncid-mythtv\^
-- display CID on MythTV
+- display CID on MythTV using mythtvosd
+.PP
+.B ncid-tivo\^
+- display CID on TiVo using text2osd
 .SH SYNOPSIS
 .B ncidrotate\^
 {prerotate|postrotate}
 .PP
 .B ncid-page\^
-CIDdate CIDtime CIDnumber CIDname
+CIDdate CIDtime CIDnumber CIDname CIDline
 .PP
 .B ncid-samba\^
-CIDdate CIDtime CIDnumber CIDname
+CIDdate CIDtime CIDnumber CIDname CIDline
 .PP
 .B ncid-speak\^
-CIDdate CIDtime CIDnumber CIDname
+CIDdate CIDtime CIDnumber CIDname CIDline
 .PP
 .B ncid-mythtv\^
-CIDdate CIDtime CIDnumber CIDname
+CIDdate CIDtime CIDnumber CIDname CIDline
+.PP
+.B ncid-tivo\^
+CIDdate CIDtime CIDnumber CIDname CIDline
 .SH DESCRIPTION
 These are CID output modules and are normally located in the
 .BR /usr/share/ncid

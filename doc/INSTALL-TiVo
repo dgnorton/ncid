@@ -1,4 +1,4 @@
-# INSTALL ncid (tivocid) and ncidd on the TiVo
+# INSTALL ncid, tivocid, tivoncid, ncidsip, and ncidd on the TiVo
 
 The ncid client replaces the old tivocid package.  It
 functions exactly like TiVoCID, if it is called tivocid,
@@ -6,14 +6,23 @@ or if it is given the proper options.  The ncid client
 requires the out2osd package to be installed to display
 the CID information on the TV screen.
 
+The ncid client is also called tivoncid and uses the new
+ncid-tivo output module that uses /tvbin/text2osd to
+display the CID informatio.
+
 The NCID package includes both the client and server.
 For a series1, the server would normally be ignored unless
 you have a DirecTiVo, a hardware modified internal modem,
 or a modem connected to the serial port.
 
--------------------------
-Install TiVoCID and ncidd
--------------------------
+---------------------------------------------
+Install TiVoCID, TiVoNCID, ncidSIP, and ncidd
+---------------------------------------------
+
+You have a choice of using either tivocid or tivoncid as your display
+client.  Tivocid uses out2osd which does not work on all TiVo software
+hardware combinations.  Tivoncid should work on all TiVo software and
+hardware combinations.
 
 If you have a series 1 TiVo, Copy out2osd-VERSION.series1-tivo.tgz to the tivo.
 If you have a series 2 TiVo, Copy out2osd-VERSION.series2-tivo.tgz to the tivo.
@@ -23,6 +32,9 @@ If you have a series 2 TiVo, Copy out2osd-VERSION.series2-tivo.tgz to the tivo.
 ----------------------------------------
 Install the TiVo OUT2OSD display program 
 ----------------------------------------
+
+TiVoCID requires  out2osd.
+TiVoNCID uses the TiVo supplied text2osd.
 
 Get and install the latest OUT2OSD display program.
 It is available as either a source tar file, or a
@@ -69,17 +81,32 @@ Start the ncid package
 ----------------------
 
 If you are running the server and client on the TiVo
+and are using tivocid:
 
     ncidd
     tivocid &
 
-If you are only running the client on the TiVo:
+    If you are only running the client on the TiVo:
 
     tivocid IP.Server.Address &
 
-If the server is at 192.168.0.10, the above becomes:
+    If the server is at 192.168.0.10, the above becomes:
 
     tivocid 192.168.0.10 &
+
+If you are running the server and client on the TiVo
+and are using tivoncid:
+
+    ncidd
+    tivoncid &
+
+    If you are only running the client on the TiVo:
+
+    tivoncid IP.Server.Address &
+
+    If the server is at 192.168.0.10, the above becomes:
+
+    tivoncid 192.168.0.10 &
 
 Call yourself and see if it works, if not, kill off ncidd, if
 it is running, and continue reading the test sections.
@@ -122,9 +149,9 @@ for the computer you will run it on, if it is not the TiVo.
 
 NCID is available as either a source tar file, or a Redhat RPM package,
 
-------------------------
-Test the TiVo CID Client
-------------------------
+-------------------------------------------
+Test the TiVo CID Client (if using tivocid)
+-------------------------------------------
 
 Start tivocid:
 
@@ -149,7 +176,7 @@ If tivosh dies in the wrong place, the tivo will restart:
 
 The fix is to start it this way:
 
-    tivosh ncid --no-gui --call-prog --program /var/hack/bin/out2osd &
+    tivosh ncid --no-gui -T -M --call-prog --program /var/hack/bin/out2osd &
 
 Call yourself.  The display should show up for 10 seconds
 and then erase itself.
@@ -164,6 +191,49 @@ If tivocid works, kill off tivocid and restart it:
 	If ncidd is on the TiVo: tivocid &
 
 	If ncidd is on another computer: tivocid IP.Server.Address &
+
+---------------------------------------------
+Test the TiVo NCID Client (if using tivoncid)
+---------------------------------------------
+
+Start tivoncid:
+
+	If ncidd is on the TiVo: tivoncid -V
+	You should see the Server connect message.
+
+	If ncidd is on another computer: tivoncid -V IP.Server.Address.
+	You should see the Server connect message.
+
+If it doesn't start, the error message should give you a clue.
+
+There is one report of tivocid aborting with a message simular to:
+
+    bash-2.02# Tmk Assertion Failure:
+    FsAllocateFunction, line 131 ()
+
+If tivosh dies in the wrong place, the tivo will restart:
+
+    Tmk Fatal Error: Thread tivosh <252> died due to signal -2
+    f9c51c 100df1c 100e18c 100e1dc dabe9c dab55c 400c50 108a0b0 Restarting
+    system.
+
+The fix for this is to start it this way:
+
+    tivosh ncid --no-gui --message --call-prog --program ncid-tivo &
+
+Call yourself.  The display should show up for 10 seconds
+and then erase itself.
+
+If tivocid doesn't display the Caller ID information,
+try: tivoncid -R -V IP.Server.Address.
+This will show everything received from the server, and
+the CID information it processes.
+
+If tivoncid works, kill off tivoncid and restart it:
+
+	If ncidd is on the TiVo: tivoncid &
+
+	If ncidd is on another computer: tivoncid IP.Server.Address &
 
 -------------------------------------
 Files installed and modem information
@@ -190,12 +260,13 @@ The tar files creates the following:
       |     ncidd       ncid       cidcall.log    ncidd            ncid
       |     cidsip        |                         |               |
    tivocid             ncid.conf                 README            ncid-page
-   ncid                ncidd.conf                CHANGES           ncid-samba
-   cidcall             ncidd.alias               CONTRIBUTORS      ncid-speak
-   cidalias            ncidscript.conf           ReleaseNotes      README
-   cidupdate           ncidsip.conf              INSTALL notes    
-                                                 Documentation   
+   tivoncid            ncidd.conf                CHANGES           ncid-samba
+   ncid                ncidd.alias               CONTRIBUTORS      ncid-speak
+   cidcall             ncidscript.conf           ReleaseNotes      ncid-tivo
+   cidalias            ncidsip.conf              INSTALL notes     README
+   cidupdate                                     Documentation   
                                                  man pages (.txt)
                                                  man pages (.html)
 
 Note: tivocid is a symbolic link to ncidd
+      tivoncid is also a symbolic link to ncid

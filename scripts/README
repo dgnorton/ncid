@@ -1,4 +1,6 @@
-The following scripts require /etc/ncid/ncidscript.conf to be edited
+The following scripts are configured be editing /etc/ncid/ncidscript.conf
+
+The ncidscripts.1 man page documents the following scripts.
 
 Script to keep lines in logfile, on Linux, after it is rotated:
     cidrotate
@@ -13,5 +15,8 @@ Script to send CID to samba to get a popup:
 Script to send CID to a text-to-speach program:
     ncid-speak
 
-Script to display caller ID on MythTV
+Script to display CID on MythTV
     ncid-mythtv
+
+Script to display CID on TiVo
+    ncid-tivo

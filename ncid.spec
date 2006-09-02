@@ -1,6 +1,6 @@
 Summary:    Network Caller ID server and clients
 Name:       ncid
-Version:    0.65
+Version:    0.66
 Release:    1
 Group:      System Environment/Daemons
 License:    GPL
@@ -56,6 +56,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/share/ncid/ncid-page
 /usr/share/ncid/ncid-samba
 /usr/share/ncid/ncid-speak
+/usr/share/ncid/ncid-tivo
 %config /etc/ncid/ncid.conf
 %config /etc/ncid/ncidd.conf
 %config /etc/ncid/ncidd.alias

@@ -236,7 +236,7 @@ clean:
 clobber: clean
 	rm -f $(PROG) $(PROG).ppc-tivo $(PROG).mips-tivo $(PROG).tivo a.out
 	rm -f $(SITE)
-	rm -f *.log *.zip *.tar.gz
+	rm -f *.log *.zip *.tar.gz tivocid tivosh
 	cd man; $(MAKE) clobber
 	cd tools; $(MAKE) clobber
 	cd scripts; $(MAKE) clobber

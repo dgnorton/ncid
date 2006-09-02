@@ -48,3 +48,11 @@ set CallOnRing  0
 
 # external called program
 set Program     [list $ProgDir/$EXTPROG]
+
+# TiVo Flag: send output in format to use OUT2OSD
+# Default: 0
+set TivoFlag    0
+
+# Message Flag: send messages to output modules
+# Default: 0
+set MsgFlag     0

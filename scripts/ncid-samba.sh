@@ -6,12 +6,15 @@
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
 #
+# input is 5 lines if a message was sent
+# input: \n\n\nMESSAGE\n\n
+#
 # ncid calls a external program with the "--call-prog" option
-# default program: /usr/share/ncid/ncid-page
+# default program: /usr/share/ncid/ncid-speak
 #
 # ncid usage examples:
-#       ncid --call-prog --program ncid-samba
-#       ncid --no-gui --call-prog --program ncid-samba
+#       ncid --call-prog --message --program ncid-samba
+#       ncid --no-gui --message --call-prog --program ncid-samba
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidscript.conf
@@ -32,8 +35,13 @@ read CIDNMBR
 read CIDNAME
 read CIDLINE
 
-echo "         ******* Incoming Phone Call *******
-
-$CIDDATE $CIDTIME $CIDNMBR $CIDNAME" | smbclient -M $CLIENT
+if [ -n "$CIDNMBR" ]
+then
+    # Display Caller ID information
+    echo "$CIDDATE $CIDTIME $CIDLINE $CIDNMBR $CIDNAME" | smbclient -M $CLIENT
+else
+    # Display Message
+    echo "$CIDNAME" | smbclient -M $CLIENT
+fi
 
 exit 0

@@ -1,5 +1,38 @@
 ncid - Network CallerID
 
+Version 0.66
+    - Makefile: added rm tivocid tivosh to target clobber:
+    - VERSION: updated version number
+    - ncid.sh: formatCID{} - added BAD number display if not telephone
+                             number is not 11, 10, or 7 digits.
+               - initMSG -> if {!$TivoFlag} initMSG -> if {!$NoGUI} initMSG
+               - added the --message option and modified sendMSG{}
+    - ncid.conf.dist: Added TivoFlag and MsgFlag
+    - ncid.spec: updates version number
+    - ncidd.c: openTTY() - added
+               main() - replaced in line TTY open code by openTTY()
+               main() - while(1): TTY in use: added close(ttyfd)
+               main() - while(1): TTY free: replaced tcfluch() with openTTY()
+    - doc/ReleaseNotes: updated
+    - doc/NCID-DataFormats: added a '1' to the sample CID message line
+    - doc/VerboseLevels: added
+    - man/ncidscripts.1: updated and added ncid-tivo
+    - man/ncid.1: updated and added ncid-tivo
+    - scripts/README: updated for ncid-tivo.sh
+    - scripts/Makefile: updated for ncid-tivo.sh
+    - scripts/ncid-mythtv.sh: updated comments for usage, handles messages
+    - scripts/ncid-page.sh: updated comments for usage, handles messages
+    - scripts/ncid-samba.sh: updated comments for usage, handles messages
+    - scripts/ncid-speak.sh: updated comments for usage
+    - scripts/ncid-tivo.sh: new, handles messages
+    - scripts/ncidscript.conf: added ncid-tivo configuration
+    - test/testlog: Added CID line with 9 digit telephone number
+    - test/testscript.data: Added POTS line
+    - tools/cidupdate.pl: Fixed "-c cidlog" option, Fixed alias expression
+                          line to handle '*' for a name or number, fixed
+                          alias checking in if statements
+    - Win/ncid.nsi: updated version number
+
 Version 0.65
     - ncidd.c: main() - while (1): if (ring) -> if (ring > 0)
                formatCID() - if (sendinfo(): added: if (ring < -1) ring = 0;

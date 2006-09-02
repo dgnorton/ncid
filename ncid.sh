@@ -28,10 +28,14 @@ WISH=wish
 
 # set nice value on TiVo, if "setpri" found \
 type setpri > /dev/null 2>&1 && setpri rr 1 $$
-# set up TiVo options \
-OPTSTIVO="--no-gui --tivo --call-prog --program /var/hack/bin/out2osd"
+# set up TiVo options to use out2osd \
+OPTSTIVO="--no-gui --tivo --message --call-prog --program /var/hack/bin/out2osd"
 # if name is tivocid, exec tivosh (for backward compatibility) \
 case $0 in *tivocid) exec tivosh "$0" $OPTSTIVO "$@"; esac
+# set up TiVo options to use ncid-tivo \
+OPTSTIVO="--no-gui --message --call-prog --program ncid-tivo"
+# if name is tivoncid, exec tivosh \
+case $0 in *tivoncid) exec tivosh "$0" $OPTSTIVO "$@"; esac
 # look for the --no-gui option \
 GUI=""; for i in $*; do if [ "$i" = "--no-gui" ]; then  GUI="$i"; fi; done
 # if --no-gui is not specified, look for wish and exec it \
@@ -65,6 +69,7 @@ set NoGUI       0
 set Callprog    0
 set CallOnRing  0
 set TivoFlag    0
+set MsgFlag     0
 
 if {[file exists $ConfigFile]} {
     catch [source $ConfigFile]
@@ -76,13 +81,14 @@ set Count       0
 set Ring        0
 set Try         0
 set Socket      0
-set Version     0.65
+set Version     0.66
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
                [--all             | -A]
                [--call-prog       | -C]
                [--delay seconds   | -D seconds]
+               [--message         | -M]
                [--program PROGRAM | -P PROGRAM]
                [--raw             | -R]
                [--ring count      | -r count]
@@ -178,6 +184,7 @@ proc getCID {} {
     global VersionInfo
     global NoGUI
     global TivoFlag
+    global MsgFlag
     global Callprog
     global Ring
     global CallOnRing
@@ -221,7 +228,7 @@ proc getCID {} {
                 # found MSG line
                 regsub {MSG: (.*)} $dataBlock {\1} msg
                 displayLog [list $msg]
-                if {$TivoFlag} {sendMSG [list $msg]}
+                if {$MsgFlag} {sendMSG $msg}
             } else {
                 # found CID, EXTRA, or CIDLOG line
                 set cid [formatCID $dataBlock]
@@ -269,8 +276,11 @@ proc formatCID {dataBlock} {
     if {![regsub \
         {1?([0-9][0-9][0-9])([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
         $cidnumber {(\1)\2-\3} cidnumber]} {
+        if {![regsub {([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])(.*)} \
+        $cidnumber {BAD-\1\2\3} cidnumber]} {
         regsub {([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
         $cidnumber {\1-\2} cidnumber
+        }
     }
     set ciddate [getField DATE $dataBlock]
     if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
@@ -298,7 +308,7 @@ proc getField {dataString dataBlock} {
 }
 
 # pass the CID information to an external program
-# Input: "$ciddate\n$cidtime\n$cidnumber\n$cidname\ncidline\n"
+# Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
 proc sendCID {cid} {
     global All
     global Program
@@ -309,7 +319,7 @@ proc sendCID {cid} {
       catch {exec [lindex $Program 0] << \
         "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n" &} oops
       } elseif $TivoFlag {
-        # pass NAME NUMBER LINE
+        # pass NAME NUMBER\nLINE\n
         catch {exec [lindex $Program 0] << \
           "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n" &} oops
       } else {
@@ -320,12 +330,20 @@ proc sendCID {cid} {
 }
 
 # pass the MSG information to an external program
-# Input: "$msg0 $msg1 $msg2 $msg3 sg4\n"
+# Input: "$msg"
 proc sendMSG {msg} {
     global Program
+    global TivoFlag
 
-    catch {exec [lindex $Program 0] << \
-      "[lindex $msg 0] [lindex $msg 1] [lindex $msg 2] [lindex $msg 3] [lindex $msg 4]\n" &} oops
+    if $TivoFlag {
+      # send "$msg\n"
+      # instead of: $ciddate $cidnumber\n$cidline
+      catch {exec [lindex $Program 0] << "$msg\n" &} oops
+    } else {
+      # send "\n\n\n$msg\n\n"
+      # in place of: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n"
+      catch {exec [lindex $Program 0] << "\n\n\n$msg\n\n" &} oops
+    }
 }
 
 # display CID information
@@ -394,6 +412,7 @@ proc getArg {} {
     global CallOnRing
     global ProgDir
     global TivoFlag
+    global MsgFlag
 
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
@@ -422,6 +441,8 @@ proc getArg {} {
                     set Delay $optarg
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
             }
+            {^-M$} -
+            {^--message$} {set MsgFlag 1}
             {^-P$} -
             {^--program$} {
                 incr cnt
@@ -530,35 +551,6 @@ proc reconnect {} {
     retryConnect
 }
 
-# initialize for MSG
-proc initMSG {} {
-  global NoGUI
-
-  # setup to handle messages
-  if {$NoGUI} {
-    # set stdin to non-blocking
-    fconfigure stdin -blocking 0 
-    # get response from stdin as an event
-    fileevent stdin readable handleMSG
-  } else {bind .im <KeyPress-Return> handleGUIMSG}
-}
-
-# Handle MSG from stdin
-proc handleMSG {} {
-  global Socket
-
-  # get and send MSG
-  while {[gets stdin line] >= 0} {
-    # get rid of non-printable characters at start/end of string
-    set line [string trim $line]
-    # send MSG, if $line not empty
-    if {[string length $line] > 0} {
-      puts $Socket $line
-      flush $Socket
-    }
-  }
-}
-
 # Handle MSG from GUI
 proc handleGUIMSG {} {
   global Socket
@@ -585,7 +577,7 @@ if $Callprog {
     } else { exitMsg 3 "Program Not Found: $Program" }
 } else { set Verbose 1 }
 connectCID $Host $Port
-if {!$TivoFlag} initMSG
+if {!$NoGUI} {bind .im <KeyPress-Return> handleGUIMSG}
 
 # enter event loop
 vwait forever

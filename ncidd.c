@@ -171,14 +171,8 @@ main(int argc, char *argv[])
             errorExit(-102, "Exiting - TTY port in use (lockfile exists)",
                   lockfile);
 
-        /*
-        * Open tty port; tries to make sure the open does
-        * not hang if port in use, or not restored after use
-        */
-        if ((ttyfd = open(ttyport, O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
-            errorExit(-1, ttyport, 0);
-        if (fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0) & ~O_NDELAY) < 0)
-            errorExit(-1, ttyport, 0);
+        /* Open tty port; exit program if it fails */
+        openTTY();
 
         switch(ttyspeed)
         {
@@ -286,6 +280,7 @@ main(int argc, char *argv[])
                             /* remove TTY poll events */
                             polld[pollpos].events = polld[pollpos].revents = 0;
                             polld[pollpos].fd = 0;
+                            close(ttyfd);
                             sprintf(msgbuf, "TTY in use: releasing modem %s\n",
                                 strdate());
                             logMsg(LEVEL1, msgbuf);
@@ -297,7 +292,7 @@ main(int argc, char *argv[])
                         sprintf(msgbuf, "TTY free: using modem again %s\n",
                             strdate());
                         logMsg(LEVEL1, msgbuf);
-                        tcflush(ttyfd, TCIOFLUSH);
+                        openTTY();
                         if (doTTY() < 0)
                         {
                             sprintf(msgbuf,
@@ -458,6 +453,19 @@ int getOptions(int argc, char *argv[])
         }
     }
     return optind;
+}
+
+/*
+ * Open tty port; tries to make sure the open does
+ * not hang if port in use, or not restored after use
+ */
+
+openTTY()
+{
+    if ((ttyfd = open(ttyport, O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
+         errorExit(-1, ttyport, 0);
+    if (fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0) & ~O_NDELAY) < 0)
+        errorExit(-1, ttyport, 0);
 }
 
 int doTTY()

@@ -1,0 +1,57 @@
+----------------------------------------------------------------
+NCID server verbose levels.  Higher levels include lower levels.
+----------------------------------------------------------------
+
+LEVEL5: print alias table
+
+LEVEL4: show optional files failed to open
+        show poll() revents flag
+
+LEVEL3: show number of tries to init modem
+        show modem responses
+        show client connect/disconnect
+        indicate Non 7-bit ASCII message deleted
+        indicate client sent CID message
+        indicate client sent text message
+        show CID data from serial device
+        show CID info line
+        show CID line
+
+LEVEL2: show name and location of ncidd logfile
+        show name and location of cid logfile
+        show name and location of data logfile
+        show TTY port opened
+        show TTY port speed
+        show name and location of TTY lockfile
+        indicate TTY port control signals enabled or disabled
+        indicate network client hung up
+        indicate device or modem returned no data
+
+LEVEL1: indicate no config file
+        indicate config file processed
+        indicate set command skipped in config file
+        show error line in config file
+        indicate error in opening ncidd log file
+        show started with date and time
+        indicate what is configured to send to the clients
+        show verbose level
+        indicate CID device instead of modem
+        indicate using CID clients only
+        indicate TTY in use with date and time
+        indicate TTY free with date and time
+        indicate cannot init TTY and terminated with date and time
+        indicate TTY port initialized
+        indicate modem initialized
+        indicate device hung up and terminated with date and time
+        indicate device error and terminated with date and time
+        indicate poll error
+        indicate Invalid Request for file descriptor
+        indecate device or modem read error
+        indicate Device returns no data, Terminated with date and time
+        indicate network connect error
+        indicate network NOBLOCK error
+        indicate too many network clients
+        indicate network client read error
+        indicate cid log is too large
+        indicate sending log to client
+        indicate program terminated with date and time

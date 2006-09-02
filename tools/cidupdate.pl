@@ -10,13 +10,16 @@
 #   - Changed from using config file to alias file
 # Modified by John L. Chmielewski on Fri Apr 14, 2006
 #   - Changed name from cidlogupd to cidupdate, updated variable names
+# Modified by John L. Chmielewski on Sat Aug 12, 2006
+#   - Fixed "-c cidlog" option, Fixed alias expression line to handle
+#     '*' for a name or number, fixed alias checking in if statements
 
 use Getopt::Std;
 
 $ALIAS = "/etc/ncid/ncidd.alias";
 $CIDLOG = "/var/log/cidcall.log";
 
-getopts('a:l:') ||
+getopts('a:c:l:') ||
     die "Usage: cidupdate [-a aliasfile] [-c cidlog] [newcidlog]\n";
 
 ($alias = $opt_a) || ($alias = $ALIAS);
@@ -30,7 +33,7 @@ open(NEWCIDLOG, ">$newcidlog") || die "Could not open $newcidlog\n";
 while (<ALIASFILE>) {
     if (/^alias/) {
     chomp;
-        ($type, $from, $to, $value) = /^.*alias\s+(\w+)\s+"*([\w\s\@'&,_-]+)"*\s+=\s+"*([\w\s\@'&_-]+)"*\s*i*f*\s*"*([\w\s\@'&_-]*)"*$/;
+        ($type, $from, $to, $value) = /^.*alias\s+(\w+)\s+"*([\w\s\@\*'&,_-]+)"*\s+=\s+"*([\w\s\@'&_-]+)"*\s*i*f*\s*"*([\w\s\@'&_-]*)"*$/;
     $alias = join(":", ($type, $from, $to, $value));
     push(@aliases, $alias);
     }
@@ -47,10 +50,8 @@ while (<CIDLOG>) {
     foreach $alias (@aliases) {
         ($type, $from, $to, $value) = split(/:/, $alias);
         if ($value ne "") {
-            if ($type eq "NAME" && $number eq $value && $name eq $from)
-                {$name = $to;}
-            if ($type eq "NMBR" && $name eq $value && $number eq $from)
-                {$number = $to;}
+            if ($type eq "NAME" && $number eq $value) {$name = $to;}
+            if ($type eq "NMBR" && $name eq $value) {$number = $to;}
         } else {
             if ($type eq "NAME" && $name eq $from) {$name = $to;}
             if ($type eq "NMBR" && $number eq $from) {$number = $to;}

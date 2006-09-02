@@ -23,7 +23,7 @@ Example ncidsip output:
 
   CID: ###DATEmmddhhss...LINEidentifier...NMBRnumber...NAMEwords+++
 
-  CID: ###DATE05111525...LINE1122...NMBR4075555000...NAMEJohn @ home+++
+  CID: ###DATE05111525...LINE1122...NMBR14075555000...NAMEJohn @ home+++
 
 ======================
 Example ncidd outputs:

@@ -55,7 +55,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.65"
+#define VERSION     "0.66"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\

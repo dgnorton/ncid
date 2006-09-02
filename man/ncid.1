@@ -10,12 +10,16 @@
 .B tivocid\^
 [options] [arguments]
 .PP
+.B tivoncid\^
+[options] [arguments]
+.PP
 .I Options:\^
 .PP
 .nf
 [--no-gui]
 [--all             | -A]
 [--call-prog       | -C]
+[--message         | -M]
 [--delay seconds   | -D seconds]
 [--program PROGRAM | -P PROGRAM]
 [--raw             | -R]
@@ -53,6 +57,11 @@ If \fIncid\fR is named \fItivocid\fR, it will start in a no-gui mode
 and output to a external program called \fIout2osd\fR which displays
 the Caller ID on a TV using a TiVo.
 .PP
+If \fIncid\fR is named \fItivoncid\fR, it will start in a no-gui mode
+and output to a module called \fIncid-tivo\fR which displays
+the Caller ID on a TV using a TiVo.  This option uses the TiVo
+program, \fItext2osd\fR, instead of \fIout2osd\fR.
+.PP
 If \fIncid\fR is configured to output to a external program, it will
 test for it, and if it is not found, or if it is not executable,
 it will terminate with a error message.
@@ -77,6 +86,9 @@ Script can be modified to speak any of the CID information.
 .TP
 .B ncid-samba
 Send a SMB popup message containing the Caller ID information.
+.TP
+.B ncid-tivo
+Displays Caller ID on a TV using TiVo and its text2osd command
 .PD
 .PP
 Whenever the server connection is broken, \fIncid\fR will try to reconnect
@@ -119,6 +131,9 @@ Default: does not output to external program unless name is tivocid
 delay between server connection attempts
 .br
 Default: 60 seconds
+.TP
+.B --message | -M
+Send messages to the output modules
 .TP
 .B --prog PROGRAM | -P PROGRAM
 the display or helper program to use

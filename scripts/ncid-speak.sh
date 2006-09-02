@@ -6,11 +6,15 @@
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
 #
+# input is 5 lines if a message was sent
+# input: \n\n\nMESSAGE\n\n
+#
 # ncid calls a external program with the "--call-prog" option
-# default program: /usr/share/ncid/ncid-page
+# default program: /usr/share/ncid/ncid-speak
 #
 # ncid usage examples:
 #   ncid --call-prog
+#   ncid --no-gui --call-prog
 #   ncid --call-prog --program ncid-speak
 #   ncid --no-gui --call-prog --program ncid-speak
 

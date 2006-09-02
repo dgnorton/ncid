@@ -1,22 +1,45 @@
-Source: ncid-0.65.tar.gz
-Fedora Core 5 package: ncid-0.65-1.i386.rpm
-TiVo Series1 package: ncid-0.65-series1-tivo.tgz
-TiVo Series2 package: ncid-0.65-series2-tivo.tgz
-Macintosh OS X package: ncid-0.65-mac-osx.tgz
-FreeBSD package: ncid-0.65-freebsd.tgz
-Cygwin Windows package: ncid-0.65-cygwin.tgz
-Windows client installer: ncid-0.65-setup.exe
+Source: ncid-0.66.tar.gz
+Fedora Core 5 package: ncid-0.66-1.i386.rpm
+TiVo Series1 package: ncid-0.66-series1-tivo.tgz
+TiVo Series2 package: ncid-0.66-series2-tivo.tgz
+Macintosh OS X package: ncid-0.66-mac-osx.tgz
+FreeBSD 5.4 package: ncid-0.66-freebsd.tgz
+Cygwin Windows package: ncid-0.66-cygwin.tgz
+Windows client installer: ncid-0.66-setup.exe
 
-NCID was modified to accept NCIDINFO messages.  This allows the
-CID client to send a CANCEL message when a call is aborted before
-pickup.  The client can test for this and output to a output module
-when it receives a CANCEL notification.  Thus a cell phone can be
-sent a message only if the phone is not picked up.
+Server Changes:
 
-NCIDsip was improved.
+    Modified server code (again) so it should never abort when a external
+    program takes over and does not properly release the modem.
 
-TiVo display fixed and updated to display line indicator and messages.
+Client Changes:
 
-Updated man pages for ncid and ncidsip.
+    Modified the  ncid client to only format 7, 10, or 11 digit
+    telephone numbers.  Unformatted numbers will have "BAD-" in
+    front of it.
 
-Updated documentation.
+    Added a message option to ncid to send messages to a output module.
+    Output modules that support messages require this option.
+
+    Added new ncid symbolic link (TiVo only), tivoncid, that uses
+    ncid-tivo instead of out2osd.
+
+Client Module Changes:
+
+    Modified the ncid-mythtv output module to handle messages.
+
+    Added a new ncid output module called ncid-tivo that uses
+    the TiVo text2osd display distributed with it.  This gives
+    a choice of two display methods.  It should always work with
+    a new OS release.
+
+    Updated comments in all output modules.
+
+Script changes:
+
+    Fixed the broken cidupdate.
+
+Documentation Changes:
+
+    Updated documentation.
+    Added "VerboseLevels" to document the server verbose levels.
