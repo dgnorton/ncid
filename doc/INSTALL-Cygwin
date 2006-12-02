@@ -9,16 +9,31 @@ NOTES:
     - The supplied ncidsip client requires perl and the Net-Pcap module
       http://search.cpan.org/CPAN/authors/S/SA/SAPER/Net-Pcap-0.12/Pcap.tar.gz
     - Net-Pcap requires WinPcap: http://www.winpcap.org/
-    - The Net-Pcap module has not been successfully built under cygwin
+    - The Net-Pcap module has been successfully built under cygwin
 
 INSTALL:
 
 	Install Cygwin from http://cygwin.com/
 		- download setup.exe into a empty folder
         - Run setup.exe
-        - select a download site
+        - select download site sites
         - Look at the Perl catagory and set to install Perl
         - Let setup download and install cygwin
+        ------------------------------------------------
+        If phone system is VoIP and you want to use SIP:
+        ------------------------------------------------
+        - install a development system using gcc and install cpan
+        - install WinPcap at C:\ from http://www.winpcap.org/
+        - run "cpan" and it will configure itself, accept defaults
+          to questions asked, but select multiple download sites
+        - At the "cpan>" prompt, type: install IO::Interface
+          (if it fails, fix problem and try: cpan -r)
+        - At the "cpan>" prompt type: cpan install Net::Pcap
+          It will fail.  Quit cpan and go to .cpan/build and do
+          a ls.  You will see the Net-Pcap-xxx directory.  Cd into
+          it and type "make"  when it fails, the error message will
+          tell you what the command line should be for WinPcap installed
+          at C:\.  After you make it, type: make install
 
 	Install ncid:
         - The NCID package normally installs in /usr/local:
@@ -37,14 +52,28 @@ CONFIGURE:
     The Makefile preconfigures ncidd.conf for the Cygwin, but you may
     want to change some of the defaults.
 
+    You need to configure ncidsip to use the Network Interface.
+    To find out the network intercafe name, you need to make iflist.
+    cd to C:/WpdPack/Examples-pcap/iflist and type: make
+    You should see your Network interface names listed.  Select the
+    active one and use it with the -i option to ncidsip.
+
 START:
 
-    - start the server and client:
+    - If this is your first time, you should do the TEST procedure first
+
+    - start the server and clients:
         ncidd
+        ncidsip -l (list NETWORK_INTERFACES)
+        ncidsip -i NETWORK_INTERFACE &
         ncid &
     - Call yourself and see if it works.
 
 TEST:
+    - You need to test your local network for SIP packets.
+      Follow the instructions in Setup-VOIP.  Once you configure
+      your network, if needed, and know what options to give to
+      ncidsip, you are ready to set up NCID.
 
     - The easiest way to test the setup is to run ncidd in debug mode,
       it will stay attached to the terminal and not go into deamon mode:
@@ -53,10 +82,10 @@ TEST:
         ncidd -Dv3
     - to also look at the alias structure
         ncidd -Dv5
+    - The last line should be: CallerID from CID client(s) only
 
-    - The last line should be: Modem set for CallerID.
-    - If it says: ERROR
-      try the CID strings in ncidd.conf or in doc/CID-init
+    - Start ncidsip using options determined from the Setup-VOIP procedure:
+        ncidsip -i NETWORK_INTERFACE [other options]
 
     - Call yourself and you should see the CallerID lines.
     - If you only see RING for each ring, the modem does not support

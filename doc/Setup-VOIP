@@ -15,13 +15,19 @@ This tells ncidd to run without a serial device or modem connected.
 Once you change ncidd.conf, you must start/restart ncidd to read it.
 
 Next you need to determine if you can receive SIP data packs.
-The server must be running as ncidsip will exit if it can not find it.
-As root run: ncidsip -v --debug
+As root run: ncidsip --test
+
 If ncidsip terminates you should be able to see why and fix it.
 (ncidsip --help will give a detailed usage message)
 
+Sometimes it picks the wrong default interface, so if it needs etho:
+As root run: ncidsip --testsip -i eth0
+
+If you need to see what interfaces are present to use one with the
+--interface or -i option: ncidsip --listdevs
+
 If you do not see any SIP packets, change to port 10000 and try again:
-As root run: ncidsip -s :10000 -v --debug
+As root run: ncidsip --test --sip :10000
 
 You should see something like:
 

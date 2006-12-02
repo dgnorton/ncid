@@ -1,5 +1,24 @@
 ncid - Network CallerID
 
+Version 0.67
+    - ncid.spec: Updated version number
+    - VERSION: Updated version number
+    - ncid.sh: Removed global TivoFlag from getCID{}
+    - ncid.conf.dist: - Moved set Program line to end of the file, it seems
+                        it is needed to be at the end for tivosh
+                      - Changed comment for set ProgDir
+    - doc/Install-TiVo: updated and made a little clearer
+    - doc/ReleaseNotes: updated
+    - doc/Setup-VOIP: updated to use the new ncidsip test option
+    - man/ncidsip.8: Added test, list devices, and usage options
+                     Added missing single letter options
+    - scripts/ncidscript.conf: added IMPORTANT message comment
+    - tools/Makefile: Removed changing /usr/bin/perl to /usr/local/bin/perl
+    - tools/ncidsip.pl: Added --test and --listdevs, and usage options,
+                        Added missing single letter options
+                        Corrected name in version option
+    - Win/ncid.nsi: Updated version number
+
 Version 0.66
     - Makefile: added rm tivocid tivosh to target clobber:
     - VERSION: updated version number

@@ -81,7 +81,7 @@ set Count       0
 set Ring        0
 set Try         0
 set Socket      0
-set Version     0.66
+set Version     0.67
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -183,7 +183,6 @@ proc getCID {} {
     global Try
     global VersionInfo
     global NoGUI
-    global TivoFlag
     global MsgFlag
     global Callprog
     global Ring

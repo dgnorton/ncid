@@ -1,45 +1,48 @@
-Source: ncid-0.66.tar.gz
-Fedora Core 5 package: ncid-0.66-1.i386.rpm
-TiVo Series1 package: ncid-0.66-series1-tivo.tgz
-TiVo Series2 package: ncid-0.66-series2-tivo.tgz
-Macintosh OS X package: ncid-0.66-mac-osx.tgz
-FreeBSD 5.4 package: ncid-0.66-freebsd.tgz
-Cygwin Windows package: ncid-0.66-cygwin.tgz
-Windows client installer: ncid-0.66-setup.exe
+Source: ncid-0.67.tar.gz
+Fedora Core 5 package: ncid-0.67-1.i386.rpm
+TiVo Series1 package: ncid-0.67-series1-tivo.tgz
+TiVo Series2 package: ncid-0.67-series2-tivo.tgz
+Macintosh OS X package: ncid-0.67-mac-osx.tgz
+FreeBSD 5.4 package: ncid-0.67-freebsd.tgz
+Cygwin Windows package: ncid-0.67-cygwin.tgz
+Windows client installer: ncid-0.67-setup.exe
 
 Server Changes:
 
-    Modified server code (again) so it should never abort when a external
-    program takes over and does not properly release the modem.
+    None
 
 Client Changes:
 
-    Modified the  ncid client to only format 7, 10, or 11 digit
-    telephone numbers.  Unformatted numbers will have "BAD-" in
-    front of it.
+    Moved a set line so its last in ncid.conf. This fixes a TiVo problem
+    that caused ncid to abort.
 
-    Added a message option to ncid to send messages to a output module.
-    Output modules that support messages require this option.
+    Created new option for ncidsip to detect SIP packets on the network
+    without setting up the ncidd server.  If SIP packets exist, ncidsip
+    will display the Caller ID and CANCAL lines if a call comes in.
 
-    Added new ncid symbolic link (TiVo only), tivoncid, that uses
-    ncid-tivo instead of out2osd.
+    Test for SIP packets on port 5061 (must be root):
+
+        ncidsip --test
+
+    Test for SIP packets on port 10,000 (must be root):
+
+        ncidsip --test --sip :10000
+
+    Created new option for ncidsip to detect all network device names:
+
+        ncidsip --listdevs
+
 
 Client Module Changes:
 
-    Modified the ncid-mythtv output module to handle messages.
-
-    Added a new ncid output module called ncid-tivo that uses
-    the TiVo text2osd display distributed with it.  This gives
-    a choice of two display methods.  It should always work with
-    a new OS release.
-
-    Updated comments in all output modules.
+    None
 
 Script changes:
 
-    Fixed the broken cidupdate.
+    None
 
 Documentation Changes:
 
-    Updated documentation.
-    Added "VerboseLevels" to document the server verbose levels.
+    Updated the ncidsip.8 man page to include the test and usage options.
+
+    Updated the setup for ncidsip in the Setup-VOIP file.

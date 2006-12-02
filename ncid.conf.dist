@@ -1,6 +1,6 @@
 # tcl/tk configuration file
 
-# Directory NCID uses to find the helper scripts
+# Directory NCID uses to find the output modules
 set ProgDir     /usr/local/share/ncid
 
 # default helper script
@@ -46,9 +46,6 @@ set Callprog    0
 # Default: 0
 set CallOnRing  0
 
-# external called program
-set Program     [list $ProgDir/$EXTPROG]
-
 # TiVo Flag: send output in format to use OUT2OSD
 # Default: 0
 set TivoFlag    0
@@ -56,3 +53,7 @@ set TivoFlag    0
 # Message Flag: send messages to output modules
 # Default: 0
 set MsgFlag     0
+
+# This variable must be at the end of the file for tivosh
+# external called program
+set Program     [list $ProgDir/$EXTPROG]

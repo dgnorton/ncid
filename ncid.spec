@@ -1,6 +1,6 @@
 Summary:    Network Caller ID server and clients
 Name:       ncid
-Version:    0.66
+Version:    0.67
 Release:    1
 Group:      System Environment/Daemons
 License:    GPL

@@ -53,7 +53,7 @@ clobber: clean
 files:	$(FILES)
 
 % : %.pl
-	sed 's,/usr/bin/perl,$(prefix)/bin/perl,;s,/etc/ncid/ncidd.alias,$(ALIAS),; s,/etc/ncid/ncidd.conf,$(CONF),; s,/var/log/cidcall.log,$(CALLLOG),' $< > $@
+	sed 's,/etc/ncid/ncidd.alias,$(ALIAS),; s,/etc/ncid/ncidd.conf,$(CONF),; s,/var/log/cidcall.log,$(CALLLOG),' $< > $@
 	chmod +x $@
 
 % : %.dist

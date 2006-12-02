@@ -10,7 +10,7 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case_always);
 use Pod::Usage;
 
-our $VERSION = "0.2.1";
+our $VERSION = "0.3";
 
 my ($host, $port) = ('localhost', 3333);
 my ($siphost, $sipport) = ('', 5061);
@@ -20,28 +20,48 @@ my $debug = 0;
 my $verbose = '';
 my ($help, $version);
 my $sock = undef;
+my $test = 0;
 my @locals;
+my $listdevs = 0;
 
 my $result = GetOptions("ncid=s" => \$host,
-               "dumpfile=s" => \$dumpfile,
+               "dumpfile|d=s" => \$dumpfile,
                "interface=s" => \$interface,
                "sip=s" => \$siphost,
-               "debug" => \$debug,
+               "debug|D" => \$debug,
                "help" => \$help,
                "usage" => \$help,
                "verbose|v" => \$verbose,
                "version|V" => \$version,
+               "test" => \$test,
+               "listdevs" => \$listdevs
              ) || pod2usage(2);
 
-die "ncid-sipinject: version $VERSION\n" if $version;
+die "ncidsip: version $VERSION\n" if $version;
 
 pod2usage(-verbose => 2) if $help;
 
 $port = $1 if $host =~ s/:(\d+)//;
 $sipport = $1 if $siphost =~ s/:(\d+)//;
 
-&connectNCID;
-die "Could not connect to NCID server: $!\n" if !defined $sock;
+if ($listdevs) {
+  my $err = 0;
+  my @devs;
+  my %devinfo;
+  @devs = Net::Pcap::findalldevs(\%devinfo, \$err);
+  for my $dev (@devs) {
+    print "$dev : $devinfo{$dev}\n";
+  }
+  exit 0;
+}
+
+if ($test) {
+  $verbose = 1;
+  $debug = 1;
+} else {
+  &connectNCID;
+  die "Could not connect to NCID server: $!\n" if !defined $sock;
+}
 
 my ($err, $pcap);
 if (defined $dumpfile) {
@@ -86,11 +106,13 @@ sub processPacket {
 
   print $sip,"\n" if $debug;
 
-  if (defined $sock) {while (<$sock>) {print if $verbose;}}
-  # $! (errno) == 0 if server disconnected
-  # $sock undefined if could not connect to server
-  if ($! == 0 || !defined $sock) {&connectNCID};
-  return if !defined $sock;
+  if (!$test) {
+    if (defined $sock) {while (<$sock>) {print if $verbose;}}
+    # $! (errno) == 0 if server disconnected
+    # $sock undefined if could not connect to server
+    if ($! == 0 || !defined $sock) {&connectNCID};
+    return if !defined $sock;
+  }
 
   if ($sip =~ /^INVITE/o) {
     if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
@@ -110,14 +132,14 @@ sub processPacket {
         $date, $line, $number,$name);
 
       print $msg, "\n" if $verbose;
-      print $sock $msg, "\r\n";
+      if (!$test) { print $sock $msg, "\r\n"; }
 
     } else {print "failed to find calling number in 'From' line\n" if $debug;}
 
   } elsif ($sip =~ /^CANCEL/o) {
       my $msg = sprintf("CIDINFO: ###CANCEL");
       print $msg, "\n" if $verbose;
-      print $sock $msg, "\r\n"
+      if (!$test) { print $sock $msg, "\r\n"; }
   } elsif ($sip =~ /CSeq.*REGISTER/o) {
       $sip =~ /^From:\s+.*?<sip:(.+?)@/imo;
       if (!grep(/^$1$/, @locals)) {
@@ -149,7 +171,7 @@ ncidsip - Inject CID info by snooping SIP invites
 
 =head1 SYNOPSIS
 
-ncidsip [--sip|-s <[host][:port]>] [--ncid|-n <host[:port]>] [--debug] [--dumpfile <filename>] [-i|--interface <interface>] [--help|-h] [--version|-V] [--verbose|-v]
+ncidsip [--sip|-s <[host][:port]>] [--ncid|-n <host[:port]>] [--debug|-D] [--dumpfile|-d <filename>] [--interface|-i <interface>] [--help|-h] [--version|-V] [--verbose|-v] [--test|-t] [--usage|-u] [--listdevs|-l]
 
 =head1 DESCRIPTION
 
@@ -162,6 +184,35 @@ SIP host and port.
 
 =over 2
 
+=item -D, --debug
+
+Display the payload of all packets that matched the libpcap filter.
+
+=item -d, --dumpfile <filename>
+
+Read packets from a libpcap capture file instead of the network.
+Mostly only useful for development purposes.
+
+=item -h, --help
+
+Prints this help
+
+=item -i, --interface=<interface>
+
+Specifies the network interface to snoop on.  If this is not specified
+then libpcap will pick a network interface.  This will generally be
+the first ethernet interface found.
+
+=item -l, --listdevs
+
+Returns a list of all network device names that can be used.
+
+=item -n, --ncid=<host[:port]>
+
+Specifies the NCID server to connect to.  Port may be specified by
+suffixing the hostname with :<port>.  By default it will connect to
+port C<3333> on C<localhost>.
+
 =item -s, --sip=<[host][:port]>
 
 Specifies the hostname of the SIP devie to snoop.  You may also
@@ -170,30 +221,16 @@ if no hostname wanted, just :<port>.  If you do not specify a host,
 it defaults to the network interface.  If you do not specify a port,
 it defaults to <5061> (Vonage default).
 
-=item -n, --ncid=<host[:port]>
+=item -t, --test
 
-Specifies the NCID server to connect to.  Port may be specified by
-suffixing the hostname with :<port>.  By default it will connect to
-port C<3333> on C<localhost>.
+Test for SIP packets.  This option is used to check if SIP packets
+exist without starting the NCID server.  It will display the Caller
+ID line generated when a call comes in, and a CANCEL line if cancel
+was generated.
 
-=item -i, --interface=<interface>
-
-Specifies the network interface to snoop on.  If this is not specified
-then libpcap will pick a network interface.  This will generally be
-the first ethernet interface found.
-
-=item -h, --help
+=item -u, --usage
 
 Prints this help
-
-=item --debug
-
-Display the payload of all packets that matched the libpcap filter.
-
-=item --dumpfile <filename>
-
-Read packets from a libpcap capture file instead of the network.
-Mostly only useful for development purposes.
 
 =item -V, --version
 

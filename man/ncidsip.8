@@ -5,12 +5,15 @@
 - Inject CID info by snooping SIP invites
 .SH SYNOPSIS
 .B ncidsip\^
-[--sip│-s <[host][:port]>]
-[--ncid│-n <host[:port]>]
-[--debug]
-[--dumpfile <filename>]
-[-i│--interface <interface>]
+[--debug|-D]
+[--dumpfile|-d <filename>]
+[--interface|-i <interface>]
 [--help│-h]
+[--list|-l]
+[--ncid│-n <host[:port]>]
+[--sip│-s <[host][:port]>]
+[--test|-t]
+[--usage|-u]
 [--version│-V]
 [--verbose│-v]
 .SH DESCRIPTION
@@ -43,18 +46,30 @@ the first ethernet interface found.
 .B -h, --help
 Prints this help
 .TP
-.B --debug
+.B -D, --debug
 Display the payload of all packets that matched the libpcap filter.
 .TP
-.B --dumpfile <filename>
+.B -d, --dumpfile <filename>
 Read packets from a libpcap capture file instead of the network.
 Mostly only useful for development purposes.
+.TP
+.B -u, --usage
+Prints this help
 .TP
 .B -V, --version
 Displays the version
 .TP
 .B -v, --verbose
 Displays status.  Use this option to run interactive.
+.TP
+.B -l, --listdevs
+Returns a list of all network device names that can be used.
+.TP
+.B -t, --test
+Test for SIP packets.  This option is used to check if SIP packets
+exist without starting the NCID server.  It will display the Caller
+ID line generated when a call comes in, and a CANCEL line if cancel
+was generated.
 .SH FILES
 /etc/ncid/ncidsip.conf
 .SH CID MESSAGE FORMAT
@@ -67,13 +82,16 @@ MSG: CID: ###DATE05311233...LINE1122...NMBR13215551212...NAMEBig John+++
 .fi
 .SH EXAMPLES
 .nf
-# run ncidsip as root and view status
+# run ncidsip as root and view status:
 ncidsip -v
 
-# run ncidsip as root and view SIP packets
+# run ncidsip as root and list all network device names:
+ncidsip --listdevs
+
+# run ncidsip as root and view SIP packets:
 ncidsip --debug
 
-# run sip from the init file at boot
+# run sip from the init file at boot:
 ncidsip
 .fi
 .SH SEE ALSO
