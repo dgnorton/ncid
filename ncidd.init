@@ -2,7 +2,7 @@
 #
 # ncidd          Start/Stop Network Caller ID server
 #
-# chkconfig: 2345 94 06
+# chkconfig: 2345 94 25
 # description: ncidd provides Caller ID information
 
 # Source function library.

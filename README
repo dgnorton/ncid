@@ -9,6 +9,8 @@ The NCID package contains:
       ncid runs on Linux/TiVo/UNIX/Windows/Mac OSX/Cygwin (requires tcl/tk)
     - A SIP Invite Client: ncidsip
       ncidsip runs on Linux/UNIX/Windows/Mac OSX/Cygwin (requires Perl)
+    - YAC to NCID gateway client: yac2ncid (requires a yac server to input CID)
+      yac2ncid Linux/UNIX/Cygwin/Mac
     - tools to work with the CID log and alias files: ncidtools
       ncidtools runs on Linux/UNIX/Mac OSX/Cygwin/TiVo (requires Perl)
     - client output modules and a configuration script for them

@@ -10,7 +10,7 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case_always);
 use Pod::Usage;
 
-our $VERSION = "0.3";
+our $VERSION = "0.4";
 
 my ($host, $port) = ('localhost', 3333);
 my ($siphost, $sipport) = ('', 5061);
@@ -102,6 +102,7 @@ sub processPacket {
   my $udp = substr($ip, $iplen);
   my $sip = substr($udp, 8);
   my $name;
+  my $number;
   my $line;
 
   print $sip,"\n" if $debug;
@@ -115,9 +116,12 @@ sub processPacket {
   }
 
   if ($sip =~ /^INVITE/o) {
-    if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
-      my ($number) = $1;
-      return if (grep(/^$number$/, @locals));
+    if ($sip =~ /^From:.*<sip:/imo) {
+
+      if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
+        ($number) = $1;
+        } else {$number = "NO NUMBER";}
+        return if (grep(/^$number$/, @locals));
 
       if ($sip =~ /^From:\s+\"?(.+?)"?\s+<sip:/imo) {
         $name = $1;
@@ -134,7 +138,7 @@ sub processPacket {
       print $msg, "\n" if $verbose;
       if (!$test) { print $sock $msg, "\r\n"; }
 
-    } else {print "failed to find calling number in 'From' line\n" if $debug;}
+    } else {print "'Cannot parse From' line format\n" if $debug;}
 
   } elsif ($sip =~ /^CANCEL/o) {
       my $msg = sprintf("CIDINFO: ###CANCEL");

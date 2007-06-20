@@ -39,6 +39,7 @@ int debug, conferr, setcid, locked, sendlog, sendinfo;
 int ttyfd, pollpos, pollevents;
 int ring, ringwait, ringcount, clocal, nomodem, noserial;
 int verbose = 1;
+int cidlogmax = LOGMAX;
 
 struct pollfd polld[CONNECTIONS + 2];
 static struct termios otty, ntty;
@@ -131,6 +132,8 @@ main(int argc, char *argv[])
     sprintf(msgbuf, "Verbose level: %d\n", verbose);
     logMsg(LEVEL1, msgbuf);
     sprintf(msgbuf, "CID logfile: %s\n", cidlog);
+    logMsg(LEVEL2, msgbuf);
+    sprintf(msgbuf, "CID logfile maximum size: %d bytes\n", cidlogmax);
     logMsg(LEVEL2, msgbuf);
     sprintf(msgbuf, "Data logfile: %s\n", datalog);
     logMsg(LEVEL2, msgbuf);
@@ -328,6 +331,7 @@ int getOptions(int argc, char *argv[])
         {"alias", 1, 0, 'A'},
         {"config", 1, 0, 'C'},
         {"cidlog", 1, 0, 'c'},
+        {"cidlogmax", 1, 0, 'M'},
         {"datalog", 1, 0, 'd'},
         {"debug", 0, 0, 'D'},
         {"help", 0, 0, 'h'},
@@ -347,7 +351,7 @@ int getOptions(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:v:A:C:DI:L:N:S:T:V",
+    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:v:A:C:DI:L:M:N:S:T:V",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -368,6 +372,16 @@ int getOptions(int argc, char *argv[])
                 break;
             case 'L':
                 if (!(logfile = strdup(optarg))) errorExit(-1, name, 0);
+                break;
+            case 'M':
+                cidlogmax = atoi(optarg);
+                if ((num = findWord("cidlogmax")) >= 0)
+                {
+                    if (cidlogmax < setword[num].min ||
+                        cidlogmax > setword[num].max)
+                        errorExit(-107, "Invalid number", optarg);
+                    setword[num].type = 0;
+                }
                 break;
             case 'N':
                 noserial = atoi(optarg);

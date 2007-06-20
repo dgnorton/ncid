@@ -1,6 +1,8 @@
-SOURCE		= cidcall.pl cidalias.pl cidupdate.pl ncidsip.pl
-FILES		= Makefile $(SOURCE) $(MANSRC)
-DIST        = ncidsip.init.dist
+PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl ncidsip.pl
+SHSOURCE	= yac2ncid.sh
+ETCFILE     = ncidsip.conf yac2ncid.conf
+FILES		= Makefile $(PLSOURCE) $(SHSOURCE) $(MANSRC)
+DIST        = ncidsip.init.dist yac2ncid.init.dist
 
 prefix		= /usr/local
 prefix2		= $(prefix)
@@ -19,35 +21,44 @@ CALLLOG		= $(LOG)/cidcall.log
 DATALOG		= $(LOG)/ciddata.log
 MAN1		= $(MAN)/man1
 
-SCRIPT      = $(SOURCE:.pl=)
+PLSCRIPT    = $(PLSOURCE:.pl=)
+SHSCRIPT    = $(SHSOURCE:.sh=)
 SITE        = $(DIST:.dist=)
 
-tools: $(SCRIPT) $(SITE)
+tools: $(PLSCRIPT) $(SHSCRIPT) $(SITE)
 
 install: install-script install-etc install-init
 
-install-script: $(SCRIPT)
-	install -m 755 $(SCRIPT) $(BIN)
+install-script: $(PLSCRIPT) $(SHSCRIPT)
+	install -m 755 $(PLSCRIPT) $(SHSCRIPT) $(BIN)
 	rm -f $(BIN)/ncidsip
 	install -m 755 ncidsip $(SBIN)
 	touch install-script
 
-install-etc: ncidsip.conf
+install-etc: $(ETCFILE)
 	@if test -f $(CONFDIR)/ncidsip.conf; \
 		then install -m 644 ncidsip.conf $(CONFDIR)/ncidsip.conf.new; \
 		else install -m 644 ncidsip.conf $(CONFDIR); \
 	fi
+	@if test -f $(CONFDIR)/yac2ncid.conf; \
+		then install -m 644 yac2ncid.conf $(CONFDIR)/yac2ncid.conf.new; \
+		else install -m 644 yac2ncid.conf $(CONFDIR); \
+	fi
 
-install-init: ncidsip.init
+install-init: $(DIST)
 	@if test -d $(INIT); then \
 		install -m 755 ncidsip.init $(INIT)/ncidsip; \
 		else echo "skipping ncidsip.init install, no directory: $(INIT)"; \
+	fi
+	@if test -d $(INIT); then \
+		install -m 755 yac2ncid.init $(INIT)/yac2ncid; \
+		else echo "skipping yac2ncid.init install, no directory: $(INIT)"; \
 	fi
 
 clean:
 
 clobber: clean
-	rm -f $(SCRIPT) $(SITE)
+	rm -f $(PLSCRIPT) $(SHSCRIPT) $(SITE)
 	rm -f man *.man install-*
 
 files:	$(FILES)
@@ -55,6 +66,10 @@ files:	$(FILES)
 % : %.pl
 	sed 's,/etc/ncid/ncidd.alias,$(ALIAS),; s,/etc/ncid/ncidd.conf,$(CONF),; s,/var/log/cidcall.log,$(CALLLOG),' $< > $@
 	chmod +x $@
+
+% : %.sh
+	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
+	chmod 755 $@
 
 % : %.dist
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@

@@ -38,7 +38,7 @@ SAY="Telephone call from $CIDNAME"
 # Number of times to speak
 SAYNUM=1
 # delay between speaking
-DELAY=2
+SpeakDelay=2
 
 [ -f $ConfigFile ] && . $ConfigFile
 
@@ -46,7 +46,7 @@ while [ ${SAYNUM:=1} != 0 ]
 do
     eval $T2S
     SAYNUM=`expr $SAYNUM - 1`
-    [ $SAYNUM = 0 ] || /bin/sleep ${DELAY:=1}
+    [ $SAYNUM = 0 ] || /bin/sleep ${SpeakDelay:=1}
 done
 
 exit 0

@@ -41,6 +41,7 @@ Roger Knobber
     gettimeofday() in version 0.61.
 
 Rich West
+    Helps maintain the ncid-mythtv module
     Provided a NSIS script to for a basic installer for the ncid
     windows client.
 
@@ -53,6 +54,10 @@ David LaPorte
     Improved ncidsip to work with a missing name and to detect outgoing
     calls that also have a SIP REGISTER packet so they are not treated
     as incoming calls.
+
+Michael Lasevich
+    Wrote and contributed yac2ncid, ncid-yac was developed from a module
+    he wrote.  Helped write the man pages.
 
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
 	Troy Carpenter

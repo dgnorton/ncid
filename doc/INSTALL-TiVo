@@ -24,10 +24,10 @@ client.  Tivocid uses out2osd which does not work on all TiVo software
 hardware combinations.  Tivoncid should work on all TiVo software and
 hardware combinations.
 
-If you have a series 1 TiVo, Copy out2osd-VERSION.series1-tivo.tgz to the tivo.
-If you have a series 2 TiVo, Copy out2osd-VERSION.series2-tivo.tgz to the tivo.
-    - tar -xzvf ncid-VERSION.series?-tivo.tgz -C /var
-      EXAMPLE: tar -xzvf ncid-0.5.series2-tivo.tgz -C /var
+If you have a series 1 TiVo, Copy ncid-VERSION-tivo-ppc.tgz to the tivo.
+If you have a series 2 TiVo, Copy ncid-VERSION-tivo-mips.tgz to the tivo.
+    - tar -xzvf ncid-VERSION-tivo-mips.tgz -C /var
+      EXAMPLE: tar -xzvf ncid-0.5-tivo-mips.tgz -C /var
 
 ----------------------------------------
 Install the TiVo OUT2OSD display program 

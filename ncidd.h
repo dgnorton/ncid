@@ -55,7 +55,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.67"
+#define VERSION     "0.68"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -69,6 +69,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
              [-i cidstr     | --initcid cidstr]\n\
              [-L logfile    | --logfile logfile]\n\
              [-l lockfile   | --lockfile lockfile]\n\
+             [-M MaxBytes   | --cidlogmax MaxBytes ]\n\
              [-N 0/1        | --noserial 0/1]\n\
              [-n 0/1        | --nomodem 0/1]\n\
              [-p portnumber | --port portnumber]\n\
@@ -116,7 +117,8 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define NONAME      "NO NAME"
 #define NONUMB      "NO NUMBER"
 #define NOMESG      "NONE"
-#define LOGMAX      90000
+#define LOGMAX      110000
+#define LOGMAXNUM   100000000
 #define LOGMSG      "MSG: Caller ID Logfile too big to get: (%d > %d) bytes%s"
 #define TOOMSG      "MSG: Too many clients connected"
 
@@ -151,6 +153,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define CIDALT3      0x0B
 #define CIDALL4      0x0F
 
+#define MAXLEVEL     9
 enum
 {
     LEVEL1 = 1,
@@ -167,5 +170,5 @@ enum
 extern char *ttyport, *TTYspeed;
 extern char *cidlog, *datalog, *initstr, *initcid, *lockfile, *ttyport;
 extern int setcid, port, sendlog, sendinfo, clocal, nomodem, ttyspeed, verbose;
-extern int noserial;
+extern int noserial, cidlogmax;
 extern int logMsg(int level, char *message);

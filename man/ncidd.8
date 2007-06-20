@@ -20,6 +20,7 @@
 [-i cidstr     | --initcid cidstr]
 [-L logfile    | --logfile logfile]
 [-l lockfile   | --lockfile lockfile]
+[-M MaxBytes   | --cidlogmax MaxBytes
 [-N 0/1        | --noserial 0/1]
 [-n 0/1        | --nomodem 0/1]
 [-p portnumber | --port portnumber]
@@ -126,6 +127,12 @@ Default: /var/log/ncidd.log
 Modem lockfile.
 .br
 Default: /var/lock/LCK..modem
+.TP
+.B -M MaxBytes | --cidlogmax MaxBytes
+Set the maximum CID call log file size in bytes.
+Maximum size is 100000000
+.br
+Default: cidlogmax = 110000
 .TP
 .B -N 0/1 | --noserial 0/1
 serial device (0) or no serial device (1)

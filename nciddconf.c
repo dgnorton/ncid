@@ -27,17 +27,18 @@ struct setword setword[] = {
     /* char *word; int type; char **buf; int *value; int min; int max */
     {"cidalias",   WORDSTR,            &cidalias, 0,         0,    0},
     {"cidlog",     WORDSTR,            &cidlog,   0,         0,    0},
+    {"cidlogmax",  WORDNUM,            0,         &cidlogmax,1,    LOGMAXNUM},
     {"datalog",    WORDSTR,            &datalog,  0,         0,    0},
-    {"ttyport",    WORDSTR,            &ttyport,  0,         0,    0},
     {"initcid",    WORDSTR | WORDFLAG, &initcid,  &setcid,   0,    0},
     {"initstr",    WORDSTR,            &initstr,  0,         0,    0},
     {"lockfile",   WORDSTR,            &lockfile, 0,         0,    0},
-    {"port",       WORDNUM,            0,         &port,     0,    0},
-    {"ttyclocal",  WORDNUM,            0,         &clocal,   OFF, ON},
-    {"ttyspeed",   WORDSTR,            &TTYspeed, 0,         0,    0},
     {"nomodem",    WORDNUM,            0,         &nomodem,  OFF, ON},
     {"noserial",   WORDNUM,            0,         &noserial, OFF, ON},
-    {"verbose",    WORDNUM,            0,         &verbose,  1,    9},
+    {"port",       WORDNUM,            0,         &port,     0,    0},
+    {"ttyclocal",  WORDNUM,            0,         &clocal,   OFF, ON},
+    {"ttyport",    WORDSTR,            &ttyport,  0,         0,    0},
+    {"ttyspeed",   WORDSTR,            &TTYspeed, 0,         0,    0},
+    {"verbose",    WORDNUM,            0,         &verbose,  1,    MAXLEVEL},
     {0,            0,                  0,         0,         0,    0}
 };
 

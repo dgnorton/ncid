@@ -1,6 +1,6 @@
 Summary:    Network Caller ID server and clients
 Name:       ncid
-Version:    0.67
+Version:    0.68
 Release:    1
 Group:      System Environment/Daemons
 License:    GPL
@@ -48,6 +48,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/bin/cidcall
 /usr/bin/cidalias
 /usr/bin/cidupdate
+/usr/bin/yac2ncid
 /usr/sbin/ncidd
 /usr/sbin/ncidsip
 /usr/share/ncid/README
@@ -57,20 +58,25 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/share/ncid/ncid-samba
 /usr/share/ncid/ncid-speak
 /usr/share/ncid/ncid-tivo
+/usr/share/ncid/ncid-yac
 %config /etc/ncid/ncid.conf
 %config /etc/ncid/ncidd.conf
 %config /etc/ncid/ncidd.alias
 %config /etc/ncid/ncidrotate.conf
 %config /etc/ncid/ncidscript.conf
 %config /etc/ncid/ncidsip.conf
+%config /etc/ncid/yac2ncid.conf
 /etc/rc.d/init.d/ncidd
 /etc/rc.d/init.d/ncid
 /etc/rc.d/init.d/ncidsip
+/etc/rc.d/init.d/yac2ncid
 /etc/logrotate.d/ncidd
 %{_mandir}/man1/ncid.1*
 %{_mandir}/man1/ncidscripts.1*
 %{_mandir}/man1/ncidtools.1*
+%{_mandir}/man1/yac2ncid.1*
 %{_mandir}/man5/ncidd.conf.5*
+%{_mandir}/man5/yac2ncid.conf.5*
 %{_mandir}/man5/ncidd.alias.5*
 %{_mandir}/man5/ncid.conf.5*
 %{_mandir}/man5/ncidscript.conf.5*

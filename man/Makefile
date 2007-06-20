@@ -1,5 +1,6 @@
-MANSRC1 = ncid.1 ncidscripts.1 ncidtools.1
-MANSRC5 = ncid.conf.5 ncidd.conf.5 ncidd.alias.5 ncidscript.conf.5
+MANSRC1 = ncid.1 ncidscripts.1 ncidtools.1 yac2ncid.1
+MANSRC5 = ncid.conf.5 ncidd.conf.5 ncidd.alias.5 ncidscript.conf.5 \
+          yac2ncid.conf.5
 MANSRC8 = ncidd.8 ncidsip.8
 MANSRC  = $(MANSRC1) $(MANSRC5) $(MANSRC8)
 FILES   = Makefile $(MANSRC)

@@ -20,3 +20,6 @@ Script to display CID on MythTV
 
 Script to display CID on TiVo
     ncid-tivo
+
+Script to send CID to YAC clients
+    ncid-yac

@@ -19,13 +19,13 @@
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidscript.conf
 
-# set CLIENT to a windows computer name to send a SMB popup
-CLIENT=
+# set SambaClient to a windows computer name to send a SMB popup
+SambaClient=
 
 [ -f $ConfigFile ] && . $ConfigFile
 
-[ -z "$CLIENT" ] && {
-    echo "Set CLIENT to a windows computer name to send a SMB popup"
+[ -z "$SambaClient" ] && {
+    echo "Set SambaClient to a windows computer name to send a SMB popup"
     exit 1
 }
 
@@ -38,10 +38,11 @@ read CIDLINE
 if [ -n "$CIDNMBR" ]
 then
     # Display Caller ID information
-    echo "$CIDDATE $CIDTIME $CIDLINE $CIDNMBR $CIDNAME" | smbclient -M $CLIENT
+    echo "$CIDDATE $CIDTIME $CIDLINE $CIDNMBR $CIDNAME" |
+         smbclient -M $SambaClient
 else
     # Display Message
-    echo "$CIDNAME" | smbclient -M $CLIENT
+    echo "$CIDNAME" | smbclient -M $SambaClient
 fi
 
 exit 0

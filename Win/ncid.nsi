@@ -13,7 +13,7 @@
 ;Application
 
 	!define NAME            ncid
-	!define VERSION         0.67
+	!define VERSION         0.68
 	!define PROG            "${NAME}.exe"
 	!define LICENSE_FILE    "LICENSE.txt"
 	!define WEB_PAGE        "http://ncid.sourceforge.net"
@@ -248,7 +248,7 @@ SectionEnd
 	; Language strings
 	LangString DESC_Sec${NAME} ${LANG_ENGLISH} "NCID is a Network Caller ID client"
 	LangString CONFIG_TITLE ${LANG_ENGLISH} "Configure NCID Server IP Address"
-	LangString CONFIG_SUBTITLE ${LANG_ENGLISH} "Client/Server on same computer is 129.0.0.1"
+	LangString CONFIG_SUBTITLE ${LANG_ENGLISH} "Client/Server on same computer is 127.0.0.1"
  
 ;--------------------------------
 ;Uninstaller Section

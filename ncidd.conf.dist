@@ -1,5 +1,7 @@
 # NCID - Network CallerID Server Config File
 
+# File last changed: Thu Jun 12, 2007
+
 ################################
 # Definitions and Line formats #
 ################################
@@ -17,9 +19,9 @@
 #
 # SET LINE FORMAT:
 #   set ITEM = VALUE [ITEM = VALUE] ...
-#       where ITEM = cidalias, cidlog, datalog, initcid, initstr,
-#                    lockfile, port, ttyclocal, ttyport, ttyspeed,
-#                    nomodem, noserial, verbose
+#       where ITEM = cidalias, cidlog, cidlogmax, datalog, initcid,
+#                    initstr, lockfile, nomodem, noserial, port,
+#                    ttyclocal, ttyport, ttyspeed, verbose
 
 ##########################
 # Log file verbose level #
@@ -61,11 +63,31 @@ send cidinfo
 #  and also /etc/ncid/ncidrotate.conf)
 # set cidlog = /var/log/cidcall.log
 
+# Set the maximum size in bytes for the CID log file
+# The default is 110,000 bytes and the maximum is 100,000,000
+# Do not include commas when setting cidlogmax
+# set cidlogmax = 500000
+
 # The default tty data log file: /var/log/ciddata.log
 # the log file must exist, ncidd will not create it
 #  (also make the change in /etc/logrotate.d/ncidd
 #   and also /etc/ncid/ncidrotate.conf)
 # set datalog = /var/log/ciddata.log
+
+#######################
+# Serial or No Serial #
+#######################
+
+# Normally a seriel device is required to capture CID information.
+# If you are using one or more network based clients and do not have
+# a serial device.  If noserial is set to 1, the TTY Configuration,
+# Modem, and Modem Initialization set commands are not used.
+#  NETWORK AND NO SERIAL: noserial = 1 (do not use a serial port)
+#  SERIAL AND NETWORK:    noserial = 0 (default - use a serial port)
+# set noserial = 1
+
+# NOTE: if noserial is set to 1, nothing needs to be configured beyond
+#       this point.
 
 #####################
 # TTY Configuration #
@@ -88,23 +110,14 @@ send cidinfo
 # If tty port is /dev/modem, lockfile is: /var/lock/LCK..modem
 # set lockfile = /var/lock/LCK..ttyS0
 
-#######################
-# Serial or No Serial #
-#######################
-
-# Require a serial device for startup.  This is useful if you are
-# using a network based plugin
-#  network: noserial = 1 (do not try to initialize a serial port)
-#  serial: noserial = 0 (default - Look for a serial port)
-# set noserial = 1
-
 #####################
 # Modem or No Modem #
 #####################
 
 # Obtain CallerID from a CID device or a modem
-#  device: nomodem = 1 (do not send AT commands)
-#  modem: nomodem = 0 (default - send AT commands)
+# The NetCallerID device is not a modem
+#  DEVICE: nomodem = 1 (do not send AT commands)
+#  MODEM:  nomodem = 0 (default - send AT commands)
 # set nomodem = 1
 
 ########################

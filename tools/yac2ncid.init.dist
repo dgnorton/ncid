@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-# ncidsip:     Start/Stop NCID SIP Invite client
+# yca2ncid:    Start/Stop YAC CID client
 #
-# chkconfig:   2345 95 22
+# chkconfig:   2345 96 23
 # description: Inject CID info by snooping SIP invites
 
 # Source function library.
@@ -15,8 +15,8 @@
 [ ${NETWORKING} = "no" ] && exit 0
 
 RETVAL=0
-prog="ncidsip"
-shell="perl"
+prog="yac2ncid"
+shell="bash"
 opts=""
 
 ConfigDir=/usr/local/etc/ncid
@@ -25,12 +25,12 @@ ConfigFile=$ConfigDir/ncidsip.conf
 # source ncidinit.conf file
 [ -f $ConfigFile ] && . $ConfigFile
 
-[ -f /usr/sbin/$prog ] || exit 0
+[ -f /usr/bin/$prog ] || exit 0
 
 start() {
         # Start daemons.
         echo -n $"Starting $prog: "
-        $shell /usr/sbin/$prog $opts &
+        /usr/bin/$prog $opts &
         RETVAL=$?
         [ $RETVAL -eq 0 ] &&
         success $"$prog startup" ||
@@ -43,7 +43,7 @@ start() {
 stop() {
         # Stop daemons.
         echo -n $"Shutting down $prog: "
-        killproc $shell
+        killproc $prog -1
         RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog

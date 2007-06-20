@@ -42,9 +42,9 @@ INSTALL:
 
           See the top of the Makefile for more information on targets.
 
-TEST:
+TEST USING A MODEM:
 
-	Start ncid and ncidd
+	Start ncidd then ncid
 	Call yourself
 
 	if you have problems, start ncidd in debug mode:
@@ -53,6 +53,7 @@ TEST:
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
+    The Last line should be: Modem set for CallerID.
 
     if ncidd aborts when you call yourself with something like:
         Modem set for CallerID.
@@ -67,3 +68,37 @@ TEST:
     first and second RING.
 
 	Once you solve the problems, restart ncidd normally
+
+TEST USING NCIDSIP:
+
+Start (in this order):
+	ncidd
+    ncidsip (may need to add options, review Setup-VOIP)
+    ncid
+
+	Call yourself
+
+	if you have problems, start ncidd in debug mode:
+		- ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
+    The last line should be: CallerID from CID client(s) only
+
+	Once you solve any problems, restart ncidd normally
+
+TEST USING A DEVICE (like the NetCallerID box):
+
+	Start ncidd then ncid
+	Call yourself
+
+	if you have problems, start ncidd in debug mode:
+		- ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
+    The Last line should be: CallerID TTY port initialized.
+
+	Once you solve any problems, restart ncidd normally

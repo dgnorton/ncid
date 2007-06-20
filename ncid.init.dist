@@ -2,7 +2,7 @@
 #
 # ncid          Start/Stop Network Caller ID client
 #
-# chkconfig: 2345 96 05
+# chkconfig: 2345 96 21
 # description: the ncid client sends the CID to an external program
 
 # Source function library.

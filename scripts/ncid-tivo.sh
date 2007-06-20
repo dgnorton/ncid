@@ -28,7 +28,7 @@ ConfigFile=$ConfigDir/ncidscript.conf
 # --clear
 
 TivoOSD=/tvbin/text2osd
-TivoOpt=""
+TivoOpt="--line 1 --xscale 2 --yscale 2"
 TivoDelay=10
 TivoCS=--clear
 

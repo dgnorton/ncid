@@ -1,5 +1,56 @@
 ncid - Network CallerID
 
+Version 0.68
+    - Makefile: added ETCFILE, removed $(FILES): target
+    - ncid.spec: Updated: version number, new programs, and new man pages
+    - ncidd.conf.dist: Added comment: NetCallerID device is not a modem
+                       Added variable cidlogmax and comments
+    - ncidd.h: Added extern variable cidlogmax,
+               Added defines: MAXLEVEL and LOGMAXNUM
+               Update Usage to include -M & --cidlogmax
+    - ncidd.c: Added variable 'cidlogmax' and '-M & --cidlogmax' options
+               Added LogMsg level 2 for CID logfile maximum size
+    - nciddconf.c: added variable cidlogmax, LOGMAXNUM, and MAXLEVEL
+    - ncidd.init: Changed stop priority from 06 to 23
+    - ncid.init.dist: Changed stop priority from 05 to 21
+    - ncid.sh: Version number change
+    - doc/Setup-VOIP: Corrected and simplified
+    - doc/CONTRIBUTORS: added new contributor
+    - doc/ReleaseNotes: Updated
+    - doc/INSTALL: Corrected tests
+    - doc/INSTALL-Cygwin: Corrected tests
+    - doc/INSTALL-FreeBSD: Corrected tests
+    - doc/INSTALL-Mac: Corrected tests
+    - doc/INSTALL-TiVo: Corrected tar file information
+    - man/ncidd.8: Updated for new options
+    - man/ncidd.conf.5: Updated for new veriables
+    - man/ncidscripts.1: Added ncid-yac
+    - man/ncidscripts.conf.5: Added ncid-tivo and ncid-yac
+    - man/yac2ncid.1: New, man page for yac2ncid
+    - man/yac2ncid.conf.5: New, man page for yac2ncid config file
+    - scripts/Makefile: added ncid-yac.sh, changed CONFIG to ETCFILE
+    - scripts/ncid-mythtv: Updated for current versin of mythtvosd
+    - scripts/ncid-samba: Changed CLIENT to SambaClient
+    - scripts/ncid-speak: Changed DELAY to SpeakDelay
+    - scripts/ncid-tivo: added options: "--line 1 --xscale 2 --yscale 2"
+    - scripts/ncid-yac: New, output module to send CID to TAC clients
+    - scripts/ncidscript.conf: Added configutation for ncid-yac
+                               Changed CLIENT to SambaClient
+                               Changed DELAY to SpeakDelay
+							   Set: TivoOpt="--line 1 --xscale 2 --yscale 2"
+    - scripts/README: updated
+    - tools/cidcall.pl: Changed regular expression to include * with key word
+    - tools/Makefile: Modified to handle sh scripts, added yac2ncid & ETCFILE
+    - tools/ncidsip.conf: corrected a '.' that should have been a ','
+    - tools/ncidsip.init.dist: Changed stop priority from 05 to 22
+    - tools/ncidsip.pl: Updated to handle case when number not sent
+    - tools/README: updated
+    - tools/yac2ncid.sh: New, YAC client to input CID to NCID server
+    - tools/yac2ncid.conf: New, yac2ncid configuration file
+    - tools/yac2ncid.init: New, yac2ncid init file
+    - Win/ncid.ini: Changed: State="129.0.0.1" To: State="127.0.0.1"
+    - Win/ncid.nsi: Updated version number, corrected 129.0.0.1 to 127.0.0.1
+
 Version 0.67
     - ncid.spec: Updated version number
     - VERSION: Updated version number
@@ -33,6 +84,7 @@ Version 0.66
                main() - while(1): TTY in use: added close(ttyfd)
                main() - while(1): TTY free: replaced tcfluch() with openTTY()
     - doc/ReleaseNotes: updated
+    - doc/CONTRIBUTORS: updated
     - doc/NCID-DataFormats: added a '1' to the sample CID message line
     - doc/VerboseLevels: added
     - man/ncidscripts.1: updated and added ncid-tivo

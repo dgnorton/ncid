@@ -6,6 +6,9 @@ cidupdate	   - update aliases in the CID alias file
 ncidsip        - client that sends a CID Message Line to the server
 ncidsip-init   - init file for ncidsip
 ncidsip.conf   - configuration file for ncidsip-init
+yac2ncid       - YAC client to receive CID information from a YAC server
+yac2ncid.conf  - configuration file for yac2ncid
+yac2ncid.init  - init file for yac2ncid
 
 The Makefile is used to create the runable scripts.
 

@@ -1,6 +1,6 @@
-SCRIPTS = ncidrotate ncid-page ncid-samba ncid-speak ncid-mythtv ncid-tivo
-CONFIG  = ncidrotate.conf ncidscript.conf
-FILES   = Makefile $(SCRIPTS) $(CONFIG) $(MANSRC) README
+SCRIPTS = ncidrotate ncid-page ncid-samba ncid-speak ncid-mythtv ncid-tivo ncid-yac
+ETCFILE = ncidrotate.conf ncidscript.conf
+FILES   = Makefile $(SCRIPTS) $(ETCFILE) $(MANSRC) README
 
 prefix  = /usr/local
 prefix2 = $(prefix)
@@ -18,7 +18,7 @@ install-scripts: $(SCRIPTS)
 	install -m 755 $(SCRIPTS) $(SHARE)
 	install -m 644 README $(SHARE)/.
 
-install-etc: $(CONFIG)
+install-etc: $(ETCFILE)
 	@if test -f $(CONFDIR)/ncidrotate.conf; \
 		then install -m 644 ncidrotate.conf $(CONFDIR)/ncidrotate.conf.new; \
 		else install -m 644 ncidrotate.conf $(CONFDIR)/.; \

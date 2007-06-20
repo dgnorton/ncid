@@ -29,13 +29,14 @@ read CIDLINE
 if [ -n "$CIDNMBR" ]
 then
     # Display Caller ID information
-    mythtvosd --caller_name="$CIDNAME" \
+    mythtvosd --template="cid" \
+              --caller_name="$CIDNAME" \
               --caller_number="$CIDNMBR" \
               --caller_date="$CIDDATE" \
               --caller_time="$CIDTIME"
 else
     # Display Message
-    mythtvosd --alert_text="$CIDNAME"
+    mythtvosd --teplate="alert" --alert_text="$CIDNAME"
 fi
 
 exit 0

@@ -27,12 +27,12 @@ PROG        = ncidd
 SOURCE      = $(PROG).c nciddconf.c nciddalias.c getopt_long.c poll.c
 CLIENT      = ncid
 HEADER      = ncidd.h nciddconf.h nciddalias.h getopt_long.h poll.h
-ETCFILE     = ncid.spec
+ETCFILE     = ncid.conf ncidd.conf ncidd.alias
 DOCFILE     = doc/CHANGES doc/COPYING README doc/README-FreeBSD \
               doc/NCID-FORMAT doc/PROTOCOL VERSION
 DIST        = $(CLIENT).dist ncidd.logrotate.dist ncidd.conf.dist \
               ncid.init.dist ncid.conf.dist
-FILES       = Makefile $(DIST) $(HEADER) $(SOURCE) \
+FILES       = Makefile ncid.spec $(DIST) $(HEADER) $(SOURCE) \
               $(DOCFILE) $(ETCFILE)
 
 prefix      = /usr/local
@@ -91,7 +91,9 @@ default:
 	@echo "    make install-mac"
 	@echo "    make cygwin"
 
-local: $(PROG) $(SITE) tooldir scriptdir
+local: $(PROG) site tooldir scriptdir
+
+site: $(SITE)
 
 $(PROG): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
@@ -164,9 +166,6 @@ install-cygwin:
 mandir:
 	cd man; $(MAKE) all prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
 
-$(FILES):
-	@if test -x $(BIN)/sccs; then $(BIN)/sccs $(GET) $@; fi
-
 dirs:
 	@if ! test -d $(BIN); then mkdir -p $(BIN); fi
 	@if ! test -d $(SBIN); then mkdir -p $(SBIN); fi
@@ -186,7 +185,7 @@ install-prog: $(PROG)
 	install -m 755 $(PROG) $(SBIN)
 	install -m 755 $(CLIENT) $(BIN)
 
-install-etc: ncid.conf ncidd.conf ncidd.alias
+install-etc: $(ETCFILE)
 	@if test -f $(CONFDIR)/ncidd.alias; \
 		then install -m 644 ncidd.alias $(CONFDIR)/ncidd.alias.new; \
 		else install -m 644 ncidd.alias $(CONFDIR); \

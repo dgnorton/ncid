@@ -1,0 +1,33 @@
+.\" %W% %G%
+.TH NCID.CONF 5
+.SH NAME
+.B yac2ncid.conf\^
+- yac2ncid configuration file
+.SH DESCRIPTION
+The \fIyac2ncid.conf\fR file contains the configuration information for
+\fIyac2ncid\fR.
+.PP
+The \fIncid.conf\fR file understands 3 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B Variable=Argument
+.PP
+See yac2ncid.conf for a complete list of variables to set and
+what the default values are.
+.SH EXAMPLES
+Set the NCID server IP address:
+.RS 0
+	NCIDSERVER=192.168.0.1
+.RE
+.PP
+Set a telephone line indicator:
+.RS 0
+	LINE=1212
+.RE
+.SH SEE ALSO
+yac2ncid.1, ncidd.8 ncidd.alias.5, ncidd.conf.5

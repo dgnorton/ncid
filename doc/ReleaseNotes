@@ -1,48 +1,41 @@
-Source: ncid-0.67.tar.gz
-Fedora Core 5 package: ncid-0.67-1.i386.rpm
-TiVo Series1 package: ncid-0.67-series1-tivo.tgz
-TiVo Series2 package: ncid-0.67-series2-tivo.tgz
-Macintosh OS X package: ncid-0.67-mac-osx.tgz
-FreeBSD 5.4 package: ncid-0.67-freebsd.tgz
-Cygwin Windows package: ncid-0.67-cygwin.tgz
-Windows client installer: ncid-0.67-setup.exe
+Source: ncid-0.68.tar.gz
+Fedora Core 6 package: ncid-0.68-1.i386.rpm
+Fedora Core 6 64 bit package: ncid-0.68-1.x86_64.rpm
+TiVo Series1 package: ncid-0.68-tivo-ppc.tgz
+TiVo Series2 package: ncid-0.68-tivo-mips.tgz
+TiVo Series3 package: ncid-0.68-tivo-mips.tgz
+Macintosh OS X package: ncid-0.68-mac-osx.tgz
+FreeBSD 5.4 package: ncid-0.68-freebsd.tgz
+Cygwin Windows package: ncid-0.68-cygwin.tgz
+Windows client installer: ncid-0.68-setup.exe
 
 Server Changes:
 
-    None
+    Increased the maximun size of the cidcall.log file from 90,000
+    bytes to 110,000 bytes.
+
+    Added new options to set the maximum size of the CID log file.
+
+    Added a new configuration variable, cidlogmax, to set the maximum
+    size of the CID log file.  The maximum value permitted is
+	100,000,000
 
 Client Changes:
 
-    Moved a set line so its last in ncid.conf. This fixes a TiVo problem
-    that caused ncid to abort.
-
-    Created new option for ncidsip to detect SIP packets on the network
-    without setting up the ncidd server.  If SIP packets exist, ncidsip
-    will display the Caller ID and CANCAL lines if a call comes in.
-
-    Test for SIP packets on port 5061 (must be root):
-
-        ncidsip --test
-
-    Test for SIP packets on port 10,000 (must be root):
-
-        ncidsip --test --sip :10000
-
-    Created new option for ncidsip to detect all network device names:
-
-        ncidsip --listdevs
-
+    Modified ncidsip to handle number not present.
+    Added yac2ncid: gets CID information from a YAC server
 
 Client Module Changes:
 
-    None
+    Updated ncid-mythtv for current versin of mythtvosd.
+    Added ncid-yac: sends CID information to YAC clients
+    Modified client configuration file
 
 Script changes:
 
-    None
+    Fixed cidcall regular expressions for key words
 
 Documentation Changes:
 
-    Updated the ncidsip.8 man page to include the test and usage options.
-
-    Updated the setup for ncidsip in the Setup-VOIP file.
+    Corrected and simplified Setup-VOIP
+    Updated man pages and contributors

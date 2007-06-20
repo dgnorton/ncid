@@ -18,6 +18,9 @@
 .PP
 .B ncid-tivo\^
 - display CID on TiVo using text2osd
+.PP
+.B ncid-yac\^
+- Send CID to YAC listeners
 .SH SYNOPSIS
 .B ncidrotate\^
 {prerotate|postrotate}
@@ -35,6 +38,9 @@ CIDdate CIDtime CIDnumber CIDname CIDline
 CIDdate CIDtime CIDnumber CIDname CIDline
 .PP
 .B ncid-tivo\^
+CIDdate CIDtime CIDnumber CIDname CIDline
+.PP
+.B ncid-yac\^
 CIDdate CIDtime CIDnumber CIDname CIDline
 .SH DESCRIPTION
 These are CID output modules and are normally located in the
@@ -55,8 +61,10 @@ can be configured to call
 .BR ncid-page ,
 .BR ncid-samba ,
 .BR ncid-speak .
-or
 .BR ncid-mythtv .
+.BR ncid-tivo .
+or
+.BR ncid-yac .
 The configuration file for the scripts is
 .I /etc/ncid/ncidscript.conf
 .PD

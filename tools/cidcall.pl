@@ -15,6 +15,8 @@
 #    modified to display the new "LINE" filed
 # modified by jlc on Fri Apr 14, 2006
 #    added -m option, modified raw option to print all lines, changed name
+# modified by jlc on Wed Mar 28, 2007
+#    - modified regular expressions to look for * with key word
 
 use Getopt::Std;
 
@@ -36,8 +38,8 @@ while (<CIDLOG>) {
     else {
       if (/CID|EXTRA/) {
         ($date, $time, $number, $name) = 
-           /.*DATE.(\d+).*TIME.(\d+).*NU*MBE*R.([-\w\s]+).*NAME.(.*)\*+$/;
-        ($line) = /.*LINE.([-\w\s]+).*/;
+         /.*\*DATE.(\d+).*\*TIME.(\d+).*\*NU*MBE*R.([-\w\s]+).*\*NAME.(.*)\*+$/;
+        ($line) = /.*\*LINE.([-\w\d]+).*/;
         $line = "<$line>";
         $line =~ s/<-*>//;
         $date =~ s/(\d\d)(\d\d)(\d\d\d\d)*/$1\/$2\/$3/;

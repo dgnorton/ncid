@@ -88,14 +88,7 @@ TEST:
         ncidsip -i NETWORK_INTERFACE [other options]
 
     - Call yourself and you should see the CallerID lines.
-    - If you only see RING for each ring, the modem does not support
-      Caller ID.  You should see the Caller ID lines betreen the
-      first and second RING.
-    - If you see: /dev/ttyS0: No such file or directory
-      you need to set sttyclocal in ncidd.conf
-
-    - At any point, you can use command lines options to vary
-      things like modem init and CID init.
 
 	- Once it works, you would normally start it:
         ncidd
+        ncidsip [options needed] &

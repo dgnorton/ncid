@@ -1,0 +1,53 @@
+.\" %W% %G%
+.TH NCID 1
+.SH NAME
+.B yac2ncid\^
+- YAC server to NCID server gateway
+.SH SYNOPSIS
+.B yac2ncid\^
+[-v]
+.SH DESCRIPTION
+.B YAC2NCID
+acts as a YAC client, listens to the CID information from a YAC server
+and sends it to the NCID server.  The server then sends the CID
+information to the  NCID clients.
+.PP
+It is important to understand that to run YAC server with NCID
+clients you must run YAC2NCID gateway as well as NCID server.
+.PP
+The configuration file for \fIncid\fR is \fI/etc/ncid/ncid.conf\fR.
+It may be located in same directory as the script, or in the
+\fIetc\fR directory, or in NCID default configuration directory.
+Read the comments in the config file for more details.
+.PP
+.B YAC2NCID
+can run on any system, but normally it is run on same box as the NCID server.
+If it is not run on the same box as the NCID server, you must configure
+the server IP address in the configuration file.
+.PP
+Configure the YAC server with IP address of the box running
+.BR YAC2NCID .
+.PP
+.B YAC2NCID
+relies on netcat binary (nc). As there are multiple implementations of
+this binary in existence, the script will try to autodetect the options
+to use. If script is unable to properly detect the version of nc, set
+NETCAT_TYPE to CUSTOM in the config file and set custom params to match
+your version.
+.PP
+There is also a client output module called \fIncid-yac\fR.  It sends
+the NCID CID information to YAC clients.
+.PD
+.SH "OPTIONS"
+.PD 0
+.TP 10
+.B -v
+Verbose mode.
+.PD
+.PD
+.SH REQUIRED PROGRAMS
+netcat: /usr/bin/nc
+.SH FILES
+/etc/ncid/yac2ncid.conf
+.SH SEE ALSO
+yac2ncid.conf.5, ncidd.8, ncidd.conf.5, ncidd.alias.5, ncidscripts.1
