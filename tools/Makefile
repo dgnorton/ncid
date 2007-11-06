@@ -1,8 +1,8 @@
-PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl ncidsip.pl
-SHSOURCE	= yac2ncid.sh
-ETCFILE     = ncidsip.conf yac2ncid.conf
+PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl
+SHSOURCE	=
+ETCFILE     =
 FILES		= Makefile $(PLSOURCE) $(SHSOURCE) $(MANSRC)
-DIST        = ncidsip.init.dist yac2ncid.init.dist
+DIST        =
 
 prefix		= /usr/local
 prefix2		= $(prefix)
@@ -10,11 +10,15 @@ prefix3		=
 
 BIN			= $(prefix)/bin
 SBIN		= $(prefix)/sbin
+SHARE       = $(prefix)/share
 ETC			= $(prefix2)/etc
-INIT        = $(ETC)/rc.d/init.d
-LOG			= /var/log
+VAR         = $(prefix3)/var
 
+INIT        = $(ETC)/rc.d/init.d
 CONFDIR		= $(ETC)/ncid
+LOG			= $(VAR)/log
+MAN         = $(SHARE)/man
+
 CONF		= $(CONFDIR)/ncidd.conf
 ALIAS		= $(CONFDIR)/ncidd.alias
 CALLLOG		= $(LOG)/cidcall.log
@@ -27,39 +31,17 @@ SITE        = $(DIST:.dist=)
 
 tools: $(PLSCRIPT) $(SHSCRIPT) $(SITE)
 
-install: install-script install-etc install-init
+install: install-script
 
 install-script: $(PLSCRIPT) $(SHSCRIPT)
 	install -m 755 $(PLSCRIPT) $(SHSCRIPT) $(BIN)
-	rm -f $(BIN)/ncidsip
-	install -m 755 ncidsip $(SBIN)
-	touch install-script
-
-install-etc: $(ETCFILE)
-	@if test -f $(CONFDIR)/ncidsip.conf; \
-		then install -m 644 ncidsip.conf $(CONFDIR)/ncidsip.conf.new; \
-		else install -m 644 ncidsip.conf $(CONFDIR); \
-	fi
-	@if test -f $(CONFDIR)/yac2ncid.conf; \
-		then install -m 644 yac2ncid.conf $(CONFDIR)/yac2ncid.conf.new; \
-		else install -m 644 yac2ncid.conf $(CONFDIR); \
-	fi
-
-install-init: $(DIST)
-	@if test -d $(INIT); then \
-		install -m 755 ncidsip.init $(INIT)/ncidsip; \
-		else echo "skipping ncidsip.init install, no directory: $(INIT)"; \
-	fi
-	@if test -d $(INIT); then \
-		install -m 755 yac2ncid.init $(INIT)/yac2ncid; \
-		else echo "skipping yac2ncid.init install, no directory: $(INIT)"; \
-	fi
 
 clean:
 
 clobber: clean
 	rm -f $(PLSCRIPT) $(SHSCRIPT) $(SITE)
-	rm -f man *.man install-*
+
+distclean: clobber
 
 files:	$(FILES)
 

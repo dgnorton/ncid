@@ -46,14 +46,22 @@ Change OUT-OF-AREA to UNAVAILABLE for a NAME:
 .PP
 Change generic name to specific name for a phone number:
 .RS 0
-.nf
 	alias NAME * = "John on CELL" if 4075551212
-.fi
 .RE
 .PP
 Mask a phone number:
 .RS 0
 	alias NMBR 4075551212 = "----------"
+.RE
+.PP
+Change the line indicator, from no display,  to display \fIPOTS\fR:
+.RS 0
+	alias LINE - = POTS
+.RE
+.PP
+Change the ncidsip line indicator display (1122) to no display:
+.RS 0
+	alias LINE 1122 = -
 .RE
 .SH SEE ALSO
 ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.conf.5

@@ -1,0 +1,40 @@
+.\" %W% %G%
+.TH SIP2NCID.CONF 5
+.SH NAME
+.B sip2ncid.conf\^
+- sip2ncid configuration file
+.SH DESCRIPTION
+The \fIsip2ncid.conf\fR file contains the configuration information for
+\fIsip2ncid\fR, the Network Caller ID Server.
+.PP
+The \fIsip2ncid.conf\fR file is used to set options.
+Options are set on a command line.
+A line is broken up into words.
+A word is either a string of non-blank characters, everything
+between double quotes, or an equal sign.
+.PP
+The \fIsip2ncid.conf\fR file understands 5 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B command lines, beginning with 'set'
+set ITEM = VALUE [ITEM = VALUE] [...]
+.RS 11
+where ITEM = pidfile, verbose, ncidhost, ncidport, siphost, sipport
+.RE
+.SH EXAMPLES
+Set the verbose level to 3
+.RS 0
+	set verbose = 3
+.RE
+.PP
+Set the SIP port to 5061
+.RS 0
+	set sipport = 5061
+.RE
+.SH SEE ALSO
+sip2ncid.8, ncidd.8, ncidd.conf.5

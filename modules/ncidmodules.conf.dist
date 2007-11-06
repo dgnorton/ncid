@@ -1,0 +1,124 @@
+# ncid module and service configuration file
+# Last modified: Thu Sep 27, 2007
+
+# This configuration file is called from the ncid init file
+# to set the "args" and "extprog" variables.  Uncomment the
+# extprog and args addon, if present, for the output module
+# called.
+
+# The "prog" variable can be changed, but it is not recomended.
+#prog=
+
+# This configuration file is also called by each output module to
+# set variables needed for it.  Uncomment or give the variable a
+# value for the output module called.
+
+# Select one output module (extprog), configure it below
+#extprog="ncid-mythtv"
+#extprog="ncid-page"
+#extprog="ncid-samba"
+#extprog="ncid-speak"
+#extprog="ncid-tivo"
+#extprog="ncid-yac"
+#extprog="out2osd"
+
+# Call external program immediately
+# *** do not modify this line ***
+args="--no-gui -C -P $extprog"
+
+# The original line was (uncomment if output module requires it):
+# args="--no-gui -A -C -P $extprog"
+# The -A option option is available for backwards compatibility
+# Do not use the -A option anymore as it will be removed
+
+############################################
+# Send a email SMS message to a cell phone #
+#               ncid-page                  #
+############################################
+# IMPORTANT: sendmail.cf must hide user root when masquerading is used,
+#            unless $PageFrom is set to a ID other than root
+#
+# user sending the mail, ignored unless root is running ncid-page
+# the default mail user is the ID running ncid-page, usually root
+PageFrom=mail
+# email address: (usual format: ##########@CELL_PHONENUMBER_URL)
+PageTo=
+# uncomment to call external program on ring number number 4
+#args="$args -r 4"
+# uncomment to call external program if phone not picked up
+# only works if using ncidsip
+#args="$args -r -1"
+
+###########################
+# Send Caller ID to Samba #
+#       ncid-samba        #
+###########################
+SambaClient=
+
+#######################
+# Speak the Caller ID #
+#     ncid-speak      #
+#######################
+# If festival is being used:
+T2S='`echo $SAY | festival --tts`'
+# If using a Macintosh without festival:
+#T2S='/usr/bin/osascript -e \"say $SAY\"'
+# What to say
+SAY="Telephone call from $CIDNAME"
+#SAY="$CIDNAME"
+# Number of times to speak
+SAYNUM=1
+# delay between speaking
+SpeakDelay=2
+
+##################
+# MythTV Display #
+#   ncid-mythtv  #
+##################
+# no configuration necessary
+
+##################
+#  TiVo Display  #
+#    ncid-tivo   #
+##################
+# same as tivoncid
+# TiVo display options using /tvbin/text2osd
+# --line     <line number>
+# --message  <string>
+# --xscale   <number>
+# --yscale   <number>
+# --bgscolor [<num num num, r-g-b values>][<string,red|green|blue|white|black>]
+# --fgscolor [<num num num, r-g-b values>][<string,red|green|blue|white|black>]
+# --clear
+##################
+# uncomment args line
+#args="$args --message" # "ncid-tivo"
+# Send output to /tvbin/text2osd
+TivoOSD=/tvbin/text2osd
+# Options to /tvbin/text2osd
+TivoOpt=""
+# Time on screen in seconds
+TivoDelay=10
+# Clear Screen Option
+TivoCS=--clear
+
+######################
+# NCID 2 YAC Clients #
+#      ncid-yac      #
+######################
+# YACPORT default is 10629
+YACPORT=10629
+# YACLIST is a list of YAC clients, separated by spaces, inside quotes
+# list can be IP_Addresses or hostnames or both
+# YACLIST default is localhost or 127.0.0.1
+YACLIST="localhost"
+
+##################
+#  TiVo Display  #
+#    out2osd     #
+##################
+# same as tivocid
+# TiVo display options using out2osd
+#
+# uncomment args line
+#args="$args --tivo --message" # "out2osd"

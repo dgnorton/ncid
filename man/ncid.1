@@ -68,8 +68,8 @@ it will terminate with a error message.
 .PP
 The configuration file for \fIncid\fR is /etc/ncid/ncid.conf.
 .PP
-Four output modules are provided, customize as needed in the
-/etc/ncid/ncidscript.conf file:
+The distributed output modules can be customized as needed in the
+/etc/ncid/ncidmodules.conf file:
 .PD 0
 .TP 12
 .B ncid-mythtv
@@ -111,7 +111,7 @@ terminates \fIncid\fR.
 .PD
 .SH "OPTIONS"
 .PD 0
-.TP 30
+.TP
 .B --no-gui
 Do not display CID information using a GUI
 .br
@@ -135,7 +135,7 @@ Default: 60 seconds
 .B --message | -M
 Send messages to the output modules
 .TP
-.B --prog PROGRAM | -P PROGRAM
+.B --program PROGRAM | -P PROGRAM
 the display or helper program to use
 .br
 Default PATH: /usr/share/ncid

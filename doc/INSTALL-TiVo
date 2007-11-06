@@ -262,7 +262,7 @@ The tar files creates the following:
    tivocid             ncid.conf                 README            ncid-page
    tivoncid            ncidd.conf                CHANGES           ncid-samba
    ncid                ncidd.alias               CONTRIBUTORS      ncid-speak
-   cidcall             ncidscript.conf           ReleaseNotes      ncid-tivo
+   cidcall             ncidmodules.conf          ReleaseNotes      ncid-tivo
    cidalias            ncidsip.conf              INSTALL notes     README
    cidupdate                                     Documentation   
                                                  man pages (.txt)

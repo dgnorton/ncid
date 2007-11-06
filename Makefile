@@ -1,66 +1,93 @@
-########################################################################
-# make local            - builds for /usr/local and /var               #
-# make install          - installs files in /usr/local and /var        #
-# make package          - builds for /usr, /etc, and /var              #
-# make install-package  - installs files in /usr, /etc, and /var       #
-# make mandir           - builds man text and html files               #
-#                         (no install for the *.txt and *.html files)  #
-#                                                                      #
-# make tivo-series1     - builds for a ppc TiVo for /var/hack          #
-# make tivo-series2     - builds for a mips TiVo for /var/hack         #
-#   uses the cross compilers at: http://tivoutils.sourceforge.net/     #
-#   usr.local.powerpc-tivo.tar.bz2 (x86 cross compiler for Series1)    #
-#   usr.local.mips-tivo.tar.bz2 (x86 cross compiler for Series2)       #
-#                                                                      #
-# gmake freebsd         - builds for FreeBSD in /usr/local             #
-# gmake install-freebsd - installs in /usr/local                       #
-#                                                                      #
-# make mac              - builds for Macintosh OS X in /usr/local      #
-# make install-mac      - installs in /usr/local                       #
-#                                                                      #
-# make cygwin           - builds for Windows using cygwin              #
-#                         (does not function with modem or comm port)  #
-# make install-cygwin   - installs files in /usr/local, and /var       #
-########################################################################
+#########################################################################
+# make local             - builds for /usr/local and /var               #
+# make install           - installs files in /usr/local and /var        #
+#                                                                       #
+# make package           - builds for /usr, /etc, and /var              #
+# make package-install   - installs files in /usr, /etc, and /var       #
+#                                                                       #
+# make fedora            - builds for Fedora (includes init.d/ files)   #
+# make fedora-install    - installs in /usr, /etc, and /var             #
+#                                                                       #
+# make ubuntu            - builds for Ubuntu (includes init.d/ files)   #
+# make ubuntu-install    - installs in /usr, /etc, and /var             #
+#                                                                       #
+# make mandir            - builds man text and html files               #
+#                          (no install for the *.txt and *.html files)  #
+#                                                                       #
+# make tivo-mips         - builds for a mips TiVo in /usr/local         #
+# make tivo-install      - installs in /usr/local                       #
+# make tivo-series1      - builds for a ppc TiVo for /var/hack          #
+# make tivo-series2      - builds for a mips TiVo for /var/hack         #
+# make tivo-hack-install - basic install into /var/hack                 #
+#                          uses the cross compilers at:                 #
+#                          http://tivoutils.sourceforge.net/            #
+#                          usr.local.powerpc-tivo.tar.bz2               #
+#                          (x86 cross compiler for Series1)             #
+#                          usr.local.mips-tivo.tar.bz2                  #
+#                          (x86 cross compiler for Series2)             #
+#                                                                       #
+# gmake freebsd          - builds for FreeBSD in /usr/local             #
+# gmake freebsd-install  - installs in /usr/local                       #
+#                                                                       #
+# make mac               - builds for Macintosh OS X in /usr/local      #
+# make mac-install       - installs in /usr/local                       #
+#                                                                       #
+# make cygwin            - builds for Windows using cygwin              #
+#                          (does not function with modem or comm port)  #
+# make cygwin-install    - installs files in /usr/local, and /var       #
+#########################################################################
 
-PROG        = ncidd
-SOURCE      = $(PROG).c nciddconf.c nciddalias.c getopt_long.c poll.c
-CLIENT      = ncid
-HEADER      = ncidd.h nciddconf.h nciddalias.h getopt_long.h poll.h
-ETCFILE     = ncid.conf ncidd.conf ncidd.alias
-DOCFILE     = doc/CHANGES doc/COPYING README doc/README-FreeBSD \
-              doc/NCID-FORMAT doc/PROTOCOL VERSION
-DIST        = $(CLIENT).dist ncidd.logrotate.dist ncidd.conf.dist \
-              ncid.init.dist ncid.conf.dist
-FILES       = Makefile ncid.spec $(DIST) $(HEADER) $(SOURCE) \
-              $(DOCFILE) $(ETCFILE)
+PROG         = ncidd
+SOURCE       = $(PROG).c nciddconf.c nciddalias.c getopt_long.c poll.c
+CLIENT       = ncid
+HEADER       = ncidd.h nciddconf.h nciddalias.h getopt_long.h poll.h
+ETCFILE      = ncid.conf ncidd.conf ncidd.alias
+DOCFILE      = doc/CHANGES doc/COPYING README doc/README-FreeBSD \
+               doc/NCID-FORMAT doc/PROTOCOL VERSION
+DIST         = ncidd.conf.dist ncid.conf.dist
+FILES        = Makefile $(CLIENT).sh $(DIST) $(HEADER) $(SOURCE) \
+               $(DOCFILE) $(ETCFILE)
 
-prefix      = /usr/local
-prefix2     = $(prefix)
-settag      = NONE
-setname     = NONE
+# the prefix must end in a - (if part of a name) or a / (if part of a path)
+MIPSXCOMPILE = mips-TiVo-linux-
+PPCXCOMPILE  = /usr/local/tivo/bin/
 
-BIN         = $(prefix)/bin
-SBIN        = $(prefix)/sbin
-SCRIPTDIR   = $(prefix)/share/ncid
-ETC         = $(prefix2)/etc
-ROTATE      = $(ETC)/logrotate.d
-INIT        = $(ETC)/rc.d/init.d
-CONFDIR     = $(ETC)/ncid
-DEV         = /dev
-LOG         = /var/log
-MAN         = $(prefix)/share/man
+# prefix and prefix2 are used on a make, install, and making a package
+# prefix3 is used on install to make a package
+prefix       = /usr/local
+prefix2      = $(prefix)
+prefix3      =
 
-CONF        = $(CONFDIR)/ncidd.conf
-ALIAS       = $(CONFDIR)/ncidd.alias
-MODEMDEV    = $(DEV)/modem
-CALLLOG     = $(LOG)/cidcall.log
-DATALOG     = $(LOG)/ciddata.log
-LOGFILE     = $(LOG)/ncidd.log
+OS           = host
 
-SITE        = $(DIST:.dist=)
-WISH        = wish
-TCLSH       = tclsh
+settag       = NONE
+setname      = NONE
+setmod       = NONE
+
+BIN          = $(prefix)/bin
+SBIN         = $(prefix)/sbin
+SHARE        = $(prefix)/share
+ETC          = $(prefix2)/etc
+DEV          = $(prefix3)/dev
+VAR          = $(prefix3)/var
+
+CONFDIR      = $(ETC)/ncid
+MODULEDIR    = $(SHARE)/ncid
+MAN          = $(SHARE)/man
+LOG          = $(VAR)/log
+RUN          = $(VAR)/run
+
+CONF         = $(CONFDIR)/ncidd.conf
+ALIAS        = $(CONFDIR)/ncidd.alias
+MODEMDEV     = $(DEV)/modem
+CALLLOG      = $(LOG)/cidcall.log
+DATALOG      = $(LOG)/ciddata.log
+LOGFILE      = $(LOG)/ncidd.log
+PIDFILE      = $(RUN)/ncidd.pid
+
+SITE         = $(DIST:.dist=)
+WISH         = wish
+TCLSH        = tclsh
 
 # local additions to CFLAGS
 MFLAGS  =
@@ -70,28 +97,38 @@ DEFINES = -DCIDCONF=\"$(CONF)\" \
           -DCIDLOG=\"$(CALLLOG)\" \
           -DTTYPORT=\"$(MODEMDEV)\" \
           -DDATALOG=\"$(DATALOG)\" \
-          -DLOGFILE=\"$(LOGFILE)\"
+          -DLOGFILE=\"$(LOGFILE)\" \
+          -DPIDFILE=\"$(PIDFILE)\"
 
 CFLAGS  = -O $(DEFINES) $(MFLAGS)
 
-# jlc LDFLAGS = -s
+LDFLAGS = -s
 
 OBJECTS = $(SOURCE:.c=.o)
 
 default:
 	@echo "make requires an argument, see top of Makefile for description:"
-	@echo "    make local"
-	@echo "    make package"
-	@echo "    make install"
-	@echo "    make tivo-series1"
-	@echo "    make tivo-series2"
-	@echo "    gmake freebsd"
-	@echo "    gmake install-freebsd"
-	@echo "    make mac"
-	@echo "    make install-mac"
-	@echo "    make cygwin"
+	@echo
+	@echo "    make  local            # builds for /usr/local and /var"
+	@echo "    make  install          # installs into /usr/local and /var"
+	@echo "    make  package          # builds for /usr and /var"
+	@echo "    make  package-install  # installs into for /usr and /var"
+	@echo "    make  fedora           # builds for Fedora, includes init.d/"
+	@echo "    make  fedora-install   # installs in /usr, /etc, and /var"
+	@echo "    make  ubuntu           # builds for Ubuntu, includes init.d/"
+	@echo "    make  ubuntu-install   # installs in /usr, /etc, and /var"
+	@echo "    make  tivo-mips        # builds for Tivo in /usr/local, /var"
+	@echo "    make  tivo-install     # installs in /usr/local, /var"
+	@echo "    make  tivo-series1     # builds for a series1 in /var/var"
+	@echo "    make  tivo-series2     # builds for a series[23] in /var"
+	@echo "    gmake freebsd          # builds for FreeBSD in /usr/local, /var"
+	@echo "    gmake freebsd-install  # installs in /usr/local, /var"
+	@echo "    make  mac              # builds for Mac in /usr/local, /var"
+	@echo "    make  mac-install      # installs in /usr/local, /var"
+	@echo "    make  cygwin           # builds for windows using Cygwin"
+	@echo "    make  cygwin-install   # installs in /usr/local"
 
-local: $(PROG) site tooldir scriptdir
+local: $(PROG) $(CLIENT) site moduledir cidgatedir tooldir scriptdir
 
 site: $(SITE)
 
@@ -100,86 +137,127 @@ $(PROG): $(OBJECTS)
 
 $(OBJECTS): $(HEADER)
 
+fedoradir:
+	cd Fedora; $(MAKE) init prefix=$(prefix) prefix2=$(prefix2) \
+                      prefix3=$(prefix3)
+
+ubuntudir:
+	cd debian; $(MAKE) init prefix=$(prefix) prefix2=$(prefix2) \
+                      prefix3=$(prefix3)
+
+moduledir:
+	cd modules; $(MAKE) modules prefix=$(prefix) prefix2=$(prefix2) \
+                      prefix3=$(prefix3)
+
+cidgatedir:
+	cd cidgate; $(MAKE) cidgate prefix=$(prefix) prefix2=$(prefix2) \
+                      prefix3=$(prefix3) BIN=$(BIN) SBIN=$(SBIN) OS=$(OS)
+
 tooldir:
 	cd tools; $(MAKE) tools prefix=$(prefix) prefix2=$(prefix2) \
-                      MAN=$(MAN) LOG=$(LOG) SBIN=$(SBIN)
+                      prefix3=$(prefix3) BIN=$(BIN)
 
 scriptdir:
 	cd scripts; $(MAKE) scripts prefix=$(prefix) prefix2=$(prefix2) \
-                      MAN=$(MAN) LOG=$(LOG) SBIN=$(SBIN)
+                      prefix3=$(prefix3)
+
+mandir:
+	cd man; $(MAKE) all prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
 
 package:
 	$(MAKE) local prefix=/usr prefix2=
 
-install-package:
+package-install:
 	$(MAKE) install prefix=/usr prefix2=
 
-tivo-series1: $(PROG).ppc-tivo mandir
+fedora:
+	$(MAKE) local fedoradir prefix=/usr prefix2=
 
-$(PROG).ppc-tivo:
-	$(MAKE) local prefix=/var/hack \
-	        CC="/usr/local/tivo/bin/gcc" \
+fedora-install:
+	$(MAKE) install install-fedora prefix=/usr prefix2=
+
+ubuntu:
+	$(MAKE) local ubuntudir prefix=/usr prefix2=
+
+ubuntu-install:
+	$(MAKE) install install-ubuntu prefix=/usr prefix2=
+
+tivo-series1: tivo-ppc
+
+tivo-ppc:
+	$(MAKE) local mandir prefix=/var/hack OS=tivo-s1 \
+	        CC=$(PPCXCOMPILE)gcc \
 	        MFLAGS=-D__need_timeval \
-	        LD="/usr/local/tivo/bin/ld" \
-	        RANLIB=/usr/local/tivo/bin/ranlib \
+	        LD=$(PPCXCOMPILE)ld \
+	        RANLIB=$(PPCXCOMPILE)ranlib \
 	        setname="TiVo requires CLOCAL" \
-	        settag="TiVo Modem Port"
-	mv $(PROG) $(PROG).ppc-tivo
+	        settag="TiVo Modem Port" \
+	        setmod="out2osd"
+	ln -s ncid tivocid
+	ln -s ncid tivoncid
+	touch tivo-ppc
 
-tivo-series2: $(PROG).mips-tivo mandir
+tivo-series2: tivo-mips
 
-$(PROG).mips-tivo:
-	$(MAKE) local prefix=/var/hack \
-	        CC="/usr/local/mips-tivo/bin/gcc" \
-	        LD="/usr/local/mips-tivo/bin/ld" \
-	        RANLIB=/usr/local/mips-tivo/bin/ranlib \
+tivo-hack-install: dirs install-prog install-etc install-log \
+                   install-modules install-cidgate install-tools
+	cp -a tivocid tivoncid $(BIN)
+
+tivo-mips:
+	$(MAKE) local mandir OS=tivo-mips \
+	        CC=$(MIPSXCOMPILE)gcc \
+	        LD=$(MIPSXCOMPILE)ld \
+	        RANLIB=$(MIPSXCOMPILE)ranlib \
 	        setname="TiVo requires CLOCAL" \
-	        settag="TiVo Modem Port"
-	mv $(PROG) $(PROG).mips-tivo
+	        settag="TiVo Modem Port" \
+	        setmod="ncid-tivo"
+	ln -s ncid tivocid
+	ln -s ncid tivoncid
+	touch tivo-mips
+
+tivo-install: dirs install-prog install-etc install-log \
+              install-modules install-cidgate install-tools \
+              install-man install-scripts
+	cp -a tivocid tivoncid $(BIN)
 
 freebsd:
 	$(MAKE) local WISH=/usr/local/bin/wish*.* TCLSH=/usr/local/bin/tclsh*.*
 
-install-freebsd:
+freebsd-install:
 	$(MAKE) install-base MAN=$(prefix)/man
 	cd FreeBSD; \
-	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) MAN=$(prefix)/man
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
+            MAN=$(prefix)/man
 
 mac:
 	$(MAKE) local settag="Macintosh OS X"
 
-install-mac:
+mac-install:
 	$(MAKE) install-base MAN=$(prefix)/man
 
 cygwin:
-	$(MAKE) local \
+	$(MAKE) local OS=cygwin \
             SBIN=$(prefix)/bin \
             settag="set noserial" \
             MODEMDEV=$(DEV)/com1
 
-install-cygwin:
+cygwin-install:
 	$(MAKE) install \
             SBIN=$(prefix)/bin \
             settag="set noserial" \
             MODEMDEV=$(DEV)/com1
-
-mandir:
-	cd man; $(MAKE) all prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
 
 dirs:
 	@if ! test -d $(BIN); then mkdir -p $(BIN); fi
 	@if ! test -d $(SBIN); then mkdir -p $(SBIN); fi
 	@if ! test -d $(ETC); then mkdir -p $(ETC); fi
 	@if ! test -d $(LOG); then mkdir -p $(LOG); fi
-	@if ! test -d $(ROTATE); then mkdir -p $(ROTATE); fi
-	@if ! test -d $(INIT); then mkdir -p $(INIT); fi
-	@if ! test -d $(SCRIPTDIR); then mkdir -p $(SCRIPTDIR); fi
 	@if ! test -d $(CONFDIR); then mkdir -p $(CONFDIR); fi
 
 install-base: dirs install-prog install-man install-etc install-log \
-         install-scripts install-tools
+         install-modules install-cidgate install-scripts install-tools
 
-install: install-base install-init install-logrotate
+install: install-base
 
 install-prog: $(PROG)
 	install -m 755 $(PROG) $(SBIN)
@@ -199,32 +277,36 @@ install-etc: $(ETCFILE)
 		else install -m 644 ncid.conf $(CONFDIR); \
 	fi
 
-install-init: ncid.init ncidd.init
-	@if test -d $(INIT); then \
-		install -m 755 ncidd.init $(INIT)/ncidd; \
-		install -m 755 ncid.init $(INIT)/ncid; \
-		else echo "skipping ncidd.init install, no directory: $(INIT)"; \
-	fi
-
-install-logrotate: ncidd.logrotate
-	@if test -d $(ROTATE); \
-		then install -m 644 ncidd.logrotate $(ROTATE)/ncidd; \
-		else echo "skipping ncidd.logrotate install, no directory: $(ROTATE)";\
-	fi
-
 install-log:
 	touch $(CALLLOG)
 
+install-fedora:
+	cd Fedora; \
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
+
+install-ubuntu:
+	cd debian; \
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
+
+install-cidgate:
+	cd cidgate; \
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
+
+install-modules:
+	cd modules; \
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
+			setmod=$(setmod)
+
 install-scripts:
 	cd scripts; \
-	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) CONF=$(CONF)
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
 
 install-tools:
 	cd tools; \
-	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) CONF=$(CONF) ALIAS=$(ALIAS)
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) ALIAS=$(ALIAS)
 
 install-man:
-	cd man; $(MAKE) install prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
+	cd man; $(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) MAN=$(MAN)
 
 clean:
 	rm -f *.o
@@ -233,22 +315,28 @@ clean:
 	cd scripts; $(MAKE) clean
 
 clobber: clean
-	rm -f $(PROG) $(PROG).ppc-tivo $(PROG).mips-tivo $(PROG).tivo a.out
-	rm -f $(SITE)
-	rm -f *.log *.zip *.tar.gz tivocid tivosh
+	rm -f $(PROG) $(PROG).ppc-tivo $(PROG).mips-tivo tivo-ppc tivo-mips
+	rm -f tivocid tivoncid $(CLIENT) $(SITE)
+	rm -f a.out *.log *.zip *.tar.gz
 	cd man; $(MAKE) clobber
 	cd tools; $(MAKE) clobber
 	cd scripts; $(MAKE) clobber
+	cd modules; $(MAKE) clobber
+	cd cidgate; $(MAKE) clobber
+	cd Fedora; $(MAKE) clobber
+	cd FreeBSD; $(MAKE) clobber
+	cd debian; $(MAKE) clobber
+
+distclean: clobber
 
 files: $(FILES)
 
 .PHONY: local ppc-tivo mips-tivo install install-proc install-etc \
-        install-init install-logrotate install-man install-var \
-        clean clobber files
+        install-logrotate install-man install-var clean clobber files
 
 % : %.sh
-	sed '/ProgDir/s,/usr/local/share/ncid,$(SCRIPTDIR),;/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),' $< > $@
+	sed '/ProgDir/s,/usr/local/share/ncid,$(MODULEDIR),;/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),;/OPTSTIVO/s,/usr/local/bin,$(BIN),' $< > $@
 	chmod 755 $@
 
 % : %.dist
-	sed '/share/s,/usr/local,$(prefix),;/ConfigDir/s,/usr/local,$(prefix2),;/$(settag)/s/# set/set/;/$(setname)/s/# set/set/' $< > $@
+	sed '/share/s,/usr/local,$(prefix),;/$(settag)/s/# set/set/;/$(setname)/s/# set/set/' $< > $@

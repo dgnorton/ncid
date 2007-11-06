@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Config File
 
-# File last changed: Thu Jun 12, 2007
+# File last changed: Thu Aug 30, 2007
 
 ################################
 # Definitions and Line formats #
@@ -20,8 +20,8 @@
 # SET LINE FORMAT:
 #   set ITEM = VALUE [ITEM = VALUE] ...
 #       where ITEM = cidalias, cidlog, cidlogmax, datalog, initcid,
-#                    initstr, lockfile, nomodem, noserial, port,
-#                    ttyclocal, ttyport, ttyspeed, verbose
+#                    initstr, lockfile, nomodem, noserial, pidfile,
+#                    port, ttyclocal, ttyport, ttyspeed, verbose
 
 ##########################
 # Log file verbose level #
@@ -48,11 +48,14 @@ send cidinfo
 ############################
 
 # The default TCP/IP port is 3333
-# set port = 3333
+# set port = 3334
 
-#######################
-# Alias and Log Files #
-#######################
+############################
+# PID, Alias and Log Files #
+############################
+
+# The default PID file: /var/run/ncidd.pid
+# set pidfile = /tmp/ncidd.pid
 
 # The default CID alias file: /etc/ncid/ncidd.alias
 # set cidalias = /etc/ncid/ncidd.alias

@@ -1,0 +1,27 @@
+This contains ncid output modules for use with th ncid client
+The following modules are configured be editing /etc/ncid/ncidmodules.conf
+
+The skeleton module just echos the input.  Modify it to write new modules
+    ncid-skel.sh
+
+The ncidmodules.1 man page documents the following output modules.
+
+Module to send CID to a cell phone, or pager:
+    IMPORTANT: sendmail.cf must hide user root when masquerading is used.
+               and root is sending the email
+    ncid-page
+
+Module to send CID to samba to get a popup:
+    ncid-samba
+
+Module to send CID to a text-to-speach program:
+    ncid-speak
+
+Module to display CID on MythTV
+    ncid-mythtv
+
+Module to display CID on TiVo
+    ncid-tivo
+
+Module to send CID to YAC clients
+    ncid-yac

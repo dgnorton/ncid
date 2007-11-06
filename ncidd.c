@@ -1,7 +1,7 @@
 /*
  * ncidd - Network Caller ID Daemon
  *
- * Copyright (c) 2002, 2003, 2004, 2005, 2006
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * This file is part of ncidd, a caller-id program for your TiVo.
@@ -29,8 +29,8 @@ char *datalog = DATALOG;
 char *ttyport = TTYPORT;
 char *initstr = INITSTR;
 char *initcid = INITCID1;
-char *version = VERSION;
 char *logfile = LOGFILE;
+char *pidfile = PIDFILE;
 char *lockfile, *name;
 char *TTYspeed;
 int ttyspeed = TTYSPEED;
@@ -40,6 +40,7 @@ int ttyfd, pollpos, pollevents;
 int ring, ringwait, ringcount, clocal, nomodem, noserial;
 int verbose = 1;
 int cidlogmax = LOGMAX;
+pid_t pid;
 
 struct pollfd polld[CONNECTIONS + 2];
 static struct termios otty, ntty;
@@ -85,7 +86,7 @@ main(int argc, char *argv[])
         logMsg(LEVEL1, msgbuf);
     }
 
-    sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(), name, version);
+    sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(), name, VERSION);
     logMsg(LEVEL1, msgbuf);
 
     sprintf(msgbuf, "ncidd logfile: %s\n", logfile);
@@ -217,9 +218,11 @@ main(int argc, char *argv[])
     }
     else
     {
-        sprintf(msgbuf, "CallerID from CID client(s) only\n");
+        sprintf(msgbuf, "CallerID only from CID Gateways\n");
         logMsg(LEVEL1, msgbuf);
     }
+        sprintf(msgbuf, "Network Port: %d\n", port);
+        logMsg(LEVEL1, msgbuf);
 
     if (!debug)
     {
@@ -235,6 +238,15 @@ main(int argc, char *argv[])
 
         /* become session leader */
         setsid();
+    }
+
+    /*
+     * Create a pid file
+     */
+    if (doPID())
+    {
+        sprintf(msgbuf,"%s already exists", pidfile);
+        errorExit(-110, "Fatal", msgbuf);
     }
 
     if (!noserial) pollpos = addPoll(ttyfd);
@@ -302,11 +314,8 @@ main(int argc, char *argv[])
                                 "%sCannot init TTY, Terminated %s\n",
                                 MSGLINE, strdate());
                             writeClients(mainsock, msgbuf);
-                            strcat(msgbuf, NL);
-                            logMsg(LEVEL1, msgbuf + strlen(MSGLINE));
                             tcsetattr(ttyfd, TCSANOW, &otty);
-                            cleanup();
-                            exit(-1);
+                            errorExit(-111, "Fatal", "Cannot init TTY");
                         }
                         locked = 0;
                         /* restore tty poll events */
@@ -341,6 +350,7 @@ int getOptions(int argc, char *argv[])
         {"logfile", 1, 0, 'L'},
         {"nomodem", 1, 0, 'n'},
         {"noserial", 1, 0, 'N'},
+        {"pidfile", 1, 0, 'P'},
         {"port", 1, 0, 'p'},
         {"send", 1, 0, 's'},
         {"ttyspeed", 1, 0, 'S'},
@@ -351,7 +361,7 @@ int getOptions(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:v:A:C:DI:L:M:N:S:T:V",
+    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:v:A:C:DI:L:M:N:P:S:T:V",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -390,6 +400,10 @@ int getOptions(int argc, char *argv[])
                     errorExit(-107, "Invalid number", optarg);
                 if ((num = findWord("noserial")) >= 0) setword[num].type = 0;
                 break;
+            case 'P':
+                if (!(pidfile = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("pidfile")) >= 0) setword[num].type = 0;
+                break;
             case 'S':
                 if (!(TTYspeed = strdup(optarg))) errorExit(-1, name, 0);
                 if (!strcmp(TTYspeed, "38400")) ttyspeed = B38400;
@@ -407,7 +421,7 @@ int getOptions(int argc, char *argv[])
                 if ((num = findWord("sttyclocal")) >= 0) setword[num].type = 0;
                 break;
             case 'V': /* version */
-                fprintf(stderr, SHOWVER, name, version);
+                fprintf(stderr, SHOWVER, name, VERSION);
                 exit(0);
             case 'c':
                 if (!(cidlog = strdup(optarg))) errorExit(-1, name, 0);
@@ -463,7 +477,7 @@ int getOptions(int argc, char *argv[])
                 break;
             case '?': /* bad option */
                 fprintf(stderr, USAGE, name);
-                exit(-100);
+                errorExit(-100, 0, 0);
         }
     }
     return optind;
@@ -627,7 +641,7 @@ int tcpOpen(int mainsock)
     bind_addr.sin_addr.s_addr = 0;    /*  0.0.0.0  ==  this host  */
     memset(bind_addr.sin_zero, 0, 8);
     bind_addr.sin_port = htons(mainsock);
-    if ((sd = socket(PF_INET, SOCK_STREAM,0)) < 0)
+    if ((sd = socket(PF_INET, SOCK_STREAM, 0)) < 0)
         return sd;
     if((ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
         &optval, sizeof(optval))) < 0)
@@ -696,13 +710,10 @@ doPoll(int events, int mainsock)
     {
       if (!noserial && polld[pos].fd == ttyfd)
       {
-        sprintf(buf, "%sDevice Hung Up, Terminated  %s\n",
+        sprintf(buf, "%sPoll device Hung Up, Terminated  %s\n",
           MSGLINE, strdate());
         writeClients(mainsock, buf);
-        strcat(buf, NL);
-        logMsg(LEVEL1, buf + strlen(MSGLINE));
-        cleanup();
-        exit(-1);
+        errorExit(-112, "Fatal", "Poll device hung up");
       }
       sprintf(msgbuf, "Hung Up, sd: %d\n", polld[pos].fd);
         logMsg(LEVEL2, msgbuf);
@@ -714,13 +725,10 @@ doPoll(int events, int mainsock)
     {
       if (!noserial && polld[pos].fd == ttyfd)
       {
-        sprintf(buf, "%sDevice Error, Terminated  %s\n",
+        sprintf(buf, "%sPoll device error, Terminated  %s\n",
           MSGLINE, strdate());
         writeClients(mainsock, buf);
-        strcat(buf, NL);
-        logMsg(LEVEL1, buf + strlen(MSGLINE));
-        cleanup();
-        exit(-1);
+        errorExit(-112, "Fatal", "Poll device error");
       }
         sprintf(msgbuf, "Poll Error, sd: %d\n", polld[pos].fd);
         logMsg(LEVEL1, msgbuf);
@@ -757,13 +765,10 @@ doPoll(int events, int mainsock)
             /* if no data 10 times in a row, something wrong */
             if (cnt == 10)
             {
-              sprintf(buf, "%sDevice returns no data, Terminated  %s\n",
+              sprintf(buf, "%sPoll device returns no data, Terminated  %s\n",
                 MSGLINE, strdate());
               writeClients(mainsock, buf);
-              strcat(buf, NL);
-              logMsg(LEVEL1, buf + strlen(MSGLINE));
-              cleanup();
-              exit(-1);
+              errorExit(-112, "Fatal", "Poll device returns no data");
             }
           }
           else
@@ -906,7 +911,8 @@ doPoll(int events, int mainsock)
                    * Found a CIDINFO MSG Line
                    *
                    * CIDINFO Message Line Format:
-                   * CIDINFO: ###CANCEL
+                   *    CIDINFO: ###CANCEL ...
+                   *    CIDINFO: ###BYE ...
                    */
 
                   sprintf(msgbuf, "Client sent CIDINFO message, sd: %d\n",
@@ -914,7 +920,7 @@ doPoll(int events, int mainsock)
                   logMsg(LEVEL3, msgbuf);
 
                   writeLog(datalog, buf);
-                  if (strstr(buf, "CANCEL"))
+                  if (strstr(buf, CANCEL))
                   {
                     ring = -1;
                     sendInfo(mainsock);
@@ -1416,6 +1422,51 @@ char *strdate()
 }
 
 /*
+ * if PID file exists, and PID in process table, ERROR
+ * if PID file exists, and PID not in process table, replace PID file
+ * if no PID file, write one
+ * if write a pidfile failed, OK
+ */
+int doPID()
+{
+    struct stat statbuf;
+    char msgbuf[BUFSIZ];
+    FILE *pidptr;
+    pid_t curpid, foundpid = 0;
+    int ret = 0;
+
+    /* check PID file */
+    curpid = getpid();
+    if (stat(pidfile, &statbuf) == 0)
+    {
+        if ((pidptr = fopen(pidfile, "r")) == NULL) return(1);
+        fscanf(pidptr, "%u", &foundpid);
+        fclose(pidptr);
+        if (foundpid) ret = kill(foundpid, 0);
+        if (ret == 0 || (ret == -1 && errno != ESRCH)) return(1);
+        sprintf(msgbuf, "Found stale pidfile: %s\n", pidfile);
+        logMsg(LEVEL1, msgbuf);
+    }
+
+    /* create logfile */
+    if ((pidptr = fopen(pidfile, "w")) == NULL)
+    {
+        sprintf(msgbuf, "Cannot write %s: %s\n", pidfile, strerror(errno));
+        logMsg(LEVEL2, msgbuf);
+    }
+    else
+    {
+        pid = curpid;
+        fprintf(pidptr, "%d\n", pid);
+        fclose(pidptr);
+        sprintf(msgbuf, "Wrote pid %d in pidfile: %s\n", pid, pidfile);
+        logMsg(LEVEL1, msgbuf);
+    }
+
+    return(0);
+}
+
+/*
  * Close all file descriptors and restore tty parameters.
  */
 
@@ -1443,17 +1494,29 @@ void finish(int sig)
 {
     char msgbuf[BUFSIZ];
 
+    /* remove pid file, if it was created */
+    if (pid)
+    {
+        unlink(pidfile);
+        sprintf(msgbuf, "Removed pidfile: %s\n", pidfile);
+        logMsg(LEVEL1, msgbuf);
+    }
+
     sprintf(msgbuf, "Terminated: %s\n", strdate());
     logMsg(LEVEL1, msgbuf);
+
     cleanup();
-    exit(0);
+
+    /* allow signal to terminate the process */
+    signal (sig, SIG_DFL);
+    raise (sig);
 }
 
 errorExit(int error, char *msg, char *arg)
 {
     char msgbuf[BUFSIZ];
 
-    if (error == -1)
+    if (error == -1 && arg == 0)
     {
         /* system error */
         error = errno;
@@ -1467,20 +1530,28 @@ errorExit(int error, char *msg, char *arg)
         logMsg(LEVEL1, msgbuf);
     }
 
-    /* do not print terminated message if option error */
+    /* remove pid file, if it was created */
+    if (pid)
+    {
+        unlink(pidfile);
+        sprintf(msgbuf, "Removed pidfile: %s\n", pidfile);
+        logMsg(LEVEL1, msgbuf);
+    }
+
+    /* do not print terminated message, or cleanup, if option error */
     if (error != -108 && error != -107 && error != -101 && error != 106 &&
         error != 100)
     {
         sprintf(msgbuf, "Terminated:  %s\n", strdate());
         logMsg(LEVEL1, msgbuf);
+        cleanup();
     }
 
-    cleanup();
     exit(error);
 }
 
 /*
- * The printing of messages needs to be improved.
+ * log messages, and print messages in debug mode
  */
 logMsg(int level, char *message)
 {

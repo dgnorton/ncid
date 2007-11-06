@@ -1,40 +1,51 @@
-SCRIPTS = ncidrotate ncid-page ncid-samba ncid-speak ncid-mythtv ncid-tivo ncid-yac
-ETCFILE = ncidrotate.conf ncidscript.conf
-FILES   = Makefile $(SCRIPTS) $(ETCFILE) $(MANSRC) README
+SHSCRIPT  = ncidrotate.sh
+ETCCONF   = ncidrotate.conf
+LOGCONF   = ncidd.logrotate
+FILES     = README Makefile $(SHSCRIPT) $(ETCCONF) $(LOGCONF)
 
-prefix  = /usr/local
-prefix2 = $(prefix)
+prefix    = /usr/local
+prefix2   = $(prefix)
+prefix3   =
 
-SHARE   = $(prefix)/share/ncid
-ETC     = $(prefix2)/etc
-CONFDIR = $(ETC)/ncid
+SHARE     = $(prefix)/share/ncid
+ETC       = $(prefix2)/etc
+CONFDIR   = $(ETC)/ncid
+ROTATEDIR = $(ETC)/logrotate.d
 
-scripts: $(SCRIPTS)
+ROTATE  = $(LOGCONF:.logrotate=)
+SCRIPTS = $(SHSCRIPT:.sh=)
 
-install: install-etc install-scripts
+scripts: $(ROTATE) $(SCRIPTS)
+
+install: install-etc install-scripts install-logrotate
 
 install-scripts: $(SCRIPTS)
-	@if test ! -d $(SHARE); then mkdir $(SHARE); fi
+	@if test ! -d $(SHARE); then mkdir -p $(SHARE); fi
 	install -m 755 $(SCRIPTS) $(SHARE)
-	install -m 644 README $(SHARE)/.
 
-install-etc: $(ETCFILE)
-	@if test -f $(CONFDIR)/ncidrotate.conf; \
-		then install -m 644 ncidrotate.conf $(CONFDIR)/ncidrotate.conf.new; \
-		else install -m 644 ncidrotate.conf $(CONFDIR)/.; \
+install-etc: $(ETCCONF)
+	@if test ! -d $(CONFDIR); then mkdir -p $(CONFDIR); fi
+	@if test -f $(CONFDIR)/$(ETCCONF); \
+		then install -m 644 $(ETCCONF) $(CONFDIR)/$(ETCCONF).new; \
+		else install -m 644 $(ETCCONF) $(CONFDIR); \
 	fi
-	@if test -f $(CONFDIR)/ncidscript.conf; \
-		then install -m 644 ncidscript.conf $(CONFDIR)/ncidscript.conf.new; \
-		else install -m 644 ncidscript.conf $(CONFDIR)/.; \
-	fi
+
+install-logrotate: $(ROTATE)
+	@if test ! -d $(ROTATEDIR); then mkdir -p $(ROTATEDIR); fi
+	install -m 644 ncidd $(ROTATEDIR)
 
 clean:
 
 clobber: clean
-	rm -f $(SCRIPTS)
+	rm -f $(ROTATE) $(SCRIPTS)
+
+distclean: clobber
 
 files:	$(FILES)
 
 % : %.sh
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod 755 $@
+
+% : %.logrotate
+	sed '/share/s,/usr/local,$(prefix),' $< > $@

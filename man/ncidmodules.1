@@ -1,0 +1,60 @@
+.\" %W% %G%
+.TH NCIDMODULES 1
+.SH NAME
+.B ncid-page\^
+- send CID to a pager or cell phone
+.PP
+.B ncid-samba\^
+- send CID to samba to create a popup
+.PP
+.B ncid-speak\^
+- send CID to a text-to-speach program
+.PP
+.B ncid-mythtv\^
+- display CID on MythTV using mythtvosd
+.PP
+.B ncid-tivo\^
+- display CID on TiVo using text2osd
+.PP
+.B ncid-yac\^
+- Send CID to YAC listeners
+.SH SYNOPSIS
+.B ncid-page\^
+.PP
+.B ncid-samba\^
+.PP
+.B ncid-speak\^
+.PP
+.B ncid-mythtv\^
+.PP
+.B ncid-tivo\^
+.PP
+.B ncid-yac\^
+.SH DESCRIPTION
+These are CID output modules and are normally located in the
+.BR /usr/share/ncid
+directory.
+.PP
+The client,
+.BR ncid ,
+can be configured to call any one module.
+The module then expects 5 input lines in the following order:
+.RS 5
+.IP CIDdate
+.PD 0
+.IP CIDtime
+.IP CIDnumber
+.IP CIDname
+.IP CIDline
+.PD
+.RE
+.PP
+The Output Module configuration file is
+.I /etc/ncid/ncidmodules.conf
+.PD
+.SH FILES
+/etc/ncid/ncidmodules.conf
+.SH SEE ALSO
+ncid.1,
+ncidmodules.conf.5,
+ncidd.8

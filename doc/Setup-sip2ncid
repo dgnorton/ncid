@@ -1,0 +1,87 @@
+How to setup VoIP Caller ID using sip2ncid
+
+The server, ncidd, always checks for a CID message, so if you have a
+standard telephone line modem configured, and you have at least one VoIP
+telephone line, all you need to do is to configure and start sip2ncid.
+The server will handle both easily.
+
+If you are only using VoIP and do not want to use a modem, you
+need to configure ncidd by changing one line in ncidd.conf.
+
+    Change the line: # set noserial = 1
+                 To: set noserial = 1
+
+This tells ncidd to run without a serial device or modem connected.
+Once you change ncidd.conf, you must start/restart ncidd to read it.
+
+To determine if you can receive any network packets, use the --testall
+or -T option.  As root run: sip2ncid --testall
+This will display a packet count and packet type.  It does not know
+all packet types so you may get some UNKNOWN packet types.  It also
+sets debug mode and verbose level 3.  You can increase the verbose level
+to see more detail, but if you decrease it below 3, you will not
+see any packets.
+
+To determine if you can receive SIP data packs, use the --testudp or
+the -t option.  As root run: sip2ncid --testudp
+This will display SIP packets and what, if anything it does.  It also
+sets debug mode and verbose level 3.  You can also change the verbose
+level.  If you set verbose to 1, sip2ncid will display lines sent to
+the server instead of the packet contents: sip2ncid -Tv1
+
+If sip2ncid terminates you should be able to see why and fix it.
+sip2ncid --help will give a detailed usage message)
+
+Sometimes it picks the wrong default interface. if you are using eth0:
+As root run: sip2ncid -ti eth0
+
+If you need to see what interfaces are present so you can use the
+--interface or -i option: sip2ncid --listdevs
+The display is <interface>< : description>
+The interface name is everything up to the first space.
+
+If you do not see any SIP packets, change to port 5061 and try again:
+As root run: sip2ncid --testudp --sip :5061
+
+You should see something like:
+
+  Network Interface: eth0
+  Filter: port 10000 and udp
+
+Then about every 20 seconds you should see something like:
+
+  Packet number 1:
+     Protocol: UDP
+  SIP/2.0 200 OK
+  Via: SIP/2.0/UDP 70.119.157.214:5061;branch=z9hG4bK-22b185d1
+  From: 321-249-7722 <sip:13215551212@atlas2.atlas.vonage.net:5061>;tag=46f26356c0a3394bo0
+  To: 321-249-7722 <sip:13215551212@atlas2.atlas.vonage.net:5061>
+  Call-ID: fa72d1c2-ead1bdcf@70.119.157.214
+  CSeq: 86785 REGISTER
+  Contact: 321-555-1212 <sip:13215551212@70.119.157.214:5061>;expires=20
+  Content-Length: 0
+
+  Registered Line Number: 13215551212
+
+The Registered Line Number line will only appear in packet number 1
+
+If you do not get the above, you may need to specify a address and or port
+for ncidsip to listen for the SIP Invite.  You cannot continue unless you
+get the above.
+
+If you are using the Linksys RT31P2 Router, you will not see any packets
+unless the computer is in its DMZ.  Port forwarding the UDP port will
+not work.  You must set up the DMZ.  If you are using a different VoIP
+router, try to put the computer in the DMZ and see if that works.  If
+not, go to http://ncid.sourceforge.net and review the SIP tutorial.
+
+Once you receive the above packets, call yourself.  If you do not get a
+caller id message sent to the server, you should get a error message saying
+what is wrong.  This has been tested with Vonage and so may need tweaking.
+
+If you had Caller ID sent to a client, setup is complete.  You can then
+restart ncidsip without the test option so it will not display anything.
+You can also set it up to start at boot, along with ncidd.  If any options
+are needed, at boot, add them to /etc/ncid/ncidsip.conf.
+
+If ncidsip did not work, you should have enough information to ask for help.

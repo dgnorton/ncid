@@ -1,5 +1,131 @@
 ncid - Network CallerID
 
+Version 0.69
+    - Makefile: Updated: new directory structure
+                Added: tivo-mips: target to use mips-TiVo-linux- prefix
+                Changed: .sh rule now configures ncid for $BIN
+                Added: prefix3
+    - README: Updated
+    - ncidd.alias: Changed "client" to "gateway" for ncidsip comments
+    - ncidd.c: Added -P or --pidfile option
+               Added code to create and remove the pidfile.
+               Changed logfile message to: CallerID from CID gateways(s) only
+               errorExit(): if (erroe == -1) => if (error == -1 && arg == 0)
+    - ncidd.h: added PIDFILE and pidfile in usage
+    - nciddconf.c: added configuration for a pidfile
+    - ncid.init.dist: Moved to Fedora/ncid.init
+    - ncidd.init: Moved to Fedora/ncidd.init
+    - ncid.spec: Moved to Fedora/ncid.spec
+    - ncid.sh: Added a [ -n "$GUI" ] line for $TCLSH
+               Changed: /var/hack/bin/out2osd -> /usr/local/bin/out2osd
+               Added doPID() and writePID(chan)
+    - ReleaseNotes: updated
+    - cidgate/Makefile: New
+    - cidgate/README: New
+    - cidgate/config.c: New
+    - cidgate/config.h: New
+    - cidgate/sip2ncid.c: New
+    - cidgate/sip2ncid.config: New
+    - cidgate/sip2ncid.h: New
+    - cidgate/ncidsip.conf: Moved from tools/ncidsip.conf
+    - cidgate/ncidsip.pl: Moved from tools/ncidsip.pl
+    - cidgate/yac2ncid.conf: Moved from tools/yac2ncid.conf
+    - cidgate/yac2ncid.sh: Moved from tools/yac2ncid.sh
+                           Added workaround for broken trap on a TiVo
+                           Tries to find a alternate shell on a TiVo
+                           Changed pid file name to yac2ncid.pid
+                           Rewrote the dienice function
+    - debian/changelog: New
+    - debian/control: New
+    - debian/Makefile: New
+    - debian/ncidd.init: New
+    - debian/ncid.init: New
+    - debian/ncidsip.init: New
+    - debian/postinst: New
+    - debian/postrm: New
+    - debian/prerm: New
+    - debian/README: New
+    - debian/README.Debian: New
+    - debian/rules: New
+    - debian/yac2ncid.init: New
+    - doc/INSTALL: Updated
+    - doc/INSTALL-Cygwin: Updated
+    - doc/INSTALL-FreeBSD: Updated
+    - doc/INSTALL-Mac: Updated
+    - doc/Modem-TiVo: New
+    - doc/TiVo-modem: renamed to Modem-TiVo
+    - doc/Verbose-ncidd: New
+    - doc/Verbose-sip2ncid: New
+    - doc/VerboseLevels: Added level 1 nad level 2 pidfile messages
+                         Removed (changed name to Verbose-ncidd)
+    - Fedora/README: New
+    - Fedora/Makefile: New
+    - Fedora/ncid.init: Moved from ../ncid.init.dist, fixed comment
+                        Changed: killproc $shell -> killproc $program
+                        Added daemon line in place of $shell line
+                        Removed success and failure lines
+                        Fixed status
+    - Fedora/ncidd.init: Moved from ../Fedora/ncidd.init
+    - Fedora/ncidsip.init: Moved from tools/ncidsip.init.dist, fixed comment
+                           Changed: killproc $shell -> killproc $program
+                           Added daemon line in place of $shell line
+                           Removed success and failure lines
+    - Fedora/ncid.spec: Moved from ../ncid.spec, Updated
+    - Fedora/sip2ncid.init: New
+    - Fedora/yac2ncid.init: Moved from tools/yac2ncid.init.dist, fixed comment
+                            Fixed config file: ncidsip.conf -> yac2ncid.conf
+                            Added daemon line in place of $shell line
+                            Removed success and failure lines & Fixed status
+    - FreeBSD/Makefile: Added yac2ncid.sh
+    - FreeBSD/README: Added yac2ncid.sh
+    - FreeBSD/ncid.sh: Renamed variable from NCIDD to NCID
+    - FreeBSD/ncidsip.sh: Renamed variable from NCIDD to NCIDSIP
+    - FreeBSD/yac2ncid.sh: Added
+    - man/Makefile: Updated
+    - man/ncid.1: Corrected --prog to --program, see tracker 1704732
+    - man/ncidd.8: Added the -110 exit code: PID file lockfile exists
+                   Added the -P and --pidfile option
+                   Updated for for multiple NCID Gateways
+    - man/ncidmodules.1: Renamed man/ncidscripts.1, updated for new name
+    - man/ncidmodules.conf.5: Renamed man/ncidscript.conf.5, updated new name
+                              Added line indicator examples
+    - man/ncidsip.8: Updated, corrected some errors, and added pidfile
+    - man/ncidrotate.1: New
+    - man/sip2ncid.8: New
+    - man/sip2ncid.conf.5: New
+    - modules/Makefile: New
+    - modules/README: New
+    - modules/ncid-mythtv.sh: Moved here from scripts/ncid-mythtv.sh
+    - modules/ncid-page.sh: Moved here from scripts/ncid-page.sh
+                            Changed variable: ADDRESS -> PageTo
+                            Modified script so mail can be sent as $PageFrom
+    - modules/ncid-samba.sh: Moved here from scripts/ncid-samba.sh, updated
+    - modules/ncid-speak.sh: Moved here from scripts/ncid-speak.sh, updated
+    - modules/ncid-tivo.sh: Moved here from scripts/ncid-tivo.sh, updated
+    - modules/ncid-yac.sh: Moved here from scripts/ncid-yac.sh, updated
+    - modules/ncid-skel: New, skeleton output module to help write new ones
+    - modules/ncidmodules.conf: Renamed scripts/ncidscript.conf
+                                Changed variable: ADDRESS -> PageTo
+                                Added variable: PageFrom
+                                Added out2osd, corrected module ncid-tivo
+    - scripts/Makefile: Updated, added prefix3
+    - scripts/README: Updated
+    - scripts/ncid-mythtv.sh: moved to modules/ncid-mythtv.sh
+    - scripts/ncid-page.sh: moved to modules/ncid-page.sh
+    - scripts/ncid-samba.sh: moved to modules/ncid-samba.sh
+    - scripts/ncid-speak.sh: moved to modules/ncid-speak.sh
+    - scripts/ncid-tivo.sh: moved to modules/ncid-tivo.sh
+    - scripts/ncid-yac.sh: moved to modules/ncid-yac.sh
+    - tools/Makefile: Updated, added prefix3
+    - tools/README: Updated
+    - tools/ncidsip.conf: moved to cidgate/ncidsip.conf
+    - tools/ncidsip.init.dist: moved to Fedora/ncidsip.init
+    - tools/ncidsip.pl: moved to cidgate/ncidsip.pl
+    - tools/yac2ncid.conf: moved to cidgate/yac2ncid.conf
+    - tools/yac2ncid.init.dist: moved to Fedora/yac2ncid.init
+    - tools/yac2ncid.sh: moved to cidgate/yac2ncid.sh
+    - Win/ncid.nsi: updated
+
 Version 0.68
     - Makefile: added ETCFILE, removed $(FILES): target
     - ncid.spec: Updated: version number, new programs, and new man pages
@@ -47,7 +173,7 @@ Version 0.68
     - tools/README: updated
     - tools/yac2ncid.sh: New, YAC client to input CID to NCID server
     - tools/yac2ncid.conf: New, yac2ncid configuration file
-    - tools/yac2ncid.init: New, yac2ncid init file
+    - tools/yac2ncid.init.dist: New, yac2ncid init file
     - Win/ncid.ini: Changed: State="129.0.0.1" To: State="127.0.0.1"
     - Win/ncid.nsi: Updated version number, corrected 129.0.0.1 to 127.0.0.1
 

@@ -1,0 +1,36 @@
+NCID for Debian
+---------------
+
+Steps required to build a Ubuntu or Debian package:
+The steps use ncid-0.69.tar.gz as an example:
+
+    mkdir ncid (and put ncid-0.69.tar.gz in it)
+    cd ncid
+    tar -xzvf ncid-0.69.tar.gz
+    mv ncid ncid-0.69
+    cd ncid-0.69
+    fakeroot debian/rules build
+    fakeroot debian/rules binary
+    fakeroot debian/rules clean
+
+Binary package built:
+
+    ncid_0.69-0ubuntu1_i386.deb
+
+Build the source package (not needed)
+
+    dpkg-buildpackage -us -uc -S -rfakeroot
+
+Source file built:
+
+    ncid_0.69-0ubuntu1.tar.gz
+
+The ncid directory may contain:
+
+    ncid-0.69/
+    ncid-0.69.tar.gz
+    ncid_0.69-0ubuntu1_i386.deb
+    ncid_0.69-0ubuntu1.tar.gz
+
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Tue,  9 Oct 2007 11:37:23 -0400

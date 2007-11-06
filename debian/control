@@ -1,0 +1,22 @@
+Source: ncid
+Section: net
+Priority: optional
+Maintainer: John L. Chmielewski <jlc@users.sourceforge.net>
+Build-Depends:
+Standards-Version: 3.7.2
+
+Package: ncid
+Architecture: i386
+Depends: ${shlibs:Depends}, tcl8.4, tk8.4, perl
+Description: Network Caller ID server, client, and gateways
+ NCID is a TCP client/server program for distributing Caller ID information.
+ .
+ The server, ncidd, either listens to a modem, device, or gateway, for
+ the Caller-ID data.  The data is formatted and sent, via a TCP socket,
+ to mutiple clients.
+ .
+ The client, ncid, displays the Caller ID data and the Server Caller-ID
+ log.  It supports plugin output modules that process the CID received.
+ .
+ The NCID gateways get Caller ID information from from the network, either
+ from SIP Invite, or YAC.

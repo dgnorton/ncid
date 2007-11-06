@@ -7,14 +7,19 @@ The NCID package contains:
       ncidd runs on Linux/TiVo/UNIX/Macintosh OSX/Cygwin
     - a Network CallerID client: ncid
       ncid runs on Linux/TiVo/UNIX/Windows/Mac OSX/Cygwin (requires tcl/tk)
-    - A SIP Invite Client: ncidsip
-      ncidsip runs on Linux/UNIX/Windows/Mac OSX/Cygwin (requires Perl)
+    - client output modules and a configuration script for them
+    - A SIP Invite Gateway: sip2ncid
+      sip2ncid runs on Linux/UNIX/Windows/Mac OSX/Cygwin
     - YAC to NCID gateway client: yac2ncid (requires a yac server to input CID)
       yac2ncid Linux/UNIX/Cygwin/Mac
     - tools to work with the CID log and alias files: ncidtools
       ncidtools runs on Linux/UNIX/Mac OSX/Cygwin/TiVo (requires Perl)
-    - client output modules and a configuration script for them
-    - a log rotate module for Fedora
+    - a log rotate module
+    - init scripts for Fedora, FreeBSD, and Ubuntu
+
+    Recomend sip2ncid instead of ncidsip
+    - A SIP Invite Gateway: ncidsip
+      ncidsip runs on Linux/UNIX/Windows/Mac OSX/Cygwin (requires Perl)
 
 The server, ncidd, is a TCP/IP Caller ID Daemon.  It either monitors a modem
 or serial device for Caller ID, or obtains it from a CID client.  It sends
@@ -53,25 +58,43 @@ The NCID package has the following features:
     - Can have multiple ncid clients
     - Documented protocol
 
-    CID Client Features (ncidsip)
+    CID gateway Features (sip2ncid)
     - Receives Caller ID information from SIP Invite
-    - Creates a CID Message and sends it to the server
+    - Creates a CID Message and sends it to the NCID server
+    - indicates call answered or not answered
     - Handles multiple VoIP Lines
     - Indicates the telephone line by the last 4 digits
     - can have multiple ncidsip clients, each monitoring VoIP hardware
     - Documented protocol
 
+    CID gateway Features (ncidsip)
+    - Receives Caller ID information from SIP Invite
+    - Creates a CID Message and sends it to the NCID server
+    - indicates call not answered
+    - Handles multiple VoIP Lines
+    - Indicates the telephone line by the last 4 digits
+    - can have multiple ncidsip clients, each monitoring VoIP hardware
+    - Documented protocol
+
+    CID gateway Features (yac2ncid)
+    - Receives Caller ID information from a YAC server
+    - Creates a CID Message and sends it to the NCID server
+    - telephone line can be indicated in yac2ncid.conf
+    - Documented protocol
+
 See the doc directory for most documentation, including OS
-specific README and INSTALL files.
+specific INSTALL files.
 
-The FreeBSD README is in the FreeBSD directory.
+The Fedora directories contains files specific to Fedora.
+The FreeBSD directories contains files specific to FreeBSD.
 
-See the tools directory for the documentation on ncidtools.
+See cidgate/README Fedora/README FreeBSD/README modules/README
+scripts/README, test/README, and tools/README.
 
 Instructions to make and install the ncid package are in the various
 INSTALL files included and the web site.
 
-All man pages are in man
+man pages:
 Instructions for using ncidd are in the man page: ncidd.8
 Instructions for configuring ncidd are in the man page: ncidd.conf.5
 Instructions for configuring ncidd aliases are in the man page: ncidd.alias.5
@@ -79,8 +102,13 @@ Instructions for using ncid are in the man page: ncid.1
 Instructions for configuring ncid are in the man page: ncid.conf.5
 Instructions for using ncidsip are in the man page: ncidsip.8
 Instructions for using ncidtools are in the man page: ncidtools.1
-Instructions for using ncidscripts are in the man page: ncidscripts.1
-Instructions for configuring ncidscripts are in the man page: ncidscript.conf.5
+Instructions for using ncidmodules are in the man page: ncidmodules.1
+Instructions for configuring ncidmodules are in the man page: ncidmodules.conf.5
+Instructions for using ncidrotate are in the man page: ncidrotate.1
+Instructions for using sip2ncid are in the man page: sip2ncid.8
+Instructions for configuring sip2ncid are in the man page: sip2ncid.conf.5
+Instructions for using yac2ncid are in the man page: yac2ncid.1
+Instructions for configuring yac2ncid are in the man page: yac2ncid.conf.5
 
 Formatted man pages are text files and html files. They are created in the
 man directory after a "make mandir" in the top level directory, or a "make"
@@ -92,7 +120,9 @@ The distributed configuration files are:
     ncidd.alias
     ncidsip.conf
     ncidrotate.conf
-    ncidscript.conf
+    ncidmodule.conf
+    sip2ncid.conf
+    yac2ncid.conf
 
 NCID is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License located

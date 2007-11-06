@@ -1,13 +1,9 @@
-MANSRC1     =
-MANSRC      = $(MANSRC1)
-SCRIPTS     = ncidd.sh ncid.sh ncidsip.sh
-FILES       = Makefile $(SCRIPTS) $(MANSRC) README
+SCRIPTS     = ncidd.sh ncid.sh ncidsip.sh yac2ncid.sh
+FILES       = README Makefile $(SCRIPTS) $(MANSRC)
 
 prefix  = /usr/local
 prefix2 = $(prefix)
 
-MAN     = $(prefix)/man
-MAN1    = $(MAN)/man1
 ETC     = $(prefix2)/etc
 RC      = $(ETC)/rc.d
 
@@ -25,19 +21,10 @@ install-scripts: $(SCRIPTS)
 	@if test ! -d $(RC); then mkdir -p $(RC); fi
 	install -m 755 $(SCRIPTS) $(RC)
 
-install-man: $(MAN)
-	cd $(MAN1); rm -f $(MANSRC1)
-	install -m 644 $(MANSRC1) $(MAN1)
-
 clean:
 
 clobber: clean
-	rm -f man *.man install-*
+
+distclean: clobber
 
 files: $(FILES)
-
-%.man : %.1
-	nroff -man $< | col -bx > $@
-
-%.html : %.1
-	man2html $< > $@

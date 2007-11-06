@@ -1,5 +1,6 @@
 The current TODO list (in no particular order)
 
+    - Add a client that does a overlay pop up window for Linux.
     - Finish port to cygwin so server operates under windows.  Problem
       is the serial port does not ndicate when it has data using poll().
     - Add graphics to view image of who is calling.
@@ -9,6 +10,7 @@ The current TODO list (in no particular order)
     - Add support for PBX.
     - Redo web site
     - Improve NCID documentation and installation.
+    - add a iax2 gateway
 
 The MAYBE TODO list (in no particular order)
 
@@ -20,3 +22,4 @@ The MAYBE TODO list (in no particular order)
     - Rewrite the ncid client and split it into two:
         a GUI client using GTK+
         a command line client that uses output plugins
+    - client display converted to a popup on-screen-display overlay

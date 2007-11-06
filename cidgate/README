@@ -1,0 +1,18 @@
+These are CID gateways that pull CID information off the network
+and input it to the NCID server.
+
+sip2ncid       - SIP gateway: receives CID information from SIP Invite packets
+                 and sends it as a CID message line to the NCID server
+sip2ncid.conf  - configuration file for sip2ncid
+yac2ncid       - YAC gateway: receives CID information from a YAC server
+                 and sends it as a CID message line to the NCID server
+yac2ncid.conf  - configuration file for yac2ncid
+
+The Makefile is used to create the runable scripts.
+
+	prefix2 controls where to look for the config file,
+	(the default is /usr/local)
+
+Recommend sip2ncid instead of sip2ncid
+    ncidsip        - OLD SIP gateway replaced by sip2ncid
+    ncidsip.conf   - OLD configuration file for ncidsip-init

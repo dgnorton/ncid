@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2003, 2004, 2005, 2006
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007
  * by  John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddconf.c is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@ struct setword setword[] = {
     {"lockfile",   WORDSTR,            &lockfile, 0,         0,    0},
     {"nomodem",    WORDNUM,            0,         &nomodem,  OFF, ON},
     {"noserial",   WORDNUM,            0,         &noserial, OFF, ON},
+    {"pidfile",    WORDSTR,            &pidfile,  0,         0,    0},
     {"port",       WORDNUM,            0,         &port,     0,    0},
     {"ttyclocal",  WORDNUM,            0,         &clocal,   OFF, ON},
     {"ttyport",    WORDSTR,            &ttyport,  0,         0,    0},

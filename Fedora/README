@@ -1,0 +1,14 @@
+These are service files specific to Fedora and Redhat distributions
+
+ncid.init     - service start/stop file for ncid
+ncidd.init    - service start/stop file for ncidd
+sip2ncid.init - service start/stop file for yac2ncid
+yac2ncid.init - service start/stop file for yac2ncid
+
+The Makefile is used to configure and install the services
+into the init.d directory
+
+	prefix2 controls where to look for the service file,
+
+Recomend sip2ncid.init instead of ncidsip.init
+    ncidsip.init  - service start/stop file for ncidsip

@@ -1,5 +1,7 @@
 # INSTALL ncid and ncidd on FreeBSD
 
+Last edited: Sun Sep 23, 2007
+
 INSTALL:
 
 	- install tcl/tk
@@ -56,7 +58,7 @@ TEST USING A MODEM:
       to also look at the alias structure
         ncidd -Dv5
 
-    - The last line should be: Modem set for CallerID.
+    - The second to last line should be: Modem set for CallerID.
     - If it says: ERROR
       try the CID strings in ncidd.conf or in doc/CID-init
 
@@ -88,7 +90,7 @@ Start (in this order):
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last line should be: CallerID from CID client(s) only
+    The second to last line should be: CallerID from CID gateway(s) only
 
     Once you solve any problems, restart ncidd normally
 

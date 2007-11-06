@@ -1,0 +1,47 @@
+.\" %W% %G%
+.TH NCIDMODULES.CONF 5
+.SH NAME
+.B ncidmodules.conf\^
+- ncid module configuration file
+.SH DESCRIPTION
+The \fIncidmodules.conf\fR file contains the configuration information for
+\fIncid\fR, output modules and the init file.
+.PP
+The \fIncidmodules.conf\fR file is used to set options for
+.IR ncid-mythtv .
+.IR ncid-page ,
+.IR ncid-samba ,
+.IR ncid-speak .
+.IR ncid-tivo .
+and
+.IR ncid-yac .
+.PP
+The \fIncidmodules.conf\fR file understands 3 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B shell variable set lines.
+.PP
+See ncidsmodules.conf for more details on the variables that
+can be set.
+.SH EXAMPLES
+Set ncid to call ncid-page:
+.RS 0
+	extprog=ncid-page
+.RE
+.PP
+set the email address for ncid-page:
+.RS 0
+	ADDRESS=cellphone@isp.com
+.RE
+.PP
+set ncid-page to call the cell phone on ring 4:
+.RS 0
+	opts="$opts -r 4"
+.RE
+.SH SEE ALSO
+ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidmodules.1

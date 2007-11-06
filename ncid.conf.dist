@@ -1,5 +1,8 @@
 # tcl/tk configuration file
 
+# PID file (usually no need to change this)
+set PIDfile     /var/run/ncid.pid
+
 # Directory NCID uses to find the output modules
 set ProgDir     /usr/local/share/ncid
 

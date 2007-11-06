@@ -7,29 +7,30 @@
 .B ncidd\^
 [options]
 .PP
-.I Options:\^
+.I Options:
 .PP
 .nf
-[-A aliasfile  | --alias aliasfile]
-[-C configfile | --config configfile]
-[-c logfile    | --cidlog logfile]
-[-D            | --debug]
-[-d logfile    | --datalog logfile]
-[-h            | --help]
-[-I modemstr   | --initstr modemstr]
-[-i cidstr     | --initcid cidstr]
-[-L logfile    | --logfile logfile]
-[-l lockfile   | --lockfile lockfile]
-[-M MaxBytes   | --cidlogmax MaxBytes
-[-N 0/1        | --noserial 0/1]
-[-n 0/1        | --nomodem 0/1]
-[-p portnumber | --port portnumber]
-[-S 0/1        | --ttyclocal 0/1]
-[-s datatype   | --send datatype]
-[-T ttyspeed   | --ttyspeed ttyspeed]
-[-t ttyport    | --ttyport ttyport]
-[-V            | --version]
-[-v 1-9        | --verbose 1-9]
+[-A <aliasfile>  | --alias <aliasfile>]
+[-C <configfile> | --config <configfile>]
+[-c <logfile>    | --cidlog <logfile>]
+[-D              | --debug]
+[-d <logfile>    | --datalog <logfile>]
+[-h              | --help]
+[-I <modemstr>   | --initstr <modemstr>]
+[-i <cidstr>     | --initcid <cidstr>]
+[-L <logfile>    | --logfile <logfile>]
+[-l <lockfile>   | --lockfile <lockfile>]
+[-M <MaxBytes>   | --cidlogmax <MaxBytes>]
+[-N <0|1>        | --noserial <0|1]
+[-n <0|1>        | --nomodem <0|1]
+[-P <pidfile>    | --pidfile <pidfile>]
+[-p <portnumber> | --port <portnumber>]
+[-S <0|1>        | --ttyclocal <0|1]
+[-s <datatype>   | --send <datatype>]
+[-T <ttyspeed>   | --ttyspeed <ttyspeed>]
+[-t <ttyport>    | --ttyport <ttyport>]
+[-V              | --version]
+[-v <1-9>        | --verbose <1-9>]
 .fi
 .SH DESCRIPTION
 .B NCIDD
@@ -37,7 +38,7 @@ collects Caller ID data from:
 .PP
 .nf
     - a modem or CID device on a telephone line
-    - a client on the network using SIP Invite
+    - a CID gateway on the network
     - or both
 .fi
 .PP
@@ -79,7 +80,7 @@ then send a ring count of -1 to its clients to indicate a hangup with
 no answer.
 .SH "OPTIONS"
 .PD 0
-.TP 35
+.TP
 .B -A <file> | --alias <file>
 Alias file.
 .br
@@ -128,33 +129,39 @@ Modem lockfile.
 .br
 Default: /var/lock/LCK..modem
 .TP
-.B -M MaxBytes | --cidlogmax MaxBytes
+.B -M <MaxBytes> | --cidlogmax <MaxBytes>
 Set the maximum CID call log file size in bytes.
+.br
 Maximum size is 100000000
 .br
 Default: cidlogmax = 110000
 .TP
-.B -N 0/1 | --noserial 0/1
+.B -N <0|1> | --noserial <0|1>
 serial device (0) or no serial device (1)
 .br
 Default: noserial = 0
 .TP
-.B -n 0/1 | --nomodem 0/1
+.B -n <0|1> | --nomodem <0|1>
 modem (0) or no modem (1)
 .br
 Default: nomodem = 0
+.TP
+.B -P <pidfile> | --pidfile <pidfile>
+Server PID file
+.br
+Default: /var/run/ncidd.pid
 .TP
 .B -p <port> | --port <port>
 Server port.
 .br
 Default: 3333
 .TP
-.B -S 0/1 | --ttyclocal 0/1
+.B -S <0|1> | --ttyclocal <0|1>
 Enable (0) or disable (1) modem control signals.
 .br
 Default: modem control signals disabled
 .TP
-.B -s datatype | --send datatype
+.B -s <datatype> | --send <datatype>
 Send optional CID data to a client.
 Where \fIdatatype\fR is:
 .br
@@ -168,7 +175,7 @@ gives the current ring count.
 .br
 Default: Optional CID DATA is not sent
 .TP
-.B -T ttyspeed | --ttyspeed ttyspeed
+.B -T <ttyspeed> | --ttyspeed <ttyspeed>
 Set the tty port speed to one of: 19200, 9600, 4800
 .br
 Default: ttyspeed = 19200
@@ -181,9 +188,9 @@ Default: /dev/modem
 .B -V | --version
 Display the version number.
 .TP
-.B -v 1-9 | --verbose 1-9
+.B -v <1-9> | --verbose <1-9>
 Output information, used for the logfile and the -D option.
-Set higher number for more information.  The range is 1-9.
+Set higher number for more information.
 .br
 Default: verbose = 1
 .br
@@ -254,7 +261,7 @@ Server log file.  Contents controlled by verbose.
          0         Successful
       -100         Usage
       -101         Invalid port number
-      -102         Modem is in use
+      -102         TTY port is in use
       -103         Unable to set modem for Caller ID
       -104         Configuration file error
       -105         No modem found
@@ -262,6 +269,9 @@ Server log file.  Contents controlled by verbose.
       -107         Invalid number
       -108         Invalid tty port speed [set in config file]
       -109         Alias file error
+      -110         PID file already exists
+      -111         Cannot init TTY
+      -112         Poll error
         -?         System error
 .fi
 .SH SEE ALSO

@@ -1,62 +1,100 @@
 ncid - Network CallerID Cygwin Install
 
+Last edited: Fri Nov 2, 2007
+
 NOTES:
-    The server has been tested with ncidsip running on a Linux
-    system.
+    The server has been tested with sip2ncid and ncidsip
 
     - The server does not function with a modem so it is configured
-      for "noserial".  It requires ncidsip to function.
-    - The supplied ncidsip client requires perl and the Net-Pcap module
-      http://search.cpan.org/CPAN/authors/S/SA/SAPER/Net-Pcap-0.12/Pcap.tar.gz
+      for "noserial".  It requires sip2ncidi, ncidsip or yac2ncid to
+      function.
+    - the supplied sip2ncid gateway is recomended over ncidsip
+    - the supplied yac2ncid gateway requires YAC to control the modem
+    - The supplied ncidsip gateway requires perl and the Net-Pcap module
+      http://search.cpan.org/CPAN/authors/S/SA/SAPER
     - Net-Pcap requires WinPcap: http://www.winpcap.org/
     - The Net-Pcap module has been successfully built under cygwin
+    - Latested Versions Tested: WpdPack_41b.zip and Net-Pcap-0.14.tar.gz
 
 INSTALL:
 
-	Install Cygwin from http://cygwin.com/
-		- download setup.exe into a empty folder
-        - Run setup.exe
-        - select download site sites
-        - Look at the Perl catagory and set to install Perl
-        - Let setup download and install cygwin
-        ------------------------------------------------
-        If phone system is VoIP and you want to use SIP:
-        ------------------------------------------------
-        - install a development system using gcc and install cpan
-        - install WinPcap at C:\ from http://www.winpcap.org/
-        - run "cpan" and it will configure itself, accept defaults
-          to questions asked, but select multiple download sites
-        - At the "cpan>" prompt, type: install IO::Interface
-          (if it fails, fix problem and try: cpan -r)
-        - At the "cpan>" prompt type: cpan install Net::Pcap
-          It will fail.  Quit cpan and go to .cpan/build and do
-          a ls.  You will see the Net-Pcap-xxx directory.  Cd into
-          it and type "make"  when it fails, the error message will
-          tell you what the command line should be for WinPcap installed
-          at C:\.  After you make it, type: make install
+    --------------------------------------------
+    Install WinPcap from http://www.winpcap.org/
+    --------------------------------------------
 
-	Install ncid:
-        - The NCID package normally installs in /usr/local:
-        - If a binary package is available:
-            Copy ncid-VERSION-cygwin.tgz to cygwin, then:
-                tar -xzvf ncid-VERSION-cygwin.tgz -C /
-                EXAMPLE: tar -xzvf ncid-0.64-cygwin.tgz -C /
-        - if there is no binary package, you need to compile the source:
-            Copy ncid-VERSION.tar.gz
-            cd ncid
-            make cygwin (compiles for /usr/local, see top of Makefile)
-            make install-cygwin
+    - download WinPcap_4_0_1.exe or later version
+    - run WinPcap_4_0_1.exe or later version
+
+    --------------------------------------
+    Install Cygwin from http://cygwin.com/
+    --------------------------------------
+
+    - download setup.exe into a empty folder
+    - Run setup.exe
+    - select cygwin download site
+    - Let default setup download
+
+    -------------
+    Install ncid:
+    -------------
+
+    - The NCID package normally installs in /usr/local:
+    - If a binary package is available:
+        Copy ncid-VERSION-cygwin.tgz to cygwin, then:
+            tar -xzvf ncid-VERSION-cygwin.tgz -C /
+            EXAMPLE: tar -xzvf ncid-0.64-cygwin.tgz -C /
+    - if there is no binary package, you need to compile the source:
+        Copy ncid-VERSION.tar.gz
+        cd ncid
+        make cygwin (compiles for /usr/local, see top of Makefile)
+        make install-cygwin
+
+    -----------------------------------------------------
+    If phone system is VoIP and you want to use sip2ncid: (Recomented)
+    -----------------------------------------------------
+
+    - nothing else to do
+
+    -------------------------------------------
+    If you want to use your modem, you need YAC
+    -------------------------------------------
+
+    - download and install YAC from http://sunflowerhead.com/software/yac/
+    - configure the YAC server for a listener at localhost (127.0.0.1)
+
+    ----------------------------------------------------
+    If phone system is VoIP and you want to use ncidsip: (Not Recomended)
+    ----------------------------------------------------
+
+    - install a development system using gcc
+    - install perl and cpan
+    - install lynx, wget, and ncftp
+    - install WpdPack at C:\ from http://www.winpcap.org/
+    - run "cpan" and it will configure itself, accept defaults
+      to questions asked, but select multiple download sites
+    - At the "cpan>" prompt, type: install IO::Interface
+      (if it fails, fix problem and try: cpan -r)
+    - At the "cpan>" prompt type: cpan install Net::Pcap
+      It will fail to configure.  Quit cpan and cd .cpan/build
+      do a ls.  You will see the Net-Pcap-xxx directory.  Cd into
+      it and type "make"  when it fails, the error message will
+      tell you what the command line should be for WinPcap installed
+      at C:\.  If it does not, you need to edit Makefile.pl and add
+      } elsif ($^O eq 'cygwin') {
+      as the line above
+      warn <<"REASON" unless have_library('wpcap', 'pcap_lib_version', 'pcap');
+    - After you make it, type: make install
 
 CONFIGURE:
 
     The Makefile preconfigures ncidd.conf for the Cygwin, but you may
     want to change some of the defaults.
 
-    You need to configure ncidsip to use the Network Interface.
-    To find out the network intercafe name, you need to make iflist.
-    cd to C:/WpdPack/Examples-pcap/iflist and type: make
-    You should see your Network interface names listed.  Select the
-    active one and use it with the -i option to ncidsip.
+    You need to configure sip2ncid or ncidsip to use the Network Interface.
+    To find out the network interface name, you need to use the '-l'
+    option to either sip2ncid or ncidsip.  You should see your Network
+    interface names listed.  Select the active one and use it with the
+    -i option to sip2ncid or ncidsip.
 
 START:
 
@@ -64,12 +102,40 @@ START:
 
     - start the server and clients:
         ncidd
+
+    -----------------
+    If using sip2ncid
+    -----------------
+
+        sip2ncid -l (list NETWORK_INTERFACES)
+        sip2ncid -i NETWORK_INTERFACE
+        (Note: display is <INTERFACE : DESCRIPTION>)
+
+    ----------------
+    If using ncidsip (NOTE: this program is replaced by sip2ncid)
+    ----------------
+
         ncidsip -l (list NETWORK_INTERFACES)
         ncidsip -i NETWORK_INTERFACE &
+        (Note1: display is <INTERFACE : DESCRIPTION>)
+        (Note2: change any '\' to '/' in INTERFACE when using it)
+
+    -----------------
+    If using yac2ncid
+    -----------------
+
+        yac2ncid &
+
+    -------------
+    If using ncid
+    -------------
+
         ncid &
+
     - Call yourself and see if it works.
 
 TEST:
+
     - You need to test your local network for SIP packets.
       Follow the instructions in Setup-VOIP.  Once you configure
       your network, if needed, and know what options to give to
@@ -77,18 +143,26 @@ TEST:
 
     - The easiest way to test the setup is to run ncidd in debug mode,
       it will stay attached to the terminal and not go into deamon mode:
-		ncidd -D
+        ncidd -D
     - to get more information, add the verbose flag:
         ncidd -Dv3
     - to also look at the alias structure
         ncidd -Dv5
-    - The last line should be: CallerID from CID client(s) only
+    - The second to last line should be: CallerID from CID gateway(s) only
+
+    ----------------
+    If using ncidsip
+    ----------------
 
     - Start ncidsip using options determined from the Setup-VOIP procedure:
         ncidsip -i NETWORK_INTERFACE [other options]
 
+    -----------------
+    If using yac2ncid
+    -----------------
+
     - Call yourself and you should see the CallerID lines.
 
-	- Once it works, you would normally start it:
+    - Once it works, you would normally start it:
         ncidd
         ncidsip [options needed] &

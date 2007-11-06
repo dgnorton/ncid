@@ -1,0 +1,75 @@
+#!/bin/sh
+#
+# yca2ncid:    Start/Stop YAC CID client
+#
+# chkconfig:   2345 95 05
+# description: Inject CID info from a YAC server
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 0
+
+RETVAL=0
+prog="yac2ncid"
+args=""
+
+ConfigDir=/usr/local/etc/ncid
+ConfigFile=$ConfigDir/yac2ncid.conf
+
+# source config file
+#[ -f $ConfigFile ] && . $ConfigFile
+
+[ -f /usr/bin/$prog ] || exit 0
+
+start() {
+        # Start daemons.
+        echo -n $"Starting $prog: "
+        daemon $prog $args \&
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+        return $RETVAL
+}
+
+stop() {
+        # Stop daemons.
+        echo -n $"Shutting down $prog: "
+        killproc $prog
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog
+        return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart|reload)
+        stop
+        start
+        ;;
+  condrestart)
+        if [ -f /var/lock/subsys/$prog ]; then
+            stop
+            start
+        fi
+        ;;
+  status)
+        status $prog
+        RETVAL=$?
+        ;;
+  *)
+        echo $"Usage: $prog {start|stop|restart|condrestart|status}"
+        exit 1
+esac
+
+exit $RETVAL

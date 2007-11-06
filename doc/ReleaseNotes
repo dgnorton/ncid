@@ -1,41 +1,60 @@
-Source: ncid-0.68.tar.gz
-Fedora Core 6 package: ncid-0.68-1.i386.rpm
-Fedora Core 6 64 bit package: ncid-0.68-1.x86_64.rpm
-TiVo Series1 package: ncid-0.68-tivo-ppc.tgz
-TiVo Series2 package: ncid-0.68-tivo-mips.tgz
-TiVo Series3 package: ncid-0.68-tivo-mips.tgz
-Macintosh OS X package: ncid-0.68-mac-osx.tgz
-FreeBSD 5.4 package: ncid-0.68-freebsd.tgz
-Cygwin Windows package: ncid-0.68-cygwin.tgz
-Windows client installer: ncid-0.68-setup.exe
+NCID Source package:             ncid-0.69.tar.gz
+
+NCID Binary Packages:
+
+    Fedora 7 package:            ncid-0.69-1.i386.rpm
+    Fedora 7 64 bit package:     ncid-0.69-1.x86_64.rpm
+    TiVo Series1 package:        ncid-0.69-1-ppc-tivo.tgz
+    TiVo Series 2 and 3 package: ncid-0.69-1-mips-tivo.tgz
+    Macintosh OS X package:      ncid-0.69-1-ppc-mac-osx.tgz
+    FreeBSD 5.4 package:         ncid-0.69-1-freebsd.tgz
+    Cygwin Windows package:      ncid-0.69-1-cygwin.tgz
+    Windows client installer:    ncid-0.69-1-setup.exe
+    Ubuntu Feisty package:       ncid_0.69-0ubuntu1_i386.deb
+
+Source Changes:
+
+    Restructed the source distribution directories and files to make
+    it easier to understand the source. Added a debian directory for
+    a Ubuntu package.
 
 Server Changes:
 
-    Increased the maximun size of the cidcall.log file from 90,000
-    bytes to 110,000 bytes.
+    Improved ncidd signal handling, error on exit, and added
+    PID file support.
 
-    Added new options to set the maximum size of the CID log file.
+CID Gateway Changes:
 
-    Added a new configuration variable, cidlogmax, to set the maximum
-    size of the CID log file.  The maximum value permitted is
-	100,000,000
+    Added sip2ncid, intended as a replacement for ncidsip.
+
+    Added workaround for broken traps on the Tivo, and improved
+    the signal handler for yac2ncid.
+
+    Added a signal handler and PID file support for ncidsip.
 
 Client Changes:
 
-    Modified ncidsip to handle number not present.
-    Added yac2ncid: gets CID information from a YAC server
+    Changed the location of the builtin default config file,
+    improved the shell script startup, and added PID file
+    support for ncid.
 
 Client Module Changes:
 
-    Updated ncid-mythtv for current versin of mythtvosd.
-    Added ncid-yac: sends CID information to YAC clients
-    Modified client configuration file
+    Improved the email format of the ncid-page module, and email can
+    be sent by a selected user.
+
+    The modules configuration file was updated.
 
 Script changes:
 
-    Fixed cidcall regular expressions for key words
+    None
+
+Tool changes:
+
+    None
 
 Documentation Changes:
 
-    Corrected and simplified Setup-VOIP
-    Updated man pages and contributors
+    Improved README, INSTALL, and man pages, and renamed some man pages.
+
+    Added sip2ncid-rebose, sip2ncid.8, and sip2ncid.conf.5

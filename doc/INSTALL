@@ -1,14 +1,20 @@
 NCID - Network Caller ID Install
 
-Linux:
-The Makefile assumes a Redhat Linux environment
+Last edited: Tue Oct 16, 2007
+
+Layout:
 	The programs go into $prefix/bin $prefix/sbin
 	The config file goes into $prefix2/etc
-	The init script goes into $prefix2/etc/rc.d/init.d
-	The modem link or driver is expected in /dev
-	The LOG file is expected in /var/log
+	The modem link or driver is expected in $prefix3/dev
+	The LOG file is expected in $prefix3/var/log
 	The man pages go into $MAN, which is $prefix/share/man
-	The default is prefix=/usr/local, prefix2=$prefix
+	The default is prefix=/usr/local, prefix2=$prefix, prefix3=
+
+    Fedora:
+	The init scripts go into $prefix2/etc/rc.d/init.d
+
+    Debian or Ubuntu:
+	The init scripts go into $prefix2/etc/init.d
 
 Compile:
 
@@ -34,6 +40,8 @@ INSTALL:
 
 	To install programs in /usr, config file in /etc,
 		and man pages in /usr/share/man:
+        - make install-package
+        This also works:
 		- make install prefix=/usr prefix2=
 
     Note: The install target installs files into /etc/logrotate.d
@@ -84,7 +92,7 @@ Start (in this order):
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last line should be: CallerID from CID client(s) only
+    The second to last line should be: CallerID from CID gateway(s) only
 
 	Once you solve any problems, restart ncidd normally
 

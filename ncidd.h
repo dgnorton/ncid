@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2003, 2004, 2005, 2006
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd.h is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.68"
+#define VERSION     "0.69"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -72,6 +72,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
              [-M MaxBytes   | --cidlogmax MaxBytes ]\n\
              [-N 0/1        | --noserial 0/1]\n\
              [-n 0/1        | --nomodem 0/1]\n\
+             [-P pidfile    | --pidfile pidfile]\n\
              [-p portnumber | --port portnumber]\n\
              [-S ttyspeed   | --ttyspeed ttyspeed]\n\
              [-s datatype   | --send cidlog|cidinfo]\n\
@@ -92,6 +93,9 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #endif
 #ifndef LOGFILE
 #define LOGFILE     "/var/log/ncidd.log"
+#endif
+#ifndef PIDFILE
+#define PIDFILE     "/var/run/ncidd.pid"
 #endif
 
 #define STDOUT      1
@@ -138,6 +142,8 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 
 #define CIDINFO     "CIDINFO: "
 #define RING        "*RING*"
+#define CANCEL      "CANCEL"
+#define BYE         "BYE"
 
 #define O            "OUT-OF-AREA"
 #define A            "ANONYMOUS"
@@ -168,7 +174,9 @@ enum
 };
 
 extern char *ttyport, *TTYspeed;
-extern char *cidlog, *datalog, *initstr, *initcid, *lockfile, *ttyport;
-extern int setcid, port, sendlog, sendinfo, clocal, nomodem, ttyspeed, verbose;
-extern int noserial, cidlogmax;
+extern char *initstr, *initcid;
+extern char *cidlog, *datalog, *lockfile, *pidfile;
+extern int setcid, port, clocal, ttyspeed;
+extern int sendlog, sendinfo;
+extern int nomodem, noserial, cidlogmax, verbose;
 extern int logMsg(int level, char *message);

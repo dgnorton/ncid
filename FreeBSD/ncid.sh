@@ -37,7 +37,7 @@ case "`uname`" in
 	Darwin*)
 		. /etc/rc.common
 
-		if test "${NCIDD:=-YES-}" = "-NO-"; then
+		if test "${NCID:=-YES-}" = "-NO-"; then
 			exit 0
 		fi
 

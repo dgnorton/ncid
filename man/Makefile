@@ -1,14 +1,16 @@
-MANSRC1 = ncid.1 ncidscripts.1 ncidtools.1 yac2ncid.1
-MANSRC5 = ncid.conf.5 ncidd.conf.5 ncidd.alias.5 ncidscript.conf.5 \
-          yac2ncid.conf.5
-MANSRC8 = ncidd.8 ncidsip.8
+MANSRC1 = ncid.1 ncidmodules.1 ncidrotate.1 ncidtools.1 yac2ncid.1
+MANSRC5 = ncid.conf.5 ncidd.conf.5 ncidd.alias.5 ncidmodules.conf.5 \
+          sip2ncid.conf.5 yac2ncid.conf.5
+MANSRC8 = ncidd.8 ncidsip.8 sip2ncid.8
 MANSRC  = $(MANSRC1) $(MANSRC5) $(MANSRC8)
 FILES   = Makefile $(MANSRC)
 
 prefix  = /usr/local
 prefix2 = $(prefix)
 
-MAN     = $(prefix)/share/man
+SHARE   = $(prefix)/share
+
+MAN     = $(SHARE)/man
 MAN1    = $(MAN)/man1
 MAN5    = $(MAN)/man5
 MAN8    = $(MAN)/man8
@@ -42,6 +44,8 @@ clean:
 
 clobber: clean
 	rm -f man txt *.man *.txt *.html
+
+distclean: clobber
 
 files: $(FILES)
 

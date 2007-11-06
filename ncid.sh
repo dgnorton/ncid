@@ -2,7 +2,7 @@
 
 # ncid - Network Caller-ID client
 
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 # by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # ncid is free software; you can redistribute it and/or modify it
@@ -29,7 +29,7 @@ WISH=wish
 # set nice value on TiVo, if "setpri" found \
 type setpri > /dev/null 2>&1 && setpri rr 1 $$
 # set up TiVo options to use out2osd \
-OPTSTIVO="--no-gui --tivo --message --call-prog --program /var/hack/bin/out2osd"
+OPTSTIVO="--no-gui --tivo --message --call-prog --program /usr/local/bin/out2osd"
 # if name is tivocid, exec tivosh (for backward compatibility) \
 case $0 in *tivocid) exec tivosh "$0" $OPTSTIVO "$@"; esac
 # set up TiVo options to use ncid-tivo \
@@ -40,14 +40,16 @@ case $0 in *tivoncid) exec tivosh "$0" $OPTSTIVO "$@"; esac
 GUI=""; for i in $*; do if [ "$i" = "--no-gui" ]; then  GUI="$i"; fi; done
 # if --no-gui is not specified, look for wish and exec it \
 [ -z "$GUI" ] && type $WISH > /dev/null 2>&1 && exec $WISH -f "$0" "$@"
-# look for tclsh and exec it \
+# if --no-gui is specified, look for tclsh and exec it \
+[ -n "$GUI" ] && type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" "$@"
+# wish not found, look for tclsh and exec it \
 type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" --no-gui "$@"
-# look for tivosh and exec it \
+# tclsh not found, look for tivosh and exec it \
 type tivosh > /dev/null 2>&1 && exec tivosh "$0" $OPTSTIVO "$@"
-# Macintosh \
+# tivosh not found, maybe using a Macintosh \
 [ -d /Applications/Wish\ Shell.app ] && \
     /Applications/Wish\ Shell.app/Contents/MacOS/Wish\ Shell -f "$0" "$@"
-# tcl or tcl/tk not found \
+# tcl or tk not found \
 echo "wish or tclsh or tivosh not found or not in your \$PATH"; exit -1
 
 set ConfigDir   /usr/local/etc/ncid
@@ -56,6 +58,7 @@ set ConfigFile  [list $ConfigDir/ncid.conf]
 # Constants
 set ProgDir     /usr/local/share/ncid
 set EXTPROG     ncid-speak
+set PIDfile     /var/run/ncid.pid
 
 # global variables that can be changed by command line options
 set Host        127.0.0.1
@@ -81,7 +84,7 @@ set Count       0
 set Ring        0
 set Try         0
 set Socket      0
-set Version     0.68
+set Version     0.69
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -566,6 +569,43 @@ proc handleGUIMSG {} {
   }
 }
 
+# handle a PID file, if it can not be created, ignore it
+proc doPID {} {
+    global PIDfile
+
+    set count 0
+    set PIDdir [file dirname $PIDfile]
+    if {[file writable $PIDfile]} {
+        # get the pid's on the first line of the pidfile
+        set chan [open $PIDfile r ]
+        gets $chan line
+        close $chan
+        # see if any pid is active
+        foreach p $line {
+            if {[file exists /proc/$p]} {set count 1}
+        }
+        if {$count == 0} {
+            # no pid is active, truncate the pidfile
+            set chan [open $PIDfile w ]
+        } else {
+            # at least one pid is active, append to the pidfile
+            set chan [open $PIDfile a ]
+        }
+        writePID $chan
+    } elseif {[file writable $PIDdir]} {
+        # create the pidfile
+        set chan [open $PIDfile "CREAT WRONLY" 0644]
+        writePID $chan
+    }
+}
+
+# get process ID, write it to the pidfile, and close it
+proc writePID {chan} {
+        set ncidpid [pid]
+        puts -nonewline $chan "$ncidpid "
+        close $chan
+}
+
 getArg
 if {!$NoGUI} makeWindow
 if $Callprog {
@@ -575,6 +615,7 @@ if $Callprog {
         }
     } else { exitMsg 3 "Program Not Found: $Program" }
 } else { set Verbose 1 }
+if {$NoGUI} doPID
 connectCID $Host $Port
 if {!$NoGUI} {bind .im <KeyPress-Return> handleGUIMSG}
 
