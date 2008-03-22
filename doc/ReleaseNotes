@@ -1,12 +1,12 @@
-NCID Source package:             ncid-0.70.tar.gz
+NCID Source package:                     ncid-0.70-src.tar.gz
 
 NCID Binary Packages:
 
-    Fedora 7 package:                    ncid-0.70-1.i386.rpm
-    Fedora 7 64 bit package:             ncid-0.70-1.x86_64.rpm
+    Fedora package:                      ncid-0.70-1.fc8.i386.rpm
+    Fedora 64 bit package:               ncid-0.70-1.fc8.x86_64.rpm
     TiVo Series1 package:                ncid-0.70-1-ppc-tivo.tgz
     TiVo Series 2 and 3 package:         ncid-0.70-1-mips-tivo.tgz
-    Macintosh OS X (i386 & ppc) package: ncid-0.70-1-i386-mac-osx.tgz
+    Macintosh OS X (i386 & ppc) package: ncid-0.70-1-mac-osx.tgz
     FreeBSD 5.4 package:                 ncid-0.70-1-freebsd.tgz
     Cygwin Windows package:              ncid-0.70-1-cygwin.tgz
     Windows client installer:            ncid-0.70-1-client_setup.exe
