@@ -1,0 +1,22 @@
+#!/bin/sh
+
+#
+# PROVIDE: ncidd
+# REQUIRE: NETWORKING
+#
+# Add the following lines to /etc/rc.conf to enable ncidd:
+#
+#ncidd_enable="YES"
+#
+ncidd_enable="${ncidd_enable-NO}"
+
+. /etc/rc.subr
+
+name=ncidd
+rcvar=`set_rcvar`
+
+command=/usr/local/sbin/$name
+pidfile="/var/run/${name}.pid"
+
+load_rc_config $name
+run_rc_command "$1"

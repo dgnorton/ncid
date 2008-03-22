@@ -2,6 +2,10 @@
 sip2ncid server verbose levels.  Higher levels include lower levels.
 --------------------------------------------------------------------
 
+Sat Feb 2, 2008
+
+LEVEL5:
+        show lines received from the NCID server
 LEVEL4:
         UDP packet from address
         UDP packet to address
@@ -12,7 +16,7 @@ LEVEL4:
 
 LEVEL3:
         show UDP SIP packets
-        show CIDLOG from NCID server
+        give character count of lines received from the NCID server
 
 LEVEL2:
         indicate cannot write pidfile
@@ -21,6 +25,7 @@ LEVEL2:
 
 LEVEL1:
         show start date and time
+        show server version
         indicate test mode activated
         show verbose level
         show NCID server host:port
@@ -34,10 +39,10 @@ LEVEL1:
         indicate pid file already exists
         indicate found stale pidfile
         indicate wrote pid in pidfile
-        indicate removed pidfile
-        indicate program terminated with date and time
         invalid IP header length
         show registered line number
         show CID line sent to NCID
+        indicate INVITE packet seems bad
         indicate caller hung up
-        show terminate date and time
+        indicate removed pidfile
+        indicate program terminated with date and time

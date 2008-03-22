@@ -1,12 +1,12 @@
-ncid - Network CallerID Cygwin Install
+Cygwin Install
 
-Last edited: Fri Nov 2, 2007
+Last edited: Tue Jan 22, 2008
 
 NOTES:
     The server has been tested with sip2ncid and ncidsip
 
     - The server does not function with a modem so it is configured
-      for "noserial".  It requires sip2ncidi, ncidsip or yac2ncid to
+      for "noserial".  It requires sip2ncid, ncidsip or yac2ncid to
       function.
     - the supplied sip2ncid gateway is recomended over ncidsip
     - the supplied yac2ncid gateway requires YAC to control the modem
@@ -33,6 +33,10 @@ INSTALL:
     - Run setup.exe
     - select cygwin download site
     - Let default setup download
+    - It is strongly recomended you enable cut and past in the Cygwin window.
+      * Left click on the icon in upper left
+      * Select Properties
+      * Check Mark the QuickEdit Mode in Edit Options
 
     -------------
     Install ncid:
@@ -136,10 +140,10 @@ START:
 
 TEST:
 
-    - You need to test your local network for SIP packets.
-      Follow the instructions in Setup-VOIP.  Once you configure
-      your network, if needed, and know what options to give to
-      ncidsip, you are ready to set up NCID.
+    - You need to test your local network for SIP packets. Follow
+      the instructions in Setup-sip2ncid.  Once you configure your
+      network, if needed, and know what options to give to ncidsip,
+      you are ready to set up NCID.
 
     - The easiest way to test the setup is to run ncidd in debug mode,
       it will stay attached to the terminal and not go into deamon mode:
@@ -148,21 +152,27 @@ TEST:
         ncidd -Dv3
     - to also look at the alias structure
         ncidd -Dv5
-    - The second to last line should be: CallerID from CID gateway(s) only
+    - The last three lines will be simular to:
+        CallerID only from CID gateways
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
 
-    ----------------
-    If using ncidsip
-    ----------------
+    -----------------
+    If using sip2ncid
+    -----------------
 
-    - Start ncidsip using options determined from the Setup-VOIP procedure:
-        ncidsip -i NETWORK_INTERFACE [other options]
+    - Start sip2ncid
+    - Call yourself and you should see the CallerID lines.
+    - Once it works, you would normally start it:
+        ncidd
+        sip2ncid
 
     -----------------
     If using yac2ncid
     -----------------
 
+    - Start yac2ncid
     - Call yourself and you should see the CallerID lines.
-
     - Once it works, you would normally start it:
         ncidd
-        ncidsip [options needed] &
+        yac2ncid [options needed] &

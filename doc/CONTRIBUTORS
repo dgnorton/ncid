@@ -6,7 +6,7 @@ Mark Salyzyn:
 	Wrote getopt.c and poll.c.
 
 Mace Moneta:
-	Wrote nciduser, which was the bases for ncid-speak.
+	Wrote nciduser, which was the basis for ncid-speak.
 	Contributed ideas and code to ncid.
 	Contributed the Mac OS X portion of ncid-speak.
 
@@ -59,6 +59,9 @@ Michael Lasevich
     Wrote and contributed yac2ncid, ncid-yac was developed from a module
     he wrote.  Helped write the man pages.
 
+Randy <randyr505@gmail.com>
+    Wrote and contributed the ncid-popup client output module.
+
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
 	Troy Carpenter
 	Mace Moneta
@@ -74,3 +77,4 @@ New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Adam 'Starblazer' Romberg
     Michael Lasevich
     Andy Writter
+    Steve Forman

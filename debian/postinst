@@ -32,7 +32,6 @@ case "$1" in
 esac
 
 touch /var/log/cidcall.log
-update-rc.d ncidd defaults
-update-rc.d ncid defaults
+#update-rc.d ncidd defaults
 
 exit 0

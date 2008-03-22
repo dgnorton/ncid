@@ -1,0 +1,83 @@
+#!/bin/sh
+#
+# ncid-speak         Start/Stop Network Caller ID client with the Speak Module
+#
+# chkconfig: 2345 96 04
+# description: NCID client with the Speak Output Module
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 0
+
+RETVAL=0
+prog="ncid"
+module=ncid-speak
+pidfile=/var/run/$module.pid
+
+[ -f /usr/bin/$prog ] || exit 0
+
+ConfigDir=/usr/local/etc/ncid
+ConfigFile=$ConfigDir/ncidmodules.conf
+
+# source config file
+[ -f $ConfigFile ] && . $ConfigFile
+
+args="--no-gui -p $pidfile -C -P $module"
+
+start() {
+        # Start daemons.
+        echo -n $"Starting $prog with output module $module: "
+        daemon --pidfile=/var/run/$module.pid $prog $args \&
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$module
+        return $RETVAL
+}
+
+stop() {
+        # Stop daemons.
+        echo -n $"Shutting down $prog with output module $module: "
+        killproc -p /var/run/$module.pid $prog
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$module
+        return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  reload)
+        stop
+        start
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  condrestart)
+        if [ -f /var/lock/subsys/$module ]; then
+            stop
+            start
+        fi
+        ;;
+  status)
+        status $module
+        RETVAL=$?
+        ;;
+  *)
+        echo $"Usage: $prog {start|stop|reload|restart|condrestart|status}"
+        exit 1
+esac
+
+exit $RETVAL

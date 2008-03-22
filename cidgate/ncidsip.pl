@@ -10,7 +10,7 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case_always);
 use Pod::Usage;
 
-our $VERSION = "0.5" (NCID 0.69);
+our $VERSION = "0.6 (NCID 0.70)";
 
 my ($host, $port) = ('localhost', 3333);
 my ($siphost, $sipport) = ('', 5061);
@@ -149,7 +149,9 @@ sub processPacket {
     return if !defined $sock;
   }
 
-  if ($sip =~ /^INVITE/o) {
+  my $date = strftime("%m%d%H%M", localtime($header->{tv_sec}));
+  if ($sip =~ /^CSeq:\s+\d+\s+INVITE/imo) {
+    if ($sip =~ /^SIP\/.*Ringing|^SIP\/.*OK|^SIP\/.*Terminated/o) {return};
     if ($sip =~ /^From:.*<sip:/imo) {
 
       if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
@@ -165,7 +167,6 @@ sub processPacket {
         $line = $1;
       } else {$line = "UNKNOWN";}
 
-      my $date = strftime("%m%d%H%M", localtime($header->{tv_sec}));
       my $msg = sprintf("CID: ###DATE%s...LINE%s...NMBR%s...NAME%s+++",
         $date, $line, $number,$name);
 
@@ -174,12 +175,25 @@ sub processPacket {
 
     } else {print "'Cannot parse From' line format\n" if $debug;}
 
-  } elsif ($sip =~ /^CANCEL/o) {
-      my $msg = sprintf("CIDINFO: ###CANCEL");
+  } elsif ($sip =~ /^CSeq:\s+\d+\s+CANCEL/imo) {
+      if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
+        ($number) = $1;
+        } else {$number = "NO NUMBER";}
+      my $msg = sprintf("CIDINFO: ###CANCEL...NMBR%s...DATE%s+++",
+                        $number, $date);
       print $msg, "\n" if $verbose;
       if (!$test) { print $sock $msg, "\r\n"; }
-  } elsif ($sip =~ /CSeq.*REGISTER/o) {
-      $sip =~ /^From:\s+.*?<sip:(.+?)@/imo;
+  } elsif ($sip =~ /^CSeq:\s+\d+\s+BYE/imo) {
+      if ($sip =~/^Proxy-Auth/imo) {return};
+      if ($sip =~ /^To:.*<sip:(.+?)@/imo) {
+        ($number) = $1;
+        } else {$number = "NO NUMBER";}
+      my $msg = sprintf("CIDINFO: ###BYE...NMBR%s...DATE%s+++",
+                        $number, $date);
+      print $msg, "\n" if $verbose;
+      if (!$test) { print $sock $msg, "\r\n"; }
+  } elsif ($sip =~ /^CSeq:\s+\d+\s+REGISTER/imo) {
+      $sip =~ /^Contact:\s+.*?<sip:(.+?)@/imo;
       if (!grep(/^$1$/, @locals)) {
         push(@locals, $1);
         print "Adding $1 to local number list\n" if ($debug);

@@ -15,8 +15,9 @@
 [-h                 | --help]
 [-i <interface>     | --interface <interface>]
 [-l                 | --list]
+[-L <filename>      | --logfile <filename>]
 [-n <[host][:port]> | --ncid <[host][:port>]
-[-p <filename>      | --pidfile <filename>]
+[-P <filename>      | --pidfile <filename>]
 [-r <dumpfile>      | --readfile <dumpfile>]
 [-s <[host][:port]> | --sip <[host][:port]>]
 [-T                 | --testall]
@@ -28,9 +29,10 @@
 .fi
 .SH DESCRIPTION
 Snoops SIP INVITES via libpcap and injects the caller id information
-found to the NCID server specified.  Uses Net::Pcap to interface with
-the libpcap library and snoops only udp traffic on the specified SIP
-host and port.
+found to the NCID server specified.  Snoops only udp traffic on the
+specified SIP host and port.
+.PP
+If \fI/var/log/sip2ncid.log\fR exists, it is used as a log file.
 .PP
 The configuration file for \fIsip2ncid\fR is /etc/ncid/sip2ncid.conf.
 .SH "OPTIONS"
@@ -54,13 +56,18 @@ the first ethernet interface found.
 .B -l | --listdevs
 Returns a list of all network device names that can be used.
 .TP
+.B -L <filename> | --logfile=<filename>
+Specifies the logfile name to use.  The logfile must exist before it is used.
+.br
+Default log filename: /var/log/sip2ncid.log
+.TP
 .B -n <[host][:port]> | --ncid=<[host][:port]>
 Specifies the NCID server to connect to.  Port may be specified by
 suffixing the hostname with <:port>, or if you only want to change the
 port, just <:port>.  By default it will connect to port 3333 on
 "localhost".
 .TP
-.B -p <filename> | --pidfile=<filename>
+.B -P <filename> | --pidfile=<filename>
 Specifies the pidfile name to write.  The program will still run if
 it does not have permission to write a pidfile.
 .br

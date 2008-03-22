@@ -1,7 +1,7 @@
 /*
  * ncidd - Network Caller ID Daemon
  *
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * This file is part of ncidd, a caller-id program for your TiVo.
@@ -31,6 +31,7 @@ char *initstr = INITSTR;
 char *initcid = INITCID1;
 char *logfile = LOGFILE;
 char *pidfile = PIDFILE;
+char *lineid  = ONELINE;
 char *lockfile, *name;
 char *TTYspeed;
 int ttyspeed = TTYSPEED;
@@ -57,7 +58,7 @@ struct cid
     char cidline[CIDSIZE];
 } cid = {0, "", "", "", "", NOMESG, ONELINE};
 
-void exit(), finish(), free();
+void exit(), finish(), free(), reload();
 char *strdate();
 
 main(int argc, char *argv[])
@@ -131,6 +132,8 @@ main(int argc, char *argv[])
     }
 
     sprintf(msgbuf, "Verbose level: %d\n", verbose);
+    logMsg(LEVEL1, msgbuf);
+    sprintf(msgbuf, "Telephone Line Identifier: %s\n", lineid);
     logMsg(LEVEL1, msgbuf);
     sprintf(msgbuf, "CID logfile: %s\n", cidlog);
     logMsg(LEVEL2, msgbuf);
@@ -238,6 +241,7 @@ main(int argc, char *argv[])
 
         /* become session leader */
         setsid();
+        signal(SIGHUP, reload);
     }
 
     /*
@@ -262,7 +266,9 @@ main(int argc, char *argv[])
         switch (events = poll(polld, CONNECTIONS + 2, TIMEOUT))
         {
             case -1:    /* error */
-                errorExit(-1, "poll", 0);
+                if (errno != EINTR) /* No error for SIGHUP */
+                    errorExit(-1, "poll", 0);
+                break;
             case 0:        /* time out, without an event */
                 /* end of ringing */
                 if (ring > 0)
@@ -346,6 +352,7 @@ int getOptions(int argc, char *argv[])
         {"help", 0, 0, 'h'},
         {"initcid", 1, 0, 'i'},
         {"initstr", 1, 0, 'I'},
+        {"lineid", 1, 0, 'e'},
         {"lockfile", 1, 0, 'l'},
         {"logfile", 1, 0, 'L'},
         {"nomodem", 1, 0, 'n'},
@@ -361,7 +368,7 @@ int getOptions(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "c:d:hi:l:n:p:s:t:v:A:C:DI:L:M:N:P:S:T:V",
+    while ((c = getopt_long (argc, argv, "c:d:e:hi:l:n:p:s:t:v:A:C:DI:L:M:N:P:S:T:V",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -430,6 +437,12 @@ int getOptions(int argc, char *argv[])
             case 'd':
                 if (!(datalog = strdup(optarg))) errorExit(-1, name, 0);
                 if ((num = findWord("datalog")) >= 0) setword[num].type = 0;
+                break;
+            case 'e':
+                if (!(lineid = strdup(optarg))) errorExit(-1, name, 0);
+                if (strlen(lineid) > CIDSIZE -1)
+                    errorExit(-113, "string too long", optarg);
+                if ((num = findWord("lineid")) >= 0) setword[num].type = 0;
                 break;
             case 'h': /* help message */
                 fprintf(stderr, DESC, name);
@@ -730,8 +743,10 @@ doPoll(int events, int mainsock)
         writeClients(mainsock, buf);
         errorExit(-112, "Fatal", "Poll device error");
       }
-        sprintf(msgbuf, "Poll Error, sd: %d\n", polld[pos].fd);
+        sprintf(msgbuf, "Poll Error, closed sd: %d\n", polld[pos].fd);
         logMsg(LEVEL1, msgbuf);
+        close(polld[pos].fd);
+        polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
     }
 
     if (polld[pos].revents & POLLNVAL) /* Invalid Request */
@@ -1099,7 +1114,7 @@ formatCID(int mainsock, char *buf)
         if (ptr = strstr(buf, "LINE"))
         {
             /* this field is only in a CID Message Line */
-            if (*(ptr + 5) == '.') strncpy(cid.cidline, ONELINE, CIDSIZE - 1);
+            if (*(ptr + 5) == '.') strncpy(cid.cidline, lineid, CIDSIZE - 1);
             else
             {
                 strncpy(cid.cidline, ptr + 4, CIDSIZE -1);
@@ -1205,7 +1220,7 @@ formatCID(int mainsock, char *buf)
         /* Reset status, mesg, and line. */
         cid.status = 0;
         strncpy(cid.cidmesg, NOMESG, CIDSIZE - 1);
-        strcpy(cid.cidline, ONELINE); /* default line */
+        strcpy(cid.cidline, lineid); /* default line */
     }
 }
 
@@ -1415,7 +1430,7 @@ char *strdate()
     struct timeval tv;
 
     (void) gettimeofday(&tv, 0);
-    tm = localtime(&(tv.tv_sec));
+    tm = localtime((time_t *) &(tv.tv_sec));
     sprintf(buf, "%.2d/%.2d/%.4d %.2d:%.2d", tm->tm_mon + 1, tm->tm_mday,
         tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
     return buf;
@@ -1512,20 +1527,56 @@ void finish(int sig)
     raise (sig);
 }
 
+/* reload signal */
+void reload(int sig)
+{
+    char msgbuf[BUFSIZ];
+
+    sprintf(msgbuf, "received SIGHUP - reloading the alias file: %s\n",
+            strdate());
+    logMsg(LEVEL1, msgbuf);
+
+    /*
+     * Decided not to do a reconfig because it seems like too much work
+     * for a small gain:
+     *   - open configurable files need to be closed and opened again
+     *   - configuration verbose indicators, need to be output again
+     * if (doConf()) errorExit(-104, 0, 0);
+     */
+
+    /* remove existing aliases to free memory used */
+    rmaliases();
+
+    /* reload alias file, but quit on error */
+    if (doAlias()) errorExit(-109, 0, 0);
+}
+
 errorExit(int error, char *msg, char *arg)
 {
     char msgbuf[BUFSIZ];
 
-    if (error == -1 && arg == 0)
+    /* should not happen */
+    if (msg == 0) msg = "oops";
+
+    if (error == -1)
     {
-        /* system error */
+        /*
+         * system error
+         * print msg, arg should be zero
+         */
         error = errno;
         sprintf(msgbuf, "%s: %s\n", msg, strerror(errno));
         logMsg(LEVEL1, msgbuf);
     }
-    else if (msg != 0)
+    else
     {
-        /* internal program error */
+        /* should not happen */
+        if (arg == 0) arg = "oops";
+
+        /*
+         * internal program error
+         * print msg and arg
+         */
         sprintf(msgbuf, "%s: %s\n", msg, arg);
         logMsg(LEVEL1, msgbuf);
     }
@@ -1539,8 +1590,8 @@ errorExit(int error, char *msg, char *arg)
     }
 
     /* do not print terminated message, or cleanup, if option error */
-    if (error != -108 && error != -107 && error != -101 && error != 106 &&
-        error != 100)
+    if (error != -100 && error != -101 && error != -106 && error != 107 &&
+        error != 108 && error != 113)
     {
         sprintf(msgbuf, "Terminated:  %s\n", strdate());
         logMsg(LEVEL1, msgbuf);

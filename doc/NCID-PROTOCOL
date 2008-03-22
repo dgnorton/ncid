@@ -1,8 +1,11 @@
-NCID Client and Server Protocol
+NCID Client, Gateway, and Server Protocol
+
+Last modified by jlc on Thu Nov 29, 2007
 
 The NCID-FORMAT file explains the lines sent to the client by the server.
+It also explains lines sent by a gateway to the server.
 
-To implement a client:
+Client Implementation:
         - connect to port 3333.
         - receive a connect line that identifies the server
         - possibly receive multiple CIDLOG lines (only at connect)
@@ -17,13 +20,24 @@ To implement a client:
           MSGLOG:
           CIDINFO:
         - parse CID and CIDLOG lines based on name fields, so if fields
-          is added, the old client will still work
+          are added, the client will still work
         - clients are allowed to connect and disconnect as they please
         - clients are allowed to send a text message to the server
-	    - clients are allowed to send CID info in the Message CID Line
-          format by prefixing the line with 'CID: ###'
 
-To implement a server:
+Gateway Implementation:
+        - connect to port 3333.
+        - read and ignore all lines from the server, including:
+          a connect line that identifies the server
+          CIDLOG, MSGLOG, CID, and MSG lines
+        - connect to Caller ID service
+        - when CID information is obtained from the service, send the
+          data to the server in the Message CID Line format
+        - if hangup detected with no answer, send the dta to the server
+          in the Message CIDINFO CANCEL Line format
+        - if hangup detected after answer, send the dta to the server
+          in the Message CIDINFO BYE Line format
+
+Server Implementation:
         - listen to port 3333 for a connection,
         - send a connect line to identify the server
         - if configured, send CIDLOG and MSGLOG lines when a client connects
@@ -36,5 +50,5 @@ To implement a server:
         - maintain a constant TCP connection with the clients
         - detect clients as they come and go
 	    - if client sends text, sent it to all connected clients
-	    - if client sends a line prefixed with CID:, then treat it as
-          CID info from a modem
+	    - if client sends a line prefixed with CID:, treat it as CID info
+          from a modem

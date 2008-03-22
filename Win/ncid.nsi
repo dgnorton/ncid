@@ -13,12 +13,12 @@
 ;Application
 
 	!define NAME            ncid
-	!define VERSION         0.69
+	!define VERSION         0.70
 	!define PROG            "${NAME}.exe"
 	!define LICENSE_FILE    "LICENSE.txt"
 	!define WEB_PAGE        "http://ncid.sourceforge.net"
 	!define SPLASH_IMAGE    "ncid_splash.bmp"
-	!define INSTALLER_NAME  "${NAME}-${VERSION}-setup.exe"
+	!define INSTALLER_NAME  "${NAME}-${VERSION}-client_setup.exe"
 	!define CONFIG          "${NAME}.ini"
 
 	!define ROOT_KEY HKLM

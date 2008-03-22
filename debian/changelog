@@ -1,3 +1,9 @@
+ncid (0.70-0ubuntu1) Feisty; urgency=low
+
+  * See NCID CHANGES file
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Thu,  14 Feb 2008 13:33:23 -0400
+
 ncid (0.69-0ubuntu1) Feisty; urgency=low
 
   * Initial Release.

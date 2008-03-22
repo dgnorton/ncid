@@ -1,6 +1,6 @@
-# INSTALL ncid and ncidd on FreeBSD
+FreeBSD Install
 
-Last edited: Sun Sep 23, 2007
+Last edited: Thu Mar 13, 2008
 
 INSTALL:
 
@@ -18,13 +18,10 @@ INSTALL:
         gmake freebsd (compiles for /usr/local, see top of Makefile)
         gmake install-freebsd
 
-GMAKE NOTE:
+    If you want to use ncidsip:
 
-    - The NCID source package requires gmake.
-
-	- The optional GNU getopt is installed from /usr/ports/devel/libgnugetopt:
-        cd /usr/ports/devel/gmake
-        make all install
+    - Download, compile, and install the IO-Interface module from CPAN
+    - Download, compile, and install the Net-Pcap module from CPAN
 
 CONFIGURE:
 
@@ -36,17 +33,75 @@ CONFIGURE:
     - If you are using COM1 then you would add this line to ncidd.cinf:
         set modem = /dev/cuaa0
 
-START:
+STARTUP:
 
-    - If you are running the server and client on the same computer:
-        ncidd
+    - If you are running the server and client on the same computer
+      and using a modem:
+        /usr/local/etc/rc.d/ncidd onestart
         ncid &
 
-    - Call yourself and see if it works, if not, kill off ncidd, if
-      it is running, and continue reading the test sections.
+    - If you are running the server and using a SIP gateway:
+        /usr/local/etc/rc.d/rc.d/ncidd onestart
+        /usr/local/etc/rc.d/rc.d/sip2ncid onestart
+        ncid &
 
-    - If everything is OK, run at boot: /usr/local/etc/rc.d/ncidd
-      so NCID can start when FreeBSD boots.
+    - If you are running the server and using a YAC gateway:
+        /usr/local/etc/rc.d/rc.d/ncidd onestart
+        /usr/local/etc/rc.d/rc.d/yac2ncid onestart
+        ncid &
+
+    - Call yourself and see if it works, if not, stop the gateway used:
+        /usr/local/etc/rc.d/rc.d/sip2ncid onestop
+      stop the server:
+        /usr/local/etc/rc.d/rc.d/ncidd onestop
+      and continue reading the test sections.
+
+    - If everything is OK, enable the NCID server, gateways, and
+      client modules, your are using, to autostart at boot:
+
+    NOTE: ncid normally starts in the GUI mode and there is no
+          ncid.rc script to start or stop it.  There are rc.d
+          scripts for starting ncid with output modules, for
+          example: ncid-page, ncid-popup, etc.
+
+START/STOP/STATUS:
+
+Use the /usr/local/etc/rc.d/ncid* scripts to start any of the daemons.
+The rc.d commands are: start, stop, restart, reload, and status.  The
+client can also be started using the output module name instead of ncid.
+All output modules can be run at the same time.
+
+Here are examples:
+
+    sudo /usr/local/etc/rc.d/ncidd start
+    sudo /usr/local/etc/rc.d/ncidd reload
+    sudo /usr/local/etc/rc.d/sip2ncid restart
+    sudo /usr/local/etc/rc.d/ncid-speak stop
+    sudo /usr/local/etc/rc.d/ncid-page status
+    sudo /usr/local/etc/rc.d/ncid-popup rcvar
+
+If a service is not enabled, you must prefix one to the commands;
+start becomes onestart, stop becomes onestop, and so forth.
+
+AUTOSTART:
+
+    If you want NCID services to start automatically at boot, you need to
+    add an enable line /etc/rc.conf.local for each service you want started.
+    If /etc/rc.conf.local does not exist, create it.
+
+    Here is the list of of rc scripts and their enable lines:
+
+        /usr/local/etc/rc.d/     /etc/rc.conf.local
+        --------------------     ------------------
+        ncidd                    ncidd_enable="YES"
+        sip2ncid                 sip2ncid_enable="YES"
+        yac2ncid                 yac2ncid_enable="YES"
+        ncidsip                  ncidsip_enable="YES"
+        ncid-page                ncidpage_enable="YES"
+        ncid-popup               ncidpopup_enable="YES"
+        ncid-samba               ncidsamba_enable="YES"
+        ncid-speak               ncidspeak_enable="YES"
+        ncid-yac                 ncidyack_enable="YES"
 
 TEST USING A MODEM:
 
@@ -58,8 +113,11 @@ TEST USING A MODEM:
       to also look at the alias structure
         ncidd -Dv5
 
-    - The second to last line should be: Modem set for CallerID.
-    - If it says: ERROR
+    - The last three lines will be simular to:
+        Modem set for CallerID.
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+    - If last line says: ERROR
       try the CID strings in ncidd.conf or in doc/CID-init
 
     - Call yourself and you should see that the Caller ID lines.
@@ -72,31 +130,16 @@ TEST USING A MODEM:
     - At any point, you can use command lines options to vary
       things like modem init and CID init.
 
-    - Once it works, you would normally start it:
-        ncidd
-
-TEST USING NCIDSIP:
-
-Start (in this order):
-    ncidd
-    ncidsip (may need to add options, review Setup-VOIP)
-    ncid
-
-    Call yourself
-
-    if you have problems, start ncidd in debug mode:
-        - ncidd -D
-    to get more information, add the verbose flag:
-        ncidd -Dv3
-    to also look at the alias structure
-        ncidd -Dv5
-    The second to last line should be: CallerID from CID gateway(s) only
-
-    Once you solve any problems, restart ncidd normally
+    - Once it works, start in this order:
+        /usr/local/etc/rc.d/ncidd onencidd
+        ncid &
 
 TEST USING A DEVICE (like the NetCallerID box):
 
-    Start ncidd then ncid
+    Start (in this order):
+        /usr/local/etc/rc.d/ncidd onestart
+        ncid &
+
     Call yourself
 
     if you have problems, start ncidd in debug mode:
@@ -105,9 +148,67 @@ TEST USING A DEVICE (like the NetCallerID box):
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The Last line should be: CallerID TTY port initialized.
+    The last three lines will be simular to:
+        CallerID TTY port initialized.
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
 
     Once you solve any problems, restart ncidd normally
+
+TEST USING sip2ncid:
+
+    Review sip2ncid to see how to set up your network for SIP Invite packets.
+
+    Start (in this order):
+        /usr/local/etc/rc.d/rc.d/ncidd onestart
+        /usr/local/etc/rc.d/rc.d/sip2ncid onestart
+        ncid &
+
+    Call yourself
+
+    if you have problems, start ncidd in debug mode:
+        - ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
+    The last three lines will be simular to:
+        CallerID only from CID gateways
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+
+    Once you solve any problems, restart ncidd normally
+
+TEST USING yac2ncid:
+        May need to add options to the configure file.
+
+    Start (in this order):
+        /usr/local/etc/rc.d/ncidd onestart
+        /usr/local/etc/rc.d/yac2ncid onestart
+        ncid &
+
+    Call yourself
+
+    if you have problems, start ncidd in debug mode:
+        - ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
+    The last three lines will be simular to:
+        CallerID only from CID gateways
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+
+    Once you solve any problems, restart ncidd normally
+
+GMAKE NOTE:
+
+    - The NCID source package requires gmake.
+
+	- The optional GNU getopt is installed from /usr/ports/devel/libgnugetopt:
+        cd /usr/ports/devel/gmake
+        make all install
 
 GETOPT NOTE:
 

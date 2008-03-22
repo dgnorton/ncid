@@ -2,7 +2,7 @@
 
 # ncid - Network Caller-ID client
 
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 # by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # ncid is free software; you can redistribute it and/or modify it
@@ -31,11 +31,11 @@ type setpri > /dev/null 2>&1 && setpri rr 1 $$
 # set up TiVo options to use out2osd \
 OPTSTIVO="--no-gui --tivo --message --call-prog --program /usr/local/bin/out2osd"
 # if name is tivocid, exec tivosh (for backward compatibility) \
-case $0 in *tivocid) exec tivosh "$0" $OPTSTIVO "$@"; esac
+case $0 in *tivocid) exec tivosh ncid $OPTSTIVO "$@"; esac
 # set up TiVo options to use ncid-tivo \
 OPTSTIVO="--no-gui --message --call-prog --program ncid-tivo"
 # if name is tivoncid, exec tivosh \
-case $0 in *tivoncid) exec tivosh "$0" $OPTSTIVO "$@"; esac
+case $0 in *tivoncid) exec tivosh ncid $OPTSTIVO "$@"; esac
 # look for the --no-gui option \
 GUI=""; for i in $*; do if [ "$i" = "--no-gui" ]; then  GUI="$i"; fi; done
 # if --no-gui is not specified, look for wish and exec it \
@@ -57,15 +57,16 @@ set ConfigFile  [list $ConfigDir/ncid.conf]
 
 # Constants
 set ProgDir     /usr/local/share/ncid
-set EXTPROG     ncid-speak
-set PIDfile     /var/run/ncid.pid
+set ProgName    ncid-speak
+set CygwinBat   /cygwin.bat
 
 # global variables that can be changed by command line options
 set Host        127.0.0.1
 set Port        3333
 set Delay       60
 set Raw         0
-set Program     [list $ProgDir/$EXTPROG]
+set PIDfile     /var/run/ncid.pid
+set Program     [list $ProgDir/$ProgName]
 set All         0
 set Verbose     0
 set NoGUI       0
@@ -81,10 +82,11 @@ if {[file exists $ConfigFile]} {
 # global variables that are fixed
 set Connect     0
 set Count       0
+set ExecSh      0
 set Ring        0
-set Try         0
 set Socket      0
-set Version     0.69
+set Try         0
+set Version     0.70
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -92,6 +94,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
                [--call-prog       | -C]
                [--delay seconds   | -D seconds]
                [--message         | -M]
+               [--pidfile FILE    | -p pidfile]
                [--program PROGRAM | -P PROGRAM]
                [--raw             | -R]
                [--ring count      | -r count]
@@ -102,8 +105,9 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
 
 set About \
 "
-Network Caller ID Client: NCID Version $Version
+Network Caller ID Client (ncid): Version $Version
 Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+Copyright (C) 2007, 2008
 by John L. Chmielewski
 "
 
@@ -315,19 +319,30 @@ proc sendCID {cid} {
     global All
     global Program
     global TivoFlag
+    global ExecSh
 
     if $All {
       # pass DATE\nTIME\nNUMBER\nNAME\n
-      catch {exec [lindex $Program 0] << \
-        "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n" &} oops
+      if $ExecSh {
+        catch {exec sh -c $Program << \
+          "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n" &} oops
+      } else {
+        catch {exec $Program << \
+          "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n" &} oops
+      }
       } elseif $TivoFlag {
         # pass NAME NUMBER\nLINE\n
-        catch {exec [lindex $Program 0] << \
+        catch {exec $Program << \
           "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n" &} oops
       } else {
         # pass DATE\nTIME\nNUMBER\nNAME\nLINE\n
-        catch {exec [lindex $Program 0] << \
-          "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n" &} oops
+        if $ExecSh {
+          catch {exec sh -c $Program << \
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n" &} oops
+        } else {
+          catch {exec $Program << \
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n" &} oops
+        }
       }
 }
 
@@ -344,7 +359,11 @@ proc sendMSG {msg} {
     } else {
       # send "\n\n\n$msg\n\n"
       # in place of: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n"
-      catch {exec [lindex $Program 0] << "\n\n\n$msg\n\n" &} oops
+      if $ExecSh {
+        catch {exec sh -c $Program << "\n\n\n$msg\n\n" &} oops
+      } else {
+        catch {exec $Program << "\n\n\n$msg\n\n" &} oops
+      }
     }
 }
 
@@ -413,8 +432,10 @@ proc getArg {} {
     global Ring
     global CallOnRing
     global ProgDir
+    global ProgName
     global TivoFlag
     global MsgFlag
+    global PIDfile
 
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
@@ -429,7 +450,6 @@ proc getArg {} {
                     set CallOnRing 1
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
             }
-            {^-N$} -
             {^--no-gui$} {set NoGUI 1}
             {^-A$} -
             {^--all$} {set All 1}
@@ -448,10 +468,16 @@ proc getArg {} {
             {^-P$} -
             {^--program$} {
                 incr cnt
-                if {$optarg != ""
-                    && [regexp {^[./\0]+} $optarg]} {
-                    set Program [list $optarg]
-                } else {set Program [list $ProgDir/$optarg]}
+                if {$optarg != ""} {
+                    if {[regexp {^.*/} $optarg]} {
+                        set Program [list $optarg]
+                    } else {set Program [list $ProgDir/$optarg]}
+                } else {exitMsg 6 "Missing $opt argument\n$Usage\n"}
+            }
+            {^-p$} -
+            {^--pidfile$} {
+                incr cnt
+                set PIDfile $optarg
             }
             {^-T$} -
             {^--tivo$} {set TivoFlag 1}
@@ -572,6 +598,7 @@ proc handleGUIMSG {} {
 # handle a PID file, if it can not be created, ignore it
 proc doPID {} {
     global PIDfile
+    global Verbose
 
     set count 0
     set PIDdir [file dirname $PIDfile]
@@ -597,6 +624,7 @@ proc doPID {} {
         set chan [open $PIDfile "CREAT WRONLY" 0644]
         writePID $chan
     }
+    if $Verbose {puts "Using pidfile: $PIDfile"}
 }
 
 # get process ID, write it to the pidfile, and close it
@@ -611,10 +639,17 @@ if {!$NoGUI} makeWindow
 if $Callprog {
     if {[file exists $Program]} {
         if {![file executable $Program]} {
-            exitMsg 2 "Program Not Executable: $Program"
+            # Simple test to see if running under Cygwin
+            if {[file exists $CygwinBat]} {
+                # The Cygwin TCL cannot execute shell scripts
+                set ExecSh 1
+            } else {
+                exitMsg 2 "Program Not Executable: $Program"
+            }
         }
-    } else { exitMsg 3 "Program Not Found: $Program" }
-} else { set Verbose 1 }
+    } else {exitMsg 3 "Program Not Found: $Program"}
+    if $Verbose {puts "Using output Module: $Program"}
+} else {set Verbose 1}
 if {$NoGUI} doPID
 connectCID $Host $Port
 if {!$NoGUI} {bind .im <KeyPress-Return> handleGUIMSG}

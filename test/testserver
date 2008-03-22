@@ -1,6 +1,7 @@
 #! /bin/sh
 
 # Created by John L. Chmielewski on Sun June 11, 2006
+# Last modified by jlc on Sun Dec 30, 2007
 
 # script runs ncidd in debug mode on port 3334 for testing
 # a server or a client
@@ -22,6 +23,7 @@ $NCID -Dv3 \
       -A T-ncidd.alias \
       -C T-ncidd.conf \
       -N 1 \
+      -P ncidd.pid \
       -p 3334 \
       -s cidlog \
       -s cidinfo \

@@ -15,6 +15,8 @@ prefix      = /usr/local
 prefix2     = $(prefix)
 prefix3     =
 
+BASH=/bin/bash
+
 BIN         = $(prefix)/bin
 SBIN        = $(prefix)/sbin
 ETC         = $(prefix2)/etc
@@ -33,8 +35,11 @@ DEFINES     = -D_BSD_SOURCE \
               -DCONFIG=\"$(CONFFILE)\" \
               -DPIDFILE=\"$(PIDFILE)\"
 
-CFLAGS      = -O $(DEFINES) -I.
-LDFLAGS     = -s -lpcap
+MFLAGS      =
+CFLAGS      = -O $(DEFINES) -I. $(MFLAGS)
+
+STRIP       = -s
+LDFLAGS     = $(STRIP) $(MFLAGS) -lpcap
 
 PLSCRIPT    = $(PLSOURCE:.pl=)
 SHSCRIPT    = $(SHSOURCE:.sh=)
@@ -119,6 +124,9 @@ clean:
 
 clobber: clean
 	rm -f $(PROG) $(PLSCRIPT) $(SHSCRIPT)
+	rm -f $(PROG).ppc-mac $(PROG).i386-mac
+
+distclean: clobber
 
 files:	$(FILES)
 
@@ -131,5 +139,5 @@ files:	$(FILES)
 	chmod +x $@
 
 % : %.sh
-	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
+	sed '1s,/bin/bash,$(BASH),;/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod +x $@

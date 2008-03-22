@@ -1,6 +1,6 @@
 NCID - Network Caller ID Install
 
-Last edited: Tue Oct 16, 2007
+Last edited: Tue jan 22, 2008
 
 Layout:
 	The programs go into $prefix/bin $prefix/sbin
@@ -52,7 +52,10 @@ INSTALL:
 
 TEST USING A MODEM:
 
-	Start ncidd then ncid
+    Start (in this order):
+	    ncidd
+        ncid
+
 	Call yourself
 
 	if you have problems, start ncidd in debug mode:
@@ -61,7 +64,10 @@ TEST USING A MODEM:
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The Last line should be: Modem set for CallerID.
+    The last three lines will be simular to:
+        Modem set for CallerID.
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
 
     if ncidd aborts when you call yourself with something like:
         Modem set for CallerID.
@@ -77,28 +83,12 @@ TEST USING A MODEM:
 
 	Once you solve the problems, restart ncidd normally
 
-TEST USING NCIDSIP:
-
-Start (in this order):
-	ncidd
-    ncidsip (may need to add options, review Setup-VOIP)
-    ncid
-
-	Call yourself
-
-	if you have problems, start ncidd in debug mode:
-		- ncidd -D
-    to get more information, add the verbose flag:
-        ncidd -Dv3
-    to also look at the alias structure
-        ncidd -Dv5
-    The second to last line should be: CallerID from CID gateway(s) only
-
-	Once you solve any problems, restart ncidd normally
-
 TEST USING A DEVICE (like the NetCallerID box):
 
-	Start ncidd then ncid
+    Start (in this order):
+	    ncidd
+        ncid
+
 	Call yourself
 
 	if you have problems, start ncidd in debug mode:
@@ -107,6 +97,53 @@ TEST USING A DEVICE (like the NetCallerID box):
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The Last line should be: CallerID TTY port initialized.
+    The last three lines will be simular to:
+        CallerID TTY port initialized.
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
 
 	Once you solve any problems, restart ncidd normally
+
+TEST USING sip2ncid:
+
+    Start (in this order):
+	    ncidd
+        sip2ncid (may need to add options, review Setup-sip2ncid)
+        ncid
+
+	Call yourself
+
+	if you have problems, start ncidd in debug mode:
+		- ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
+    The last three lines will be simular to:
+        CallerID only from CID gateways
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+
+	Once you solve any problems, restart ncidd normally
+
+TEST USING yac2ncid:
+
+    Start (in this order):
+	    ncidd
+        yac2ncid (may need to add options)
+        ncid
+
+	Call yourself
+
+	if you have problems, start ncidd in debug mode:
+		- ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
+    The last three lines will be simular to:
+        CallerID only from CID gateways
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+
+Once you solve any problems, restart ncidd normally

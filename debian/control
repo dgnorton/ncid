@@ -7,16 +7,32 @@ Standards-Version: 3.7.2
 
 Package: ncid
 Architecture: i386
-Depends: ${shlibs:Depends}, tcl8.4, tk8.4, perl
+Depends: ${shlibs:Depends}, tcl8.4, tk8.4, libpcap0.8, perl
 Description: Network Caller ID server, client, and gateways
- NCID is a TCP client/server program for distributing Caller ID information.
+ NCID is Caller ID (CID) distributed over a network to a variety of
+ devices and computers.
  .
- The server, ncidd, either listens to a modem, device, or gateway, for
- the Caller-ID data.  The data is formatted and sent, via a TCP socket,
- to mutiple clients.
+ NCID supports messages.  Clients can send a one line message to all
+ connected clients.
  .
- The client, ncid, displays the Caller ID data and the Server Caller-ID
- log.  It supports plugin output modules that process the CID received.
+ The server, ncidd, monitors either a modem, device or gateway for the CID
+ data.  The data is collected and sent, via TCP, to one or more clients.
+ The server supports multiple gateways which can be used with  or without
+ a modem or device.
  .
- The NCID gateways get Caller ID information from from the network, either
- from SIP Invite, or YAC.
+ The client, ncid, receives the Caller ID (CID) message and displays it
+ in a GUI or terminal window. The client also comes with output modules.
+ One module can speak the CID, another can send the CID to a pager or cell
+ phone.  There are other output modules including ones that display the
+ CID on a TiVo or MythTV.
+ .
+ The client, ncid, normally displays the Caller ID data and the Server
+ Caller-ID log in a GUI window. The client output can be changed with
+ output modules. One module can speak the CID, another can send the CID
+ to a pager or cell phone.  There are other output modules, including
+ ones that display the CID on a TiVo or MythTV.
+ .
+ The SIP gateways obtain the Caller ID information from a VOIP system,
+ using SIP Invite.
+ .
+ The YAC gateway obtains the Caller ID information from a YAC server.

@@ -1,7 +1,7 @@
 SHMODULES = ncid-page.sh ncid-samba.sh ncid-speak.sh ncid-mythtv.sh \
-           ncid-tivo.sh ncid-yac.sh
+            ncid-popup.sh ncid-skel.sh ncid-tivo.sh ncid-yac.sh
 DIST      = ncidmodules.conf.dist
-FILES     = README Makefile $(MODULES) $(ETCFILE)
+FILES     = README.modules Makefile $(MODULES) $(ETCFILE)
 
 prefix    = /usr/local
 prefix2   = $(prefix)
@@ -9,6 +9,7 @@ prefix2   = $(prefix)
 setmod    = NONE
 
 MODULEDIR = $(prefix)/share/ncid
+BIN       = $(prefix)/bin
 ETC       = $(prefix2)/etc
 
 CONFDIR   = $(ETC)/ncid
@@ -24,7 +25,6 @@ install: install-etc install-modules
 install-modules: $(MODULES)
 	@if test ! -d $(MODULEDIR); then mkdir -p $(MODULEDIR); fi
 	install -m 755 $(MODULES) $(MODULEDIR)
-	install -m 644 README $(MODULEDIR)
 
 install-etc: $(ETCFILE)
 	@if test -f $(CONFDIR)/$(ETCFILE); \
@@ -46,4 +46,4 @@ files:	$(FILES)
 	chmod 755 $@
 
 % : %.dist
-	sed '/"$(setmod)"/s/#//' $< > $@
+	sed '/"$(setmod)"/s/#//;s,/usr/local,$(prefix),' $< > $@

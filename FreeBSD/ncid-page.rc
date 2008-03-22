@@ -1,0 +1,32 @@
+#!/bin/sh
+
+#
+# PROVIDE: ncid-pager
+# REQUIRE: NETWORKING ncidd
+#
+# Add the following lines to /etc/rc.conf to enable ncid-pager:
+#
+#ncidpage_enable="YES"
+#
+ncidpage_enable="${ncidpage_enable-NO}"
+
+. /etc/rc.subr
+
+rcvar=`set_rcvar ncidpage`
+name=ncid
+module=ncid-page
+pidfile=/var/run/$module.pid
+ringopt="-r 4"
+
+ConfigDir=/usr/local/etc/ncid
+ConfigFile=$ConfigDir/ncidmodules.conf
+
+# source config file
+[ -f $ConfigFile ] && . $ConfigFile
+
+command=/usr/local/bin/$name
+command_args="--no-gui -p $pidfile -C -P $module $ringopt &"
+procname=/usr/local/bin/tclsh8.4
+
+load_rc_config $name
+run_rc_command "$1"

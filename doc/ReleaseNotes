@@ -1,60 +1,103 @@
-NCID Source package:             ncid-0.69.tar.gz
+NCID Source package:             ncid-0.70.tar.gz
 
 NCID Binary Packages:
 
-    Fedora 7 package:            ncid-0.69-1.i386.rpm
-    Fedora 7 64 bit package:     ncid-0.69-1.x86_64.rpm
-    TiVo Series1 package:        ncid-0.69-1-ppc-tivo.tgz
-    TiVo Series 2 and 3 package: ncid-0.69-1-mips-tivo.tgz
-    Macintosh OS X package:      ncid-0.69-1-ppc-mac-osx.tgz
-    FreeBSD 5.4 package:         ncid-0.69-1-freebsd.tgz
-    Cygwin Windows package:      ncid-0.69-1-cygwin.tgz
-    Windows client installer:    ncid-0.69-1-setup.exe
-    Ubuntu Feisty package:       ncid_0.69-0ubuntu1_i386.deb
+    Fedora 7 package:                    ncid-0.70-1.i386.rpm
+    Fedora 7 64 bit package:             ncid-0.70-1.x86_64.rpm
+    TiVo Series1 package:                ncid-0.70-1-ppc-tivo.tgz
+    TiVo Series 2 and 3 package:         ncid-0.70-1-mips-tivo.tgz
+    Macintosh OS X (i386 & ppc) package: ncid-0.70-1-i386-mac-osx.tgz
+    FreeBSD 5.4 package:                 ncid-0.70-1-freebsd.tgz
+    Cygwin Windows package:              ncid-0.70-1-cygwin.tgz
+    Windows client installer:            ncid-0.70-1-client_setup.exe
+    Ubuntu Feisty package:               ncid_0.70-0ubuntu1_i386.deb
 
-Source Changes:
 
-    Restructed the source distribution directories and files to make
-    it easier to understand the source. Added a debian directory for
-    a Ubuntu package.
+Windows:
 
-Server Changes:
+    The client installer was renamed to ncid-0.70-1-client_setup.exe
+    to avoid any confusion that it might be the complete NCID package.
 
-    Improved ncidd signal handling, error on exit, and added
-    PID file support.
+    NCID will now run on the Windows desktop using andLinux, which is
+    a complete Ubuntu Linux system running seamlessly in Windows 2000
+    based 32-bit systems (2000, XP, 2003, Vista).  The minimal andLinux
+    distribution is about 143 MB.
+
+    The NCID Ubuntu package installs and upgrades easily with the GUI
+    package managers.  NCID modem support in untested, but probably
+    does not work, as when using Cygwin on Windows.  If you want to use
+    a modem instead of SIP, use the YAC modem server and the YAC gateway.
+
+    See http://www.andlinux.org/ for more information on andLinux.
+
+Fedora:
+
+    Replaced the ncid init file with one init file for each output module.
+    All output modules can be used at the same time.
+
+FreeBSD:
+
+    Rewrote the rc scripts to the current standard used in FreeBSD.
+    Replaced the ncid rc file with one rc file for each output module.
+    All output modules can be used at the same time.
+
+Macintosh:
+
+    The distribution runs on Mac OSX 10.3.9 or later.  It contains FAT
+    binaries for the Intel and PPC platforms.
+
+Ubuntu:
+
+    Replaced the ncid init file with one init file for each output module.
+    All output modules can be used at the same time.
+    Added the missing dependency in the Ubuntu package.
+
+START/STOP/status and AUTOSTART:
+
+    The init and rc scripts used for start/stop/status and to autostart
+    NCID in the Fedora, FreeBSD, and Ubuntu packages were rewritten to
+    support multiple ncid clients each with a unique output module.
+
+NCID Server Changes:
+
+    Reloads the alias file when the signal "SIGHUP" is caught.
+    Fixed the endless poll error problem when the Cygwin ncid disconnects.
+    Added new options to set the server telephone line indicator.
 
 CID Gateway Changes:
 
-    Added sip2ncid, intended as a replacement for ncidsip.
+    ncidsip:
+        Fixed VERSION line that broke ncidsip in 0.69
+        Rewrote decoding to handle the new Vonage SIP packets.
 
-    Added workaround for broken traps on the Tivo, and improved
-    the signal handler for yac2ncid.
+    sip2ncid:
+        Added a sip2ncid log file.
+        Fixed decoding errors
+        Corrected sip2ncid usage messge
+        Rewrote decoding to handle the new Vonage SIP packets.
 
-    Added a signal handler and PID file support for ncidsip.
+    yac2ncid:
+        Added more verbose output to assist in troubleshooting
+        Added BSD to autodetect
 
-Client Changes:
+NCID Client Changes:
 
-    Changed the location of the builtin default config file,
-    improved the shell script startup, and added PID file
-    support for ncid.
+    Corrected ncid startup when using tivocid and tivoncid aliases.
+    Fixed a Cygwin problem where ncid would not execute output modules.
+    Added a PID file option to change the default PID file name.
 
-Client Module Changes:
+NCID Client Module Changes:
 
-    Improved the email format of the ncid-page module, and email can
-    be sent by a selected user.
-
-    The modules configuration file was updated.
-
-Script changes:
-
-    None
-
-Tool changes:
-
-    None
+    Added ncid-popup.  It pops up the Caller ID in KDE or GNOME.
+    Added ncid-skel.  It is useful in troubleshooting and writing modules
 
 Documentation Changes:
 
-    Improved README, INSTALL, and man pages, and renamed some man pages.
-
-    Added sip2ncid-rebose, sip2ncid.8, and sip2ncid.conf.5
+    Corrected and updated man page for sip2ncid.
+    Corrected and updated all INSTALL files.
+    Added Fedora, Ubuntu, and andLinux INSTALL files.
+    Renamed README files in subdirectories.
+    Updated the man pages for ncid and ncidd
+    Updated most documentation files
+    Merged some documentation files.
+    Rewrote INSTALL-Win

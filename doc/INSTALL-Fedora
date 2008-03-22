@@ -1,0 +1,87 @@
+Fedora Install
+
+Last edited: Thu Mar 13, 2008
+
+If NCID does not work, see INSTALL for some simple tests.
+
+INSTALL:
+
+    - Download the latest NCID rpm package from sourceforge
+    - Open the file viewer to view the NCID rpm package
+    - Install the NCID rpm package by double clicking on it.
+
+    If you want to use ncidsip:
+
+    - Use "Add/Remove Software" to install "perl-IO-Interface"
+    - Download, compile, and install the Net-Pcap module
+
+CONFIGURE:
+
+    - The default modem port in ncidd is /dev/modem.  This is just a
+      symbolic link to the real modem port. It is probably best to
+      set your modem port in ncidd.conf.  This assumes serial port 1:
+        set ttyport = /dev/ttyS0
+    - If you are using sip2ncid or yac2ncid instead of a modem
+      you need to set noserial to 1:
+        set noserial = 1
+
+STARTUP:
+
+    - if you are running the server and client on the same computer
+      and using a modem:
+        sudo service ncidd start
+        ncid &
+
+    - If you are running the server and using a SIP gateway:
+        sudo service ncidd start
+        sudo service sip2ncid start
+        ncid &
+
+    - If you are running the server and using a YAC gateway:
+        sudo service ncidd start
+        sudo service yac2ncid start
+        ncid &
+
+    - Call yourself and see if it works, if not, stop the gateway used:
+        sudo service sip2ncid stop
+      stop the server:
+        sudo service ncidd stop
+      and continue reading the test sections.
+
+    - If everything is OK, enable the NCID server, gateways, and
+      client modules, your are using, to autostart at boot.  The
+      GUI incid client must be started after login, not boot.
+
+    NOTE: ncid normally starts in the GUI mode and there is no
+          ncid.init script to start or stop it.  There are rc.init
+          scripts for starting ncid with output modules, for
+          example: ncid-page, ncid-popup, etc.
+
+START/STOP/STATUS:
+
+    Use the service command to start any of the daemons.  The service
+    commands are: start, stop, restart, reload, and status.  The client
+    can also be started using the output module name instead of ncid.
+    All output modules can be run at the same time.
+
+    Here are some examples:
+    - start the NCID server: sudo service ncidd start
+    - stop the ncid2sip server: sudo service sip2ncid stop
+    - reload the server alias file: sudo service ncidd reload
+    - start ncid with ncid-page: sudo service ncid-page start
+    - get the status of ncid with ncid-speak: sudo service ncid-speak status
+
+    Review the man page (man service).
+
+AUTOSTART:
+
+    Use the chkconfig command to configure/remove the service to start at boot.
+
+    Here are some examples:
+    - autostart ncidd at boot: sudo chkconfig ncidd on
+    - autostart ncid-page at boot: sudo chkconfig ncid-page on
+    - autostart ncid-popup at boot: sudo chkconfig ncid-popup on
+    - list runlevels for sip2ncid: sudo chkconfig --list sip2ncid
+    - remove ncid-speak from starting at boot: sudo chkconfig ncid-speak off
+
+    Review the manpage (man chkconfig).

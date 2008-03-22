@@ -1,5 +1,6 @@
-# File NCID-FORMAT
-# Thu Jun 8, 2006
+# File NCID-DataFormats
+
+# Last modified Thu Mar 16, 2008
 
 =====================
 Example ncid outputs:
@@ -17,13 +18,17 @@ Example ncid outputs:
   PASADENA, CA          (name)
   <1122>                (line indicator, can be blank line)
 
-=======================
-Example ncidsip output:
-=======================
+====================================
+Example ncidsip and sip2ncid output:
+====================================
 
   CID: ###DATEmmddhhss...LINEidentifier...NMBRnumber...NAMEwords+++
 
   CID: ###DATE05111525...LINE1122...NMBR14075555000...NAMEJohn @ home+++
+
+  CIDINFO: ###CANCEL...NMBRnumber...DATEmmddhhmm+++
+
+  CIDINFO: ###BYE...NMBRnumber...DATEmmddhhmm+++
 
 ======================
 Example ncidd outputs:

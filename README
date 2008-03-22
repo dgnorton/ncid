@@ -10,19 +10,19 @@ The NCID package contains:
     - client output modules and a configuration script for them
     - A SIP Invite Gateway: sip2ncid
       sip2ncid runs on Linux/UNIX/Windows/Mac OSX/Cygwin
+    - Original SIP Invite Gateway: ncidsip
+      ncidsip runs on Linux/UNIX/Windows/Mac OSX/Cygwin
+      (requires Perl and Perl modules)
     - YAC to NCID gateway client: yac2ncid (requires a yac server to input CID)
       yac2ncid Linux/UNIX/Cygwin/Mac
     - tools to work with the CID log and alias files: ncidtools
       ncidtools runs on Linux/UNIX/Mac OSX/Cygwin/TiVo (requires Perl)
     - a log rotate module
-    - init scripts for Fedora, FreeBSD, and Ubuntu
-
-    Recomend sip2ncid instead of ncidsip
-    - A SIP Invite Gateway: ncidsip
-      ncidsip runs on Linux/UNIX/Windows/Mac OSX/Cygwin (requires Perl)
+    - init scripts for Fedora, and Ubuntu
+    - rc scripts for FreeBSD
 
 The server, ncidd, is a TCP/IP Caller ID Daemon.  It either monitors a modem
-or serial device for Caller ID, or obtains it from a CID client.  It sends
+or serial device for Caller ID, or obtains it from a CID gateway.  It sends
 the CID information over the network to its clients.  The server can alias
 the NUMBER, NAME, NUMBER and NAME, and LINE identifier received before it
 is sent to its clients.
@@ -30,20 +30,24 @@ is sent to its clients.
 The NCID package has the following features:
 
     Server Features (ncidd):
-    - Allows a number of clients.
-    - Does Name/Number/Line aliases, so the display can be customized.
-      For example: "Wireless Caller" becomes "John on Cell".
-    - Logs all calls:  Track who called when.
-    - Has a configuration file to set most options and aliases.
+    - Gets CID information from a modem, device or gateway.
     - Shares the modem for outgoing calls.
     - Supports CID devices like NetCallerID
-    - Runs on Linux, UNIX, Macintosh OS X, and the TiVo.
+    - Allows multiple clients and gateways.
+    - Does Name/Number/Line aliases, so the display can be customized.
+      For example: "Wireless Caller" becomes "John on Cell".
+    - Can alias the telephone line identifier
+    - Logs all calls:  Track who called when.
+    - Has a configuration file to set most options and aliases.
+    - Runs on Linux, UNIX, Macintosh OS X, TiVo and Windows using andLinux
+      or Cygwin.
     - Supports Distinctive Ring
-    - Supports Multiline (1 POTS and 1 or more VoIP lines)
-      VoIP supports requires a SIP Invite Client
+    - Supports Multiline (1 POTS and 1 or Gateways)
+    - VoIP supports requires a SIP Gateway
+    - Supports a remote modem using a YAC Gateway
     - Send important error messages to the clients.
     - Send a message received from a client to all connected clients.
-    - Clients can send a CID message to the server
+    - Reloads the alias file when it receives a SIGHUP signal.
     - Documented protocol
 
     Client Features (ncid):
@@ -55,10 +59,10 @@ The NCID package has the following features:
       CID on devices like cell phones.
     - Runs on Windows, Linux, UNIX, and Macintosh OS X.
     - Can send a message to all active clients using the server
-    - Can have multiple ncid clients
+    - Can have multiple clients, usually each with a different output module.
     - Documented protocol
 
-    CID gateway Features (sip2ncid)
+    CID Gateway Features (sip2ncid and ncidsip)
     - Receives Caller ID information from SIP Invite
     - Creates a CID Message and sends it to the NCID server
     - indicates call answered or not answered
@@ -67,29 +71,22 @@ The NCID package has the following features:
     - can have multiple ncidsip clients, each monitoring VoIP hardware
     - Documented protocol
 
-    CID gateway Features (ncidsip)
-    - Receives Caller ID information from SIP Invite
-    - Creates a CID Message and sends it to the NCID server
-    - indicates call not answered
-    - Handles multiple VoIP Lines
-    - Indicates the telephone line by the last 4 digits
-    - can have multiple ncidsip clients, each monitoring VoIP hardware
-    - Documented protocol
-
-    CID gateway Features (yac2ncid)
+    CID Gateway Features (yac2ncid)
     - Receives Caller ID information from a YAC server
     - Creates a CID Message and sends it to the NCID server
-    - telephone line can be indicated in yac2ncid.conf
+    - telephone line identifier can be set in yac2ncid.conf
     - Documented protocol
 
 See the doc directory for most documentation, including OS
 specific INSTALL files.
 
+The Debian directories contains files specific to Debian.
 The Fedora directories contains files specific to Fedora.
 The FreeBSD directories contains files specific to FreeBSD.
 
-See cidgate/README Fedora/README FreeBSD/README modules/README
-scripts/README, test/README, and tools/README.
+See cidgate/README.gateways Fedora/README.Fedora FreeBSD/README.FreeBSD
+modules/README.modules scripts/README.logfile, tools/README.tools, and
+test/README.
 
 Instructions to make and install the ncid package are in the various
 INSTALL files included and the web site.
@@ -120,7 +117,7 @@ The distributed configuration files are:
     ncidd.alias
     ncidsip.conf
     ncidrotate.conf
-    ncidmodule.conf
+    ncidmodules.conf
     sip2ncid.conf
     yac2ncid.conf
 

@@ -43,8 +43,10 @@ binary-arch:    checkroot build
 		install install-ubuntu
 	rm $$(pwd)/debian/root/var/log/cidcall.log
 	cp -a debian/changelog $(docdir)/changelog.Debian
-	cp -a README VERSION doc/* $(docdir)
-	rm -f debian/root/$(docdir)/CHANGES debian/root/$(docdir)/INSTALL*
+	cp -a README VERSION doc debian/README.Debian $(docdir)
+	cp -a cidgate/README.Gateways modules/README.modules $(docdir)
+	cp -a scripts/README.logfile tools/README.tools $(docdir)
+	rm -f debian/root/$(docdir)/CHANGES
 	find debian/root -name \*CVS -print | xargs rm -fr
 	gzip -r9 debian/root/usr/share/man
 	dpkg-shlibdeps debian/root/usr/sbin/ncidd

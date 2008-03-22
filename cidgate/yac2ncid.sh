@@ -9,10 +9,11 @@
 ## Version: 1.0 (6/14/2007)
 ## Version: 1.0a (6/26/2007)
 ##
-## Modified on Sat Sep 12, 2007 by John L. Chmielewski
+## Version: 1.0.1 (NCID 0.69) (9/12/2007) by John L. Chmielewski
+## Version: 1.0.2 (1/20/2007) by John L. Chmielewski
 ##
-## Version: 1.0.1 (NCID 0.69)
-##
+VERSION="1.0.2 (NCID 0.70)"
+
 ME="$(basename $0)"
 ME="${ME%.sh}"
 MYDIR="$(cd $(dirname $0) && pwd -P)"
@@ -76,6 +77,9 @@ NETCAT_HOBBIT_LISTEN_OPTS="-p"
 
 NETCAT_JACKSON_SEND_OPTS="-w1"
 NETCAT_JACKSON_LISTEN_OPTS=""
+
+NETCAT_BSD_SEND_OPTS="-w1"
+NETCAT_BSD_LISTEN_OPTS=""
 
 NETCAT_CUSTOM_SEND_OPTS="-w1"
 NETCAT_CUSTOM_LISTEN_OPTS="-p"
@@ -153,22 +157,30 @@ send2ncid(){
 }
 
 
-
-CONFFILE="$(findfile ${ME%.sh}.conf "${MYDIR}:${MYDIR}/../etc:${ConfigDir}:~:/etc")"
-
-isblank ${CONFFILE} ||\
-	source ${CONFFILE}
-
-
 ## Check command line options
 
 test "z${1}" == "z-v" &&\
 	VERBOSE="yes" &&\
-	msg Enabling verbose mode due to command line option
+	msg Enabling verbose mode due to command line option;\
+    msg Version ${VERSION}
+
+
+CONFFILE="$(findfile ${ME%.sh}.conf "${MYDIR}:${MYDIR}/../etc:${ConfigDir}:~:/etc")"
+
+isblank ${CONFFILE} &&\
+    msg ${ME%.sh}.conf not found ||\
+    {
+	    msg Using ${CONFFILE}
+        source ${CONFFILE}
+    }
+
 
 ## Parse NCIDSERVER
 NCIDHOST="$(echo ${NCIDSERVER:-localhost} | cut -d: -f1)"
 NCIDPORT="$(echo ${NCIDSERVER:-localhost} | cut -s -d: -f2)"
+msg Using NCID host: ${NCIDHOST}
+msg Using NCID port: ${NCIDPORT}
+msg Using YAC port: ${YACPORT}
 
 
 ## Make sure netcat is available
@@ -194,6 +206,10 @@ then
 	then
 		msg Detected \"Eric Jackson\" version of netcat
 		NETCAT_TYPE="JACKSON"
+	elif ! isblank "$(${NETCAT:-nc} -h 2>&1 | grep '46DEdhklnrStUuvz')"
+	then
+		msg Detected \"BSD\" version of netcat
+		NETCAT_TYPE="BSD"
 	else
 		msg Unknown version of netcat, using CUSTOM values
 		NETCAT_TYPE="CUSTOM"
@@ -216,6 +232,11 @@ case "${NETCAT_TYPE:-CUSTOM}" in
 		msg Using Jackson settings...
 		NETCAT_SEND_OPTS="${NETCAT_JACKSON_SEND_OPTS}"	
 		NETCAT_LISTEN_OPTS="${NETCAT_JACKSON_LISTEN_OPTS}"	
+		;;
+	"BSD"|"BSD")
+		msg Using BSD settings...
+		NETCAT_SEND_OPTS="${NETCAT_BSD_SEND_OPTS}"	
+		NETCAT_LISTEN_OPTS="${NETCAT_BSD_LISTEN_OPTS}"	
 		;;
 	*)
 		msg Using custom settings...

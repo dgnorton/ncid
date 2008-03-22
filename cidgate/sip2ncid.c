@@ -1,11 +1,9 @@
 /*
  * sip2ncid - Inject CID info by snooping SIP invites
  *
- * Copyright 2007
+ * Copyright 2007, 2008
  *  by John L. Chmielewski <jlc@users.sourceforge.net>
  *
- * This file is part of sip2ncid, a On Screen Display for the TiVo.
- * 
  * sip2ncid is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -30,6 +28,7 @@ int sipport    = SIPPORT;
 int verbose    = 1;
 char *pidfile  = PIDFILE;
 char *ncidhost = LOCALHOST;
+char *logfile  = LOGFILE;
 char *name, *siphost, *device, *readfile, *writefile;
 pid_t pid;
 FILE *logptr;
@@ -45,6 +44,7 @@ int main(int argc, char *argv[])
 {
     int argind;
     char msgbuf[BUFSIZ];
+    struct stat statbuf;
 
     /* global containing name of program */
     name = strrchr(argv[0], (int) '/');
@@ -59,11 +59,21 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    /* if not in test mode */
+    if (!test){
+        /* create or open existing logfile */
+        if ((logptr = fopen(logfile, "a")) == NULL)
+        {
+            sprintf(msgbuf, "%s: %s\n", logfile, strerror(errno));
+            logMsg(LEVEL1, msgbuf);
+        }
+    }
+
     sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(WITHYEAR),
             name, VERSION);
     logMsg(LEVEL1, msgbuf);
 
-    /* look for test mode */
+    /* if in test mode */
     if (test)
     {
         /* test mode is also debug mode */
@@ -73,6 +83,7 @@ int main(int argc, char *argv[])
                 readfile ? "Dump read" : "Test");
         logMsg(LEVEL1, msgbuf);
     }
+    /* if in debug mode */
     else if (debug)
     {
         sprintf(msgbuf, "Debug mode\n");
@@ -156,6 +167,7 @@ int getOptions(int argc, char *argv[])
         {"help", 0, 0, 'h'},
         {"interface", 1, 0, 'i'},
         {"listdevs", 0, 0, 'l'},
+        {"logfile", 1, 0, 'L'},
         {"ncid", 1, 0, 'n'},
         {"pidfile", 1, 0, 'P'},
         {"sip", 1, 0, 's'},
@@ -166,7 +178,7 @@ int getOptions(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "hi:ln:r:s:tv:w:C:DP:TV",
+    while ((c = getopt_long (argc, argv, "hi:ln:r:s:tv:w:C:DL:P:TV",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -244,6 +256,9 @@ int getOptions(int argc, char *argv[])
                 break;
             case 'D':
                 debug = 1;
+                break;
+            case 'L':
+                if (!(logfile = strdup(optarg))) errorExit(-1, name, 0);
                 break;
             case 'P':
                 if (!(pidfile = strdup(optarg))) errorExit(-1, name, 0);
@@ -379,7 +394,7 @@ int socketRead()
     if ((num = read(sd, msgbuf, BUFSIZ-1)) > 0)
     {
         msgbuf[num] = '\0';
-        logMsg(LEVEL3, msgbuf);
+        logMsg(LEVEL5, msgbuf);
     }
     return(num);
 }
@@ -423,8 +438,9 @@ void processPackets(u_char *args,
                     const struct pcap_pkthdr* pkthdr,
                     const u_char* packet)
 {
-    static int count = 1;                  /* packet counter */
+    static int pktcnt = 1;                  /* packet counter */
     static int linecnt;
+    static unsigned int charcnt;            /* character count */
     static char *linenum[MAXLINENUM];
 
     /* declare pointers to packet headers */
@@ -432,7 +448,7 @@ void processPackets(u_char *args,
     const struct udphdr *udp;              /* UDP Header */
     const char   *pdata;                   /* Packet Data */
 
-    int size_ip, size_udp, size_pdata;
+    int size_ip, size_udp, size_pdata, cnt;
 
     char msgbuf[BUFSIZ], cidmsg[BUFSIZ];
     char *sptr, *eptr, *elptr, *line, *number, *name;
@@ -453,11 +469,21 @@ void processPackets(u_char *args,
          *  returns -1 when socket has no data to read 
          *  returns a number when data read from socket
          */
-        if (!socketRead())
+        if ((cnt = socketRead()) == 0)
         {
             close(sd);
             sd = 0;
         }
+        else if (cnt == -1)
+        {
+            if (charcnt)
+            {
+                sprintf(msgbuf, "NCID server sent %d characters\n", charcnt);
+                logMsg(LEVEL3, msgbuf);
+                charcnt = 0;
+            }
+        }
+        else charcnt += (unsigned) cnt;
     }
 
     /* write packet to dumpfile */
@@ -466,9 +492,9 @@ void processPackets(u_char *args,
     /* if no open socket, and not in test mode, try to connect again */
     if (!sd && !test) socketConnect(NONFATAL);
 
-    sprintf(msgbuf, "Packet number %d:\n", count);
+    sprintf(msgbuf, "Packet number: %d\n", pktcnt);
     logMsg(LEVEL2, msgbuf);
-    count++;
+    pktcnt++;
 
     /* compute IP header offset */
     ip = (struct ip *)(packet + SIZE_ETHERNET);
@@ -538,154 +564,214 @@ void processPackets(u_char *args,
         msgbuf[size_pdata] = '\0';
         logMsg(LEVEL3, msgbuf);
 
-        /* Look for the INVITE packet */
-        if (!strncmp(msgbuf, PKTINV, strlen(PKTINV)))
+        /*
+         * Must be a SIP/2 packet
+         */
+        if (strstr(msgbuf, SIPVER))
         {
             /*
-             * Look for Caller ID information
-             *  From: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDRESS>;tag=TAG_NUMBER
-             *  To: <sip:CALLED_NMBR@IP_Address>
+             * Look for CSeq INVITE line
+             *   Cseq: NMBR INVITE
+             * If it is in a INVITE or Trying packet
+             *   SIP/2.0 NMBR Trying
+             *   INVITE sip:NMBR@IP_address:10000 SIP/2.0
+             * Ignore the following packets:
+             *   SIP/2.0 NMBR Request Terminated
+             *   SIP/2.0 NMBR Ringing
+             *   SIP/2.0 NMBR OK
              */
-            if (sptr = strstr(msgbuf, FROM))
+            if ((sptr=strstr(msgbuf, CSEQ)) && strstr(sptr, CSEQINV) &&
+                !strstr(msgbuf, PKTTERM) && !strstr(msgbuf, PKTRING) &&
+                !strstr(msgbuf, PKTOK))
             {
-                /* look for end of line and terminate line */
-                if (elptr = index(sptr, (int) ENDLINE))
+                /*
+                * Look for Caller ID information
+                *  From: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDRESS>;tag=TAG_NMBR
+                *  To: <sip:CALLED_NMBR@IP_Address>;tag=TAG_NMBR
+                */
+                if (sptr = strstr(msgbuf, FROM))
                 {
-                    *elptr = '\0';
-
-                    /* Look for NAME in quotes */
-                    if (name = index(sptr, (int) QUOTE))
+                    /* Terminate end of "From: " line */
+                    if (elptr = index(sptr, (int) ENDLINE))
                     {
-                        if (eptr = index(++name, (int) QUOTE))
+                        *elptr = '\0';
+    
+                        /* Look for NAME in quotes */
+                        if (name = index(sptr, (int) QUOTE))
                         {
-                            *eptr = '\0';
-                            sptr = ++eptr;
+                            if (eptr = index(++name, (int) QUOTE))
+                            {
+                                *eptr = '\0';
+                                sptr = ++eptr;
+                            }
+                            /* could not find end of name quote */
+                            else name = "oops";
                         }
+                        else
+                        {
+                            /* NAME may not be in quotes */
+                            name = sptr + strlen(FROM);
+                            if (*name != '<' && !isspace((int) *sptr))
+                            {
+                                for (eptr=name; !isspace((int) *eptr); ++eptr);
+                                *eptr = '\0';
+                                sptr = ++eptr;
+                            }
+                            else name = "NO NAME";
+                        }
+
+                        /* Look for calling number */
+                        if (sptr = strstr(sptr, SIPNUM))
+                        {
+                            if (eptr = index(sptr, (int) SIPAT))
+                            {
+                                *eptr = '\0';
+                                number = sptr + strlen(SIPNUM);;
+                            }
+                            /* could not find end of number indicator */
+                            else number = "oops";
+                        }
+                        else number = "NO NUMBER";
+
+                        /* if number is LINE NUMBER, it is a outgoing call */
+                        for (linecnt = 0; linenum[linecnt]; ++linecnt)
+                        {
+                            if (!strcmp(linenum[linecnt], number)) return;
+                        }
+
+                        /* Look for "TO: " line */
+                        if (sptr = strstr(++elptr, TO))
+                        {
+                            /* called line identifier is last 4 digits */
+                            if (eptr = index(sptr, (int) SIPAT))
+                            {
+                                *eptr = '\0';
+                                line = eptr - 4;
+                            }
+                            /* could not find end of number indicator */
+                            else line = "oops";
+                        }
+                        else line = "-";
+
+                        /* form and send NCID CID message line */
+                        sprintf(cidmsg, CIDLINE, strdate(NOYEAR),
+                                line, number, name);
+                        if (sd) write(sd, cidmsg, strlen(cidmsg));
+                        logMsg(LEVEL1, cidmsg);
                     }
                     else
                     {
-                        /* NAME may not be in quotes */
-                        name = sptr + strlen(FROM) +1;
-                        if (*name != '<' && !isspace((int) *sptr))
-                        {
-                            for (eptr=name; !isspace((int) *eptr); ++eptr);
-                            *eptr = '\0';
-                            sptr = ++eptr;
-                        }
-                        else name = "NO NAME";
+                        sprintf(msgbuf, "INVITE packet seems bad\n");
+                        logMsg(LEVEL1, cidmsg);
                     }
+                }
+            }
 
-                    /* Look for number */
+            /*
+             * Look for CSeq CANCEL line
+             *  CSeq: NMBR CANCEL
+             * Get calling number from a "From:" line
+             *  From: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDRESS>;tag=TAG_NMBR
+             */
+            else if ((sptr=strstr(msgbuf, CSEQ)) && strstr(sptr, CSEQCAN))
+            {
+                /* hang up before call answered */
+                if (sptr = strstr(msgbuf, FROM))
+                {
                     if (sptr = strstr(sptr, SIPNUM))
                     {
-                        eptr = index(sptr, (int) SIPAT);
-                        *eptr = '\0';
-                        number = sptr + strlen(SIPNUM);;
-                        sptr = ++elptr;
+                        sptr += strlen(SIPNUM);
+                        if ((eptr = index(sptr, SIPAT))) *eptr = '\0';
+                        /* calling number end not found */
+                        else sptr = "oops";
                     }
-                    else number = "NO NUMBER";
+                    /* calling number start not found */
+                    else sptr = "oops";
 
-                    /* if number is the line number, it is a outgoing call */
-                    for (linecnt = 0; linenum[linecnt]; ++linecnt)
-                    {
-                        if (!strcmp(linenum[linecnt], number)) return;
-                    }
-
-                    /* look for end of line and terminate line */
-                    if (elptr = index(sptr, ENDLINE)) *elptr = '\0';
-
-                    /* Look for line identifier (last 4 digits) */
-                    if (sptr = strstr(sptr, TO))
-                    {
-                        eptr = index(sptr, (int) SIPAT);
-                        *eptr++ = '\0';
-                        line = eptr - 5;
-                    }
-                    else line = "UNKNOWN";
-
-                    /* form and send NCID CID message line */
-                    sprintf(cidmsg, CIDLINE, strdate(NOYEAR),
-                            line, number, name);
+                    sprintf(cidmsg, CIDCAN, sptr, strdate(NOYEAR));
                     if (sd) write(sd, cidmsg, strlen(cidmsg));
                     logMsg(LEVEL1, cidmsg);
                 }
                 else
                 {
-                    sprintf(msgbuf, "INVITE packet seems bad\n");
-                    logMsg(LEVEL3, cidmsg);
+                    sprintf(cidmsg, "CANCEL packet To: line not found\n");
+                    logMsg(LEVEL1, cidmsg);
                 }
             }
-        }
 
-        /*
-         * Look for the CANCEL packet
-         *  To: <sip:NUMBER_CALLED@IP_ADDRESS>
-         */
-        else if (!strncmp(msgbuf, PKTCAN, strlen(PKTCAN)))
-        {
-            /* Caller hung up */
-            if (sptr = strstr(msgbuf, TO))
-            {
-                if (sptr = strstr(msgbuf, SIPNUM))
-                {
-                    sptr += strlen(SIPNUM);
-                    if ((eptr = index(sptr, SIPAT)))
-                    {
-                        *eptr = '\0';
-                        sprintf(cidmsg, CIDCAN, sptr, strdate(NOYEAR));
-                        if (sd) write(sd, cidmsg, strlen(cidmsg));
-                        logMsg(LEVEL1, cidmsg);
-                    }
-                }
-            }
-        }
-
-        /* Look for the SIP/ packet */
-        else if (!strncmp(msgbuf, PKTSIP, strlen(PKTSIP)))
-        {
             /*
-             * Look for REGISTER
-             *  Contact: [["]NAME["]] <sip:TEL_NMBR@IP_ADDR:PORT>;expires=TIME
+             * Look for CSeq BYE line without Proxy-Authorization
+             *  CSeq: NMBR BYE
+             *  Proxy-Authorization:
+             * Get calling number from a "to:" line
+             *  To: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDRESS>;tag=TAG_NMBR
              */
-            if (sptr = strstr(msgbuf, CSEQREG))
+            else if ((sptr=strstr(msgbuf, CSEQ)) && strstr(sptr, CSEQBYE) &&
+                      !strstr(msgbuf, PROXY))
             {
-                /* look for the line phone number */
-                if (sptr = strstr(sptr, SIPNUM))
-                {
-                    sptr += strlen(SIPNUM);
-                    eptr = index(sptr, (int) SIPAT);
-                    *eptr = '\0';
-
-                    /* add phone number if not seen before */
-                    for (linecnt = 0; linenum[linecnt]; ++linecnt)
-                        if (!strcmp(linenum[linecnt], sptr)) break;
-                    if (!linenum[linecnt] && linecnt < MAXLINENUM - 1)
-                    {
-                        linenum[linecnt] = strdup(sptr);
-                        sprintf(cidmsg, "%s: %s\n", REGLINE, sptr);
-                        logMsg(LEVEL1, cidmsg);
-                    }
-                }
-            }
-            /*
-             * Look for BYE
-             *  To: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDRESS>;tag=TAG_NUMBER
-             */
-            else if (sptr = strstr(msgbuf, CSEQBYE))
-            {
-                /* call terminated */
+                /* hangup after call answered */
                 if (sptr = strstr(msgbuf, TO))
                 {
-                    if (sptr = strstr(msgbuf, SIPNUM))
+                    if (sptr = strstr(sptr, SIPNUM))
+                    {
+                        sptr += strlen(SIPNUM);
+                        if ((eptr = index(sptr, SIPAT))) *eptr = '\0';
+                        /* calling number end not found */
+                        else sptr = "oops";
+                    }
+                    /* calling number start not found */
+                    else sptr = "oops";
+
+                    sprintf(cidmsg, CIDBYE, sptr, strdate(NOYEAR));
+                    if (sd) write(sd, cidmsg, strlen(cidmsg));
+                    logMsg(LEVEL1, cidmsg);
+                }
+                else
+                {
+                    /* can not happen */
+                    logMsg(LEVEL1, "BYE packet To: line not found\n");
+                }
+            }
+
+            /*
+             * Look for CSeq REGISTER line
+             *  CSeq: NMBR REGISTER
+             * Look for a Contact line to get phone number 
+             *  Contact: [["]NAME["]] <sip:NMBR@IP_ADDR:PORT>;expires=TIME
+             */
+            else if ((sptr=strstr(msgbuf, CSEQ)) && strstr(sptr, CSEQREG))
+            {
+                /* look for the line phone number */
+                if (sptr = strstr(sptr, CONTACT))
+                {
+                    if (sptr = strstr(sptr, SIPNUM))
                     {
                         sptr += strlen(SIPNUM);
                         if ((eptr = index(sptr, SIPAT)))
                         {
                             *eptr = '\0';
-                            sprintf(cidmsg, CIDBYE, sptr, strdate(NOYEAR));
-                            if (sd) write(sd, cidmsg, strlen(cidmsg));
-                            logMsg(LEVEL1, cidmsg);
+
+                            /* add phone number if not seen before */
+                            for (linecnt = 0; linenum[linecnt]; ++linecnt)
+                                if (!strcmp(linenum[linecnt], sptr)) break;
+                            if (!linenum[linecnt] && linecnt < MAXLINENUM - 1)
+                            {
+                                linenum[linecnt] = strdup(sptr);
+                                sprintf(cidmsg, "%s: %s\n", REGLINE, sptr);
+                                logMsg(LEVEL1, cidmsg);
+                            }
                         }
+                        else
+                        {
+                            /* can not happen */
+                            logMsg(LEVEL1,
+                                "REGISTER packet number end not found\n");
+                        }
+                    }
+                    else
+                    {
+                        /* can not happen */
+                        logMsg(LEVEL1, "REGISTER packet number not found\n");
                     }
                 }
             }
@@ -725,7 +811,7 @@ void doPCAP()
         pcap_lookupnet(device, &netp, &maskp, errbuf);
 
         /* open device for reading in promiscuous mode */
-        descr = pcap_open_live(device, BUFSIZ, 1, -1, errbuf);
+        descr = pcap_open_live(device, BUFSIZ, 1, PCAPWAIT, errbuf);
         if(descr == NULL) errorExit(-1, "pcap_open_live()", errbuf);
 
         /* make sure we're capturing on an Ethernet device [2] */

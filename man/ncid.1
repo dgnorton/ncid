@@ -21,6 +21,7 @@
 [--call-prog       | -C]
 [--message         | -M]
 [--delay seconds   | -D seconds]
+[--pidfile FILE    | -p PIDFILE]
 [--program PROGRAM | -P PROGRAM]
 [--raw             | -R]
 [--verbose         | -V]
@@ -123,9 +124,9 @@ output: date time number name
 Default output: name number
 .TP
 .B --call-prog | -C
-output name and number to external program, or output module
+Output the Caller ID information to a external program or output module.
 .br
-Default: does not output to external program unless name is tivocid
+Default: does not call a external program unless name is tivocid or tivoncid
 .TP
 .B --delay seconds | -D seconds
 delay between server connection attempts
@@ -135,8 +136,15 @@ Default: 60 seconds
 .B --message | -M
 Send messages to the output modules
 .TP
+.B --pidfile | -p
+Name of PID file to create.  It is normally used to change the PID
+file name to the output module name when using a output module.
+.br
+Default: /var/run/ncid.pid
+.TP
 .B --program PROGRAM | -P PROGRAM
-the display or helper program to use
+Name of the output module (program) to use.  Some output modules are
+ncid-page, ncid-popup, and ncid-speak.
 .br
 Default PATH: /usr/share/ncid
 .br

@@ -1,5 +1,129 @@
 ncid - Network CallerID
 
+Version 0.70
+    - README: ncidmodule.conf corrected be ncidmodules.conf, and updated
+    - Makefile: Fixed tivo-series2 so it defaults to /var/hack
+                Added freebsddir to freebsd target
+                Made changes to support Mac FAT binaries (ppc and i386)
+                Removed CFLAGS from $(PROC) rule
+    - ncidd.h: Added and modified sip CONSTANTS and Options
+               Added PCAPWAIT and LOGFILE
+               Added [-e lineid     | --lineid identifier]\n\ to USAGE
+               Added extern char *lineid
+    - ncidd.c: Changed SIGHUP to reload instead of exit
+               Added char *lineid=ONELINE
+               Added reload(): remove existing aliases, and then reload aliases
+               main(): no error exit when poll() returns EINTR for SIGHUP
+               getOptions(): Added -e lineid IDENT and --lineid IDENT
+               formatCID(): replaced ONELINE with lineid
+               doPoll(): Added in Poll Error, close connection and poll slot
+               strdate(): Added cast to argument of localtime()
+               errorExit(): Cleaned up "error == -1" if statement
+                            Set msg and arg to "oops" for should not happen
+    - ncidd.conf.dist: Added lineid configuration information
+    - nciddalias.c: Added rmaliases() to remove aliases & free alias memory
+    - nciddconf.c: Added lineid to setword[]
+    - ncid.sh: Added 2007, 2008 to Copyright in About
+               Changed exec from $0 to ncid for tivocid and tivoncid
+               Added variables CygwinBat and EXEC
+               Added "exec sh -c" if on Cygwin and module is a shell script
+               Added "-p | --pidfile" option
+               Removed unused and undocumented "-N" option
+    - cidgate/README: Updated and renamed README.Gateways
+    - cidgate/README.Gateways: New
+    - cidgate/Makefile: Added BASH=/bin/bash and BASH rule
+                        Added distclean target
+                        Made changes to support Mac FAT binaries (ppc and i386)
+    - cidgate/sip2ncid.h: Changed usge: -p option should be -P option
+                          Changed SHOWVER to "%s: %s\n"
+                          Added LOGFILE and updated Usage
+                          Updated VERSION
+                          Moved "#include <time.h>" to almost end of includes
+    - cidgate/sip2ncid.c: Added "-L <file> | --logfile <file>" option
+                          socketRead(): LEVEL3 -> LEVEL5
+                          processPackets(): changed socketRead() if statement
+                                            Added msgbuf and LogMsg()
+                                            Rewrote sip packet processing
+    - cidgate/ncidsip.pl: Fixed VERSION line
+                          Updated parse routines to key in on CSeq lines
+                          Modified CIDINGO CANCEL line to be same as sip2ncid
+                          Added CIDINFO BYE line
+    - cidgate/yac2ncid.config: Added BSD
+    - cidgate/yac2ncid.sh: Added more verbose output
+                           Added autodetect of BSD version of netcat
+    - debian/changelog: Updated
+    - debian/README: Removed
+    - debian/README.Debian: Updated and combined with README
+    - debian/control: Added to Depends: libpcap
+                      Changed Depends: tcl8.4 to tcl, and tk8.4 to tk
+                      Rewrote description
+    - debian/postinst: Removed ncid from update-rc.d command
+                       Commented out ncidd update-rc.d command
+    - debian/postrm: Removed ncid update-rc.d command
+                     Added undate-rc.d command for ncid-mythtv, ncid-page,
+                           ncid-popup, ncid-samba, ncid-skeak, and ncid-yac
+    - debian/prerm: Removed ncid update-rc.d command
+                    Added undate-rc.d command for ncid-mythtv, ncid-page,
+                          ncid-popup, ncid-samba, ncid-skeak, and ncid-yac
+    - debian/ncidd.init: Changed reload to sends SIGHUP instead of stop-start
+    - debian/ncid.init: Removed
+    - debian/ncid-{mythtv,page,popup,samba,speak,yac}.init: Added
+    - doc/CONTRIBUTORS: Updated
+    - doc/CID-init: Combined with Modem-init and removed
+    - doc/DistinctiveRing: Renamed to Modem-DistinctiveRing
+    - doc/Modem-DistinctiveRing: New
+    - doc/NCID-DataFormats: Updated for ncidsip modifications
+    - doc/Install: Updated for sip2ncid and yac2ncid
+    - doc/Install-andLinux: New
+    - doc/Install-Cygwin: Updated for sip2ncid and yac2ncid
+    - doc/Install-Fedora: New
+    - doc/Install-FreeBSD: Updated for sip2ncid and yac2ncid
+    - doc/Install-Mac: Updated for sip2ncid and yac2ncid
+    - doc/Install-TiVO: Updated for sip2ncid and yac2ncid
+    - doc/Install-Win: Rewrote
+    - doc/Install-Ubuntu: New
+    - doc/TODO: Updated
+    - doc/Verbose-ncidd: Added LEVEL1 SIGHUP and server version messages
+    - doc/Verbose-sip2ncid: Added LEVEL1 server version message
+    - doc/NCID-DataFormats: Updated for sip2ncid
+    - doc/PROTOCOL: Updated for gateways
+    - Fedora/README: Updated and renamed to README.Fedora
+    - Fedora/README.Fedora: New
+    - Fedora/ncid.spec: Updated
+                        Rewrote description
+    - Fedora/ncidd.init: Changed reload to sends SIGHUP instead of stop-start
+    - Fedora/ncid.init: Removed
+    - Fedora/ncid-{page,popup,samba,speak,yac}.init: Added
+    - FreeBSD/README: Updated for new and modified rc.d files
+                      README: Renamed to README.FreeBSD
+    - FreeBSD/README.FreeBSD: New
+    - FreeBSD/Makefile: Modified for rc.d files
+    -                   Removed {ncidd,ncidsip,yac2ncid,ncid}.sh
+    -                   Added {mythtv,page,popup,samba,speak,yac}.rc
+    - man/ncidd.8: Updated for SIGHUP and telephone line indicator
+    - man/ncid.1: Updated, and added "-p | --pidfile" option
+    - man/ncidmodules.1: Added ncid-popup and ncid-skel
+    - man/sip2ncid.8: Corrected: -p option should be -P option
+                      Added new "-L <filename> | --logfile <filename>" option
+    - modules/Makefile: Added ncid-skel
+                        Removed README install
+    - modules/README: Renamed to README.modules
+    - modules/README.modules: New
+    - modules/ncid-popup: Added
+    - modules/ncidmodules.conf.dist: Updated for new module init files
+                                     Added ncid-popup configuration
+    - scripts: README: Renamed to README.logfile
+    - scripts: README.logfile: Renamed from README
+    - test/README: Renamed to README.test
+    - test/README.test: New
+    - test/testserver: Added -P option
+    - tools/README: Renamed to README.tools
+    - tools/README.tools: New
+    - Win/ncid.nsi: Updated
+                    Renamed installer to ncid-0.70-1-client_setup.exe
+      Win/README: README: Renamed README to README.Win
+      Win/README.Win: README.Win: New
+
 Version 0.69
     - Makefile: Updated: new directory structure
                 Added: tivo-mips: target to use mips-TiVo-linux- prefix
@@ -163,7 +287,7 @@ Version 0.68
     - scripts/ncidscript.conf: Added configutation for ncid-yac
                                Changed CLIENT to SambaClient
                                Changed DELAY to SpeakDelay
-							   Set: TivoOpt="--line 1 --xscale 2 --yscale 2"
+                               Set: TivoOpt="--line 1 --xscale 2 --yscale 2"
     - scripts/README: updated
     - tools/cidcall.pl: Changed regular expression to include * with key word
     - tools/Makefile: Modified to handle sh scripts, added yac2ncid & ETCFILE

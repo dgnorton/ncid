@@ -1,35 +1,12 @@
 # ncid module and service configuration file
-# Last modified: Thu Sep 27, 2007
+# Last modified: Wed Feb 13, 2008
 
-# This configuration file is called from the ncid init file
-# to set the "args" and "extprog" variables.  Uncomment the
-# extprog and args addon, if present, for the output module
-# called.
-
-# The "prog" variable can be changed, but it is not recomended.
-#prog=
+# This configuration file is called from the ncid-* init files
+# to set the $ringopt, $tivoprog, $tivoargs variables.
 
 # This configuration file is also called by each output module to
 # set variables needed for it.  Uncomment or give the variable a
 # value for the output module called.
-
-# Select one output module (extprog), configure it below
-#extprog="ncid-mythtv"
-#extprog="ncid-page"
-#extprog="ncid-samba"
-#extprog="ncid-speak"
-#extprog="ncid-tivo"
-#extprog="ncid-yac"
-#extprog="out2osd"
-
-# Call external program immediately
-# *** do not modify this line ***
-args="--no-gui -C -P $extprog"
-
-# The original line was (uncomment if output module requires it):
-# args="--no-gui -A -C -P $extprog"
-# The -A option option is available for backwards compatibility
-# Do not use the -A option anymore as it will be removed
 
 ############################################
 # Send a email SMS message to a cell phone #
@@ -43,11 +20,11 @@ args="--no-gui -C -P $extprog"
 PageFrom=mail
 # email address: (usual format: ##########@CELL_PHONENUMBER_URL)
 PageTo=
-# uncomment to call external program on ring number number 4
-#args="$args -r 4"
+# uncomment to call external program on ring number number 4 (default)
+#ringopt="-r 4"
 # uncomment to call external program if phone not picked up
-# only works if using ncidsip
-#args="$args -r -1"
+# only works if using sip2ncid or ncidsip
+#ringopt="-r -1"
 
 ###########################
 # Send Caller ID to Samba #
@@ -77,11 +54,31 @@ SpeakDelay=2
 ##################
 # no configuration necessary
 
+#############################################
+# Send a popup message to local ncid client #
+#               ncid-popup                  #
+#############################################
+# uses festival and kdialog
+kdialog=/usr/bin/kdialog
+geo="0x0+1600+1000" #22" monitor, bottom right corner
+title="Incoming Call"
+timeout=10
+
+# $cidtype is a CIDXXXX variable, normally $CIDNAME
+# $cidcaller is an alias or a name or "".
+# if $cidcaller="", speaking caller names is disabled
+# if $cidtype and $cidcaller are the same, speaking all caller names
+#    is enabled, i.e. cidtype="$CIDNAME" and cidcaller="$CIDNAME"
+# if $cidcaller is an alias or name, speaking a selected caller name
+#    is enabled, i.e. cidcaller="Randy on cell"
+cidtype="$CIDNAME"
+cidcaller=""
+
 ##################
 #  TiVo Display  #
 #    ncid-tivo   #
 ##################
-# same as tivoncid
+# same as calling tivoncid instead of ncid
 # TiVo display options using /tvbin/text2osd
 # --line     <line number>
 # --message  <string>
@@ -91,8 +88,9 @@ SpeakDelay=2
 # --fgscolor [<num num num, r-g-b values>][<string,red|green|blue|white|black>]
 # --clear
 ##################
-# uncomment args line
-#args="$args --message" # "ncid-tivo"
+# the tivoprog and tivoargs lines are the default so can stay as comments
+# tivoprog="ncid-tivo"
+# tivoargs="--message"
 # Send output to /tvbin/text2osd
 TivoOSD=/tvbin/text2osd
 # Options to /tvbin/text2osd
@@ -101,6 +99,17 @@ TivoOpt=""
 TivoDelay=10
 # Clear Screen Option
 TivoCS=--clear
+
+##################
+#  TiVo Display  #
+#  uses out2osd  #
+##################
+# same as calling tivocid instead of ncid
+# TiVo display options using out2osd
+#
+# uncomment the tivoprog and tivoargs lines
+#tivoprog="/usr/local/bin/out2osd"
+#tivoargs="--tivo --message"
 
 ######################
 # NCID 2 YAC Clients #
@@ -112,13 +121,3 @@ YACPORT=10629
 # list can be IP_Addresses or hostnames or both
 # YACLIST default is localhost or 127.0.0.1
 YACLIST="localhost"
-
-##################
-#  TiVo Display  #
-#    out2osd     #
-##################
-# same as tivocid
-# TiVo display options using out2osd
-#
-# uncomment args line
-#args="$args --tivo --message" # "out2osd"

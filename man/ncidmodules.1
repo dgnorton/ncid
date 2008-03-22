@@ -4,6 +4,9 @@
 .B ncid-page\^
 - send CID to a pager or cell phone
 .PP
+.B ncid-popup\^
+- Popup CID in KDE or Gnome
+.PP
 .B ncid-samba\^
 - send CID to samba to create a popup
 .PP
@@ -13,6 +16,9 @@
 .B ncid-mythtv\^
 - display CID on MythTV using mythtvosd
 .PP
+.B ncid-skel\^
+- display CID on stdout in a terminal window
+.PP
 .B ncid-tivo\^
 - display CID on TiVo using text2osd
 .PP
@@ -21,11 +27,15 @@
 .SH SYNOPSIS
 .B ncid-page\^
 .PP
+.B ncid-popup\^
+.PP
 .B ncid-samba\^
 .PP
 .B ncid-speak\^
 .PP
 .B ncid-mythtv\^
+.PP
+.B ncid-skel\^
 .PP
 .B ncid-tivo\^
 .PP
@@ -48,6 +58,10 @@ The module then expects 5 input lines in the following order:
 .IP CIDline
 .PD
 .RE
+.PP
+The ncid-skel output module is used as a template for writing
+a shell script output module.  All it does is send the Caller ID
+data to standard output.  This makes it useful for troubleshooting.
 .PP
 The Output Module configuration file is
 .I /etc/ncid/ncidmodules.conf

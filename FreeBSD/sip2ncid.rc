@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# PROVIDE: sip2ncid
+# REQUIRE: NETWORKING ncidd
+
+#
+# Add the following lines to /etc/rc.conf to enable sip2ncid:
+#
+#sip2ncid_enable="YES"
+#
+sip2ncid_enable="${sip2ncid_enable-NO}"
+
+. /etc/rc.subr
+
+name=sip2ncid
+rcvar=`set_rcvar`
+
+command=/usr/local/sbin/$name
+pidfile="/var/run/${name}.pid"
+
+load_rc_config $name
+run_rc_command "$1"

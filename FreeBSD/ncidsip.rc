@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# PROVIDE: ncidsip
+# REQUIRE: NETWORKING ncidd
+
+#
+# Add the following lines to /etc/rc.conf to enable ncidsip:
+#
+#ncidsip_enable="YES"
+#
+ncidsip_enable="${ncidsip_enable-NO}"
+
+. /etc/rc.subr
+
+rcvar=`set_rcvar`
+name=ncidsip
+pidfile="/var/run/${name}.pid"
+args=""
+
+ConfigDir=/usr/local/etc/ncid
+ConfigFile=$ConfigDir/ncidsip.conf
+
+# source config file
+[ -f $ConfigFile ] && . $ConfigFile
+
+command=/usr/local/sbin/$name
+command_args="$args &"
+command_interpreter=perl
+
+load_rc_config $name
+run_rc_command "$1"

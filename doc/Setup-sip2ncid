@@ -14,6 +14,11 @@ need to configure ncidd by changing one line in ncidd.conf.
 This tells ncidd to run without a serial device or modem connected.
 Once you change ncidd.conf, you must start/restart ncidd to read it.
 
+Use the --listdevs or -l option to see your network devices: sip2ncid -l
+If you are using a DTiVo and the command does not return anything, you
+need to load the af_packet kernel module: insmod /lib/modules/af_packet.o
+(http://www.tivocommunity.com/tivo-vb/showthread.php?p=5728255#post5728255)
+
 To determine if you can receive any network packets, use the --testall
 or -T option.  As root run: sip2ncid --testall
 This will display a packet count and packet type.  It does not know

@@ -1,25 +1,27 @@
 The current TODO list (in no particular order)
 
-    - Add a client that does a overlay pop up window for Linux.
-    - Finish port to cygwin so server operates under windows.  Problem
+DONE- Add a client that does a overlay pop up window for Linux.
+DONE- Finish port to cygwin so server operates under windows.  Problem
       is the serial port does not ndicate when it has data using poll().
     - Add graphics to view image of who is calling.
     - Add ncid.exe to the Windows tray.
-    - Make the ncid client handle multiple modules.
+DONE- Make the ncid client handle multiple modules.
       or an easy way to start multiple ncid clients with separate modules
     - Add support for PBX.
     - Redo web site
     - Improve NCID documentation and installation.
-    - add a iax2 gateway
+    - Add a iax2 gateway
+    - Add a GUI configuration program for the server, client, modules,
+      and gateways.
 
 The MAYBE TODO list (in no particular order)
 
-    - Add ringtone support.
+DONE- Add ringtone support.
     - Add a firefox module.
     - Add a new client output module to hang up the phone if the number
       is blacklisted.
     - Add SSL between server and client for secure use over Internet.
+    - Use separate ports for clients and gateways
     - Rewrite the ncid client and split it into two:
         a GUI client using GTK+
         a command line client that uses output plugins
-    - client display converted to a popup on-screen-display overlay

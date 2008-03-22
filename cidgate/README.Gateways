@@ -1,5 +1,7 @@
-These are CID gateways that pull CID information off the network
-and input it to the NCID server.
+NCID Gateways:
+
+    These are CID gateways that pull CID information off the network
+    and input it to the NCID server.
 
 sip2ncid       - SIP gateway: receives CID information from SIP Invite packets
                  and sends it as a CID message line to the NCID server
@@ -13,6 +15,9 @@ The Makefile is used to create the runable scripts.
 	prefix2 controls where to look for the config file,
 	(the default is /usr/local)
 
-Recommend sip2ncid instead of sip2ncid
-    ncidsip        - OLD SIP gateway replaced by sip2ncid
-    ncidsip.conf   - OLD configuration file for ncidsip-init
+Recommend using sip2ncid instead of ncidsip.  NCIDsip is a Perl program that
+requires the Net-Pcap module which is obtained from CPAN.  So far there is no
+depository that has a pre-compiled version.  You must compile and install it.
+
+    ncidsip        - Original SIP gateway
+    ncidsip.conf   - configuration file for ncidsip-init

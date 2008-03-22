@@ -29,6 +29,7 @@ struct setword setword[] = {
     {"cidlog",     WORDSTR,            &cidlog,   0,         0,    0},
     {"cidlogmax",  WORDNUM,            0,         &cidlogmax,1,    LOGMAXNUM},
     {"datalog",    WORDSTR,            &datalog,  0,         0,    0},
+    {"lineid",     WORDSTR,            &lineid,   0,         0,    0},
     {"initcid",    WORDSTR | WORDFLAG, &initcid,  &setcid,   0,    0},
     {"initstr",    WORDSTR,            &initstr,  0,         0,    0},
     {"lockfile",   WORDSTR,            &lockfile, 0,         0,    0},

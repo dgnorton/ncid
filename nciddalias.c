@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2006
+ * Copyright (c) 2005, 2006, 2008
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddalias.c is free software; you can redistribute it and/or modify
@@ -148,4 +148,17 @@ char *cpy2mem(char *wdptr, char *memptr)
     if (!(memptr = (char *) malloc(strlen(wdptr) + 1)))
         errorExit(-1, name, 0);
     return strcpy(memptr, wdptr);
+}
+
+rmaliases()
+{
+    int i;
+
+    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+    {
+        alias[i].type = 0;
+        if (alias[i].from) free(alias[i].from);
+        if (alias[i].to) free(alias[i].to);
+        if (alias[i].depend) free(alias[i].depend);
+    }
 }

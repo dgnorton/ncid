@@ -1,5 +1,6 @@
 /*
- * Copyright 2007 John L. Chmielewski <jlc@cfl.rr.com>
+ * Copyright 2007, 2008
+ * by  John L. Chmielewski <jlc@cfl.rr.com>
  *
  * sip2ncid.h is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +24,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <netdb.h>
-#include <time.h>
 #include <pcap.h>
 #include <sys/fcntl.h>
 #include <sys/types.h>
@@ -33,10 +33,11 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
+#include <time.h>
 #include "config.h"
 
-#define VERSION     "0.5 (NCID 0.69)"
-#define SHOWVER     "%s: Version 0.5 (NCID 0.69)\n"
+#define VERSION     "0.6 (NCID 0.70)"
+#define SHOWVER     "%s: %s\n"
 #define DESC        "%s - Inject CID info by snooping SIP invites\n"
 #define USAGE       "\
 Usage:   %s [options]\n\
@@ -46,8 +47,9 @@ Options: [-C configfile      | --config configfile]\n\
          [-h                 | --help]\n\
          [-i <interface>     | --interface <interface>]\n\
          [-l                 | --listdevs]\n\
+         [-L <filename>      | --logfile <filename>]\n\
          [-n <[host][:port]> | --ncid <[host][:port]>]\n\
-         [-p <filename>      | --pidfile <filename>]\n\
+         [-P <filename>      | --pidfile <filename>]\n\
          [-r <dumpfile>      | --readfile <dumpfile>]\n\
          [-s <[host][:port]> | --sip <[host][:port].]\n\
          [-T                 | --testall]\n\
@@ -73,8 +75,15 @@ Options: [-C configfile      | --config configfile]\n\
 /* ethernet headers are always exactly 14 bytes */
 #define SIZE_ETHERNET 14
 
+/* pcap_open_live(): wait after packet received in ms */
+#define PCAPWAIT    1
+
 #ifndef PIDFILE
 #define PIDFILE     "/var/run/sip2ncid.pid"
+#endif
+
+#ifndef LOGFILE
+#define LOGFILE     "/var/log/sip2ncid.log"
 #endif
 
 #define NODESC      "No description available"
@@ -82,19 +91,25 @@ Options: [-C configfile      | --config configfile]\n\
 #define VIRBR       "Virtual bridge"
 
 /* strings to search for in packet */
+#define SIPVER      "SIP/2"
+#define PKTOK       "OK"
 #define PKTINV      "INVITE "
 #define PKTCAN      "CANCEL "
-#define PKTSIP      "SIP/2.0 200 OK"
 #define PKTACK      "ACK "
-#define CSEQ        "CSeq:"
+#define PKTREG      "REGISTER"
+#define PKTTRY      "Trying"
+#define PKTRING     "Ringing"
+#define PKTTERM     "Terminated"
+#define CSEQ        "CSeq: "
 #define CSEQREG     "REGISTER"
 #define CSEQINV     "INVITE"
 #define CSEQCAN     "CANCEL"
 #define CSEQBYE     "BYE"
 #define SIPNUM      "<sip:"
-#define FROM        "From:"
-#define TO          "To:"
-#define CONTACT     "Contact:"
+#define FROM        "From: "
+#define TO          "To: "
+#define CONTACT     "Contact: "
+#define PROXY       "Proxy-Auth"
 #define SIPAT       '@'
 #define QUOTE       '"'
 #define ENDLINE     '\n'

@@ -1,8 +1,6 @@
-This contains ncid output modules for use with th ncid client
-The following modules are configured be editing /etc/ncid/ncidmodules.conf
+NCID Client Output Modules:
 
-The skeleton module just echos the input.  Modify it to write new modules
-    ncid-skel.sh
+The following modules are configured be editing /etc/ncid/ncidmodules.conf
 
 The ncidmodules.1 man page documents the following output modules.
 
@@ -11,8 +9,14 @@ Module to send CID to a cell phone, or pager:
                and root is sending the email
     ncid-page
 
+Module to popup CID on on KDE or GNOME:
+    ncid-popup
+
 Module to send CID to samba to get a popup:
     ncid-samba
+
+Module just echos the input.  Modify it to write new modules:
+    ncid-skel
 
 Module to send CID to a text-to-speach program:
     ncid-speak

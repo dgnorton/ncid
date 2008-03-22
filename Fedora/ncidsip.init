@@ -54,7 +54,11 @@ case "$1" in
   stop)
         stop
         ;;
-  restart|reload)
+  reload)
+        stop
+        start
+        ;;
+  restart)
         stop
         start
         ;;
@@ -69,7 +73,7 @@ case "$1" in
         RETVAL=$?
         ;;
   *)
-        echo $"Usage: $prog {start|stop|restart|condrestart|status}"
+        echo $"Usage: $prog {start|stop|reload|restart|condrestart|status}"
         exit 1
 esac
 

@@ -102,7 +102,9 @@ DEFINES = -DCIDCONF=\"$(CONF)\" \
 
 CFLAGS  = -O $(DEFINES) $(MFLAGS)
 
-LDFLAGS = -s
+STRIP   = -s
+
+LDFLAGS = $(STRIP) $(MFLAGS)
 
 OBJECTS = $(SOURCE:.c=.o)
 
@@ -133,12 +135,16 @@ local: $(PROG) $(CLIENT) site moduledir cidgatedir tooldir scriptdir
 site: $(SITE)
 
 $(PROG): $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
+	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 $(OBJECTS): $(HEADER)
 
 fedoradir:
 	cd Fedora; $(MAKE) init prefix=$(prefix) prefix2=$(prefix2) \
+                      prefix3=$(prefix3)
+
+freebsddir:
+	cd FreeBSD; $(MAKE) rcd prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3)
 
 ubuntudir:
@@ -151,7 +157,8 @@ moduledir:
 
 cidgatedir:
 	cd cidgate; $(MAKE) cidgate prefix=$(prefix) prefix2=$(prefix2) \
-                      prefix3=$(prefix3) BIN=$(BIN) SBIN=$(SBIN) OS=$(OS)
+                      prefix3=$(prefix3) BIN=$(BIN) SBIN=$(SBIN) OS=$(OS) \
+                      MFLAGS="$(MFLAGS)" STRIP=$(STRIP)
 
 tooldir:
 	cd tools; $(MAKE) tools prefix=$(prefix) prefix2=$(prefix2) \
@@ -197,7 +204,8 @@ tivo-ppc:
 	ln -s ncid tivoncid
 	touch tivo-ppc
 
-tivo-series2: tivo-mips
+tivo-series2:
+	$(MAKE) tivo-mips prefix=/var/hack
 
 tivo-hack-install: dirs install-prog install-etc install-log \
                    install-modules install-cidgate install-tools
@@ -221,7 +229,9 @@ tivo-install: dirs install-prog install-etc install-log \
 	cp -a tivocid tivoncid $(BIN)
 
 freebsd:
-	$(MAKE) local WISH=/usr/local/bin/wish*.* TCLSH=/usr/local/bin/tclsh*.*
+	$(MAKE) local freebsddir prefix=/usr/local prefix2=$(prefix) \
+            WISH=/usr/local/bin/wish*.* TCLSH=/usr/local/bin/tclsh*.* \
+            BASH=/usr/local/bin/bash
 
 freebsd-install:
 	$(MAKE) install-base MAN=$(prefix)/man
@@ -230,7 +240,18 @@ freebsd-install:
             MAN=$(prefix)/man
 
 mac:
-	$(MAKE) local settag="Macintosh OS X"
+	$(MAKE) local settag="Macintosh OS X" \
+            MFLAGS="-mmacosx-version-min=10.3.9 -arch ppc" STRIP=
+	mv ncidd ncidd.ppc-mac
+	mv cidgate/sip2ncid cidgate/sip2ncid.ppc-mac
+	make clean
+	$(MAKE) local settag="Macintosh OS X" \
+            MFLAGS="-mmacosx-version-min=10.3.9 -arch i386" STRIP=
+	mv ncidd ncidd.i386-mac
+	mv cidgate/sip2ncid cidgate/sip2ncid.i386-mac
+	lipo -create ncidd.ppc-mac ncidd.i386-mac -output ncidd
+	lipo -create cidgate/sip2ncid.ppc-mac cidgate/sip2ncid.i386-mac \
+         -output cidgate/sip2ncid
 
 mac-install:
 	$(MAKE) install-base MAN=$(prefix)/man
@@ -313,9 +334,15 @@ clean:
 	cd man; $(MAKE) clean
 	cd tools; $(MAKE) clean
 	cd scripts; $(MAKE) clean
+	cd modules; $(MAKE) clean
+	cd cidgate; $(MAKE) clean
+	cd Fedora; $(MAKE) clean
+	cd FreeBSD; $(MAKE) clean
+	cd debian; $(MAKE) clean
 
 clobber: clean
 	rm -f $(PROG) $(PROG).ppc-tivo $(PROG).mips-tivo tivo-ppc tivo-mips
+	rm -f $(PROG).ppc-mac $(PROG).i386-mac
 	rm -f tivocid tivoncid $(CLIENT) $(SITE)
 	rm -f a.out *.log *.zip *.tar.gz
 	cd man; $(MAKE) clobber

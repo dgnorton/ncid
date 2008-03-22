@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# ncid          Start/Stop Network Caller ID client
+# ncid-popup         Start/Stop Network Caller ID client with the PopUp Module
 #
 # chkconfig: 2345 96 04
-# description: the ncid client sends the CID to an external program
+# description: NCID client with the PopUp Output Module
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -16,8 +16,10 @@
 
 RETVAL=0
 prog="ncid"
-extprog="ncid-page"
-args="--no-gui -r 4 -C -P $extprog"
+module=ncid-popup
+pidfile=/var/run/$module.pid
+
+[ -f /usr/bin/$prog ] || exit 0
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf
@@ -25,25 +27,25 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 # source config file
 [ -f $ConfigFile ] && . $ConfigFile
 
-[ -f /usr/bin/$prog ] || exit 0
+args="--no-gui -p $pidfile -C -P $module"
 
 start() {
         # Start daemons.
-        echo -n $"Starting $prog: "
-        daemon $prog $args \&
+        echo -n $"Starting $prog with output module $module: "
+        daemon --pidfile=/var/run/$module.pid $prog $args \&
         RETVAL=$?
         echo
-        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$module
         return $RETVAL
 }
 
 stop() {
         # Stop daemons.
-        echo -n $"Shutting down $prog: "
-        killproc $prog
+        echo -n $"Shutting down $prog with output module $module: "
+        killproc -p /var/run/$module.pid $prog
         RETVAL=$?
         echo
-        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$module
         return $RETVAL
 }
 
@@ -55,22 +57,26 @@ case "$1" in
   stop)
         stop
         ;;
-  restart|reload)
+  reload)
+        stop
+        start
+        ;;
+  restart)
         stop
         start
         ;;
   condrestart)
-        if [ -f /var/lock/subsys/$prog ]; then
+        if [ -f /var/lock/subsys/$module ]; then
             stop
             start
         fi
         ;;
   status)
-        status $prog
+        status $module
         RETVAL=$?
         ;;
   *)
-        echo $"Usage: $prog {start|stop|restart|condrestart|status}"
+        echo $"Usage: $prog {start|stop|reload|restart|condrestart|status}"
         exit 1
 esac
 

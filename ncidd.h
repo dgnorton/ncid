@@ -55,7 +55,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.69"
+#define VERSION     "0.70"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -64,6 +64,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
              [-c calllog    | --cidlog calllog]\n\
              [-D            | --debug]\n\
              [-d logfile    | --datalog logfile]\n\
+             [-e lineid     | --lineid identifier]\n\
              [-h            | --help]\n\
              [-I modemstr   | --initstr modemstr]\n\
              [-i cidstr     | --initcid cidstr]\n\
@@ -175,7 +176,7 @@ enum
 
 extern char *ttyport, *TTYspeed;
 extern char *initstr, *initcid;
-extern char *cidlog, *datalog, *lockfile, *pidfile;
+extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile;
 extern int setcid, port, clocal, ttyspeed;
 extern int sendlog, sendinfo;
 extern int nomodem, noserial, cidlogmax, verbose;

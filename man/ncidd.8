@@ -15,6 +15,7 @@
 [-c <logfile>    | --cidlog <logfile>]
 [-D              | --debug]
 [-d <logfile>    | --datalog <logfile>]
+[-e <identifier> | --lineid <identifier>]
 [-h              | --help]
 [-I <modemstr>   | --initstr <modemstr>]
 [-i <cidstr>     | --initcid <cidstr>]
@@ -78,6 +79,9 @@ will accept a CIDINFO message from a client.  A SIP client will send
 a CIDINFO message when it receives a CANCEL command.  The server will
 then send a ring count of -1 to its clients to indicate a hangup with
 no answer.
+.PP
+.B NCIDD
+will reload the alias file when sent a SIGHUP signal.
 .SH "OPTIONS"
 .PD 0
 .TP
@@ -103,6 +107,12 @@ Debug mode.
 Data log data file, usually from a modem.
 .br
 Default: /var/log/datalog.log
+.TP
+.B -e <identifier> | --lineid <identifier>
+The telephone line identifier can be set if the server is monitoring
+more than one telephone line and noserial is set to 0.
+.br
+Default: -
 .TP
 .B -h | --help
 Display a help message.
@@ -272,6 +282,7 @@ Server log file.  Contents controlled by verbose.
       -110         PID file already exists
       -111         Cannot init TTY
       -112         Poll error
+      -113         string too long
         -?         System error
 .fi
 .SH SEE ALSO

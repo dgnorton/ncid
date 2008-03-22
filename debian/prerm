@@ -20,10 +20,15 @@ set -e
 case "$1" in
     remove|deconfigure)
         [ -h /usr/doc/ncid ] && rm -f /usr/doc/ncid
+        [ -x /etc/init.d/ncid-mythtv ] && invoke-rc.d ncid-mythtv stop
+        [ -x /etc/init.d/ncid-page ] && invoke-rc.d ncid-page stop
+        [ -x /etc/init.d/ncid-popup ] && invoke-rc.d ncid-popup stop
+        [ -x /etc/init.d/ncid-samba ] && invoke-rc.d ncid-samba stop
+        [ -x /etc/init.d/ncid-speak ] && invoke-rc.d ncid-speak stop
+        [ -x /etc/init.d/ncid-yac ] && invoke-rc.d ncid-yac stop
         [ -x /etc/init.d/ncidsip ] && invoke-rc.d ncidsip stop
         [ -x /etc/init.d/ncidsip ] && invoke-rc.d sip2ncid stop
         [ -x /etc/init.d/yac2ncid ] && invoke-rc.d yac2ncid stop
-        [ -x /etc/init.d/ncid ] && invoke-rc.d ncid stop
         [ -x /etc/init.d/ncidd ] && invoke-rc.d ncidd stop
     ;;
     upgrade)

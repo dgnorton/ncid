@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# ncidd          Start/Stop Network Caller ID server
+# ncidd          Start/Stop Network Caller ID SIP Gateway
 #
 # chkconfig: 2345 95 05
-# description: ncidd provides Caller ID information
+# description: The NCID SIP Gateway inputs Caller ID information
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -48,7 +48,11 @@ case "$1" in
   stop)
         stop
         ;;
-  restart|reload)
+  reload)
+        stop
+        start
+        ;;
+  restart)
         stop
         start
         ;;
@@ -63,7 +67,7 @@ case "$1" in
         RETVAL=$?
         ;;
   *)
-        echo $"Usage: $prog {start|stop|restart|condrestart|status}"
+        echo $"Usage: $prog {start|stop|reload|restart|condrestart|status}"
         exit 1
 esac
 

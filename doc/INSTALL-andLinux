@@ -1,0 +1,123 @@
+andLinux Install
+
+Last edited: Thu Mar 13, 2008
+
+Install either the minimal/XFCE version (about 143 MB) or the KDE version
+(about 665 MB) of andLinux.  If you only intend to run NCID, you should
+load the minimal version.
+
+INSTALL andLinux:
+
+    - See http://www.andlinux.org/ for documentation, FAQ, and forum help
+
+    - download andLinux-VERSION-minimal.exe or andLinux-VERSION-KDE.exe
+      from http://www.andlinux.org/
+    - accept the installation defaults (you may want to add more memory)
+    - add "Xming.exe" and "colinux-slirp-net-daemon.exe" programs to your 
+      firewall program exceptions so they are allowed
+    - edit C:\Program Files\andLinux\settings.txt (you can use notepad.exe)
+    - modify the line:
+       eth0=slirp
+      so it becomes:
+       eth0=slirp,,udp:560:560:udp:5061:5061/udp:10000:10000/tcp:3333:3333/tcp10629:10629
+      (this forwards the SIP, NCID, and YAC ports to andLinux)
+    - if you would like to ssh into andLinux, append /tcp:22:22 to the end
+      of the line.
+    - modify the lines:
+    - The andLinux Beta 1 rc6 release has problems with some virus checkers
+      that cause the startup to take minutes to complete.  Virus scanners
+      will usually scan files that end in .dvr, so a workaround is to rename
+      the files:
+        * modify these lines if they end in .dvr, skip otherwise:
+          cobd0=Drives\base.dvr
+          cobd1=Drives\swap.dvr
+          so they become:
+          cobd0=Drives\base.vdi
+          cobd1=Drives\swap.vdi
+        * rename these files from .dvr to .vdi only if you did the above
+          Drives\base.dvr
+          Drives\swap.dvr
+    - reboot
+
+INSTALL NCID:
+
+    - Download the latest NCID deb package from sourceforge
+    - Use Synaptic to locate and install gdebi
+    - Use Thunar (file viewer) to locate the NCID deb package
+    - Install the NCID deb package by double clicking on it.
+
+    If you want to use ncidsip instead of sip2ncid:
+
+    - Download, compile, and install the IO-Interface module from CPAN
+    - Download, compile, and install the Net-Pcap module from CPAN
+
+CONFIGURE NCID:
+
+    - The default modem port in ncidd is /dev/modem.  This is just a
+      symbolic link to the real modem port. It is probably best to
+      set your modem port in ncidd.conf.  This assumes serial port 1:
+        set ttyport = /dev/ttyS0
+    - If you are using sip2ncid or yac2ncid instead of a modem
+      you need to set noserial to 1:
+        set noserial = 1
+
+FIRST STARTUP:
+
+    - if you are running the server and client on the same computer
+      and using a modem:
+        invoke-rc.d ncidd start
+        ncid &
+
+    - If you are running the server and using a SIP gateway:
+        invoke-rc.d ncidd start
+        invoke-rc.d sip2ncid start
+        ncid &
+
+    - If you are running the server and using a YAC gateway:
+        invoke-rc.d ncidd start
+        invoke-rc.d yac2ncid start
+        ncid &
+
+    - Call yourself and see if it works, if not, stop the gateway used:
+        invoke-rc.d sip2ncid stop
+      stop the server:
+        invoke-rc.d ncidd stop
+      and continue reading the test sections.
+
+    - If everything is OK, enable the NCID server, gateways, and
+      client modules, your are using, to autostart at boot.  The
+      GUI incid client must be started after login, not boot
+
+If NCID does not work, see INSTALL for some simple tests.
+
+    NOTE: ncid normally starts in the GUI mode and there is no
+          ncid.init script to start or stop it.  There are rc.init
+          scripts for starting ncid with output modules, for
+          example: ncid-page, ncid-popup, etc.
+
+START/STOP/STATUS:
+
+    Use the invoke-rc.d command to start any of the daemons.  The invoke-rc.d
+    commands are: start, stop, restart, reload, and status.  The client
+    can also be started using the output module name instead of ncid.
+    All output modules can be run at the same time.
+
+    Here are some examples:
+    - start the NCID server: invoke-rc.d ncidd start
+    - stop the ncid2sip server: invoke-rc.d sip2ncid stop
+    - reload the server alias file: invoke-rc.d ncidd reload
+    - start ncid with ncid-page: invoke-rc.d ncid-page start
+    - status of ncid with ncid-speak: invoke-rc.d ncid-speak status
+
+    Review the man page (man invoke-rc.d).
+
+AUTOSTART:
+
+    Use the update-rc.d command to install/remove the service at boot.
+
+    Here are some examples:
+    - start ncidd at boot: sudo update-rc.d ncidd defaults
+    - start ncid-page at boot: sudo update-rc.d ncid-page defaults
+    - remove ncidsip form starting at boot: sudo update-rc.d -f ncidsip remove
+
+    Review the man page (man update-rc.d).

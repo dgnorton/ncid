@@ -1,0 +1,31 @@
+#!/bin/sh
+
+#
+# PROVIDE: ncid-speak
+# REQUIRE: NETWORKING ncidd
+#
+# Add the following lines to /etc/rc.conf to enable ncid-speak:
+#
+#ncidspeak_enable="YES"
+#
+ncidspeak_enable="${ncidspeak_enable-NO}"
+
+. /etc/rc.subr
+
+rcvar=`set_rcvar ncidspeak`
+name=ncid
+module=ncid-speak
+pidfile=/var/run/$module.pid
+
+ConfigDir=/usr/local/etc/ncid
+ConfigFile=$ConfigDir/ncidmodules.conf
+
+# source config file
+[ -f $ConfigFile ] && . $ConfigFile
+
+command=/usr/local/bin/$name
+command_args="--no-gui -p $pidfile -C -P $module &"
+procname=/usr/local/bin/tclsh8.4
+
+load_rc_config $name
+run_rc_command "$1"

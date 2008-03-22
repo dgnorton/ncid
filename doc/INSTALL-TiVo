@@ -1,4 +1,6 @@
-# INSTALL ncid, tivocid, tivoncid, ncidsip, and ncidd on the TiVo
+TiVo Install
+
+Last edited: Tue Jan 22, 2008
 
 The ncid client replaces the old tivocid package.  It
 functions exactly like TiVoCID, if it is called tivocid,
@@ -15,9 +17,9 @@ For a series1, the server would normally be ignored unless
 you have a DirecTiVo, a hardware modified internal modem,
 or a modem connected to the serial port.
 
----------------------------------------------
-Install TiVoCID, TiVoNCID, ncidSIP, and ncidd
----------------------------------------------
+----------------------------------------------
+Install TiVoCID, TiVoNCID, sip2ncid, and ncidd
+----------------------------------------------
 
 You have a choice of using either tivocid or tivoncid as your display
 client.  Tivocid uses out2osd which does not work on all TiVo software
@@ -60,33 +62,55 @@ command line to specify the location of the config
 file, and then using the config file to set the
 options for your new diectory structure.
 
-The ncidd.conf file is preconfigured for a TiVo.
-These are the lines enabled for a Series1 and a Series2:
+If you are using a modem:
 
-    set sttyclocal = 1
-    set modem = /dev/ttyS1 # TiVo Modem Port
-    set lockfile = /var/tmp/modemlock # needed for TiVo Modem Port
+    The ncidd.conf file is preconfigured for a TiVo.
+    These are the lines enabled for a Series1 and a Series2:
 
-If you are using a standalone series1 without the modem hardware
-modification to enable Caller ID, you need to uncoment the line:
+        set sttyclocal = 1
+        set modem = /dev/ttyS1 # TiVo Modem Port
+        set lockfile = /var/tmp/modemlock # needed for TiVo Modem Port
 
-    # set modem = /dev/ttyS3 # TiVo Serial Port
+    If you are using a standalone series1 without the modem hardware
+    modification to enable Caller ID, you need to uncoment the line:
 
-and comment out the line::
+        # set modem = /dev/ttyS3 # TiVo Serial Port
 
-    set modem = /dev/ttyS1 # TiVo Modem Port
+    and comment out the line::
+
+        set modem = /dev/ttyS1 # TiVo Modem Port
+
+If you are using using sip2ncid or yac2ncid instead of a modem:
+
+    You need to uncomment the line:
+
+    # set noserial = 1
 
 ----------------------
 Start the ncid package
 ----------------------
 
 If you are running the server and client on the TiVo
-and are using tivocid:
+and are using tivocid with a modem:
 
     ncidd
     tivocid &
 
-    If you are only running the client on the TiVo:
+If you are running the server and client on the TiVo
+and are using tivocid with sip2ncid:
+
+    ncidd
+    sip2ncid
+    tivocid &
+
+If you are running the server and client on the TiVo
+and are using tivocid with yac2ncid:
+
+    ncidd
+    yac2ncid
+    tivocid &
+
+If you are only running the client on the TiVo:
 
     tivocid IP.Server.Address &
 
@@ -95,9 +119,23 @@ and are using tivocid:
     tivocid 192.168.0.10 &
 
 If you are running the server and client on the TiVo
-and are using tivoncid:
+and are using tivoncid with a modem:
 
     ncidd
+    tivoncid &
+
+If you are running the server and client on the TiVo
+and are using tivoncid with sip2ncid:
+
+    ncidd
+    sip2ncid
+    tivoncid &
+
+If you are running the server and client on the TiVo
+and are using tivoncid with yac2ncid:
+
+    ncidd
+    yac2ncid
     tivoncid &
 
     If you are only running the client on the TiVo:
@@ -114,9 +152,9 @@ it is running, and continue reading the test sections.
 If everything is OK, add the line or lines to your rc file
 so NCID can start when the TiVo boots.
 
-----------
-Test ncidd
-----------
+------------------
+Test using a Modem
+------------------
 
 The easiest way to test the setup is to run ncidd in debug mode,
 it will stay attached to the terminal and not go into deamon mode:
@@ -125,6 +163,10 @@ to get more information, add the verbose flag:
     ncidd -Dv3
 to also look at the alias structure
     ncidd -Dv5
+The last three lines will be simular to:
+    Modem set for CallerID.
+    Network Port: 3333
+    Wrote pid 20996 in pidfile: /var/run/ncidd.pid
 
 Call yourself and you should see the CallerID information.
 If you just see RING and no Caller ID lines, the modem does not
@@ -139,6 +181,54 @@ Once it works, you would normally start it:
     ncidd
 or, if, for example, you use /hack instead of /var/hack:
     ncidd -C /hack/etc/ncidd.conf
+
+--------------------
+TEST USING sip2ncid:
+--------------------
+
+Start (in this order):
+    ncidd
+    sip2ncid (may need to add options, review Setup-sip2ncid)
+    tivocid or tivoncid
+
+    Call yourself
+
+    if you have problems, start ncidd in debug mode:
+        - ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
+    The last three lines will be simular to:
+        CallerID only from CID gateways
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+
+    Once you solve any problems, restart ncidd normally
+
+--------------------
+TEST USING yac2ncid:
+--------------------
+
+    Start (in this order):
+        ncidd
+        yac2ncid (may need to add options)
+        tivocid or tivoncid
+
+    Call yourself
+
+    if you have problems, start ncidd in debug mode:
+        - ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
+    The last three lines will be simular to:
+        CallerID only from CID gateways
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+
+    Once you solve any problems, restart ncidd normally
 
 -----------------------------------------------------------------
 Install ncidd on a separate computer, if not using it on the TiVo

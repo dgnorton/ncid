@@ -2,6 +2,8 @@
 NCIDD server verbose levels.  Higher levels include lower levels.
 ----------------------------------------------------------------
 
+Sat Feb 2, 2008
+
 LEVEL5:
         print alias table
 
@@ -33,12 +35,13 @@ LEVEL2:
         indicate device or modem returned no data
 
 LEVEL1:
+        show started with date and time
+        show server version
         indicate no config file
         indicate config file processed
         indicate set command skipped in config file
         show error line in config file
         indicate error in opening ncidd log file
-        show started with date and time
         indicate what is configured to send to the clients
         show verbose level
         indicate CID device instead of modem
@@ -66,3 +69,4 @@ LEVEL1:
         indicate sending log to client
         indicate removed pidfile
         indicate program terminated with date and time
+        indicate received SIGHUP - reloading config and alias files

@@ -1,0 +1,13 @@
+FreeBSD rc scripts:
+ncidd.rc
+ncid.rc
+ncidsip.rc
+yac2ncid.rc
+ncid-mythtv.rc
+ncid-page.rc
+ncid-popup.rc
+ncid-samba.rc
+ncid-speak.rc
+ncid-yac.rc
+
+See Doc/INSTALL-FreeBSD for install instructions
