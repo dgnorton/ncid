@@ -21,7 +21,6 @@ LEVEL3:
 LEVEL2:
         indicate cannot write pidfile
         show packet number received
-        indicate INVITE packet seems bad
 
 LEVEL1:
         show start date and time
@@ -42,7 +41,7 @@ LEVEL1:
         invalid IP header length
         show registered line number
         show CID line sent to NCID
-        indicate INVITE packet seems bad
+        indicate packet parse problems
         indicate caller hung up
         indicate removed pidfile
         indicate program terminated with date and time

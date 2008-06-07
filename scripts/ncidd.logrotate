@@ -1,16 +1,17 @@
-/var/log/ncidd.log /var/log/cidcall.log /var/log/ciddata.log {
-    sharedscripts
-    missingok
+/var/log/cid*.log /var/log/*ncid*.log {
     monthly
-    compress
+    rotate 5
+    missingok
+    #compress
+    sharedscripts
     prerotate
-        /etc/rc.d/init.d/ncidd stop || true
         [ -x /usr/local/share/ncid/ncidrotate ] && \
             /usr/local/share/ncid/ncidrotate prerotate
     endscript
     postrotate
         [ -x /usr/local/share/ncid/ncidrotate ] && \
             /usr/local/share/ncid/ncidrotate postrotate
-        /etc/rc.d/init.d/ncidd start || true
+        [ -x /etc/init.d/ncidd ] && /etc/init.d/ncidd condrestart || true
+        [ -x /etc/init.d/sip2ncid ] && /etc/init.d/sip2ncid condrestart || true
     endscript
 }

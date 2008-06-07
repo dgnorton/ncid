@@ -13,6 +13,8 @@ yac2ncid_enable="${yac2ncid_enable-NO}"
 . /etc/rc.subr
 
 rcvar=`set_rcvar`
+extra_commands="condrestart"
+
 name=yac2ncid
 pidfile="/var/run/${name}.pid"
 args=""
@@ -28,4 +30,12 @@ command_args="$args &"
 procname=/usr/bin/nc
 
 load_rc_config $name
-run_rc_command "$1"
+
+case $1 in
+    condrestart)
+        run_rc_command "stop" && run_rc_command "start"
+        ;;
+    *)
+        run_rc_command "$1"
+        ;;
+esac

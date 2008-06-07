@@ -36,7 +36,7 @@
 #include <time.h>
 #include "config.h"
 
-#define VERSION     "0.6 (NCID 0.70)"
+#define VERSION     "0.7"
 #define SHOWVER     "%s: %s\n"
 #define DESC        "%s - Inject CID info by snooping SIP invites\n"
 #define USAGE       "\
@@ -71,6 +71,9 @@ Options: [-C configfile      | --config configfile]\n\
 #define NONFATAL    0
 #define WITHYEAR    1
 #define NOYEAR      0
+#define MAXCALL     30
+#define NUMSIZ      50
+#define CIDSIZ      75
 
 /* ethernet headers are always exactly 14 bytes */
 #define SIZE_ETHERNET 14
@@ -92,31 +95,40 @@ Options: [-C configfile      | --config configfile]\n\
 
 /* strings to search for in packet */
 #define SIPVER      "SIP/2"
-#define PKTOK       "OK"
-#define PKTINV      "INVITE "
-#define PKTCAN      "CANCEL "
-#define PKTACK      "ACK "
-#define PKTREG      "REGISTER"
-#define PKTTRY      "Trying"
-#define PKTRING     "Ringing"
-#define PKTTERM     "Terminated"
-#define CSEQ        "CSeq: "
-#define CSEQREG     "REGISTER"
-#define CSEQINV     "INVITE"
-#define CSEQCAN     "CANCEL"
-#define CSEQBYE     "BYE"
+#define REGISTER    "REGISTER"
+#define INVITE      "INVITE"
+#define CANCEL      "CANCEL"
+#define NOTIFY      "NOTIFY"
+#define ACK         "ACK"
+#define BYE         "BYE"
+#define OK          "OK"
+#define TRYING      "Trying"
+#define RINGING     "Ringing"
+#define REQUEST     "Request Terminated"
+#define CSEQ        "CSeq:"
 #define SIPNUM      "<sip:"
-#define FROM        "From: "
-#define TO          "To: "
-#define CONTACT     "Contact: "
-#define PROXY       "Proxy-Auth"
 #define SIPAT       '@'
+#define SIPTAG      ";tag="
+#define FROM        "From:"
+#define TO          "To:"
+#define CALLID      "Call-ID:"
+#define CONTACT     "Contact:"
+#define PROXY       "Proxy-Authenticate:"
+#define AGENT       "User-Agent:"
+#define SERVER      "Server:"
+#define MESSAGES    "Message-Waiting:"
 #define QUOTE       '"'
-#define ENDLINE     '\n'
+#define NL          '\n'
 
-#define CIDCAN      "CIDINFO: ###CANCEL...NMBR%s...DATE%s+++\r\n"
-#define CIDBYE      "CIDINFO: ###BYE...NMBR%s...DATE%s+++\r\n"
-#define CIDLINE     "CID: ###DATE%s...LINE%s...NMBR%s...NAME%s+++\r\n"
+#define NONAME      "NO NAME"
+#define BADNAME     "BAD NAME"
+#define NONUMBER    "NO NUMBER"
+#define BADNUMBER   "BAD NUMBER"
+
+#define CIDCAN      "CALLINFO: ###CANCEL...NMBR%s...DATE%s+++\r\n"
+#define CIDBYE      "CALLINFO: ###BYE...NMBR%s...DATE%s+++\r\n"
+#define CIDCALL     "CALLINFO: ###CALLED...NMBR%s...DATE%s+++\r\n"
+#define CIDLINE     "CALL: ###DATE%s...LINE%s...NMBR%s...NAME%s+++\r\n"
 #define REGLINE     "Registered Line Number"
 
 enum

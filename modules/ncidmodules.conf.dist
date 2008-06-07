@@ -1,5 +1,5 @@
 # ncid module and service configuration file
-# Last modified: Wed Feb 13, 2008
+# Last modified: Thu May 8, 2008
 
 # This configuration file is called from the ncid-* init files
 # to set the $ringopt, $tivoprog, $tivoargs variables.
@@ -18,13 +18,20 @@
 # user sending the mail, ignored unless root is running ncid-page
 # the default mail user is the ID running ncid-page, usually root
 PageFrom=mail
-# email address: (usual format: ##########@CELL_PHONENUMBER_URL)
+# email address: (usual format: Cell_Phone_Number@Cell_Phone_Company_URL)
 PageTo=
+# ---------------------------------------------
+# This only works for modems that indicate RING
+# ---------------------------------------------
 # uncomment to call external program on ring number number 4 (default)
 #ringopt="-r 4"
-# uncomment to call external program if phone not picked up
-# only works if using sip2ncid or ncidsip
+# ----------------------------------------
+# This only works for sip2ncid and ncidsip
+# ----------------------------------------
+# uncomment to call external program if hangup without answer
 #ringopt="-r -1"
+# uncomment to call external program if hangup after answer
+#ringopt="-r -2"
 
 ###########################
 # Send Caller ID to Samba #
@@ -52,7 +59,8 @@ SpeakDelay=2
 # MythTV Display #
 #   ncid-mythtv  #
 ##################
-# no configuration necessary
+# uncomment to not send messages to MythTV
+#MythMsg=
 
 #############################################
 # Send a popup message to local ncid client #
@@ -60,10 +68,14 @@ SpeakDelay=2
 #############################################
 # uses festival and kdialog
 kdialog=/usr/bin/kdialog
-geo="0x0+1600+1000" #22" monitor, bottom right corner
+#
+# Enable only the geometry setting wanted
+geo="0x0+1600+1000" # 22" monitor, bottom right corner
+#geo="0x0+950+728" # 1024x768 resolution
+#
 title="Incoming Call"
 timeout=10
-
+#
 # $cidtype is a CIDXXXX variable, normally $CIDNAME
 # $cidcaller is an alias or a name or "".
 # if $cidcaller="", speaking caller names is disabled
@@ -73,12 +85,17 @@ timeout=10
 #    is enabled, i.e. cidcaller="Randy on cell"
 cidtype="$CIDNAME"
 cidcaller=""
+#
+# uncomment to not send messages to popup
+#PopupMsg=
 
 ##################
 #  TiVo Display  #
 #    ncid-tivo   #
+# using text2osd #
 ##################
 # same as calling tivoncid instead of ncid
+# ------------------------------------------
 # TiVo display options using /tvbin/text2osd
 # --line     <line number>
 # --message  <string>
@@ -87,7 +104,7 @@ cidcaller=""
 # --bgscolor [<num num num, r-g-b values>][<string,red|green|blue|white|black>]
 # --fgscolor [<num num num, r-g-b values>][<string,red|green|blue|white|black>]
 # --clear
-##################
+# ------------------------------------------
 # the tivoprog and tivoargs lines are the default so can stay as comments
 # tivoprog="ncid-tivo"
 # tivoargs="--message"
@@ -102,7 +119,8 @@ TivoCS=--clear
 
 ##################
 #  TiVo Display  #
-#  uses out2osd  #
+#    ncid-tivo   #
+# using out2osd  #
 ##################
 # same as calling tivocid instead of ncid
 # TiVo display options using out2osd

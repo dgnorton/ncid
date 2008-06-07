@@ -1,103 +1,94 @@
-NCID Source package:                     ncid-0.70-src.tar.gz
+NCID Source package:                     ncid-0.71-src.tar.gz
 
 NCID Binary Packages:
 
-    Fedora package:                      ncid-0.70-1.fc8.i386.rpm
-    Fedora 64 bit package:               ncid-0.70-1.fc8.x86_64.rpm
-    TiVo Series1 package:                ncid-0.70-1-ppc-tivo.tgz
-    TiVo Series 2 and 3 package:         ncid-0.70-1-mips-tivo.tgz
-    Macintosh OS X (i386 & ppc) package: ncid-0.70-1-mac-osx.tgz
-    FreeBSD 5.4 package:                 ncid-0.70-1-freebsd.tgz
-    Cygwin Windows package:              ncid-0.70-1-cygwin.tgz
-    Windows client installer:            ncid-0.70-1-client_setup.exe
-    Ubuntu Feisty package:               ncid_0.70-0ubuntu1_i386.deb
+    Fedora package:                      ncid-0.71-1.fc9.i386.rpm
+    Fedora 64 bit package:               ncid-0.71-1.fc9.x86_64.rpm
+    TiVo Series1 package:                ncid-0.71-1-ppc-tivo.tgz
+    TiVo Series 2 and 3 package:         ncid-0.71-1-mips-tivo.tgz
+    Macintosh OS X (i386 & ppc) package: ncid-0.71-1-mac-osx.tgz
+    FreeBSD 5.4 package:                 ncid-0.71-1-freebsd.tgz
+    Cygwin Windows package:              ncid-0.71-1-cygwin.tgz
+    Windows client installer:            ncid-0.71-1-client_setup.exe
+    Ubuntu Feisty package:               ncid_0.71-0ubuntu1_i386.deb
 
+The most important change this release is the SIP decode logic in sip2ncid
+and ncidsip.  This fixed problems with Asterisk and some Vonage systems.
 
-Windows:
+The log rotation script was updated and improved.  It uses condrestart
+to restart daemons.
 
-    The client installer was renamed to ncid-0.70-1-client_setup.exe
-    to avoid any confusion that it might be the complete NCID package.
+A user message line must start with a "MSG: " label to be recognized as a
+message.  The server will no longer accept any input as a message.  The
+simple food timer example now becomes (using a popular version of nc):
+    sleep 600; echo "MSG: Food Ready" | nc -w1 localhost 3333 > /dev/null
 
-    NCID will now run on the Windows desktop using andLinux, which is
-    a complete Ubuntu Linux system running seamlessly in Windows 2000
-    based 32-bit systems (2000, XP, 2003, Vista).  The minimal andLinux
-    distribution is about 143 MB.
+The gateway data labels have changed.  They are different from the labels
+used by the server when it sends information to the clients.
 
-    The NCID Ubuntu package installs and upgrades easily with the GUI
-    package managers.  NCID modem support in untested, but probably
-    does not work, as when using Cygwin on Windows.  If you want to use
-    a modem instead of SIP, use the YAC modem server and the YAC gateway.
+Debian:
 
-    See http://www.andlinux.org/ for more information on andLinux.
+    Modified the init scripts to work with the logrotate script
 
 Fedora:
 
-    Replaced the ncid init file with one init file for each output module.
-    All output modules can be used at the same time.
+    The Fedora binary distribution can be built for previous Fedora
+    and Redhat releases by rebuilding the package:
+
+        rpmbuild -tb ncid-0.71-src.tar.gz
 
 FreeBSD:
 
-    Rewrote the rc scripts to the current standard used in FreeBSD.
-    Replaced the ncid rc file with one rc file for each output module.
-    All output modules can be used at the same time.
+    Modified the rc scripts to work with the logrotate script
 
-Macintosh:
+Mac OS-X:
 
-    The distribution runs on Mac OSX 10.3.9 or later.  It contains FAT
-    binaries for the Intel and PPC platforms.
-
-Ubuntu:
-
-    Replaced the ncid init file with one init file for each output module.
-    All output modules can be used at the same time.
-    Added the missing dependency in the Ubuntu package.
-
-START/STOP/status and AUTOSTART:
-
-    The init and rc scripts used for start/stop/status and to autostart
-    NCID in the Fedora, FreeBSD, and Ubuntu packages were rewritten to
-    support multiple ncid clients each with a unique output module.
+    Changed Makefile so the "mac" target builds a normal binary, and added
+    a "mac-fat" target to build a ppc and i386 universal binary.
 
 NCID Server Changes:
 
-    Reloads the alias file when the signal "SIGHUP" is caught.
-    Fixed the endless poll error problem when the Cygwin ncid disconnects.
-    Added new options to set the server telephone line indicator.
+    Sets the ring count to -2 to indicate hangup after answer
+    Expects message lines to begin with "MSG"
+    Expects gateway call information to begin with "CALL"
 
-CID Gateway Changes:
-
-    ncidsip:
-        Fixed VERSION line that broke ncidsip in 0.69
-        Rewrote decoding to handle the new Vonage SIP packets.
+NCID Gateway Changes:
 
     sip2ncid:
-        Added a sip2ncid log file.
-        Fixed decoding errors
-        Corrected sip2ncid usage messge
-        Rewrote decoding to handle the new Vonage SIP packets.
+        Rewrote the decode routines to eliminate duplicate call indications.
+        Decode works with Asterisk.
+        Call information sent to the server begin with "CALL".
+
+    ncidsip:
+        Rewrote the decode routines so follow same logic as sip2ncid.
+        Decode works with Asterisk.
+        Call information sent to the server begin with "CALL".
 
     yac2ncid:
-        Added more verbose output to assist in troubleshooting
-        Added BSD to autodetect
+        Call information sent to the server begin with "CALL".
 
 NCID Client Changes:
 
-    Corrected ncid startup when using tivocid and tivoncid aliases.
-    Fixed a Cygwin problem where ncid would not execute output modules.
-    Added a PID file option to change the default PID file name.
+    Can call output module when hangup after answer is detected.
+    Try one time to connect to server, if delay is set to zero.
+    New option to indicate ringing. Useful when Called ID is not available.
 
 NCID Client Module Changes:
 
-    Added ncid-popup.  It pops up the Caller ID in KDE or GNOME.
-    Added ncid-skel.  It is useful in troubleshooting and writing modules
+    ncid-mythtv: Corrected typo that prevented the display of messages.
+                 Messages are enabled by default
+    ncid-popup: Messages are enabled by default
+    ncidmodules.conf: added configuration for mythtv and popup messages
 
 Documentation Changes:
 
-    Corrected and updated man page for sip2ncid.
-    Corrected and updated all INSTALL files.
-    Added Fedora, Ubuntu, and andLinux INSTALL files.
-    Renamed README files in subdirectories.
-    Updated the man pages for ncid and ncidd
-    Updated most documentation files
-    Merged some documentation files.
-    Rewrote INSTALL-Win
+    Updated INSTALL-andLinux
+    Updated INSTALL-Cygwin
+    Updated INSTALL-Mac
+    Updated INSTALL-Ubuntu
+    Updated Verbose-ncidd
+    Updated Verbose-sip2ncid
+    Updated NCID-DataFormats
+    Updated NCID-PROTOCOL
+    Updated ncid.1 and ncidmodules.5 man pages
+    Updated TODO

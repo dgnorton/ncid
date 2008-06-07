@@ -4,15 +4,14 @@
 ##
 ## NOTE: This script requires netcat binary (nc) to operate
 ##
-## Copyright (c) 2007
+## Copyright (c) 2007, 2008
 ## by Michael Lasevich(hichhiker)
 ## Version: 1.0 (6/14/2007)
 ## Version: 1.0a (6/26/2007)
 ##
-## Version: 1.0.1 (NCID 0.69) (9/12/2007) by John L. Chmielewski
-## Version: 1.0.2 (1/20/2007) by John L. Chmielewski
+## Version: 1.0.[123] (5/29/2008) by John L. Chmielewski
 ##
-VERSION="1.0.2 (NCID 0.70)"
+VERSION="1.0.3)"
 
 ME="$(basename $0)"
 ME="${ME%.sh}"
@@ -143,7 +142,7 @@ procMSG(){
 	then
 		ncidname=$(echo ${NCIDMSG} | cut -c6- | cut -d'~' -f1);
 		ncidnumber=$(echo ${NCIDMSG} | cut -s -d'~' -f2-);
-		NCIDMSG="$(printf 'CID: ###DATE%s...LINE%s...NMBR%s...NAME%s+++' "${nciddate:-01010000}" "${LINE:--}" "${ncidnumber:-unlisted}" "${ncidname:-noname}")"
+		NCIDMSG="$(printf 'CALL: ###DATE%s...LINE%s...NMBR%s...NAME%s+++' "${nciddate:-01010000}" "${LINE:--}" "${ncidnumber:-unlisted}" "${ncidname:-noname}")"
 
 	fi	
   	echo ${NCIDMSG} | send2ncid

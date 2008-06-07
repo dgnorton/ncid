@@ -12,11 +12,22 @@ ncidd_enable="${ncidd_enable-NO}"
 
 . /etc/rc.subr
 
-name=ncidd
 rcvar=`set_rcvar`
+extra_commands="condrestart"
+
+name=ncidd
 
 command=/usr/local/sbin/$name
+command_args=""
 pidfile="/var/run/${name}.pid"
 
 load_rc_config $name
-run_rc_command "$1"
+
+case $1 in
+    condrestart)
+        run_rc_command "stop" && run_rc_command "start"
+        ;;
+    *)
+        run_rc_command "$1"
+        ;;
+esac

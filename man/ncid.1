@@ -19,13 +19,15 @@
 [--no-gui]
 [--all             | -A]
 [--call-prog       | -C]
-[--message         | -M]
 [--delay seconds   | -D seconds]
-[--pidfile FILE    | -p PIDFILE]
+[--message         | -M]
+[--nocid           | -N]
 [--program PROGRAM | -P PROGRAM]
+[--pidfile FILE    | -p PIDFILE]
 [--raw             | -R]
-[--verbose         | -V]
 [--ring count      | -r count]
+[--tivo            | -T]
+[--verbose         | -V]
 .fi
 .PP
 .I Arguments:\^
@@ -35,18 +37,23 @@
 [PORT_NUMBER]
 .fi
 .SH DESCRIPTION
-.B NCID
+.B Ncid
 displays Caller ID information sent to it by the Caller ID server.
 In the default GUI mode, if the server is configured to send the
 CID Call Log, it will load the call log in the CID log window at
 startup.  The call log is updated by \fIncid\fR whenever a call
 is received.
 .PP
-.B NCID
+.B Ncid
+can also display \fIPhone Ringing\fB if the modem used by the server
+does send the Caller ID information to it.  This is useful if a visual
+indication is also wanted for ringing.
+.PP
+.B Ncid
 also has a message window that will send a single line message
 to the server which, in turn, will send it to all connected clients.
 .PP
-.B NCID
+.B Ncid
 runs on Linux and Windows 98, ME, XP, 2000, NT.  In the GUI mode, it
 will pop up, and go on top whenever a call comes in.  In addition,
 it will display itself on whatever desktop is active in Linux.
@@ -69,32 +76,14 @@ it will terminate with a error message.
 .PP
 The configuration file for \fIncid\fR is /etc/ncid/ncid.conf.
 .PP
-The distributed output modules can be customized as needed in the
-/etc/ncid/ncidmodules.conf file:
-.PD 0
-.TP 12
-.B ncid-mythtv
-Displays Caller ID on a TV using MythTV.
-.TP
-.B ncid-page
-Sends a page or cell phone notification, with the CID information,
-when a call is received.
-Must set $ADDRESS, in the script, to the pager address.
-.TP
-.B ncid-speak
-Speaks the caller name when a call is received, using \fIfestival\fB.
-Script can be modified to speak any of the CID information.
-.TP
-.B ncid-samba
-Send a SMB popup message containing the Caller ID information.
-.TP
-.B ncid-tivo
-Displays Caller ID on a TV using TiVo and its text2osd command
-.PD
+The distributed output modules are listed in the ncidmodules man page,
+can be customized as needed in the /etc/ncid/ncidmodules.conf file:
 .PP
-Whenever the server connection is broken, \fIncid\fR will try to reconnect
-once a minute.  It provides a visual record of the countdown and number
-of tries.
+Whenever the server connection is broken, \fIncid\fR will normally try
+to reconnect once a minute.  It provides a visual record of the countdown
+and number of tries.
+If the delay between attempts is set to
+zero seconds, \fIncid\fR will not attempt a reconnect.
 .PP
 The file menu provides three menu items in the GUI mode:
 .PD 0
@@ -119,22 +108,30 @@ Do not display CID information using a GUI
 Default: display CID using a GUI, except if called tivocid
 .TP
 .B --all | -A
-output: date time number name
+Obsolete option, do not use, will go away.
 .br
-Default output: name number
+Output is 4 lines: date time number name
+.br
+Default output is 5 lines: date time number name line
 .TP
 .B --call-prog | -C
 Output the Caller ID information to a external program or output module.
 .br
 Default: does not call a external program unless name is tivocid or tivoncid
 .TP
-.B --delay seconds | -D seconds
-delay between server connection attempts
+.B --delay SECONDS | -D SECONDS
+Delay SECONDS between server connection attempts if SECONDS > 0.
+.br
+Only one attempt to connect to server if SECONDS = 0.
 .br
 Default: 60 seconds
 .TP
 .B --message | -M
 Send messages to the output modules
+.TP
+.B --nocid | -N
+Configure ncid to indicate \fIPhone Ringing\fR on the first ring
+received from the modem.  It requires a modem that indicates ring.
 .TP
 .B --pidfile | -p
 Name of PID file to create.  It is normally used to change the PID
@@ -156,13 +153,22 @@ display data received from the CID Server
 Default: raw data not displayed
 .TP
 .B --ring count | -r count
-call output module on ring count
+Call output module on specific ring count.
 .br
-count can be: -1 0 2 3 4 5 6 7 8 9
+For modems that indicate RING, count can be: 0 2 3 4 5 6 7 8 9
 .br
-a count of -1 incdicates a SIP CANCEL (hangup)
+For VoIP, using a SIP gateway, count can be: -2 -1
+.br
+A count of -1 incdicates a hangup before answer.
+.br
+A count of -2 incdicates a hangup after answer.
 .br
 Default: output module called as soon as CID received
+.TP
+.B --Tivo | -T
+This option is only for a TiVo using out2osd.
+.br
+Output is 2 lines: name number
 .TP
 .B --verbose | -V
 display formatted CID information, including CID log file
@@ -190,17 +196,27 @@ Default: 3333
 .nf
 # run ncid in a terminal window, server on remote host
 ncid --no-gui tardis.drwho.home
-# output Caller ID to output module
+
+# only speak Caller ID
 ncid --no-gui --call-prog --program ncid-speak
-# output NAME & NUMBER to GUI and output module
+
+# send CID output to GUI and speak it
 ncid --call-prog --program /usr/local/bin/ncid-speak
-# output NAME & NUMBER to GUI and all CID info to output module
-ncid --all --call-prog --program ncid-page
-# output all CID info to output module after third ring
-ncid --no-gui --all --call-prog --ring 3 --program ncid-page
-# run ncid on a TiVo, server on remote host
+
+# send CID output to a cell phone after third ring
+ncid --no-gui --call-prog --program ncid-page --ring 3
+
+# send CID output to a cell phone on hangup before answer
+ncid --no-gui --call-prog --program ncid-page --ring -1
+
+# indicate ring on a popup module as a message
+ncid --no-gui --nocid --message --call-prog --program ncid-popup
+
+# run ncid on a TiVo using out2osd, server on remote host
 tivocid 192.168.0.1
-ncid --no-gui --call-prog --program /var/hack/bin/out2osd 192.168.0.1
 .fi
 .SH SEE ALSO
-lcdncid.1, out2osd.1, ncidd.8, ncidd.conf.5 ncidd.alias.5
+ncid.conf.5, ncidmodules.1, ncidmodules.conf.5,
+ncidd.8, ncidd.conf.5, ncidd.alias.5,
+sip2ncid.8, sip2ncid.conf.5,
+ncidsip.8, ncidsip.conf.5

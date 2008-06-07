@@ -10,10 +10,10 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case_always);
 use Pod::Usage;
 
-our $VERSION = "0.6 (NCID 0.70)";
+our $VERSION = "0.7";
 
 my ($host, $port) = ('localhost', 3333);
-my ($siphost, $sipport) = ('', 5061);
+my ($siphost, $sipport) = ('', 10000);
 my $dumpfile;
 my $interface;
 my $debug = 0;
@@ -26,6 +26,10 @@ my $listdevs = 0;
 my $pidfile = "/var/run/ncidsip.pid";
 my $savepid;
 my $pid = 0;
+my @callids;
+my $callid;
+my @tcallids;
+my $tcallid;
 
 my $result = GetOptions("ncid=s" => \$host,
                "dumpfile|d=s" => \$dumpfile,
@@ -137,7 +141,9 @@ sub processPacket {
   my $sip = substr($udp, 8);
   my $name;
   my $number;
+  my $tonumber;
   my $line;
+  my $msg;
 
   print $sip,"\n" if $debug;
 
@@ -151,47 +157,103 @@ sub processPacket {
 
   my $date = strftime("%m%d%H%M", localtime($header->{tv_sec}));
   if ($sip =~ /^CSeq:\s+\d+\s+INVITE/imo) {
-    if ($sip =~ /^SIP\/.*Ringing|^SIP\/.*OK|^SIP\/.*Terminated/o) {return};
-    if ($sip =~ /^From:.*<sip:/imo) {
+      # Start of Call
+      if (!$sip =~ /^SIP\/.*Request Terminated/imo) {return}
+      if ($sip =~ /^Call-ID:(.+)@/imo) {
+        $callid = $1;
+      } else {print "No INVITE Call-ID found in packet\n" if ($debug);}
 
-      if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
-        ($number) = $1;
-        } else {$number = "NO NUMBER";}
-        return if (grep(/^$number$/, @locals));
+      if (grep(/$callid/, @callids)) {
+        # Call already processed
+        return;
+      } else {
+        # New Call
+        push(@callids, $callid);
+        print "Adding $callid to CallID list\n" if ($debug);
+      }
+
+      if ($sip =~ /^To:\s+<sip:(.+)(\w\w\w\w)@/imo) {
+        $tonumber = "$1$2";
+        $line = $2;
+      } else {$line = "UNKNOWN";}
 
       if ($sip =~ /^From:\s+\"?(.+?)"?\s+<sip:/imo) {
         $name = $1;
       } else {$name = "NO NAME";}
 
-      if ($sip =~ /^To:\s+<sip:.+(\d\d\d\d)@/imo) {
-        $line = $1;
-      } else {$line = "UNKNOWN";}
-
-      my $msg = sprintf("CID: ###DATE%s...LINE%s...NMBR%s...NAME%s+++",
-        $date, $line, $number,$name);
-
-      print $msg, "\n" if $verbose;
-      if (!$test) { print $sock $msg, "\r\n"; }
-
-    } else {print "'Cannot parse From' line format\n" if $debug;}
-
-  } elsif ($sip =~ /^CSeq:\s+\d+\s+CANCEL/imo) {
       if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
         ($number) = $1;
         } else {$number = "NO NUMBER";}
-      my $msg = sprintf("CIDINFO: ###CANCEL...NMBR%s...DATE%s+++",
-                        $number, $date);
+
+      if (grep(/^$number$/, @locals)) {
+        # Outgoing Call
+        $msg = sprintf("CALLINFO: ###CALLED...NMBR%s...DATE%s+++",
+                           $tonumber, $date);
+      } else {
+      # Incoming Call
+      $msg = sprintf("CALL: ###DATE%s...LINE%s...NMBR%s...NAME%s+++",
+        $date, $line, $number,$name);
+      }
+
       print $msg, "\n" if $verbose;
       if (!$test) { print $sock $msg, "\r\n"; }
+
+  } elsif ($sip =~ /^CSeq:\s+\d+\s+CANCEL/imo) {
+      # Hangup before answer
+      if ($sip =~ /^Call-ID:(.+)@/imo) {
+        $callid = $1;
+      } else {print "No CANCEL Call-ID found in packet\n" if ($debug);}
+      @tcallids = @callids;
+      @callids = ();
+      foreach $tcallid (@tcallids) {
+        if ($tcallid ne $callid) {
+          push (@callids, $tcallid);
+        } else {
+          if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
+            ($number) = $1;
+            } else {$number = "NO NUMBER";}
+          if (grep(/^$number$/, @locals)) {
+            # number is in the To line instead of From line
+            if ($sip =~ /^To:.*<sip:(.+?)@/imo) {
+              ($number) = $1;
+            } else {$number = "NO NUMBER";}
+          }
+          $msg = sprintf("CALLINFO: ###CANCEL...NMBR%s...DATE%s+++",
+                         $number, $date);
+          print "Removed $callid from CallID list\n" if ($debug);
+          print $msg, "\n" if $verbose;
+          if (!$test) { print $sock $msg, "\r\n"; }
+        }
+      }
+
   } elsif ($sip =~ /^CSeq:\s+\d+\s+BYE/imo) {
-      if ($sip =~/^Proxy-Auth/imo) {return};
-      if ($sip =~ /^To:.*<sip:(.+?)@/imo) {
-        ($number) = $1;
-        } else {$number = "NO NUMBER";}
-      my $msg = sprintf("CIDINFO: ###BYE...NMBR%s...DATE%s+++",
-                        $number, $date);
-      print $msg, "\n" if $verbose;
-      if (!$test) { print $sock $msg, "\r\n"; }
+      # Hangup After answer
+      if ($sip =~ /^Call-ID:(.+)@/imo) {
+        $callid = $1;
+      } else {print "No BYE Call-ID found in packet\n" if ($debug);}
+      @tcallids = @callids;
+      @callids = ();
+      foreach $tcallid (@tcallids) {
+        if ($tcallid ne $callid) {
+          push (@callids, $tcallid);
+        } else {
+          if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
+            ($number) = $1;
+            } else {$number = "NO NUMBER";}
+          if (grep(/^$number$/, @locals)) {
+            # number is in the To line instead of From line
+            if ($sip =~ /^To:.*<sip:(.+?)@/imo) {
+              ($number) = $1;
+            } else {$number = "NO NUMBER";}
+          }
+          $msg = sprintf("CALLINFO: ###BYE...NMBR%s...DATE%s+++",
+                         $number, $date);
+          print "Removed $callid from CallID list\n" if ($debug);
+          print $msg, "\n" if $verbose;
+          if (!$test) { print $sock $msg, "\r\n"; }
+        }
+      }
+
   } elsif ($sip =~ /^CSeq:\s+\d+\s+REGISTER/imo) {
       $sip =~ /^Contact:\s+.*?<sip:(.+?)@/imo;
       if (!grep(/^$1$/, @locals)) {

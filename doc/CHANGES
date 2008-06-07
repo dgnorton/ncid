@@ -1,5 +1,82 @@
 ncid - Network CallerID
 
+Version 0.71
+    - ncid.sh: proc errorMsg: Added if (!$Delay) {exit -1
+               proc getArg: Changed: && $optarg == -1
+                               To: && [regexp {^-[12]$} $optarg]
+                            Added: -N and --nocid option
+                            Added NoCID variable
+               proc getCID: Added NoCID logic to if test for $type == 5
+               proc sendMSG: Added: global ExecSh
+               Updated usage message to include --nocid|-N
+    - ncidd.c: doPoll: Added test for BYE to set ring = -2 in CIDINFO
+                       Changed method of processing client input lines
+    - README: Updated for ring count and hangup indicators
+    - Makefile: Changed target "mac" to create non FAT binary
+                Added target "mac-fat" to create Mac ppc and i386 FAT binaries
+                Changed Mac MFLAGS to depend on arch
+    - VERSION: Now contains version for the NCID package, ncid, ncidd,
+               ncidsip, sip2ncid, and yac2ncid
+    - Fedora/ncidd.init: Corrected reload message
+    - cidgate/sip2ncid.h: Added REGISTER, INVITE, CANCEL, BYE, SIPTAG
+                          Removed PKTREG, PKTINV, PKTCAN, PKTACT, PKTBYE, PKTOK
+                          Removed CSEQACK, CSEQREG, CSEQINV, CSEQCAN, CSEQBYE
+                          Added NONAME, BADNAME, NONUMBER, BADNUMBER
+    - cidgate/sip2ncid.c: Added strmatch() and parseLine()
+                          processPackets: Rewrote INVITE, CANCEL, and BYE
+    - cidgate/ncidsip.pl: Changed default port from 5061 to 10000
+                          Changed packet decode logic to match sip2ncid
+                          Placed PID file code inside if (!$test) statement
+    - cidgate/yac2ncid.sh: Changed output from CID line to CALL line
+    - debian/ncidd.init: Added condrestart
+    - debian/ncid-mythtv.init: Added MythMsg=-M and condrestart
+    - debian/ncid-page.init: Added condrestart
+    - debian/ncid-popup.init: Added PopupMsg=-M and condrestart
+    - debian/ncid-samba.init: Added condrestart
+    - debian/ncidsip.init: Added condrestart
+    - debian/ncid-speak.init: Added condrestart
+    - debian/ncid-yac.init: Added condrestart
+    - debian/sip2ncid.init: Added condrestart
+    - debian/yac2ncid.init: Added condrestart
+    - debian/README.debian: Changed 0.70 to 0.71, added -src to tar source file
+    - doc/INSTALL-andLinux: Corrected and improved
+    - doc/INSTALL-Cygwin: Changed source tar file to ncid-VERSION-src.tar.gz
+    - doc/INSTALL-Mac: Changed source tar file to ncid-VERSION-src.tar.gz
+    - doc/NCID-DataFormats: Updated
+    - doc/NCID-PROTOCOL: Updated
+    - doc/TODO: Corrected error
+    - doc/Verbose-sip2ncid: Updated
+    - Fedora/ncid-mythtv.init: Added MythMsg configuration
+    - Fedora/ncid-popup.init: Added PopupMsg configuration
+    - Fedora/ncid.spec: added -src to source file name
+    - FreeBSD/ncidd.rc: Added condrestart
+    - FreeBSD/ncid-mythtv.rc: Added condrestart and MythMsg=-M
+    - FreeBSD/ncid-page.rc: Added condrestart
+    - FreeBSD/ncid-popup.rc: Added condrestart and PopupMsg=-M
+    - FreeBSD/ncid-samba.rc: Added condrestart
+    - FreeBSD/ncidsip.rc: Added condrestart
+    - FreeBSD/ncid-speak.rc: Added condrestart
+    - FreeBSD/ncid-yac.rc: Added condrestart
+    - FreeBSD/sip2ncid.rc: Added condrestart
+    - FreeBSD/yac2ncid.rc: Added condrestart
+    - man/ncid.1: Updated
+    - man/ncidmodules.conf.5: Updated
+    - modules/ncid-muthtv.sh: Corrected typo: --teplate => --template
+                              Added MythMsg=-M
+    - modules/ncid-popup.sh: Added PopupMsg=-M
+    - modules/ncidmodules.conf: Updated
+    - scripts/ncidd.logrotate: Changed logs to rotate to:
+                                /var/log/cid*.log & /var/log/*ncidd.log
+                               Changed prerotate and postrotate
+                               Added: "rotate 5" since default is no rotate
+                               Commented out "compress"
+    - README.test: Changed <RETURN> to <ENTER>
+                   Updated to include TestGWcalls
+    - test/testclient: Changed <RETURN> to <ENTER>
+    - test/TestGWcalls: Added
+    - test/TestGWcalls.data: Added
+    - test/testserver: Changed "-P ncidd.pid" to -P "T-ncidd.pid"
+
 Version 0.70
     - README: ncidmodule.conf corrected be ncidmodules.conf, and updated
     - Makefile: Fixed tivo-series2 so it defaults to /var/hack

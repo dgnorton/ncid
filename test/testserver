@@ -23,7 +23,7 @@ $NCID -Dv3 \
       -A T-ncidd.alias \
       -C T-ncidd.conf \
       -N 1 \
-      -P ncidd.pid \
+      -P T-ncidd.pid \
       -p 3334 \
       -s cidlog \
       -s cidinfo \

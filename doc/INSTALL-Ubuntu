@@ -13,6 +13,7 @@ INSTALL:
 
     If you want to use ncidsip:
 
+    - Install the build-essential package: sudo apt-get install build-essential
     - Download, compile, and install the IO-Interface module from CPAN
     - Download, compile, and install the Net-Pcap module from CPAN
 

@@ -4,7 +4,7 @@
 # See http://www.mythtv.org/wiki/index.php/Little_Gems
 # Requires MythTV (mythtvosd)
 
-# Last changed by jlc: Wed Sep 19, 2007
+# Last changed by jlc: Sun May 4, 2008
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -39,7 +39,7 @@ then
               --caller_time="$CIDTIME"
 else
     # Display Message
-    mythtvosd --teplate="alert" --alert_text="$CIDNAME"
+    mythtvosd --template="alert" --alert_text="$CIDNAME"
 fi
 
 exit 0

@@ -1,6 +1,6 @@
 andLinux Install
 
-Last edited: Thu Mar 13, 2008
+Last edited: Wed Apr 23, 2008
 
 Install either the minimal/XFCE version (about 143 MB) or the KDE version
 (about 665 MB) of andLinux.  If you only intend to run NCID, you should
@@ -23,7 +23,6 @@ INSTALL andLinux:
       (this forwards the SIP, NCID, and YAC ports to andLinux)
     - if you would like to ssh into andLinux, append /tcp:22:22 to the end
       of the line.
-    - modify the lines:
     - The andLinux Beta 1 rc6 release has problems with some virus checkers
       that cause the startup to take minutes to complete.  Virus scanners
       will usually scan files that end in .dvr, so a workaround is to rename
@@ -42,6 +41,10 @@ INSTALL andLinux:
 INSTALL NCID:
 
     - Download the latest NCID deb package from sourceforge
+      * You can use the andLinux version of Netscape
+      * You can use wget in a andLinux terminal window
+        (using version 0.70 as an example)
+        wget  http://downloads.sourceforge.net/ncid/ncid_0.70-0ubuntu1_i386.deb
     - Use Synaptic to locate and install gdebi
     - Use Thunar (file viewer) to locate the NCID deb package
     - Install the NCID deb package by double clicking on it.

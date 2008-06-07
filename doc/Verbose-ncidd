@@ -16,9 +16,12 @@ LEVEL3:
         show modem responses
         show client connect/disconnect
         indicate Non 7-bit ASCII message deleted
-        indicate client sent CID message
+        indicate client sent CALL data
+        incidate client sent CALLINFO data
         indicate client sent text message
-        show CID data from serial device
+        indicate client sent unknown data
+        indicate client sent empty line
+        show call data input
         show CID info line
         show CID line
 

@@ -14,17 +14,17 @@ testclient.data:
     The program is a NCID test server used to send various NCID
     lines to test a client.  The test server uses port 3000.  It
     sends one or more lines from the testclient.data file with each
-    press of <RETURN>.  The last <RETURN> will terminate the server.
-    Blank lines are used to terminate a send initiated by <RETURN>.
+    press of <ENTER>.  The last <ENTER> will terminate the server.
+    Blank lines are used to terminate a send initiated by <ENTER>.
 
     To test a client:
 	    Start testclient (it will give instructions and send a 200 line)
 	    Start the NCID client on port 3000 (it will receive the 200 line)
-	    Press <RETURN> to send 2 MSG lines
-	    Press <RETURN> to send 5 CIDLOG lines
-	    Press <RETURN> to send one CID (call) line (there are 4 CID lines)
-	    Press <RETURN> to send one CID and CIDINFO lines (there are 3 groups)
-	    Press <RETURN> to end testclient
+	    Press <ENTER> to send 2 MSG lines
+	    Press <ENTER> to send 5 CIDLOG lines
+	    Press <ENTER> to send one CID (call) line (there are 4 CID lines)
+	    Press <ENTER> to send one CID and CIDINFO lines (there are 3 groups)
+	    Press <ENTER> to end testclient
 
 	    Usage: testclient [datafile]
 	    Default Data File: testclient.data
@@ -53,5 +53,22 @@ testserver:
 
     Usage: testserver {FULLY_QUALIFIED_PATH/ncidd} [-nciddOption(s)]
 
-    Example: run the test server in verbose level 4:
-        testserver /usr/sbin/ncidd -v4
+    Examples: #run the test server in verbose level 4:
+              ./testserver /usr/sbin/ncidd -v4
+
+              # Run testserver in debug mode:
+              ./testserver /usr/sbin/ncidd -D
+
+TestGWcalls:
+TestGWcalls.data:
+    This program emulates the output from a gateway.  It is usually
+    run at the same time as testserver and ncid
+
+    To test a server or client, start all three programs in 3 different
+    terminal windows:
+        ./testserver ../ncidd -D
+        ./TestGWcalls
+        ./ncid
+
+    Press <ENTER> to send the first line
+    Press <ENTER> to keep sending lines until program terminates

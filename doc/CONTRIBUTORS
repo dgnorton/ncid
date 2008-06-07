@@ -1,27 +1,29 @@
+Last edited on Mon May 5, 2008
+
 John L. Chmielewski:
-	Designed and wrote most of the programs.
+    Designed and wrote most of the programs.
 
 Mark Salyzyn:
-	Ported ncidd to BSD and Macintosh.
-	Wrote getopt.c and poll.c.
+    Ported ncidd to BSD and Macintosh.
+    Wrote getopt.c and poll.c.
 
 Mace Moneta:
-	Wrote nciduser, which was the basis for ncid-speak.
-	Contributed ideas and code to ncid.
-	Contributed the Mac OS X portion of ncid-speak.
+    Wrote nciduser, which was the basis for ncid-speak.
+    Contributed ideas and code to ncid.
+    Contributed the Mac OS X portion of ncid-speak.
 
 Dan Lawrence:
-	Contributed to ncid-email so paging would work.
-	Contributed information on freewrap for ncid on Windows:
-		http://freewrap.sourceforge.net/
+    Contributed to ncid-email so paging would work.
+    Contributed information on freewrap for ncid on Windows:
+        http://freewrap.sourceforge.net/
 
 Aron Green:
-	Helped fix termios settings to work with FreeBSD.
-	Contributed ncid.sh and ncidd.sh start/stop scripts for FreeBSD.
-	Contributed ideas for ncidd and ncid.
+    Helped fix termios settings to work with FreeBSD.
+    Contributed ncid.sh and ncidd.sh start/stop scripts for FreeBSD.
+    Contributed ideas for ncidd and ncid.
 
 Troy Carpenter:
-	Developed ncid-samba to send CID info to samba for a Windows opoup
+    Developed ncid-samba to send CID info to samba for a Windows opoup
 
 Lyman Epp:
     Wrote the first version of ncidrotate, in python.
@@ -62,19 +64,27 @@ Michael Lasevich
 Randy <randyr505@gmail.com>
     Wrote and contributed the ncid-popup client output module.
 
+Jonathan Wolf
+    Hacked ncid to provide ring indication when Caller ID not available.
+    His hack was not used, but his feature was added to ncid.
+
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
-	Troy Carpenter
-	Mace Moneta
-	Dan Lawrence
-	Nicholas Davies
-	Paul Miller
-	Aron Green
+    Adam 'Starblazer' Romberg
+    Andy Nunez
+    Andy Writter
+    Aron Green
+    Carl Johnson
+    Dan Lawrence
+    David LaPorte
     Joe Nardone
     Ken Appell
+    Mace Moneta
     Matt Short
-    Rick Matthews
-    Phil Fitzpatrick
-    Adam 'Starblazer' Romberg
     Michael Lasevich
-    Andy Writter
+    Nicholas Davies
+    Paul Miller
+    Phil Fitzpatrick
+    Rick Matthews
     Steve Forman
+    Troy Carpenter
+    Jonathan Wolf

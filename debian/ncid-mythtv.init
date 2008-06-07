@@ -21,11 +21,10 @@ MODULE=ncid-mythtv
 DAEMON=/usr/bin/$NAME
 PIDFILE=/var/run/$MODULE.pid
 SCRIPTNAME=/etc/init.d/$MODULE
+MythMsg=-M
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf
-
-DAEMON_ARGS="--no-gui -p $PIDFILE -C -P $MODULE"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -35,6 +34,8 @@ DAEMON_ARGS="--no-gui -p $PIDFILE -C -P $MODULE"
 
 # source config file
 [ -f $ConfigFile ] && . $ConfigFile
+
+DAEMON_ARGS="--no-gui -p $PIDFILE $MythMsg -C -P $MODULE"
 
 # Load the VERBOSE setting and other rcS variables
 [ -f /etc/default/rcS ] && . /etc/default/rcS
@@ -166,6 +167,24 @@ case "$1" in
         ;;
     esac
     ;;
+  condrestart)
+    log_daemon_msg "Conditional Restarting $DESC" "$NAME"
+    do_stop
+    case "$?" in
+      1)
+        do_start
+        case "$?" in
+            0) log_end_msg 0 ;;
+            1) log_end_msg 1 ;; # Old process is still running
+            *) log_end_msg 1 ;; # Failed to start
+        esac
+        ;;
+      *)
+          # Not running or failed to stop
+        log_end_msg 1
+        ;;
+    esac
+    ;;
   status)
     do_status
     case "$?" in
@@ -175,7 +194,7 @@ case "$1" in
     ;;
   *)
     #echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
-    echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload|status}" >&2
+    echo "Usage: $SCRIPTNAME {start|stop|restart|condrestart|force-reload|status}" >&2
     exit 3
     ;;
 esac

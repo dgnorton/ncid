@@ -1,5 +1,7 @@
 The current TODO list (in no particular order)
 
+Last modified: Sat Apr 12, 2008
+
 DONE- Add a client that does a overlay pop up window for Linux.
 DONE- Finish port to cygwin so server operates under windows.  Problem
       is the serial port does not ndicate when it has data using poll().
@@ -13,10 +15,11 @@ DONE- Make the ncid client handle multiple modules.
     - Add a iax2 gateway
     - Add a GUI configuration program for the server, client, modules,
       and gateways.
+DONE- Record outgoing calls when using a SIP gateway
 
 The MAYBE TODO list (in no particular order)
 
-DONE- Add ringtone support.
+    - Add ringtone support.
     - Add a firefox module.
     - Add a new client output module to hang up the phone if the number
       is blacklisted.

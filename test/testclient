@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Created by John L. Chmielewski on Fri Mar 14, 2003
-# Last updated by jlc on Dun Jun 11, 2006
+# Last updated by jlc on Sat May 24, 2008
 
 ($testfile = shift) || ($testfile = "testclient.data");
 
@@ -9,7 +9,7 @@ open(OUTPUT, '|nc -l localhost 3000') || die "Could not open netcat\n";
 open(TESTFILE, $testfile) || die "Could not open $testfile\n";
 
 print "Connect client to port 3000 to test, for example: ncid 3000\n\n";
-print "Then press <RETURN> multiple times to:\n";
+print "Then press <ENTER> multiple times to:\n";
 print "    send MSG:     lines\n";
 print "    send CIDLOG:  lines\n";
 print "    send CID:     line\n";
