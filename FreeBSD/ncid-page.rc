@@ -13,6 +13,8 @@ ncidpage_enable="${ncidpage_enable-NO}"
 . /etc/rc.subr
 
 rcvar=`set_rcvar ncidpage`
+extra_commands="condrestart"
+
 name=ncid
 module=ncid-page
 pidfile=/var/run/$module.pid
@@ -29,4 +31,12 @@ command_args="--no-gui -p $pidfile -C -P $module $ringopt &"
 procname=/usr/local/bin/tclsh8.4
 
 load_rc_config $name
-run_rc_command "$1"
+
+case $1 in
+    condrestart)
+        run_rc_command "stop" && run_rc_command "start"
+        ;;
+    *)
+        run_rc_command "$1"
+        ;;
+esac

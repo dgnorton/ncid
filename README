@@ -48,6 +48,8 @@ The NCID package has the following features:
     - Send important error messages to the clients.
     - Send a message received from a client to all connected clients.
     - Reloads the alias file when it receives a SIGHUP signal.
+    - Sends ring count or -1 for hangup before answer or -2 for hangup after
+      answer if input device supports it.
     - Documented protocol
 
     Client Features (ncid):
@@ -57,9 +59,10 @@ The NCID package has the following features:
     - Supports Distinctive Ring and Multiline
     - Supports output modules to customize its output and to display
       CID on devices like cell phones.
+    - can call a output module on a specific ring count or hangup indicator
     - Runs on Windows, Linux, UNIX, and Macintosh OS X.
     - Can send a message to all active clients using the server
-    - Can have multiple clients, usually each with a different output module.
+    - Multiple clients allowed, usually each with a different output module.
     - Documented protocol
 
     CID Gateway Features (sip2ncid and ncidsip)

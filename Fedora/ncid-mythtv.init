@@ -18,6 +18,7 @@ RETVAL=0
 prog="ncid"
 module=ncid-mythtv
 pidfile=/var/run/$module.pid
+MythMsg=-M
 
 [ -f /usr/bin/$prog ] || exit 0
 
@@ -27,7 +28,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 # source config file
 [ -f $ConfigFile ] && . $ConfigFile
 
-args="--no-gui -p $pidfile -C -P $module"
+args="--no-gui -p $pidfile $MythMsg -C -P $module"
 
 start() {
         # Start daemons.

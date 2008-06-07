@@ -41,7 +41,7 @@ stop() {
 }
 
 reload() {
-        echo -n $"Reloading $prog config and alias files: "
+        echo -n $"Reloading $prog alias files: "
         killproc $prog -HUP
         RETVAL=$?
         echo

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd.h is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.70"
+#define VERSION     "0.71"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -143,6 +143,10 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 
 #define CIDINFO     "CIDINFO: "
 #define RING        "*RING*"
+
+#define CALL        "CALL: "
+#define CALLINFO    "CALLINFO: "
+#define CALLED      "CALLED"
 #define CANCEL      "CANCEL"
 #define BYE         "BYE"
 

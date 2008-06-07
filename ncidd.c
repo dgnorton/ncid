@@ -702,7 +702,8 @@ int addPoll(int pollfd)
 doPoll(int events, int mainsock)
 {
   int num, pos, sd, cnt = 0;
-  char buf[BUFSIZ], msgbuf[BUFSIZ];;
+  char buf[BUFSIZ], msgbuf[BUFSIZ];
+  char *sptr, *eptr;
 
   /*
    * Poll is configured for POLLIN and POLLPRI events
@@ -855,8 +856,7 @@ doPoll(int events, int mainsock)
       {
         if (polld[pos].fd)
         {
-          strcpy(buf, MSGLINE);
-          if ((num = read(polld[pos].fd, buf + strlen(MSGLINE), BUFSIZ-1)) < 0)
+          if ((num = read(polld[pos].fd, buf, BUFSIZ-1)) < 0)
           {
             sprintf(msgbuf, "Client READ: %s\n", strerror(errno));
             logMsg(LEVEL1, msgbuf);
@@ -879,7 +879,7 @@ doPoll(int events, int mainsock)
             char *ptr;
 
             /* Terminate String */
-            buf[num + strlen(MSGLINE)] = '\0';
+            buf[num] = '\0';
 
             /* strip <CR> and <LF> */
             if (ptr = strchr(buf, '\r')) *ptr = '\0';
@@ -890,69 +890,103 @@ doPoll(int events, int mainsock)
              * if not, assume entire line is not wanted.  This may
              * need to be improved, but this gets rid of telnet binary.
              */
-             if (isascii((int) buf[strlen(MSGLINE)]) == 0)
+             if (isascii((int) buf[0]) == 0)
              {
-                buf[strlen(MSGLINE)] = '\0';
+                buf[0] = '\0';
                 sprintf(msgbuf, "Message deleted, not 7-bit ASCII, sd: %d\n",
                   polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
              }
 
             /* Make sure there is data in the message line */
-            if (strncmp(buf, MSGLINE, strlen(buf)) != 0)
+            if (strlen(buf) != 0)
             {
 
-              sprintf(msgbuf, "%s%s###", MSGLINE, CIDLINE);
-              if (strncmp(buf, msgbuf, strlen(msgbuf)) == 0)
+              /* Look for CALL, CALLDATA, or MSG lines */
+              if (strncmp(buf, CALL, strlen(CALL)) == 0)
               {
                 /*
-                 * Found a CID Message Line
+                 * Found a CALL Line
                  * See comments for formatCID for line format
                  */
 
-                sprintf(msgbuf, "Client sent CID message, sd: %d\n",
+                sprintf(msgbuf, "Client (sd %d) sent CALL data.\n",
                   polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
 
                 writeLog(datalog, buf);
-                formatCID(mainsock, buf + strlen(MSGLINE) + strlen(CIDLINE));
+                formatCID(mainsock, buf + strlen(CALL));
+              }
+              else if (strncmp(buf, CALLINFO, strlen(CALLINFO)) == 0)
+              {
+                /*
+                 * Found a CALLINFO Line
+                 *
+                 * CALLINFO Line Format:
+                 *    CALLINFO: ###CALLED...
+                 *    CALLINFO: ###CANCEL...
+                 *    CALLINFO: ###BYE...
+                 */
+
+                /* Get word between "+++" and "..." */
+                sptr = index(buf, (int) '#') + 3;
+                *(eptr = index(buf, (int) '.')) = '\0';
+
+                sprintf(msgbuf, "Client (sd %d) sent CALLINFO for %s.\n",
+                        polld[pos].fd, sptr);
+                logMsg(LEVEL3, msgbuf);
+
+                /* Restore buffer by replacing '\0' with '.' */
+                *eptr = '.';
+
+                writeLog(datalog, buf);
+                if (strstr(buf, CANCEL))
+                {
+                  ring = -1;
+                  sendInfo(mainsock);
+                  ring = 0;
+                }
+                else if (strstr(buf, BYE))
+                {
+                  ring = -2;
+                  sendInfo(mainsock);
+                  ring = 0;
+                }
+                /* Nothing to do for other CALLINFO lines */
+              }
+              else if (strncmp(buf, MSGLINE, strlen(MSGLINE)) == 0)
+              {
+                /*
+                 * Found a user message Line
+                 * Write message to cidlog and all clients
+                 */
+
+                sprintf(msgbuf, "Client sent text message, sd: %d\n",
+                        polld[pos].fd);
+                logMsg(LEVEL3, msgbuf);
+                writeLog(cidlog, buf);
+                writeClients(mainsock, buf);
               }
               else
               {
-                sprintf(msgbuf, "%s%s###", MSGLINE, CIDINFO);
-                if (strncmp(buf, msgbuf, strlen(msgbuf)) == 0)
-                {
-                  /*
-                   * Found a CIDINFO MSG Line
-                   *
-                   * CIDINFO Message Line Format:
-                   *    CIDINFO: ###CANCEL ...
-                   *    CIDINFO: ###BYE ...
-                   */
+                /*
+                 * Found unknown data
+                 */
 
-                  sprintf(msgbuf, "Client sent CIDINFO message, sd: %d\n",
-                    polld[pos].fd);
-                  logMsg(LEVEL3, msgbuf);
-
-                  writeLog(datalog, buf);
-                  if (strstr(buf, CANCEL))
-                  {
-                    ring = -1;
-                    sendInfo(mainsock);
-                    ring = 0;
-                  }
-                }
-                else
-                {
-                  /* Write message to cidlog and all clients */
-
-                  sprintf(msgbuf, "Client sent text message, sd: %d\n",
-                    polld[pos].fd);
-                  logMsg(LEVEL3, msgbuf);
-                  writeLog(cidlog, buf);
-                  writeClients(mainsock, buf);
-                }
+                sprintf(msgbuf, "Client sent unknown data, sd: %d\n",
+                        polld[pos].fd);
+                logMsg(LEVEL3, msgbuf);
               }
+            }
+            else
+            {
+              /*
+               * Found empty line
+               */
+
+                sprintf(msgbuf, "Client sent empty line, sd: %d\n",
+                        polld[pos].fd);
+                logMsg(LEVEL3, msgbuf);
             }
           }
         }

@@ -30,6 +30,7 @@
 # gmake freebsd-install  - installs in /usr/local                       #
 #                                                                       #
 # make mac               - builds for Macintosh OS X in /usr/local      #
+# make mac-fat           - builds universal OS X binaries in /usr/local #
 # make mac-install       - installs in /usr/local                       #
 #                                                                       #
 # make cygwin            - builds for Windows using cygwin              #
@@ -126,6 +127,7 @@ default:
 	@echo "    gmake freebsd          # builds for FreeBSD in /usr/local, /var"
 	@echo "    gmake freebsd-install  # installs in /usr/local, /var"
 	@echo "    make  mac              # builds for Mac in /usr/local, /var"
+	@echo "    make  mac-fat          # builds for Mac in /usr/local, /var"
 	@echo "    make  mac-install      # installs in /usr/local, /var"
 	@echo "    make  cygwin           # builds for windows using Cygwin"
 	@echo "    make  cygwin-install   # installs in /usr/local"
@@ -239,19 +241,23 @@ freebsd-install:
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
             MAN=$(prefix)/man
 
-mac:
+mac-fat:
 	$(MAKE) local settag="Macintosh OS X" \
             MFLAGS="-mmacosx-version-min=10.3.9 -arch ppc" STRIP=
 	mv ncidd ncidd.ppc-mac
 	mv cidgate/sip2ncid cidgate/sip2ncid.ppc-mac
 	make clean
 	$(MAKE) local settag="Macintosh OS X" \
-            MFLAGS="-mmacosx-version-min=10.3.9 -arch i386" STRIP=
+            MFLAGS="-mmacosx-version-min=10.4 -arch i386" STRIP=
 	mv ncidd ncidd.i386-mac
 	mv cidgate/sip2ncid cidgate/sip2ncid.i386-mac
 	lipo -create ncidd.ppc-mac ncidd.i386-mac -output ncidd
 	lipo -create cidgate/sip2ncid.ppc-mac cidgate/sip2ncid.i386-mac \
          -output cidgate/sip2ncid
+
+mac:
+	$(MAKE) local settag="Macintosh OS X" \
+            MFLAGS="-mmacosx-version-min=10.4" STRIP=
 
 mac-install:
 	$(MAKE) install-base MAN=$(prefix)/man

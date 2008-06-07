@@ -1,14 +1,14 @@
 Summary:    Network Caller ID server, client, and gateways
 Name:       ncid
-Version:    0.70
+Version:    0.71
 Release:    1%{dist}
 Group:      System Environment/Daemons
 License:    GPL
 Url:        http://ncid.sourceforge.net
-Source:     %{name}-%{version}.tar.gz
+Source:     %{name}-%{version}-src.tar.gz
 BuildRoot:  %{_tmppath}/%{name}-root
 Prereq:     /sbin/chkconfig
-Requires:   tcl tk libpcap perl
+Requires:   tcl tk libpcap perl kdebase
 Buildrequires: libpcap-devel %{_includedir}/pcap.h
 
 # Don't build an extra package of debuginfo: we are not going to use it.
@@ -23,7 +23,7 @@ connected clients.
 
 The server, ncidd, monitors either a modem, device or gateway for the CID
 data.  The data is collected and sent, via TCP, to one or more clients.
-The server supports multiple gateways which can be used with  or without
+The server supports multiple gateways which can be used with or without
 a modem or device.
 
 The client, ncid, receives the Caller ID (CID) message and displays it

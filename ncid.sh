@@ -74,6 +74,8 @@ set Callprog    0
 set CallOnRing  0
 set TivoFlag    0
 set MsgFlag     0
+set Ring        0
+set NoCID       0
 
 if {[file exists $ConfigFile]} {
     catch [source $ConfigFile]
@@ -83,10 +85,9 @@ if {[file exists $ConfigFile]} {
 set Connect     0
 set Count       0
 set ExecSh      0
-set Ring        0
 set Socket      0
 set Try         0
-set Version     0.70
+set Version     0.71
 set VersionInfo "Network CallerID Client Version $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -94,8 +95,9 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
                [--call-prog       | -C]
                [--delay seconds   | -D seconds]
                [--message         | -M]
-               [--pidfile FILE    | -p pidfile]
+               [--nocid           | -N]
                [--program PROGRAM | -P PROGRAM]
+               [--pidfile FILE    | -p pidfile]
                [--raw             | -R]
                [--ring count      | -r count]
                [--tivo            | -T]
@@ -134,6 +136,9 @@ proc errorMsg {msg} {
     global Txt
     global NoGUI
     global Verbose
+
+    # If $Delay == 0, do not try to reconnect
+    if (!$Delay) {exit -1}
 
     if $NoGUI {
         if $Verbose {puts -nonewline stderr $msg}
@@ -195,6 +200,7 @@ proc getCID {} {
     global Ring
     global CallOnRing
     global cid
+    global NoCID
 
     set msg {CID connection closed}
     set cnt 0
@@ -226,10 +232,14 @@ proc getCID {} {
             }
         }
         if {[set type [checkCID $dataBlock]]} {
-            if {$CallOnRing && $type == 5 && $Callprog} {
+            if {$CallOnRing && $type == 5} {
                 # found CIDINFO line
                 set cidinfo [getField RING $dataBlock]
-                if {$Ring == $cidinfo} {sendCID $cid}
+                if {$NoCID} {
+                     if {$cidinfo == "1"} {handleMSG "Phone Ringing"}
+                } else {
+                    if {$Callprog && $Ring == $cidinfo} {sendCID $cid}
+                }
             } elseif {$type == 4} {
                 # found MSG line
                 regsub {MSG: (.*)} $dataBlock {\1} msg
@@ -351,6 +361,7 @@ proc sendCID {cid} {
 proc sendMSG {msg} {
     global Program
     global TivoFlag
+    global ExecSh
 
     if $TivoFlag {
       # send "$msg\n"
@@ -436,6 +447,7 @@ proc getArg {} {
     global TivoFlag
     global MsgFlag
     global PIDfile
+    global NoCID
 
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
@@ -444,7 +456,7 @@ proc getArg {} {
             {^--ring$} {
                 incr cnt
                 if {$optarg != ""
-                    && $optarg == -1
+                    && [regexp {^-[12]$} $optarg]
                     || [regexp {^[023456789]$} $optarg]} {
                     set Ring $optarg
                     set CallOnRing 1
@@ -465,6 +477,11 @@ proc getArg {} {
             }
             {^-M$} -
             {^--message$} {set MsgFlag 1}
+            {^-N$} -
+            {^--nocid$} {
+                set NoCID 1
+                set CallOnRing 1
+            }
             {^-P$} -
             {^--program$} {
                 incr cnt
@@ -581,18 +598,22 @@ proc reconnect {} {
 
 # Handle MSG from GUI
 proc handleGUIMSG {} {
-  global Socket
 
   # get MSG and clear text input box
   set line [.im get 1.0 end]
   .im delete 1.0 end
   # get rid of non-printable characters at start/end of string
   set line [string trim $line]
-  # send MSG, if $line not empty
-  if {[string length $line] > 0} {
-    puts $Socket $line
-    flush $Socket
-  }
+  # send MSG to server, if $line not empty
+  if {[string length $line] > 0} {handleMSG $line}
+}
+
+# Handle MSG sent to server
+proc handleMSG {msg} {
+  global Socket
+
+  puts $Socket "MSG: $msg"
+  flush $Socket
 }
 
 # handle a PID file, if it can not be created, ignore it
