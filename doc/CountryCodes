@@ -1,0 +1,12 @@
+The ncid client country codes
+
+Created Sun Dec 7, 2008
+
+The ncid client can display telephone numbers in country specific formats.
+
+These display formats are supported:
+
+    Country         CountryCode     AreaCode URL
+    -------         -----------     ------------
+    United States   US              
+    Sweden          SE              http://www.eniro.se/riktnummer/0-9.shtml

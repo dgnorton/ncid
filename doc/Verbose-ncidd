@@ -50,6 +50,7 @@ LEVEL1:
         indicate CID device instead of modem
         indicate using CID clients only
         show network port
+        indicate not using PID file if no '-P' option
         indicate pid file already exists
         indicate found stale pidfile
         indicate wrote pid in pidfile

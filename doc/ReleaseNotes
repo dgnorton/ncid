@@ -1,94 +1,79 @@
-NCID Source package:                     ncid-0.71-src.tar.gz
+NCID Source package:                     ncid-0.72-src.tar.gz
 
 NCID Binary Packages:
 
-    Fedora package:                      ncid-0.71-1.fc9.i386.rpm
-    Fedora 64 bit package:               ncid-0.71-1.fc9.x86_64.rpm
-    TiVo Series1 package:                ncid-0.71-1-ppc-tivo.tgz
-    TiVo Series 2 and 3 package:         ncid-0.71-1-mips-tivo.tgz
-    Macintosh OS X (i386 & ppc) package: ncid-0.71-1-mac-osx.tgz
-    FreeBSD 5.4 package:                 ncid-0.71-1-freebsd.tgz
-    Cygwin Windows package:              ncid-0.71-1-cygwin.tgz
-    Windows client installer:            ncid-0.71-1-client_setup.exe
-    Ubuntu Feisty package:               ncid_0.71-0ubuntu1_i386.deb
+    Fedora package:                      ncid-0.72-1.fc9.i386.rpm
+    Fedora 64 bit package:               ncid-0.72-1.fc9.x86_64.rpm
+    TiVo Series1 package:                ncid-0.72-1-ppc-tivo.tgz
+    TiVo Series 2 and 3 package:         ncid-0.72-1-mips-tivo.tgz
+    Macintosh OS X (i386 & ppc) package: ncid-0.72-1-mac-osx.tgz
+    FreeBSD 5.4 package:                 ncid-0.72-1-freebsd.tgz
+    Cygwin Windows package:              ncid-0.72-1-cygwin.tgz
+    Windows client installer:            ncid-0.72-1-client_setup.exe
+    Ubuntu package:                      ncid_0.72-0ubuntu1_i386.deb
 
-The most important change this release is the SIP decode logic in sip2ncid
-and ncidsip.  This fixed problems with Asterisk and some Vonage systems.
+Specific distribution Changes:
 
-The log rotation script was updated and improved.  It uses condrestart
-to restart daemons.
+    Fedora:
+        Updated ncidd.init, sip2ncid.init, ncidsip.init
 
-A user message line must start with a "MSG: " label to be recognized as a
-message.  The server will no longer accept any input as a message.  The
-simple food timer example now becomes (using a popular version of nc):
-    sleep 600; echo "MSG: Food Ready" | nc -w1 localhost 3333 > /dev/null
+        The Fedora binary distribution can be built for particular Fedora
+        and Redhat releases by rebuilding the package:
 
-The gateway data labels have changed.  They are different from the labels
-used by the server when it sends information to the clients.
+            rpmbuild -tb ncid-0.72-src.tar.gz
 
-Debian:
+    FreeBSD:
+        Updated ncidd.rc, sip2ncid.rc, ncidsip.rc
 
-    Modified the init scripts to work with the logrotate script
+    Mac OS-X:
 
-Fedora:
+    Ubuntu:
+        Updated ncidd.init, sip2ncid.init, ncidsip.init
 
-    The Fedora binary distribution can be built for previous Fedora
-    and Redhat releases by rebuilding the package:
-
-        rpmbuild -tb ncid-0.71-src.tar.gz
-
-FreeBSD:
-
-    Modified the rc scripts to work with the logrotate script
-
-Mac OS-X:
-
-    Changed Makefile so the "mac" target builds a normal binary, and added
-    a "mac-fat" target to build a ppc and i386 universal binary.
+    TiVo:
+        Added the startncid script to easily start NCID.
+        The script sets the local timezone for the Gateways.
+        The script must be reviewed and modified before use.
 
 NCID Server Changes:
 
-    Sets the ring count to -2 to indicate hangup after answer
-    Expects message lines to begin with "MSG"
-    Expects gateway call information to begin with "CALL"
+    ncidd:
+        Modified to allow a optional pid file
+
+    ncidd.conf:
+        Added a Mac OSX init string as a comment.
 
 NCID Gateway Changes:
 
     sip2ncid:
-        Rewrote the decode routines to eliminate duplicate call indications.
-        Decode works with Asterisk.
-        Call information sent to the server begin with "CALL".
+        Fixed a overflow on large sip packets.
+        Fixed some possible logic problems.
+        Modified to run on a TiVo series 1
+        Modified to allow a optional pid file
 
     ncidsip:
-        Rewrote the decode routines so follow same logic as sip2ncid.
-        Decode works with Asterisk.
-        Call information sent to the server begin with "CALL".
+        Modified to allow a optional pid file
 
     yac2ncid:
-        Call information sent to the server begin with "CALL".
+        Changed test for broken bash on the TiVo.
 
 NCID Client Changes:
 
-    Can call output module when hangup after answer is detected.
-    Try one time to connect to server, if delay is set to zero.
-    New option to indicate ringing. Useful when Called ID is not available.
+    ncid:
+        Modified telephone number format to handle two countries: US and SE
+        Changed the display separaters for telephone numbers.
+        Fixed a startup problem on the TiVo.
+        Added simple X11 detection to go into GUI mode.
+        Added color to the displayed GUI text.
+        Changed Message display, moved from GUI history window to call label
 
 NCID Client Module Changes:
 
-    ncid-mythtv: Corrected typo that prevented the display of messages.
-                 Messages are enabled by default
-    ncid-popup: Messages are enabled by default
-    ncidmodules.conf: added configuration for mythtv and popup messages
+    ncidmodules.conf:
+        Updated comments on ncid-page
 
 Documentation Changes:
 
-    Updated INSTALL-andLinux
-    Updated INSTALL-Cygwin
-    Updated INSTALL-Mac
-    Updated INSTALL-Ubuntu
-    Updated Verbose-ncidd
-    Updated Verbose-sip2ncid
-    Updated NCID-DataFormats
-    Updated NCID-PROTOCOL
-    Updated ncid.1 and ncidmodules.5 man pages
-    Updated TODO
+    Corrected a error in ncidtools.1
+    Updated sip2ncid.8, ncidd.8, ncidsip.8, ncid.1
+    Added CountryCodes to list country codes that the ncid display supports

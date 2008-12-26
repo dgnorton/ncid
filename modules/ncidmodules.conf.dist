@@ -1,8 +1,9 @@
 # ncid module and service configuration file
-# Last modified: Thu May 8, 2008
+# Last modified: Tue Dec 9, 2008
 
-# This configuration file is called from the ncid-* init files
+# This configuration file is called from the ncid-* init or rc files
 # to set the $ringopt, $tivoprog, $tivoargs variables.
+# these variables are only used from the rc or init files
 
 # This configuration file is also called by each output module to
 # set variables needed for it.  Uncomment or give the variable a
@@ -20,18 +21,30 @@
 PageFrom=mail
 # email address: (usual format: Cell_Phone_Number@Cell_Phone_Company_URL)
 PageTo=
-# ---------------------------------------------
-# This only works for modems that indicate RING
-# ---------------------------------------------
+# ------------------------------------------------------------------------
+# Only for modems that indicate ring
+#
 # uncomment to call external program on ring number number 4 (default)
 #ringopt="-r 4"
-# ----------------------------------------
-# This only works for sip2ncid and ncidsip
-# ----------------------------------------
+# uncomment to call external program after ringing stops
+#ringopt="-r 0"
+# uncomment to eliminate the ring option
+#ringopt=""
+# ------------------------------------------------------------------------
+# Only for the NetCallerID device, or modems that do not indicate ring
+#
+# uncomment to eliminate the ring option or a message will never be sent
+#ringopt=""
+# ------------------------------------------------------------------------
+# Only if using SIP (sip2ncid and ncidsip)
+# This will not work for modems or the NetCallerID device
+#
 # uncomment to call external program if hangup without answer
 #ringopt="-r -1"
 # uncomment to call external program if hangup after answer
 #ringopt="-r -2"
+# uncomment to eliminate the ring option
+#ringopt=""
 
 ###########################
 # Send Caller ID to Samba #

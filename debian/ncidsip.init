@@ -18,8 +18,8 @@ PATH=/usr/sbin:/usr/bin:/sbin:/bin
 DESC="Network Caller ID SIP Gateway"
 NAME=ncidsip
 DAEMON=/usr/sbin/$NAME
-DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
+DAEMON_ARGS="--pidfile /var/run/$NAME.pid"
 SCRIPTNAME=/etc/init.d/$NAME
 
 ConfigDir=/usr/local/etc/ncid
@@ -33,7 +33,7 @@ ConfigFile=$ConfigDir/ncidsip.conf
 
 # source config file
 [ -f $ConfigFile ] && . $ConfigFile
-[ -n "$opts" ] && DAEMON_ARGS="$opts"
+[ -n "$args" ] && DAEMON_ARGS="$args"
 
 # Load the VERBOSE setting and other rcS variables
 [ -f /etc/default/rcS ] && . /etc/default/rcS

@@ -25,20 +25,28 @@
 .B ncid-yac\^
 - Send CID to YAC listeners
 .SH SYNOPSIS
+ncid --no-gui [--ring #] [--message] --call-prog --program
 .B ncid-page\^
 .PP
+ncid --no-gui [--message] --call-prog --program
 .B ncid-popup\^
 .PP
+ncid --no-gui [--message] --call-prog --program
 .B ncid-samba\^
 .PP
+ncid --no-gui [--message] --call-prog --program
 .B ncid-speak\^
 .PP
+ncid --no-gui [--message] --call-prog --program
 .B ncid-mythtv\^
 .PP
+ncid --no-gui [--message] --call-prog --program
 .B ncid-skel\^
 .PP
+ncid --no-gui [--message] --call-prog --program
 .B ncid-tivo\^
 .PP
+ncid --no-gui [--message] --call-prog --program
 .B ncid-yac\^
 .SH DESCRIPTION
 These are CID output modules and are normally located in the
@@ -47,17 +55,9 @@ directory.
 .PP
 The client,
 .BR ncid ,
-can be configured to call any one module.
-The module then expects 5 input lines in the following order:
-.RS 5
-.IP CIDdate
-.PD 0
-.IP CIDtime
-.IP CIDnumber
-.IP CIDname
-.IP CIDline
-.PD
-.RE
+can be configured to call any one module.  It cannot call multiple modules,
+but multiple \fBncid\fR clients can be used each calling a different output
+module.
 .PP
 The ncid-skel output module is used as a template for writing
 a shell script output module.  All it does is send the Caller ID

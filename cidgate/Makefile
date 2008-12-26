@@ -49,6 +49,7 @@ OS          = host
 ifeq ($(OS),tivo-s1)
     CC = $(PPCXCOMPILE)gcc
     LD = $(PPCXCOMPILE)ld
+    CFLAGS += -DTIVO_S1
 else
     ifeq ($(OS),tivo-mips)
         CC = $(MIPSXCOMPILE)gcc

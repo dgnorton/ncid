@@ -28,11 +28,14 @@
 [-w <dumpfile>      | --writefile <dumpfile>]
 .fi
 .SH DESCRIPTION
-Snoops SIP INVITES via libpcap and injects the caller id information
+Snoops SIP Invites via libpcap and injects the caller id information
 found to the NCID server specified.  Snoops only udp traffic on the
 specified SIP host and port.
 .PP
 If \fI/var/log/sip2ncid.log\fR exists, it is used as a log file.
+.PP
+If a pid file is given, usually \fI/var/run/sip2ncid.pid\fB, then
+a pid file used to store the process ID.
 .PP
 The configuration file for \fIsip2ncid\fR is /etc/ncid/sip2ncid.conf.
 .SH "OPTIONS"
@@ -65,13 +68,13 @@ Default log filename: /var/log/sip2ncid.log
 Specifies the NCID server to connect to.  Port may be specified by
 suffixing the hostname with <:port>, or if you only want to change the
 port, just <:port>.  By default it will connect to port 3333 on
-"localhost".
+"127.0.0.1".
 .TP
 .B -P <filename> | --pidfile=<filename>
-Specifies the pidfile name to write.  The program will still run if
-it does not have permission to write a pidfile.
-.br
-Default PID filename: /var/run/sip2ncid.pid
+Specifies the pidfile name to write.
+Set to \fI/var/run/ncidd.pid\fB in a rc or init script when used as a service.
+The program will still run if it does not have permission to write a pidfile.
+There is no default.  If pidfile is not set, no pid file will be used.
 .TP
 .B -r <dumpfile> | --readfile <dumpfile>
 Read packets from a libpcap capture file instead of the network.

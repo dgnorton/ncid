@@ -1,7 +1,10 @@
-# tcl/tk configuration file
+# ncid configuration file
 
-# PID file (usually no need to change this)
-set PIDfile     /var/run/ncid.pid
+# File last changed: Thu Dec 11, 2008
+
+# set PIDfile to /var/run/ncid.pid in rc and init scripts
+# set PIDfile to "" to not use a PID file.
+set PIDfile     ""
 
 # Directory NCID uses to find the output modules
 set ProgDir     /usr/local/share/ncid
@@ -56,6 +59,18 @@ set TivoFlag    0
 # Message Flag: send messages to output modules
 # Default: 0
 set MsgFlag     0
+
+# Country is used to display the number for a particular country format
+# Country must be either "US" of "SE"
+# The default format for the US is xxx-xxx-xxxx
+# The default format for 
+set Country     "US"
+
+# if Country = "US" then NoOne is used for the number display format
+# if NoOne = 0, then number display format is 1-xxx-xxx-xxxx
+# if NoOne = 1, then number display format is xxx-xxx-xxxx
+# Default: 1
+set NoOne       1
 
 # This variable must be at the end of the file for tivosh
 # external called program

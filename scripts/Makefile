@@ -1,6 +1,6 @@
 SHSCRIPT  = ncidrotate.sh
 ETCCONF   = ncidrotate.conf
-LOGCONF   = ncidd.logrotate
+LOGCONF   = ncid.logrotate
 FILES     = README Makefile $(SHSCRIPT) $(ETCCONF) $(LOGCONF)
 
 prefix    = /usr/local
@@ -32,7 +32,7 @@ install-etc: $(ETCCONF)
 
 install-logrotate: $(ROTATE)
 	@if test ! -d $(ROTATEDIR); then mkdir -p $(ROTATEDIR); fi
-	install -m 644 ncidd $(ROTATEDIR)
+	install -m 644 ncid $(ROTATEDIR)
 
 clean:
 

@@ -30,7 +30,7 @@ char *ttyport = TTYPORT;
 char *initstr = INITSTR;
 char *initcid = INITCID1;
 char *logfile = LOGFILE;
-char *pidfile = PIDFILE;
+char *pidfile;
 char *lineid  = ONELINE;
 char *lockfile, *name;
 char *TTYspeed;
@@ -828,7 +828,8 @@ doPoll(int events, int mainsock)
           }
           else
           {
-            strcat(strcat(strcpy(buf, ANNOUNCE), VERSION), CRLF);
+            sprintf(buf, "%s %s %s%s", ANNOUNCE, name, VERSION, CRLF);
+            //strcat(strcat(strcpy(buf, ANNOUNCE), VERSION), CRLF);
             write(sd, buf, strlen(buf));
             if (addPoll(sd) < 0)
             {
@@ -1475,6 +1476,7 @@ char *strdate()
  * if PID file exists, and PID not in process table, replace PID file
  * if no PID file, write one
  * if write a pidfile failed, OK
+ * If pidfile == 0, do not write PID file
  */
 int doPID()
 {
@@ -1483,6 +1485,13 @@ int doPID()
     FILE *pidptr;
     pid_t curpid, foundpid = 0;
     int ret = 0;
+
+    /* if pidfile == 0, no pid file is wanted */
+    if (pidfile == 0)
+    {
+        logMsg(LEVEL1, "Not using PID file, there was no '-P' option.\n");
+        return ret;
+    }
 
     /* check PID file */
     curpid = getpid();

@@ -55,7 +55,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.71"
+#define VERSION     "0.72"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -107,7 +107,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define MODEMTRY    6
 #define TTYSPEED    B19200
 #define LOCKFILE    "/var/lock/LCK.."
-#define ANNOUNCE    "200 Network CallerID Server Version "
+#define ANNOUNCE    "200 NCID Server: "
 #define INITSTR     "AT Z S0=0 E1 V1 Q0"
 #define INITCID1    "AT+VCID=1"
 #define INITCID2    "AT#CID=1"

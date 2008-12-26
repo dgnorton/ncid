@@ -19,6 +19,7 @@ name=sip2ncid
 
 command=/usr/local/sbin/$name
 pidfile="/var/run/${name}.pid"
+command_args="--pidfile /var/run/${name}.pid"
 
 load_rc_config $name
 

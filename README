@@ -2,6 +2,8 @@ NCID - Network CallerID
 
 Web Site: http://ncid.sourceforge.net
 
+File last changed: Thu Dec 11, 2008
+
 The NCID package contains:
     - a Network CallerID server: ncidd
       ncidd runs on Linux/TiVo/UNIX/Macintosh OSX/Cygwin
@@ -53,16 +55,16 @@ The NCID package has the following features:
     - Documented protocol
 
     Client Features (ncid):
-    - Displays the Caller ID Log and adds to it whenever it receives
-      the CID information from the server.
+    - Can display the number in a specific country format for US and Sweden.
+    - Displays the current Caller ID Log when a call is received.
     - Displays messages received from the server.
-    - Supports Distinctive Ring and Multiline
-    - Supports output modules to customize its output and to display
-      CID on devices like cell phones.
-    - can call a output module on a specific ring count or hangup indicator
-    - Runs on Windows, Linux, UNIX, and Macintosh OS X.
+    - Supports Distinctive Ring and multiple telephone lines.
+    - Supports output modules to customize its output and to send the CID
+      to cell phones, pagers or email.
+    - Can call a output module on a specific ring count or hangup indicator
     - Can send a message to all active clients using the server
     - Multiple clients allowed, usually each with a different output module.
+    - Runs on Windows, Linux, UNIX, and Macintosh OS X.
     - Documented protocol
 
     CID Gateway Features (sip2ncid and ncidsip)

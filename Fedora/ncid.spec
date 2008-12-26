@@ -1,6 +1,6 @@
 Summary:    Network Caller ID server, client, and gateways
 Name:       ncid
-Version:    0.71
+Version:    0.72
 Release:    1%{dist}
 Group:      System Environment/Daemons
 License:    GPL
@@ -78,6 +78,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/share/ncid/ncid-skel
 /usr/share/ncid/ncid-tivo
 /usr/share/ncid/ncid-yac
+/usr/share/pixmaps/ncid.gif
 %config /etc/ncid/ncid.conf
 %config /etc/ncid/ncidd.conf
 %config /etc/ncid/ncidd.alias
@@ -96,7 +97,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /etc/rc.d/init.d/ncid-samba
 /etc/rc.d/init.d/ncid-speak
 /etc/rc.d/init.d/ncid-yac
-/etc/logrotate.d/ncidd
+/etc/logrotate.d/ncid
 %{_mandir}/man1/ncid.1*
 %{_mandir}/man1/ncidmodules.1*
 %{_mandir}/man1/ncidrotate.1*

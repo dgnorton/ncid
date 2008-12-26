@@ -16,7 +16,7 @@
 
 RETVAL=0
 prog="ncidsip"
-args=""
+args="--pidfile /var/run/$prog.pid"
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidsip.conf

@@ -57,13 +57,23 @@ would like to view it, or correct a name that was truncated.
 You can even change or mask a telephone number.
 .PP
 .B NCIDD
-can also send a line number and ring count in a call info line,
-each time the
-phone rings, and a ring count of zero when ringing has ended.
-This will allow, for example, a client to send the call information
+can be configured to send a CIDINFO line to clients at each ring and
+when ringing stops.  It contains a LINE (called telephone line) indicator
+and a RING indicator.
+
+If the Caller ID is obtained from a modem, and the modem supports it,
+the server will include a ring count in each CIDINFO line.
+When ringing stops, the ring count will be zero.
+This allows, for example, a client to send the call information
 to a pager or cell phone on a specific ring count.  If the ring count
 is not reached, it is assumed the phone was answered and there is no
 need to send a page or cell phone notification.
+
+If the Caller ID is obtained from a SIP Gateway the CIDINFO line is
+only sent at the begining and end of a call.  At the end of a call, RING
+indicates either \fIHangup Without Answer\fB or \fIHangup after Answer\fR
+This allows a cell phone or pager to receive a message only if the phone
+was not answered.
 .PP
 .B NCIDD
 will accept a text message for a client, and then send it to all
@@ -157,9 +167,10 @@ modem (0) or no modem (1)
 Default: nomodem = 0
 .TP
 .B -P <pidfile> | --pidfile <pidfile>
-Server PID file
-.br
-Default: /var/run/ncidd.pid
+Server PID file.
+Set to \fI/var/run/ncidd.pid\fB in a rc or init script when used as a service.
+The program will still run if it does not have permission to write a pidfile.
+There is no default.  If pidfile is not set, no pid file will be used.
 .TP
 .B -p <port> | --port <port>
 Server port.

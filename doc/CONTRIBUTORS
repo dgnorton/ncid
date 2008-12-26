@@ -1,4 +1,4 @@
-Last edited on Mon May 5, 2008
+Last edited on Sat Dec 6, 2008
 
 John L. Chmielewski:
     Designed and wrote most of the programs.
@@ -67,6 +67,13 @@ Randy <randyr505@gmail.com>
 Jonathan Wolf
     Hacked ncid to provide ring indication when Caller ID not available.
     His hack was not used, but his feature was added to ncid.
+
+littlepepper@users.sourceforge.net
+    Provided the MacOSX init string for the imac.
+
+Marko Koski-Vähälä <marko@koski-vahala.com>
+    Contributed ncid client code to format numbers for Sweden.
+    The client can now format numbers for "US" and "SE"
 
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Adam 'Starblazer' Romberg

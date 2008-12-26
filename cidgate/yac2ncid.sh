@@ -3,6 +3,7 @@
 ## YAC2NCID - YAC to NCID gateway service
 ##
 ## NOTE: This script requires netcat binary (nc) to operate
+##       The bash location in the first line must match the if test below
 ##
 ## Copyright (c) 2007, 2008
 ## by Michael Lasevich(hichhiker)
@@ -11,26 +12,21 @@
 ##
 ## Version: 1.0.[123] (5/29/2008) by John L. Chmielewski
 ##
-VERSION="1.0.3)"
+VERSION="1.0.4)"
 
 ME="$(basename $0)"
 ME="${ME%.sh}"
 MYDIR="$(cd $(dirname $0) && pwd -P)"
-SHELL_NAME=/usr/local/bin/bash
 
 ## Workaround for broken trap on TiVo
-if test -f /tvbin/tivoapp -a "${FOUND_SHELL}" != 1
+## checking if date is 199?: broken bash
+## could also test for TiVo: /tvbin/tivoapp
+if /bin/bash --version | grep 199 > /dev/null
 then
-    if SHELL_PATH=`type -p ${SHELL_NAME}`
-    then
-        # found shell that has working trap
-        export FOUND_SHELL=1
-        exec ${SHELL_PATH} $0 $@
-    fi
-
     # must use bash with broken trap
 	PIDFILE=/dev/null
 else
+    # trap should be OK
     PIDFILE=/var/run/yac2ncid.pid
 
     dienice(){

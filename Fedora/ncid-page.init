@@ -28,7 +28,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 # source config file
 [ -f $ConfigFile ] && . $ConfigFile
 
-args="--no-gui -p $pidfile -C -P $module $ringopt"
+args="--no-gui --pidfile $pidfile -C -P $module $ringopt"
 
 start() {
         # Start daemons.

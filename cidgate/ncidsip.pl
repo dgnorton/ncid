@@ -10,7 +10,7 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case_always);
 use Pod::Usage;
 
-our $VERSION = "0.7";
+our $VERSION = "0.8";
 
 my ($host, $port) = ('localhost', 3333);
 my ($siphost, $sipport) = ('', 10000);
@@ -23,7 +23,7 @@ my $sock = undef;
 my $test = 0;
 my @locals;
 my $listdevs = 0;
-my $pidfile = "/var/run/ncidsip.pid";
+my $pidfile = "";
 my $savepid;
 my $pid = 0;
 my @callids;
@@ -66,33 +66,34 @@ if ($listdevs) {
 if ($test) {
   $verbose = 1;
   $debug = 1;
-}
-
-if (-e $pidfile) {
-    # only one instance per computer permitted
-    unless (open(PIDFILE, $pidfile)) {
+} else {
+  # Only create a PID file if $pidfile is set to one.
+  if ($pidfile ne "") {
+    if (-e $pidfile) {
+      # only one instance per computer permitted
+      unless (open(PIDFILE, $pidfile)) {
         die "pidfile exists and is unreadable: $pidfile\n";
-    }
-    $savepid = <PIDFILE>;
-    close(PIDFILE);
-    chop $savepid;
-    if (-d "/proc/$savepid") {
+      }
+      $savepid = <PIDFILE>;
+      close(PIDFILE);
+      chop $savepid;
+      if (-d "/proc/$savepid") {
         die "Process ($savepid) already running: $pidfile\n";
-    } else {
+      } else {
         print "Found stale pidfile: $pidfile\n" if $verbose;
+      }
     }
-}
 
-if (open(PIDFILE, ">$pidfile")) {
-    print(PIDFILE "$$\n");
-    $pid = $$;
-    close(PIDFILE);
-    print "Wrote pid $pid in $pidfile\n" if $verbose;
-}else{
-    print "Could not write pidfile: $pidfile\n" if $verbose;
-}
+    if (open(PIDFILE, ">$pidfile")) {
+      print(PIDFILE "$$\n");
+      $pid = $$;
+      close(PIDFILE);
+      print "Wrote pid $pid in $pidfile\n" if $verbose;
+    }else{
+      print "Could not write pidfile: $pidfile\n" if $verbose;
+    }
+  }
 
-if (!$test) {
   &connectNCID;
   errorExit("Could not connect to NCID server: $!\n") if !defined $sock;
 }

@@ -19,8 +19,8 @@ PATH=/usr/sbin:/usr/bin:/sbin:/bin
 DESC="Network Caller ID SIP Gateway"
 NAME=sip2ncid
 DAEMON=/usr/sbin/$NAME
-DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
+DAEMON_ARGS="--pidfile /var/run/$NAME.pid"
 SCRIPTNAME=/etc/init.d/$NAME
 
 # Exit if the package is not installed

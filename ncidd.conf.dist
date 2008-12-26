@@ -55,8 +55,9 @@ send cidinfo
 # PID, Alias and Log Files #
 ############################
 
-# The default PID file: /var/run/ncidd.pid
-# set pidfile = /tmp/ncidd.pid
+# Set pidfile to /var/run/ncidd.pid in rc and init scripts
+# The default is no PID file
+# set pidfile = /var/log/ncidd.pid
 
 # The default CID alias file: /etc/ncid/ncidd.alias
 # set cidalias = /etc/ncid/ncidd.alias
@@ -144,8 +145,15 @@ send cidinfo
 # The default modem initialization is: "AT Z S0=0 E1 V1 Q0"
 # set initstr = "ATE1V1Q0"
 #
+# If minicom can talk to the modem but ncidd fails, use the Minicom init string
+# Minicom initialization string is "AT S7=45 S0=0 L1 V1 X4 &c1 E1 Q0"
+# set initstr = "ATS7=45S0=0L1V1X4&c1E1Q0"
+#
 # Alternate modem initialization string
 # set initstr = "AT&FE1V1Q0+VIP"
+#
+# Alternate modem initialization string for the Mac Motorola UbiSoft modem
+# set initstr = "AT+FCLASS=8;+VCID=1" # Macintosh OS X
 
 # The U.S.Robotics USR5631 56K Faxmodem has a +GCI command to set the
 # country code to adjust parameters for a particular telephone network

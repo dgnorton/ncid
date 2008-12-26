@@ -1,5 +1,95 @@
 ncid - Network CallerID
 
+Version 0.72
+    - Makefile: changed tivo-series1 to tivo-s1 and tivo-series2 to tivo-s2
+                changed .sh rule to be more general for /usr/local changes
+                added added IMAGEDIR and added $IMAGEDIR to .sh rule 
+                added tivo-install-hack and added tivo-hack-install to usage
+                added IMAGES and install of $IMAGES
+    - ncid.sh: added BINDIR=/usr/local/bin and $BINDIR for tivosh command
+               added check for $DISPLAY and if not present run with --no-gui
+               added $Country and $NoOne
+               formatCID(): modified to accept variables as separaters
+                            eliminated to 8/9 digit bad number format
+                            added if {$COUNTRY == "US"} ...
+               doPID(): rewrote to remove inactive PID's from pidfile
+               about(): changed wording
+               displayCID(): added ismsg and test it to display a message
+                             Changed the GUI output line into 5 parts,
+                               each part of the line has a color tag
+                             Changed font to Monospace 14
+               getCID(): Changed messages from displayLog to displayCID
+               makeWindow(): Changed label font from Helvetica to Monospace
+                             Changed "Send Message" from black to blue
+                             Changed message window message from black to red
+               added doPopup(): called from getCID() type == 4 and type == 3
+    - ncid.conf.dist: added minicom and Mac init strings to comments
+                      added $Country and $NoOne configuration variables
+    - ncid.gif: added
+    - ncidd.c: global global pidfile set to 0, -P option must filename
+               doPID(): added if (ifpidfile == 0) ...
+    - ncidd.conf.dist: added information about the minicom init string
+                       added information about a alternate init for the Mac
+                       updated for optional PID file
+    - cidgate/sip2ncid.c: global pidfile set to 0, -P option must filename
+                          doPID(): added if (ifpidfile == 0) ...
+                          getCallID(): added else to "if (len < size)"
+                          processPackets(): sipbuf[BUFSIZ] -> sipbuf[SIPSIZ]
+                                            Added if (size_pdata < SIPSIZ)
+                                            Changed calls[] logic
+                                            Improved linenum[] logic
+                                            Added exceeded Telephone ling msg
+                          parseLine(): linebuf[BUFSIZ] -> linebuf[SIPSIZ]
+                          socketConnect: added ifdef TIVO_S1 and ifndef TIVO_S1
+                                         to replace gethostbyname() on the S1
+                                         with inet_addr()
+    - cidgate/sip2ncid.h: Added define: #define SIPSIZ      2048
+                          changed "localhost" to "127.0.0.1"
+    - cidgate/sip2ncid.conf: updated for localhost to 127.0.0.1 change
+                             updated for optional PID file
+    - cidgate/ncidsip: $pidfile set to "" and added if ($pidfile ne "") ...
+    - cidgate/yac2ncid.sh: Changed test for broken bash
+    - doc/CONTRIBUTORS: updated
+    - doc/Verbose-ncidd: updated for PID file
+    - doc/Verbose-sip2ncid: updated for PID file
+    - debian/ncidd.init: added "--pidfile /var/run/ncidd.pid" to args
+    - debian/ncidsip.init: added "--pidfile /var/run/ncidd.pid" to args
+                           changes $opts to $args to match ncidsip.conf
+    - debian/sip2ncid.init: added "--pidfile /var/run/ncidd.pid" to args
+    - FreeBSD/ncidd.rc: added "--pidfile /var/run/ncidd.pid" to command_args
+    - FreeBSD/ncidsip.rc: added "--pidfile /var/run/ncidd.pid" to args
+    - FreeBSD/sip2ncid.rc: added "--pidfile /var/run/ncidd.pid" to command_args
+    - Fedora/ncid.spec: updated
+    - Fedora/ncidd.init: added "--pidfile /var/run/ncidd.pid" to args
+    - Fedora/ncidsip.init: added "--pidfile /var/run/ncidd.pid" to args
+    - Fedora/sip2ncid.init: added "--pidfile /var/run/ncidd.pid" to args
+    - man/ncidtools.1: Corrected "cidlogupd" to "cidupdate"
+    - man/ncidd.8: updated
+    - man/sip2ncid.8: updated
+    - man/ncidsip.8: updated
+    - man/ncid.1: updated
+    - man/ncid.conf.5: updated
+    - modules/ncid-mythtv.sh: changed "-p" option to "--pidfile" option
+    - modules/ncid-page.sh: added ring option to usage in comments
+                            changed "-p" option to "--pidfile" option
+    - modules/ncid-popup.sh: changed "-p" option to "--pidfile" option
+    - modules/ncid-samba.sh: changed "-p" option to "--pidfile" option
+    - modules/ncid-speak.sh: changed "-p" option to "--pidfile" option
+    - modules/ncid-yac.sh: corrected the module name in usage comment
+                           changed "-p" option to "--pidfile" option
+    - modules/ncidmodules.conf.dist: updated
+    - screenshots/ncid-call.jpg: removed
+    - screenshots/ncid-call-mesg.jpg: removed
+    - screenshots/ncid-call.png: added
+    - screenshots/ncid-mesg.png: added
+    - scripts Makefile: renamed ncidd.logrotate to ncid.logrotate
+    - scripts/ncidd.logrotate: renamed file ncid.logrotate
+    - test/testclient.data: added 11, 10, 9, 8, 7, & 4 digit telephone numbers
+    - tools/README.tools: updated
+    - tools/startncid: added, use only with a TiVo
+    - Win/ncid.nsi: updated
+    - Win/ncid_splash.bmp: changed to logo
+
 Version 0.71
     - ncid.sh: proc errorMsg: Added if (!$Delay) {exit -1
                proc getArg: Changed: && $optarg == -1

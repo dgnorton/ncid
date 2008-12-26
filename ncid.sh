@@ -24,6 +24,8 @@
 TCLSH=tclsh
 # set WISH variable, FreeBSD will call it something like wish8.4 \
 WISH=wish
+# set BIN to directory where ncid is installed \
+BINDIR=/usr/local/bin
 # END OF LOCAL MODIFICATION SECTION
 
 # set nice value on TiVo, if "setpri" found \
@@ -31,17 +33,19 @@ type setpri > /dev/null 2>&1 && setpri rr 1 $$
 # set up TiVo options to use out2osd \
 OPTSTIVO="--no-gui --tivo --message --call-prog --program /usr/local/bin/out2osd"
 # if name is tivocid, exec tivosh (for backward compatibility) \
-case $0 in *tivocid) exec tivosh ncid $OPTSTIVO "$@"; esac
+case $0 in *tivocid) exec tivosh $BINDIR/ncid $OPTSTIVO "$@"; esac
 # set up TiVo options to use ncid-tivo \
 OPTSTIVO="--no-gui --message --call-prog --program ncid-tivo"
 # if name is tivoncid, exec tivosh \
-case $0 in *tivoncid) exec tivosh ncid $OPTSTIVO "$@"; esac
+case $0 in *tivoncid) exec tivosh $BINDIR/ncid $OPTSTIVO "$@"; esac
 # look for the --no-gui option \
 GUI=""; for i in $*; do if [ "$i" = "--no-gui" ]; then  GUI="$i"; fi; done
+# if $DISPLAY is not in the environment, set GUI="--no-display" \
+[ -z "$DISPLAY" ] && GUI="--no-display"
 # if --no-gui is not specified, look for wish and exec it \
 [ -z "$GUI" ] && type $WISH > /dev/null 2>&1 && exec $WISH -f "$0" "$@"
 # if --no-gui is specified, look for tclsh and exec it \
-[ -n "$GUI" ] && type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" "$@"
+[ "$GUI" = "--no-gui" ] && type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" "$@"
 # wish not found, look for tclsh and exec it \
 type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" --no-gui "$@"
 # tclsh not found, look for tivosh and exec it \
@@ -55,17 +59,21 @@ echo "wish or tclsh or tivosh not found or not in your \$PATH"; exit -1
 set ConfigDir   /usr/local/etc/ncid
 set ConfigFile  [list $ConfigDir/ncid.conf]
 
-# Constants
+### Constants
+set Logo        /usr/local/share/pixmaps/ncid.gif
 set ProgDir     /usr/local/share/ncid
 set ProgName    ncid-speak
 set CygwinBat   /cygwin.bat
 
-# global variables that can be changed by command line options
+### global variables that can be changed by command line options
+### or by the configuration file
 set Host        127.0.0.1
 set Port        3333
 set Delay       60
 set Raw         0
-set PIDfile     /var/run/ncid.pid
+# set PIDfile to /var/run/ncid.pid in rc and init scripts
+# set PIDfile to "" to not use a pidfile
+set PIDfile     ""
 set Program     [list $ProgDir/$ProgName]
 set All         0
 set Verbose     0
@@ -77,18 +85,22 @@ set MsgFlag     0
 set Ring        0
 set NoCID       0
 
+###  global variables that can be changed by the configuration file
+set Country     "US"
+set NoOne       1
+
 if {[file exists $ConfigFile]} {
     catch [source $ConfigFile]
 }
 
-# global variables that are fixed
+### global variables that are fixed
 set Connect     0
 set Count       0
 set ExecSh      0
 set Socket      0
 set Try         0
-set Version     0.71
-set VersionInfo "Network CallerID Client Version $Version"
+set Version     0.72
+set VersionInfo "NCID Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
                [--all             | -A]
@@ -107,10 +119,10 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
 
 set About \
 "
-Network Caller ID Client (ncid): Version $Version
-Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
-Copyright (C) 2007, 2008
-by John L. Chmielewski
+$VersionInfo
+Copyright (C) 2001-2008
+John L. Chmielewski
+http://ncid.sourceforge.net
 "
 
 # display error message and exit
@@ -187,20 +199,20 @@ proc bgerror {mess} {
 
 # Get data from CID server
 proc getCID {} {
+    global CallOnRing
+    global Callprog
+    global cid
     global Connect
-    global Socket
     global Host
+    global MsgFlag
+    global NoCID
+    global NoGUI
     global Port
     global Raw
+    global Ring
+    global Socket
     global Try
     global VersionInfo
-    global NoGUI
-    global MsgFlag
-    global Callprog
-    global Ring
-    global CallOnRing
-    global cid
-    global NoCID
 
     set msg {CID connection closed}
     set cnt 0
@@ -219,16 +231,16 @@ proc getCID {} {
 
         if $Raw {
             # output NCID data line
-            displayLog [list $dataBlock]
+            displayLog $dataBlock 1
             if {[string match 200* $dataBlock]} {
-                if {!$NoGUI} { displayCID "$VersionInfo\n$dataBlock" }
+                if {!$NoGUI} { displayCID "$VersionInfo\n$dataBlock" 1 }
             }
         } else {
             if {[string match 200* $dataBlock]} {
                 # output NCID server connect message
                 regsub {200 (.*)} $dataBlock {\1} dataBlock
-                if $NoGUI { displayLog [list "$VersionInfo\n$dataBlock"]
-                } else { displayCID "$VersionInfo\n$dataBlock" }
+                if $NoGUI { displayLog "$VersionInfo\n$dataBlock" 1
+                } else { displayCID "$VersionInfo\n$dataBlock" 1 }
             }
         }
         if {[set type [checkCID $dataBlock]]} {
@@ -243,7 +255,8 @@ proc getCID {} {
             } elseif {$type == 4} {
                 # found MSG line
                 regsub {MSG: (.*)} $dataBlock {\1} msg
-                displayLog [list $msg]
+                displayCID "$msg\n" 1
+                doPopup
                 if {$MsgFlag} {sendMSG $msg}
             } else {
                 # found CID, EXTRA, or CIDLOG line
@@ -255,24 +268,29 @@ proc getCID {} {
                 }
                 # display CID log
                 if {$type < 4} {
-                    if {!$Raw} {displayLog $cid}
+                    if {!$Raw} {displayLog $cid 0}
                 }
                 # display CID
                 if {$type < 3} {
                     if {!$NoGUI} {
-                        displayCID $cid
-                        # create a pop-up, even if open, in current desktop
-                        wm iconify .
-                        update
-                        wm deiconify .
-                        raise .
-                        update
+                        wm attributes .
+                        displayCID $cid 0
+                        doPopup
                     }
                     if {!$CallOnRing && $Callprog} {sendCID $cid}
                 }
             }
         }
     }
+}
+
+proc doPopup {} {
+    # create a pop-up, even if open, in current desktop
+    wm iconify .
+    update
+    wm deiconify .
+    raise .
+    update
 }
 
 proc checkCID {dataBlock} {
@@ -287,16 +305,50 @@ proc checkCID {dataBlock} {
 
 # must be sure the line passed checkCID
 proc formatCID {dataBlock} {
+    global Country
+    global NoOne
+
     set cidname [getField NAME $dataBlock]
     set cidnumber [getField NU*MBE*R $dataBlock]
-    if {![regsub \
-        {1?([0-9][0-9][0-9])([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
-        $cidnumber {(\1)\2-\3} cidnumber]} {
-        if {![regsub {([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])(.*)} \
-        $cidnumber {BAD-\1\2\3} cidnumber]} {
-        regsub {([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
-        $cidnumber {\1-\2} cidnumber
+    if {$Country == "US" } {
+        if {![regsub \
+            {(^1)([0-9]+)([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
+            $cidnumber {\1-\2-\3-\4} cidnumber]} {
+            if {![regsub {([0-9]+)([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
+                $cidnumber {\1-\2-\3} cidnumber]} {
+                regsub {([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
+                $cidnumber {\1-\2} cidnumber
+            }
+        } elseif {$NoOne} {
+            regsub {^1-?(.*)} $cidnumber {\1} cidnumber
         }
+    } elseif {$Country == "SE" } {
+      if {![regsub {^(07[0-9])([0-9]+)} \
+          $cidnumber {\1-\2} cidnumber]} {
+       if {![regsub {^(08)([0-9]+)} \
+           $cidnumber {\1-\2} cidnumber]} {
+        if {![regsub {^(01[013689])([0-9]+)} \
+            $cidnumber {\1-\2} cidnumber]} {
+         if {![regsub {^(0[23][[136])([0-9]+)} \
+             $cidnumber {\1-\2} cidnumber]} {
+          if {![regsub {^(04[0246])([0-9]+)} \
+              $cidnumber {\1-\2} cidnumber]} {
+           if {![regsub {^(054)([0-9]+)} \
+               $cidnumber {\1-\2} cidnumber]} {
+            if {![regsub {^(06[02])([0-9]+)} \
+                $cidnumber {\1-\2} cidnumber]} {
+             if {![regsub {^(090)([0-9]+)} \
+                 $cidnumber {\1-\2} cidnumber]} {
+              regsub {^([0-9][0-9][0-9][0-9])([0-9]+)} \
+                      $cidnumber {\1-\2} cidnumber
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
     }
     set ciddate [getField DATE $dataBlock]
     if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
@@ -378,32 +430,55 @@ proc sendMSG {msg} {
     }
 }
 
-# display CID information
+# display CID information or message
 # Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
-proc displayCID {cid} {
+#        "mesage line"
+# ismsg = 0 for CID and 1 for message
+proc displayCID {cid ismsg} {
     global Txt
 
-    if {[llength $cid] != 5} { set Txt $cid
+    if {$ismsg} { set Txt $cid
     } else { set Txt "[lindex $cid 3]\n[lindex $cid 2]" }
     update
 }
 
 # display Call Log
 # Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
-proc displayLog {cid} {
+# Input: "message"
+proc displayLog {cid ismsg} {
     global Verbose
     global NoGUI
     if $NoGUI {
         if $Verbose {
-            puts "[lindex $cid 0] [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
+            if $ismsg {
+                puts $cid
+            } else {
+                puts "[lindex $cid 0] [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
+            }
         }
     } else {
-        set cid "[lindex $cid 0] [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]\n"
-        .vh configure -state normal
-        .vh insert end $cid
+        .vh configure -state normal -font {Monospace -14}
+        .vh tag configure blue -foreground blue
+        .vh tag configure red -foreground red
+        .vh tag configure purple -foreground purple
+
+        if $ismsg {
+            .vh insert end "$cid\n" blue
+        } else {
+            set ciddate [lindex $cid 0]
+            set cidtime [lindex $cid 1]
+            set cidnmbr [lindex $cid 2]
+            set cidname [lindex $cid 3]
+            set cidline [lindex $cid 4]
+
+            .vh insert end "$ciddate " blue
+            .vh insert end "$cidtime " red
+            .vh insert end "$cidline " purple
+            .vh insert end "$cidnmbr " blue
+            .vh insert end "$cidname\n" red
+        }
         .vh yview moveto 1.0
         .vh configure -state disabled
-
     }
 }
 
@@ -422,8 +497,8 @@ proc connectCID {Host Port} {
         fconfigure $Socket -translation {binary binary} -blocking 0 
         # get response from server as an event
         fileevent $Socket readable getCID
-        if $NoGUI { displayLog "Connecting to $Host:$Port"
-        } else { displayCID "Connecting to\n$Host:$Port"}
+        if $NoGUI { displayLog "Connecting to $Host:$Port" 1
+        } else { displayCID "Connecting to\n$Host:$Port" 1}
     }
 }
 
@@ -521,7 +596,8 @@ proc makeWindow {} {
     pack .menubar -in .fr -fill x
 
     # create and place: call and server message display
-    label .md -textvariable Txt -font {Helvetica -14 bold}
+    # label .md -textvariable Txt -font {Helvetica -14 bold}
+    label .md -textvariable Txt -font {Monospace -14} -fg blue
     pack .md -side bottom
 
     # create and place: CID history scroll window
@@ -532,8 +608,8 @@ proc makeWindow {} {
 
     # create and place: user message window with a label
     label .spacer -width 10
-    label .ml -text "Send Message: "
-    text .im -width 25 -height 1 -font {Courier -14}
+    label .ml -text "Send Message: " -fg blue
+    text .im -width 25 -height 1 -font {Courier -14} -fg red
     pack .spacer .ml .im -side left
 
     # create menu bar with File and Help
@@ -555,9 +631,17 @@ proc makeWindow {} {
 
 proc aboutPopup {} {
     global About
+    global Logo
+
+    if [file exists $Logo] {
+        image create photo ncid -file $Logo
+        option add *Dialog.msg.image ncid
+        option add *Dialog.msg.compound top
+    }
 
     option add *Dialog.msg.wrapLength 9i
-    option add *Dialog.msg.font "Helvetica 12"
+    option add *Dialog.msg.font "Helvetica 14"
+    #option add *Dialog.msg.foreground blue
     tk_messageBox -message $About -type ok -title About
 }
 
@@ -621,42 +705,43 @@ proc doPID {} {
     global PIDfile
     global Verbose
 
-    set count 0
-    set PIDdir [file dirname $PIDfile]
-    if {[file writable $PIDfile]} {
-        # get the pid's on the first line of the pidfile
-        set chan [open $PIDfile r ]
-        gets $chan line
-        close $chan
-        # see if any pid is active
-        foreach p $line {
-            if {[file exists /proc/$p]} {set count 1}
-        }
-        if {$count == 0} {
-            # no pid is active, truncate the pidfile
+    if {$PIDfile ne ""} {
+        set activepid ""
+        set PIDdir [file dirname $PIDfile]
+        if {[file writable $PIDfile]} {
+            # get the pid's on the first line of the pidfile
+            set chan [open $PIDfile r ]
+            gets $chan line
+            close $chan
+            # save any active pid
+            foreach p $line {
+                if {[file exists /proc/$p]} {set activepid "$p "}
+            }
+            # truncate the pidfile
             set chan [open $PIDfile w ]
-        } else {
-            # at least one pid is active, append to the pidfile
-            set chan [open $PIDfile a ]
+            if {$activepid == ""} {
+                # write current PID into pidfile
+                puts $chan [pid]
+            } else {
+                # write active PID's and current PID into pidfile
+                puts $chan "$activepid [pid]"
+            }
+            close $chan
+        } elseif {[file writable $PIDdir]} {
+            # create the pidfile
+            set chan [open $PIDfile "CREAT WRONLY" 0644]
+            puts $chan [pid]
+            close $chan
         }
-        writePID $chan
-    } elseif {[file writable $PIDdir]} {
-        # create the pidfile
-        set chan [open $PIDfile "CREAT WRONLY" 0644]
-        writePID $chan
-    }
-    if $Verbose {puts "Using pidfile: $PIDfile"}
-}
-
-# get process ID, write it to the pidfile, and close it
-proc writePID {chan} {
-        set ncidpid [pid]
-        puts -nonewline $chan "$ncidpid "
-        close $chan
+        if $Verbose {puts "Using pidfile: $PIDfile"}
+    } else {if $Verbose {puts "Not using a PID file"}}
 }
 
 getArg
 if {!$NoGUI} makeWindow
+if {[expr {$Country ne {US} && $Country ne {SE}}]} {
+    exitMsg 7 "Country is set to \"$Country\"\nIt must be \"US\" or \"SE\""
+   }
 if $Callprog {
     if {[file exists $Program]} {
         if {![file executable $Program]} {

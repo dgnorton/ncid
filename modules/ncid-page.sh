@@ -3,7 +3,7 @@
 # Page a cell phone, pager, or mail address
 # Requires mail
 
-# Last changed by jlc: Wed Sep 19, 2007
+# Last changed by jlc: Wed Dec 10, 2008
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -16,8 +16,8 @@
 #
 # ncid usage examples:
 #   ncid --call-prog --program ncid-page
-#   ncid --no-gui --call-prog --program ncid-page
-#   ncid --no-gui --message --call-prog --program ncid-page
+#   ncid --no-gui --ring 4 --call-prog --program ncid-page
+#   ncid --no-gui --ring 4 --message --call-prog --program ncid-page
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf

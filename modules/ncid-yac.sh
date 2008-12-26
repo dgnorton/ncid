@@ -3,7 +3,7 @@
 # NCID to YAC Clients
 # Requires YAC
 
-# Last changed by jlc: Wed Sep 19, 2007
+# Last changed by jlc: Wed Dec 10, 2008
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -15,7 +15,7 @@
 # default program: /usr/share/ncid/ncid-speak
 #
 # ncid usage:
-#   ncid --no-gui --message --call-prog --program nid2yac
+#   ncid --no-gui --message --call-prog --program ncid-yac
 
 YACPORT=10629
 YACLIST=127.0.0.1

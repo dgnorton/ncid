@@ -26,7 +26,7 @@ int debug, listdevs, nofilter, test, sd;
 int ncidport   = NCIDPORT;
 int sipport    = SIPPORT;
 int verbose    = 1;
-char *pidfile  = PIDFILE;
+char *pidfile;
 char *ncidhost = LOCALHOST;
 char *logfile  = LOGFILE;
 char *name, *siphost, *device, *readfile, *writefile;
@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
         /* test mode is also debug mode */
         debug = 1;
 
-        sprintf(msgbuf, "%s mode\n",
-                readfile ? "Dump read" : "Test");
+        sprintf(msgbuf, "%s mode\nServer: %s %s\n",
+                readfile ? "Dump read" : "Test", name, VERSION);
         logMsg(LEVEL1, msgbuf);
     }
     /* if in debug mode */
@@ -306,6 +306,7 @@ char *strdate(int withyear)
  * if PID file exists, and PID not in process table, replace PID file
  * if no PID file, write one
  * if write a pidfile failed, OK
+ * If pidfile == 0, do not write PID file
  */
 int doPID()
 {
@@ -314,6 +315,13 @@ int doPID()
     FILE *pidptr;
     pid_t curpid, foundpid = 0;
     int ret = 0;
+
+    /* if pidfile == 0, no pid file is wanted */
+    if (pidfile == 0)
+    {
+        logMsg(LEVEL1, "Not using PID file, there was no '-P' option.\n");
+        return ret;
+    }
 
     /* check PID file */
     curpid = getpid();
@@ -356,16 +364,27 @@ void socketConnect(int fatal)
 	char msgbuf[BUFSIZ];
 	struct sockaddr_in sin;
 	struct sockaddr_in pin;
-	struct hostent *hp;
 
-	/* go find out about the desired host machine */
+    /*
+     * The TiVo S1 does not have gethostbyname() in libc.so.
+     * The #ifndef's replace gethostbyname() with inet_addr().
+     * IP addresses must be used, not host names, for the TiVo S1
+     */
+#ifndef TIVO_S1
+	struct hostent *hp;
+	/* find out about the desired host machine */
 	if ((hp = gethostbyname(ncidhost)) == 0)
         errorExit(-1, "gethostbyname", strerror(h_errno));
-
+#endif
 	/* fill in the socket structure with host information */
 	memset(&pin, 0, sizeof(pin));
 	pin.sin_family = AF_INET;
+#ifndef TIVO_S1
 	pin.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
+#else
+	if (pin.sin_addr.s_addr = inet_addr(ncidhost) == INADDR_NONE)
+        errorExit(-1, "NCIDHOST", "Bad IP Address");
+#endif
 	pin.sin_port = htons(ncidport);
 
 	/* grab an Internet domain socket */
@@ -440,7 +459,7 @@ void processPackets(u_char *args,
 {
     static int pktcnt = 1;                  /* packet counter */
     static unsigned int charcnt;            /* character count */
-    static char *linenum[MAXLINENUM];       /* telephone lines */
+    static char *linenum[MAXLINE];          /* telephone lines */
     static char *calls[MAXCALL];            /* calls in progress */
 
     /* declare pointers to packet headers */
@@ -450,7 +469,7 @@ void processPackets(u_char *args,
 
     int size_ip, size_udp, size_pdata, cnt, outcall, pos;
 
-    char sipbuf[BUFSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ],
+    char sipbuf[SIPSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ],
          tonumber[NUMSIZ], callid[CIDSIZ];
     char *line, *number, *name;
 
@@ -561,8 +580,15 @@ void processPackets(u_char *args,
     {
         sprintf(msgbuf, "   UDP data: %d bytes:\n", size_pdata);
         logMsg(LEVEL4, msgbuf);
-        strncpy(sipbuf, pdata, size_pdata);
-        sipbuf[size_pdata] = '\0';
+        if (size_pdata < SIPSIZ)
+            *(strncpy(sipbuf, pdata, size_pdata) + size_pdata) = '\0';
+        else
+        {
+            *(strncpy(sipbuf, pdata, SIPSIZ - 1) + SIPSIZ) = '\0';
+            sprintf(msgbuf, "Warning: SIP Packet truncated: %u > %u\n",
+                    size_pdata, SIPSIZ - 1);
+            logMsg(LEVEL1, msgbuf);
+        }
         logMsg(LEVEL3, sipbuf);
 
         /*
@@ -600,19 +626,20 @@ void processPackets(u_char *args,
                 }
 
                 /* if Call-ID found, call in progress */
-                for (cnt = 0; cnt < MAXCALL; ++cnt)
+                for (cnt = pos = 0; cnt < MAXCALL; ++cnt)
                 {
-                    if (calls[cnt] && !strcmp(calls[cnt], callid)) return;
+                    if (!calls[cnt])
+                    {
+                        if (!pos) pos = cnt;
+                        continue;
+                    }
+                    if (!strcmp(calls[cnt], callid)) return;
                 }
 
                 /* enter Call-ID in calls in-progress table */
-                for (pos = 0; pos < MAXCALL; ++pos)
+                if (pos)
                 {
-                    if (calls[pos] == 0)
-                    {
                         calls[pos] = strdup(callid);
-                        break;
-                    }
                 }
 
                 /*
@@ -638,9 +665,9 @@ void processPackets(u_char *args,
                     (char *) &name, (char *) &number) == 0)
                 {
                     /* if number is LINE NUMBER, it is a outgoing call */
-                    for (cnt = 0, outcall = 0; linenum[cnt]; ++cnt)
+                    for (cnt = 0, outcall = 0; cnt < MAXLINE; ++cnt)
                     {
-                        if (!strcmp(linenum[cnt], number))
+                        if (linenum[cnt] && !strcmp(linenum[cnt], number))
                         {
                             number = tonumber;
                             outcall = 1;
@@ -663,7 +690,7 @@ void processPackets(u_char *args,
                 if (sd) write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
 
-                if (pos == MAXCALL)
+                if (!pos)
                 {
                     sprintf(msgbuf, "%s simultaneous calls exceeded\n",
                             MAXCALL);
@@ -711,9 +738,9 @@ void processPackets(u_char *args,
                  *
                  * To: [["]NAME["]] <sip:CALLED_NMBR@IP_ADDR>;tag=TAG_NMBR
                  */
-                for (cnt = 0; linenum[cnt]; ++cnt)
+                for (cnt = 0; cnt < MAXLINE; ++cnt)
                 {
-                    if (!strcmp(linenum[cnt], number))
+                    if (linenum[cnt] && !strcmp(linenum[cnt], number))
                     {
                         /* get the called number from the TO line */
                         if (parseLine(sipbuf, CANCEL, TO, (char *) 0,
@@ -762,9 +789,9 @@ void processPackets(u_char *args,
                  *
                  * From: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDR>;tag=TAG_NMBR
                  */
-                for (cnt = 0; linenum[cnt]; ++cnt)
+                for (cnt = 0; cnt < MAXLINE; ++cnt)
                 {
-                    if (!strcmp(linenum[cnt], number))
+                    if (linenum[cnt] && !strcmp(linenum[cnt], number))
                     {
                         /* get the calling number from the FROM line */
                         if (parseLine(sipbuf, BYE, FROM, (char *) 0,
@@ -797,12 +824,25 @@ void processPackets(u_char *args,
                     (char *) &number) == 0)
                 {
                     /* add phone number if not seen before */
-                    for (cnt = 0; linenum[cnt]; ++cnt)
-                        if (!strcmp(linenum[cnt], number)) break;
-                    if (!linenum[cnt] && cnt < MAXLINENUM - 1)
+                    for (cnt = pos = 0; cnt < MAXLINE; ++cnt)
                     {
-                        linenum[cnt] = strdup(number);
+                        if (!linenum[cnt])
+                        {
+                            if (!pos) pos = cnt;
+                            continue;
+                        }
+                        if (!strcmp(linenum[cnt], number)) return;
+                    }
+                    if (pos)
+                    {
+                        linenum[pos] = strdup(number);
                         sprintf(cidmsg, "%s: %s\n", REGLINE, number);
+                        logMsg(LEVEL1, cidmsg);
+                    }
+                    else
+                    {
+                        sprintf(cidmsg,
+                            "Number of telephone lines exceeds: %u\n", MAXLINE);
                         logMsg(LEVEL1, cidmsg);
                     }
                 }
@@ -823,7 +863,7 @@ int parseLine(char *sipbuf, char *plabel, char *llabel,
     int ret = 0;
     char *sptr, *eptr, *elptr;
     char msgbuf[BUFSIZ];
-    static linebuf[BUFSIZ];
+    static linebuf[SIPSIZ];
 
     /* make copy of input buffer */
     strcpy((char *)linebuf, sipbuf);
@@ -947,6 +987,7 @@ int getCallID(char *sipbuf, char *callid, int size)
 {
     int len;
     char *sptr, *eptr;
+    char msgbuf[BUFSIZ];
 
     if ((sptr = strstr(sipbuf, CALLID)))
     {
@@ -956,7 +997,14 @@ int getCallID(char *sipbuf, char *callid, int size)
         {
             len = eptr - sptr;
             if (len < size)
-                *(strncpy(callid, sptr, len) + len) = 0;
+                *(strncpy(callid, sptr, len) + len) = '\0';
+            else
+            {
+                *(strncpy(callid, sptr, size -1) + size) = '\0';
+                sprintf(msgbuf, "Warning: %s truncated: %u > %u\n",
+                        CALLID, len, size - 1);
+                logMsg(LEVEL1, msgbuf);
+            }
         }
     }
     return 0;

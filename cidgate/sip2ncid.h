@@ -36,7 +36,7 @@
 #include <time.h>
 #include "config.h"
 
-#define VERSION     "0.7"
+#define VERSION     "0.8"
 #define SHOWVER     "%s: %s\n"
 #define DESC        "%s - Inject CID info by snooping SIP invites\n"
 #define USAGE       "\
@@ -63,10 +63,10 @@ Options: [-C configfile      | --config configfile]\n\
 
 #define NCIDPORT    3333
 #define SIPPORT     10000
-#define LOCALHOST   "localhost"
+#define LOCALHOST   "127.0.0.1"
 
 #define MAXLEVEL    9
-#define MAXLINENUM  10
+#define MAXLINE     10
 #define FATAL       1
 #define NONFATAL    0
 #define WITHYEAR    1
@@ -74,6 +74,7 @@ Options: [-C configfile      | --config configfile]\n\
 #define MAXCALL     30
 #define NUMSIZ      50
 #define CIDSIZ      75
+#define SIPSIZ      2048
 
 /* ethernet headers are always exactly 14 bytes */
 #define SIZE_ETHERNET 14

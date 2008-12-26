@@ -35,6 +35,7 @@ LEVEL1:
         show network interface used
         show applied filter
         indicate no filter applied
+        indicate not using PID file, there was no '-P' option
         indicate pid file already exists
         indicate found stale pidfile
         indicate wrote pid in pidfile

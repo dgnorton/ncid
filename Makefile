@@ -16,8 +16,8 @@
 #                                                                       #
 # make tivo-mips         - builds for a mips TiVo in /usr/local         #
 # make tivo-install      - installs in /usr/local                       #
-# make tivo-series1      - builds for a ppc TiVo for /var/hack          #
-# make tivo-series2      - builds for a mips TiVo for /var/hack         #
+# make tivo-s1           - builds for a ppc TiVo for /var/hack          #
+# make tivo-s2           - builds for a mips TiVo for /var/hack         #
 # make tivo-hack-install - basic install into /var/hack                 #
 #                          uses the cross compilers at:                 #
 #                          http://tivoutils.sourceforge.net/            #
@@ -41,6 +41,7 @@
 PROG         = ncidd
 SOURCE       = $(PROG).c nciddconf.c nciddalias.c getopt_long.c poll.c
 CLIENT       = ncid
+LOGO         = ncid.gif
 HEADER       = ncidd.h nciddconf.h nciddalias.h getopt_long.h poll.h
 ETCFILE      = ncid.conf ncidd.conf ncidd.alias
 DOCFILE      = doc/CHANGES doc/COPYING README doc/README-FreeBSD \
@@ -74,6 +75,7 @@ VAR          = $(prefix3)/var
 
 CONFDIR      = $(ETC)/ncid
 MODULEDIR    = $(SHARE)/ncid
+IMAGEDIR	 = $(SHARE)/pixmaps
 MAN          = $(SHARE)/man
 LOG          = $(VAR)/log
 RUN          = $(VAR)/run
@@ -112,25 +114,26 @@ OBJECTS = $(SOURCE:.c=.o)
 default:
 	@echo "make requires an argument, see top of Makefile for description:"
 	@echo
-	@echo "    make  local            # builds for /usr/local and /var"
-	@echo "    make  install          # installs into /usr/local and /var"
-	@echo "    make  package          # builds for /usr and /var"
-	@echo "    make  package-install  # installs into for /usr and /var"
-	@echo "    make  fedora           # builds for Fedora, includes init.d/"
-	@echo "    make  fedora-install   # installs in /usr, /etc, and /var"
-	@echo "    make  ubuntu           # builds for Ubuntu, includes init.d/"
-	@echo "    make  ubuntu-install   # installs in /usr, /etc, and /var"
-	@echo "    make  tivo-mips        # builds for Tivo in /usr/local, /var"
-	@echo "    make  tivo-install     # installs in /usr/local, /var"
-	@echo "    make  tivo-series1     # builds for a series1 in /var/var"
-	@echo "    make  tivo-series2     # builds for a series[23] in /var"
-	@echo "    gmake freebsd          # builds for FreeBSD in /usr/local, /var"
-	@echo "    gmake freebsd-install  # installs in /usr/local, /var"
-	@echo "    make  mac              # builds for Mac in /usr/local, /var"
-	@echo "    make  mac-fat          # builds for Mac in /usr/local, /var"
-	@echo "    make  mac-install      # installs in /usr/local, /var"
-	@echo "    make  cygwin           # builds for windows using Cygwin"
-	@echo "    make  cygwin-install   # installs in /usr/local"
+	@echo "    make  local             # builds for /usr/local and /var"
+	@echo "    make  install           # installs into /usr/local and /var"
+	@echo "    make  package           # builds for /usr and /var"
+	@echo "    make  package-install   # installs into for /usr and /var"
+	@echo "    make  fedora            # builds for Fedora, includes init.d/"
+	@echo "    make  fedora-install    # installs in /usr, /etc, and /var"
+	@echo "    make  ubuntu            # builds for Ubuntu, includes init.d/"
+	@echo "    make  ubuntu-install    # installs in /usr, /etc, and /var"
+	@echo "    make  tivo-mips         # builds for Tivo in /usr/local, /var"
+	@echo "    make  tivo-install      # installs in /usr/local, /var"
+	@echo "    make  tivo-s1           # builds for a series1 in /var/hack"
+	@echo "    make  tivo-s2           # builds for a series[23] in /var/hack"
+	@echo "    make  tivo-hack-install # installs in /var/hack, /var"
+	@echo "    gmake freebsd           # builds for FreeBSD in /usr/local, /var"
+	@echo "    gmake freebsd-install   # installs in /usr/local, /var"
+	@echo "    make  mac               # builds for Mac in /usr/local, /var"
+	@echo "    make  mac-fat           # builds for Mac in /usr/local, /var"
+	@echo "    make  mac-install       # installs in /usr/local, /var"
+	@echo "    make  cygwin            # builds for windows using Cygwin"
+	@echo "    make  cygwin-install    # installs in /usr/local"
 
 local: $(PROG) $(CLIENT) site moduledir cidgatedir tooldir scriptdir
 
@@ -191,7 +194,8 @@ ubuntu:
 ubuntu-install:
 	$(MAKE) install install-ubuntu prefix=/usr prefix2=
 
-tivo-series1: tivo-ppc
+tivo-s1:
+	$(MAKE) tivo-ppc prefix=/var/hack
 
 tivo-ppc:
 	$(MAKE) local mandir prefix=/var/hack OS=tivo-s1 \
@@ -206,11 +210,15 @@ tivo-ppc:
 	ln -s ncid tivoncid
 	touch tivo-ppc
 
-tivo-series2:
+tivo-s2:
 	$(MAKE) tivo-mips prefix=/var/hack
 
-tivo-hack-install: dirs install-prog install-etc install-log \
+tivo-hack-install:
+	$(MAKE) tivo-install-hack prefix=/var/hack prefix2=$HACK prefix3=$ROOT
+
+tivo-install-hack: dirs install-prog install-etc install-log \
                    install-modules install-cidgate install-tools
+	install -m 644 $(LOGO) $(IMAGEDIR)/.
 	cp -a tivocid tivoncid $(BIN)
 
 tivo-mips:
@@ -228,6 +236,7 @@ tivo-mips:
 tivo-install: dirs install-prog install-etc install-log \
               install-modules install-cidgate install-tools \
               install-man install-scripts
+	install -m 644 $(LOGO) $(IMAGEDIR)/.
 	cp -a tivocid tivoncid $(BIN)
 
 freebsd:
@@ -236,7 +245,7 @@ freebsd:
             BASH=/usr/local/bin/bash
 
 freebsd-install:
-	$(MAKE) install-base MAN=$(prefix)/man
+	$(MAKE) install MAN=$(prefix)/man
 	cd FreeBSD; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
             MAN=$(prefix)/man
@@ -260,7 +269,7 @@ mac:
             MFLAGS="-mmacosx-version-min=10.4" STRIP=
 
 mac-install:
-	$(MAKE) install-base MAN=$(prefix)/man
+	$(MAKE) install MAN=$(prefix)/man
 
 cygwin:
 	$(MAKE) local OS=cygwin \
@@ -280,11 +289,11 @@ dirs:
 	@if ! test -d $(ETC); then mkdir -p $(ETC); fi
 	@if ! test -d $(LOG); then mkdir -p $(LOG); fi
 	@if ! test -d $(CONFDIR); then mkdir -p $(CONFDIR); fi
+	@if ! test -d $(IMAGEDIR); then mkdir -p $(IMAGEDIR); fi
 
-install-base: dirs install-prog install-man install-etc install-log \
+install: dirs install-prog install-man install-etc install-log \
          install-modules install-cidgate install-scripts install-tools
-
-install: install-base
+	install -m 644 $(LOGO) $(IMAGEDIR)/.
 
 install-prog: $(PROG)
 	install -m 755 $(PROG) $(SBIN)
@@ -368,7 +377,7 @@ files: $(FILES)
         install-logrotate install-man install-var clean clobber files
 
 % : %.sh
-	sed '/ProgDir/s,/usr/local/share/ncid,$(MODULEDIR),;/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),;/OPTSTIVO/s,/usr/local/bin,$(BIN),' $< > $@
+	sed 's,/usr/local/share/ncid,$(MODULEDIR),;s,/usr/local/etc/ncid,$(CONFDIR),;s,/usr/local/share/pixmaps,$(IMAGEDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),;s,/usr/local/bin,$(BIN),' $< > $@
 	chmod 755 $@
 
 % : %.dist

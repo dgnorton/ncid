@@ -17,7 +17,7 @@ extra_commands="condrestart"
 
 name=ncidsip
 pidfile="/var/run/${name}.pid"
-args=""
+args="--pidfile /var/run/${name}.pid"
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidsip.conf

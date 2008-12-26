@@ -28,7 +28,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 # source config file
 [ -f $ConfigFile ] && . $ConfigFile
 
-args="--no-gui -p $pidfile $MythMsg -C -P $module"
+args="--no-gui --pidfile $pidfile $MythMsg -C -P $module"
 
 start() {
         # Start daemons.

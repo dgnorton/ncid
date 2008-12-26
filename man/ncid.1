@@ -134,10 +134,11 @@ Configure ncid to indicate \fIPhone Ringing\fR on the first ring
 received from the modem.  It requires a modem that indicates ring.
 .TP
 .B --pidfile | -p
-Name of PID file to create.  It is normally used to change the PID
-file name to the output module name when using a output module.
-.br
-Default: /var/run/ncid.pid
+Name of PID file to create.
+Set to \fI/var/run/ncid.pid\fB in a rc or init script when used as a service.
+Set to \fI/var/run/OUTPUTMODULE.pid\fB in a rc or init script when used as
+a service and when using a output module.
+There is no default.  If pidfile is not set, no pid file will be used.
 .TP
 .B --program PROGRAM | -P PROGRAM
 Name of the output module (program) to use.  Some output modules are

@@ -1,7 +1,7 @@
 ;NCIDpop Windows Client installer
 ;Written by Rich West 01/27/2006
 ;Updated by Lyman Epp 02/11/2006
-;Updated by John Chmielewski 04/14/2006
+;Updated by John Chmielewski 12/21/2008
 
 ;--------------------------------
 ;Include Modern UI
@@ -13,7 +13,7 @@
 ;Application
 
 	!define NAME            ncid
-	!define VERSION         0.71
+	!define VERSION         0.72
 	!define PROG            "${NAME}.exe"
 	!define LICENSE_FILE    "LICENSE.txt"
 	!define WEB_PAGE        "http://ncid.sourceforge.net"
@@ -187,10 +187,11 @@ Section "${NAME} (Required)" Sec${NAME}
 	File "${PROG}"
 	File "README.txt"
 	File "ncid.1.txt"
-	File "ncid.1.html"
+	File "ncid.1.htm"
 	File "ncid.conf.5.txt"
-	File "ncid.conf.5.html"
+	File "ncid.conf.5.htm"
 	File "Install-Win.txt"
+	File "ncid.gif"
 	
 	; Write the installation path into the registry
 	WriteRegStr "${ROOT_KEY}" ${INSTALLER_KEY} "" "$INSTDIR"
@@ -224,16 +225,16 @@ Section -Shortcuts
 		"$INSTDIR\${PROG}" "$R0"
         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" \
 		"$INSTDIR\Uninstall.exe"
-	CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\README.lnk" \
+	CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\README.txt.lnk" \
 		"$INSTDIR\README.txt"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1 text.lnk" \
+        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1.txt.lnk" \
 		"$INSTDIR\ncid.1.txt"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.1 text.lnk" \
+        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.1.txt.lnk" \
 		"$INSTDIR\ncid.conf.5.txt"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1 html.lnk" \
-		"$INSTDIR\ncid.1.html"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.5 html.lnk" \
-		"$INSTDIR\ncid.conf.5.html"
+        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1.htm.lnk" \
+		"$INSTDIR\ncid.1.htm"
+        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.5.htm.lnk" \
+		"$INSTDIR\ncid.conf.5.htm"
 	CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID Web Page.lnk" \
 		${WEB_PAGE}
         ; CreateShortCut "$SMPROGRAMS\Startup\${NAME}.lnk" "$INSTDIR\${PROG}" "$R0"

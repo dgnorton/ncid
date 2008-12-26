@@ -1,8 +1,11 @@
-The ncidtools are perl scripts that run under Linux and UNIX.
+The ncidtools are mostly perl scripts that run under Linux and UNIX.
 
 cidalias	   - list alias definitions in the ncidd alias file
 cidcall		   - list calls in the CID call file
 cidupdate	   - update aliases in the CID alias file
+
+startncid      - used to start ncid on a TiVo that does not have services
+                 consider this as a example script
 
 The Makefile is used to create the runable scripts.
 

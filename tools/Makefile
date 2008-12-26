@@ -1,5 +1,5 @@
 PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl
-SHSOURCE	=
+SHSOURCE	= startncid.sh
 ETCFILE     =
 FILES		= Makefile $(PLSOURCE) $(SHSOURCE) $(MANSRC)
 DIST        =
@@ -33,8 +33,10 @@ tools: $(PLSCRIPT) $(SHSCRIPT) $(SITE)
 
 install: install-script
 
-install-script: $(PLSCRIPT) $(SHSCRIPT)
-	install -m 755 $(PLSCRIPT) $(SHSCRIPT) $(BIN)
+#install-script: $(PLSCRIPT) $(SHSCRIPT)
+#	install -m 755 $(PLSCRIPT) $(SHSCRIPT) $(BIN)
+install-script: $(PLSCRIPT)
+	install -m 755 $(PLSCRIPT) $(BIN)
 
 clean:
 
