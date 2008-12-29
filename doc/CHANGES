@@ -1,5 +1,9 @@
 ncid - Network CallerID
 
+Version 0.72.1
+    - ncid.sh: Changed all if statements that used "ne" to "!="
+               Removed the expr statement from the if statement for "US"
+
 Version 0.72
     - Makefile: changed tivo-series1 to tivo-s1 and tivo-series2 to tivo-s2
                 changed .sh rule to be more general for /usr/local changes
