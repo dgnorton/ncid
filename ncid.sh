@@ -99,7 +99,7 @@ set Count       0
 set ExecSh      0
 set Socket      0
 set Try         0
-set Version     0.72
+set Version     0.72.1
 set VersionInfo "NCID Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -310,7 +310,7 @@ proc formatCID {dataBlock} {
 
     set cidname [getField NAME $dataBlock]
     set cidnumber [getField NU*MBE*R $dataBlock]
-    if {$Country == "US" } {
+    if {$Country  == "US"} {
         if {![regsub \
             {(^1)([0-9]+)([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
             $cidnumber {\1-\2-\3-\4} cidnumber]} {
@@ -322,7 +322,7 @@ proc formatCID {dataBlock} {
         } elseif {$NoOne} {
             regsub {^1-?(.*)} $cidnumber {\1} cidnumber
         }
-    } elseif {$Country == "SE" } {
+    } elseif {$Country == "SE"} {
       if {![regsub {^(07[0-9])([0-9]+)} \
           $cidnumber {\1-\2} cidnumber]} {
        if {![regsub {^(08)([0-9]+)} \
@@ -705,7 +705,7 @@ proc doPID {} {
     global PIDfile
     global Verbose
 
-    if {$PIDfile ne ""} {
+    if {$PIDfile != ""} {
         set activepid ""
         set PIDdir [file dirname $PIDfile]
         if {[file writable $PIDfile]} {
@@ -739,7 +739,7 @@ proc doPID {} {
 
 getArg
 if {!$NoGUI} makeWindow
-if {[expr {$Country ne {US} && $Country ne {SE}}]} {
+if {$Country != "US" && $Country != "SE"} {
     exitMsg 7 "Country is set to \"$Country\"\nIt must be \"US\" or \"SE\""
    }
 if $Callprog {
