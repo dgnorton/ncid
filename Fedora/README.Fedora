@@ -2,7 +2,7 @@ Fedora service files:
 
     ncid-mythtv.init  - service file for ncid with ncid-mythtv output module
     ncid-page.init    - service file for ncid with ncid-page output module
-    ncid-popup.init   - service file for ncid with ncid-popup output module
+    ncid-kpopup.init  - service file for ncid with ncid-kpopup output module
     ncid-samba.init   - service file for ncid with ncid-samba output module
     ncid-speak.init   - service file for ncid with ncid-speak output module
     ncid-tivo.init    - service file for ncid with a TiVo output module

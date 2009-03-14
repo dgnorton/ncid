@@ -1,5 +1,5 @@
 RCF     = ncidd.rc ncidsip.rc sip2ncid.rc yac2ncid.rc \
-          ncid-mythtv.rc ncid-page.rc ncid-popup.rc ncid-samba.rc \
+          ncid-kpopup.rc ncid-mythtv.rc ncid-page.rc ncid-samba.rc \
           ncid-speak.rc ncid-yac.rc
 FILES   = README Makefile $(RCF) $(MANSRC)
 

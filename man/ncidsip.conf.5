@@ -1,0 +1,35 @@
+.\" %W% %G%
+.TH NCIDSIP.CONF 5
+.SH NAME
+.B ncidsip.conf
+- ncidsip configuration file
+.SH DESCRIPTION
+The \fIncidsip.conf\fR file contains the configuration information for
+\fIncidsip\fR, the Network Caller ID SIP Gateway.
+.PP
+The \fIncidsip.conf\fR file understands 3 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B Variable=Argument
+.PP
+There is only one variable to set: args.
+Args is expected to contain the command line options.  You should not set
+the "-v|--verbose", "-V|--version", "--debug", or the "-h|--help"  options
+See ncidsip.8 for a complete list of variables to set and
+what the default values are.
+.SH EXAMPLES
+Set the SIP port to 5061
+.RS 0
+	args="--sip=:5061"
+.RE
+Set PID file
+.RS 0
+	args="--pidfile=/var/run/ncidsip.pid"
+.RE
+.SH SEE ALSO
+ncidd.8, ncidsip.8, sip2ncid.8

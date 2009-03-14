@@ -22,7 +22,7 @@ case "$1" in
         [ -h /usr/doc/ncid ] && rm -f /usr/doc/ncid
         [ -x /etc/init.d/ncid-mythtv ] && invoke-rc.d ncid-mythtv stop
         [ -x /etc/init.d/ncid-page ] && invoke-rc.d ncid-page stop
-        [ -x /etc/init.d/ncid-popup ] && invoke-rc.d ncid-popup stop
+        [ -x /etc/init.d/ncid-kpopup ] && invoke-rc.d ncid-kpopup stop
         [ -x /etc/init.d/ncid-samba ] && invoke-rc.d ncid-samba stop
         [ -x /etc/init.d/ncid-speak ] && invoke-rc.d ncid-speak stop
         [ -x /etc/init.d/ncid-yac ] && invoke-rc.d ncid-yac stop

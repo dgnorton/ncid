@@ -1,7 +1,7 @@
 /*
  * ncidd - Network Caller ID Daemon
  *
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * This file is part of ncidd, a caller-id program for your TiVo.
@@ -40,7 +40,7 @@ int debug, conferr, setcid, locked, sendlog, sendinfo;
 int ttyfd, pollpos, pollevents;
 int ring, ringwait, ringcount, clocal, nomodem, noserial;
 int verbose = 1;
-int cidlogmax = LOGMAX;
+unsigned long cidlogmax = LOGMAX;
 pid_t pid;
 
 struct pollfd polld[CONNECTIONS + 2];
@@ -58,20 +58,33 @@ struct cid
     char cidline[CIDSIZE];
 } cid = {0, "", "", "", "", NOMESG, ONELINE};
 
-void exit(), finish(), free(), reload();
 char *strdate();
 
-main(int argc, char *argv[])
+void exit(), finish(), free(), reload(), doPoll(), formatCID(),
+     writeClients(), writeLog(), sendLog(), builtinAlias(), userAlias(),
+     openTTY(), sendInfo(), logMsg(), cleanup();
+
+int getOptions(), doConf(), errorExit(), doAlias(), doTTY(),
+    addPoll(), tcpOpen(), doModem(), initModem(), gettimeofday(), doPID();
+
+int main(int argc, char *argv[])
 {
-    int events, mainsock, sd, argind, i;
+    int events, mainsock, argind, i, fd;
     char *ptr;
     struct stat statbuf;
     char msgbuf[BUFSIZ];
 
     signal(SIGHUP, finish);
-    signal(SIGTERM, finish);
     signal(SIGINT, finish);
     signal(SIGQUIT, finish);
+    signal(SIGILL, finish);
+    signal(SIGABRT, finish);
+    signal(SIGFPE, finish);
+    signal(SIGSEGV, finish);
+    signal(SIGALRM, finish);
+    signal(SIGTERM, finish);
+    signal(SIGUSR1, finish);
+    signal(SIGUSR2, finish);
 
     /* global containing name of program */
     name = strrchr(argv[0], (int) '/');
@@ -90,8 +103,14 @@ main(int argc, char *argv[])
     sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(), name, VERSION);
     logMsg(LEVEL1, msgbuf);
 
-    sprintf(msgbuf, "ncidd logfile: %s\n", logfile);
-    logMsg(LEVEL2, msgbuf);
+    sprintf(msgbuf, "Verbose level: %d\n", verbose);
+    logMsg(LEVEL1, msgbuf);
+
+    if (stat(logfile, &statbuf) == 0)
+    {
+        sprintf(msgbuf, "ncidd logfile: %s\n", logfile);
+        logMsg(LEVEL1, msgbuf);
+    }
 
     /*
      * read config file, if present, exit on any errors
@@ -131,16 +150,44 @@ main(int argc, char *argv[])
         logMsg(LEVEL5, msgbuf);
     }
 
-    sprintf(msgbuf, "Verbose level: %d\n", verbose);
-    logMsg(LEVEL1, msgbuf);
+    if (stat(cidlog, &statbuf) == 0)
+    {
+      sprintf(msgbuf, "CID logfile: %s\nCID logfile maximum size: %lu bytes\n",
+        cidlog, cidlogmax);
+      logMsg(LEVEL1, msgbuf);
+    }
+    else
+    {
+        /* Create the call log file if not present */
+        if ((fd = open(cidlog, O_WRONLY | O_APPEND | O_CREAT,
+             S_IRWXU | S_IRGRP | S_IROTH)) < 0)
+        {
+            sprintf(msgbuf, "%s: %s\n", cidlog, strerror(errno));
+            logMsg(LEVEL1, msgbuf);
+        }
+        else
+        {
+          close(fd);
+          sprintf(msgbuf,
+            "Created CID logfile: %s\nCID logfile maximum size: %lu bytes\n",
+            cidlog, cidlogmax);
+          logMsg(LEVEL1, msgbuf);
+        }
+    }
+
+    if (stat(datalog, &statbuf) == 0)
+    {
+        sprintf(msgbuf, "Data logfile: %s\n", datalog);
+        logMsg(LEVEL1, msgbuf);
+    }
+    else
+    {
+        sprintf(msgbuf, "Data logfile not present: %s\n", datalog);
+        logMsg(LEVEL1, msgbuf);
+    }
+
     sprintf(msgbuf, "Telephone Line Identifier: %s\n", lineid);
     logMsg(LEVEL1, msgbuf);
-    sprintf(msgbuf, "CID logfile: %s\n", cidlog);
-    logMsg(LEVEL2, msgbuf);
-    sprintf(msgbuf, "CID logfile maximum size: %d bytes\n", cidlogmax);
-    logMsg(LEVEL2, msgbuf);
-    sprintf(msgbuf, "Data logfile: %s\n", datalog);
-    logMsg(LEVEL2, msgbuf);
 
     /*
      * noserial = 1: serial port not used
@@ -165,10 +212,11 @@ main(int argc, char *argv[])
         /* Create lock file name from TTY port device name */
         if (!lockfile)
         {
-            if (ptr = strrchr(ttyport, '/')) ptr++;
+            if ((ptr = strrchr(ttyport, '/'))) ptr++;
             else ptr = ttyport;
 
-            if (lockfile = (char *) malloc(strlen(LOCKFILE) + strlen(ptr) + 1))
+            if ((lockfile = (char *) malloc(strlen(LOCKFILE)
+                + strlen(ptr) + 1)))
                 strcat(strcpy(lockfile, LOCKFILE), ptr);
             else errorExit(-1, name, 0);
         }
@@ -209,7 +257,12 @@ main(int argc, char *argv[])
 
         if (nomodem)
         {
-            sprintf(msgbuf, "CallerID from CID device, not AT modem\n");
+            sprintf(msgbuf, "CallerID from serial device and maybe Gateway\n");
+            logMsg(LEVEL1, msgbuf);
+        }
+        else
+        {
+            sprintf(msgbuf, "CallerID from AT Modem and maybe Gateway\n");
             logMsg(LEVEL1, msgbuf);
         }
 
@@ -221,7 +274,7 @@ main(int argc, char *argv[])
     }
     else
     {
-        sprintf(msgbuf, "CallerID only from CID Gateways\n");
+        sprintf(msgbuf, "CallerID from Gateway\n");
         logMsg(LEVEL1, msgbuf);
     }
         sprintf(msgbuf, "Network Port: %d\n", port);
@@ -340,7 +393,6 @@ main(int argc, char *argv[])
 int getOptions(int argc, char *argv[])
 {
     int c, num;
-    int digit_optind = 0;
     int option_index = 0;
     static struct option long_options[] = {
         {"alias", 1, 0, 'A'},
@@ -501,7 +553,7 @@ int getOptions(int argc, char *argv[])
  * not hang if port in use, or not restored after use
  */
 
-openTTY()
+void openTTY()
 {
     if ((ttyfd = open(ttyport, O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
          errorExit(-1, ttyport, 0);
@@ -699,9 +751,9 @@ int addPoll(int pollfd)
     return added ? pos : -1;
 }
 
-doPoll(int events, int mainsock)
+void doPoll(int events, int mainsock)
 {
-  int num, pos, sd, cnt = 0;
+  int num, pos, sd, ret, cnt = 0;
   char buf[BUFSIZ], msgbuf[BUFSIZ];
   char *sptr, *eptr;
 
@@ -724,10 +776,10 @@ doPoll(int events, int mainsock)
     {
       if (!noserial && polld[pos].fd == ttyfd)
       {
-        sprintf(buf, "%sPoll device Hung Up, Terminated  %s\n",
+        sprintf(buf, "%sSerial device Hung Up, Terminated  %s\n",
           MSGLINE, strdate());
         writeClients(mainsock, buf);
-        errorExit(-112, "Fatal", "Poll device hung up");
+        errorExit(-112, "Fatal", "Serial device hung up");
       }
       sprintf(msgbuf, "Hung Up, sd: %d\n", polld[pos].fd);
         logMsg(LEVEL2, msgbuf);
@@ -744,7 +796,7 @@ doPoll(int events, int mainsock)
         writeClients(mainsock, buf);
         errorExit(-112, "Fatal", "Poll device error");
       }
-        sprintf(msgbuf, "Poll Error, closed sd: %d\n", polld[pos].fd);
+        sprintf(msgbuf, "Poll Error, closed client %d.\n", polld[pos].fd);
         logMsg(LEVEL1, msgbuf);
         close(polld[pos].fd);
         polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
@@ -752,7 +804,15 @@ doPoll(int events, int mainsock)
 
     if (polld[pos].revents & POLLNVAL) /* Invalid Request */
     {
-      sprintf(msgbuf, "Invalid Request: File descriptor not open, sd: %d\n",
+      sprintf(msgbuf, "Removed client %d, file descriptor.\n",
+        polld[pos].fd);
+      logMsg(LEVEL1, msgbuf);
+      polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
+    }
+
+    if (polld[pos].revents & POLLOUT) /* Write Event */
+    {
+      sprintf(msgbuf, "Removed client %d, write event not configured.\n",
         polld[pos].fd);
       logMsg(LEVEL1, msgbuf);
       polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
@@ -767,24 +827,26 @@ doPoll(int events, int mainsock)
           /* Modem or device has data to read */
           if ((num = read(ttyfd, buf, BUFSIZ-1)) < 0)
           {
-            sprintf(msgbuf, "READ: %s\n", strerror(errno));
+            sprintf(msgbuf, "Serial device %d read error: %s\n", ttyfd,
+                    strerror(errno));
             logMsg(LEVEL1, msgbuf);
           }
 
           /* Modem or device returned no data */
           else if (!num)
           {
-            sprintf(msgbuf, "Device returned no data, fd: %d\n", ttyfd);
+            sprintf(msgbuf, "Serial device %d returned no data.\n", ttyfd);
             logMsg(LEVEL2, msgbuf);
             cnt++;
 
             /* if no data 10 times in a row, something wrong */
             if (cnt == 10)
             {
-              sprintf(buf, "%sPoll device returns no data, Terminated  %s\n",
-                MSGLINE, strdate());
+              sprintf(buf,
+                      "%sSerial device %d returns no data, Terminated  %s\n",
+                MSGLINE, ttyfd, strdate());
               writeClients(mainsock, buf);
-              errorExit(-112, "Fatal", "Poll device returns no data");
+              errorExit(-112, "Fatal", "Serial device returns no data");
             }
           }
           else
@@ -799,8 +861,8 @@ doPoll(int events, int mainsock)
             buf[num] = '\0';
 
             /* strip <CR> and <LF> */
-            if (ptr = strchr(buf, '\r')) *ptr = '\0';
-            if (ptr = strchr(buf, '\n')) *ptr = '\0';
+            if ((ptr = strchr(buf, '\r'))) *ptr = '\0';
+            if ((ptr = strchr(buf, '\n'))) *ptr = '\0';
 
             writeLog(datalog, buf);
             formatCID(mainsock, buf);
@@ -830,13 +892,13 @@ doPoll(int events, int mainsock)
           {
             sprintf(buf, "%s %s %s%s", ANNOUNCE, name, VERSION, CRLF);
             //strcat(strcat(strcpy(buf, ANNOUNCE), VERSION), CRLF);
-            write(sd, buf, strlen(buf));
+            ret = write(sd, buf, strlen(buf));
             if (addPoll(sd) < 0)
             {
               sprintf(msgbuf, "%s\n", TOOMSG);
               logMsg(LEVEL1, msgbuf);
               sprintf(buf, "%s: %d%s", TOOMSG, CONNECTIONS, CRLF);
-              write(sd, buf, strlen(buf));
+              ret = write(sd, buf, strlen(buf));
               close(sd);
             }
             if (sendlog)
@@ -847,7 +909,7 @@ doPoll(int events, int mainsock)
             else
             {
               /* Client connected, CID log not sent */
-              sprintf(msgbuf, "Client Connected, sd: %d\n", sd);
+              sprintf(msgbuf, "Client %d connected.\n", sd);
               logMsg(LEVEL3, msgbuf);
             }
           }
@@ -859,17 +921,26 @@ doPoll(int events, int mainsock)
         {
           if ((num = read(polld[pos].fd, buf, BUFSIZ-1)) < 0)
           {
-            sprintf(msgbuf, "Client READ: %s\n", strerror(errno));
+            sprintf(msgbuf, "Client %d read error (%d): %s\n", polld[pos].fd,
+                    errno, strerror(errno));
+            logMsg(LEVEL1, msgbuf);
+            if (errno != EAGAIN)
+            {
+                sprintf(msgbuf, "Client %d removed.\n", polld[pos].fd);
+                logMsg(LEVEL1, msgbuf);
+                close(polld[pos].fd);
+                polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
+            }
             logMsg(LEVEL1, msgbuf);
           }
           /* read will return 0 for a disconnect */
           if (num == 0)
           {
             /* TCP/IP Client End Connection */
-            sprintf(msgbuf, "Client disconnected, sd: %d\n", polld[pos].fd);
+            sprintf(msgbuf, "Client %d disconnected.\n", polld[pos].fd);
               logMsg(LEVEL3, msgbuf);
             close(polld[pos].fd);
-            polld[pos].fd = polld[pos].events = 0;
+            polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
           }
           else
           {
@@ -883,8 +954,8 @@ doPoll(int events, int mainsock)
             buf[num] = '\0';
 
             /* strip <CR> and <LF> */
-            if (ptr = strchr(buf, '\r')) *ptr = '\0';
-            if (ptr = strchr(buf, '\n')) *ptr = '\0';
+            if ((ptr = strchr(buf, '\r'))) *ptr = '\0';
+            if ((ptr = strchr(buf, '\n'))) *ptr = '\0';
 
             /*
              * Check first character is a 7-bit unsigned char value
@@ -911,7 +982,7 @@ doPoll(int events, int mainsock)
                  * See comments for formatCID for line format
                  */
 
-                sprintf(msgbuf, "Client (sd %d) sent CALL data.\n",
+                sprintf(msgbuf, "Gateway (sd %d) sent CALL data.\n",
                   polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
 
@@ -933,7 +1004,7 @@ doPoll(int events, int mainsock)
                 sptr = index(buf, (int) '#') + 3;
                 *(eptr = index(buf, (int) '.')) = '\0';
 
-                sprintf(msgbuf, "Client (sd %d) sent CALLINFO for %s.\n",
+                sprintf(msgbuf, "Gateway (sd %d) sent CALLINFO for %s.\n",
                         polld[pos].fd, sptr);
                 logMsg(LEVEL3, msgbuf);
 
@@ -962,7 +1033,7 @@ doPoll(int events, int mainsock)
                  * Write message to cidlog and all clients
                  */
 
-                sprintf(msgbuf, "Client sent text message, sd: %d\n",
+                sprintf(msgbuf, "Client %d sent text message.\n",
                         polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
                 writeLog(cidlog, buf);
@@ -974,7 +1045,7 @@ doPoll(int events, int mainsock)
                  * Found unknown data
                  */
 
-                sprintf(msgbuf, "Client sent unknown data, sd: %d\n",
+                sprintf(msgbuf, "Client %d sent unknown data.\n",
                         polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
               }
@@ -985,7 +1056,7 @@ doPoll(int events, int mainsock)
                * Found empty line
                */
 
-                sprintf(msgbuf, "Client sent empty line, sd: %d\n",
+                sprintf(msgbuf, "Client %d sent empty line.\n",
                         polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
             }
@@ -1029,7 +1100,7 @@ doPoll(int events, int mainsock)
  * ###DATEmmddhhss...LINEidentifier...NMBRnumber...NAMEwords+++\r
  */
 
-formatCID(int mainsock, char *buf)
+void formatCID(int mainsock, char *buf)
 {
     char cidbuf[BUFSIZ], *ptr, *sptr;
     time_t t;
@@ -1092,16 +1163,10 @@ formatCID(int mainsock, char *buf)
      * A Mac Mini Motorola Jump  modem sends "^PR^PX\n\n" before the CID
      * information.  It also sends "^P.^XNAME"
      */
-     if (ptr = strstr(buf, "\020R\020X"))
+     if ((ptr = strstr(buf, "\020R\020X")))
      {
         cid.status = 0;
      }
-
-    /*
-     * sometimes bad charactors are received....
-     * replace unprintable charachers with a '?'
-     */
-    for (ptr = buf; *ptr; ptr++) if (!isprint(*ptr)) *ptr = '?';
 
     /* Process Caller ID information */
     if (strncmp(buf, "###", 3) == 0)
@@ -1116,7 +1181,7 @@ formatCID(int mainsock, char *buf)
         /* Make sure the status field is zero */
         cid.status = 0;
 
-        if (ptr = strstr(buf, "DATE"))
+        if ((ptr = strstr(buf, "DATE")))
         {
             /*
              * Found a message line, format it, log it, and send it:
@@ -1124,10 +1189,10 @@ formatCID(int mainsock, char *buf)
              */
             if (*(ptr + 4) == '.')
             {
-                if (ptr = strstr(buf, "NAME"))
+                if ((ptr = strstr(buf, "NAME")))
                 {
                     strncat(strcpy(cidbuf, MSGLINE), ptr + 4, BUFSIZ -1);
-                    if (ptr = strchr(cidbuf, '+')) *ptr = 0;
+                    if ((ptr = strchr(cidbuf, '+'))) *ptr = 0;
                     writeLog(cidlog, cidbuf);
                     writeClients(mainsock, cidbuf);
                     cid.status = 0;
@@ -1146,7 +1211,7 @@ formatCID(int mainsock, char *buf)
             strncat(cid.ciddate, ptr + 20, CIDSIZE - strlen(cid.ciddate) - 1);
             cid.status |= CIDDATE;
         }
-        if (ptr = strstr(buf, "LINE"))
+        if ((ptr = strstr(buf, "LINE")))
         {
             /* this field is only in a CID Message Line */
             if (*(ptr + 5) == '.') strncpy(cid.cidline, lineid, CIDSIZE - 1);
@@ -1157,7 +1222,7 @@ formatCID(int mainsock, char *buf)
                 if (ptr) *ptr = 0;
             }
         }
-        if (ptr = strstr(buf, "NMBR"))
+        if ((ptr = strstr(buf, "NMBR")))
         {
             if (*(ptr + 5) == '.') strncpy(cid.cidnmbr, NONUMB, CIDSIZE - 1);
             else
@@ -1169,7 +1234,7 @@ formatCID(int mainsock, char *buf)
             }
             cid.status |= CIDNMBR;
         }
-        if (ptr = strstr(buf, "NAME"))
+        if ((ptr = strstr(buf, "NAME")))
         {
             if (*(ptr + 5) == '+') strncpy(cid.cidname, NONAME, CIDSIZE - 1);
             else
@@ -1263,7 +1328,7 @@ formatCID(int mainsock, char *buf)
  * Built-in Aliases for O, P, and A
  */
 
-builtinAlias(char *to, char *from)
+void builtinAlias(char *to, char *from)
 {
     if (!strcmp(from, "O")) strncpy(to, O, CIDSIZE - 1);
     else if (!strcmp(from, "P")) strncpy(to, P, CIDSIZE - 1);
@@ -1275,7 +1340,7 @@ builtinAlias(char *to, char *from)
  * User defined aliases.
  */
 
-userAlias(char *nmbr, char *name, char *line)
+void userAlias(char *nmbr, char *name, char *line)
 {
     int i;
 
@@ -1306,7 +1371,8 @@ userAlias(char *nmbr, char *name, char *line)
                     strcpy(name, alias[i].to);
                 break;
             case LINEONLY:
-                if (!strcmp(line, alias[i].from)) strcpy(line, alias[i].to);
+                if (!strcmp(line, alias[i].from) ||
+                   !strcmp(alias[i].from, "*")) strcpy(line, alias[i].to);
                 break;
         }
     }
@@ -1316,18 +1382,17 @@ userAlias(char *nmbr, char *name, char *line)
  * Send string to all TCP/IP CID clients.
  */
 
-writeClients(int mainsock, char *buf)
+void writeClients(int mainsock, char *buf)
 {
-    int pos;
-    char *ptr;
+    int pos, ret;
 
     for (pos = 0; pos < CONNECTIONS + 2; ++pos)
     {
         if (polld[pos].fd == 0 || polld[pos].fd == ttyfd ||
             polld[pos].fd == mainsock)
             continue;
-        write(polld[pos].fd, buf, strlen(buf));
-        write(polld[pos].fd, CRLF, strlen(CRLF));
+        ret = write(polld[pos].fd, buf, strlen(buf));
+        ret = write(polld[pos].fd, CRLF, strlen(CRLF));
     }
 }
 
@@ -1335,7 +1400,7 @@ writeClients(int mainsock, char *buf)
  * Send log, if log file exists.
  */
 
-sendLog(int sd, char *logbuf)
+void sendLog(int sd, char *logbuf)
 {
     struct stat statbuf;
     char *iptr, *optr, input[BUFSIZ], msgbuf[BUFSIZ];
@@ -1344,11 +1409,11 @@ sendLog(int sd, char *logbuf)
 
     if (stat(cidlog, &statbuf) == 0)
     {
-        if (statbuf.st_size > LOGMAX)
+        if (statbuf.st_size > cidlogmax)
         {
-            sprintf(logbuf, LOGMSG, statbuf.st_size, LOGMAX, CRLF);
-            write(sd, logbuf, strlen(logbuf));
-            sprintf(msgbuf, LOGMSG, statbuf.st_size, LOGMAX, NL);
+            sprintf(logbuf, LOGMSG, statbuf.st_size, cidlogmax, CRLF);
+            ret = write(sd, logbuf, strlen(logbuf));
+            sprintf(msgbuf, LOGMSG, statbuf.st_size, cidlogmax, NL);
             logMsg(LEVEL1, msgbuf);
             return;
         }
@@ -1393,7 +1458,7 @@ sendLog(int sd, char *logbuf)
 
     (void) fclose(fp);
 
-    sprintf(msgbuf, "Client connected, sd: %d, Sent call log: %s\n",
+    sprintf(msgbuf, "Client %d connected, sent call log: %s\n",
         sd, cidlog);
     logMsg(LEVEL3, msgbuf);
 }
@@ -1402,9 +1467,9 @@ sendLog(int sd, char *logbuf)
  * Write log, if log file exists.
  */
 
-writeLog(char *logf, char *logbuf)
+void writeLog(char *logf, char *logbuf)
 {
-    int logfd;
+    int logfd, ret;
     char msgbuf[BUFSIZ];
 
     if ((logfd = open(logf, O_WRONLY | O_APPEND)) < 0)
@@ -1414,8 +1479,8 @@ writeLog(char *logf, char *logbuf)
     }
     else
     {
-        write(logfd, logbuf, strlen(logbuf));
-        write(logfd, NL, strlen(NL));
+        ret = write(logfd, logbuf, strlen(logbuf));
+        ret = write(logfd, NL, strlen(NL));
         close(logfd);
 
         /* log to server log, if not blank */
@@ -1435,7 +1500,7 @@ writeLog(char *logf, char *logbuf)
  * CIDINFO: *LINE*-*RING*1*
  */
 
-sendInfo(int mainsock)
+void sendInfo(int mainsock)
 {
     char buf[BUFSIZ], *ptr;
 
@@ -1446,7 +1511,7 @@ sendInfo(int mainsock)
     writeClients(mainsock, buf);
 
     /* strip <CR> */
-    if (ptr = strchr(buf, '\r'))
+    if ((ptr = strchr(buf, '\r')))
     {
         *ptr++ = '\n';
         *ptr = '\0';
@@ -1484,13 +1549,13 @@ int doPID()
     char msgbuf[BUFSIZ];
     FILE *pidptr;
     pid_t curpid, foundpid = 0;
-    int ret = 0;
+    int ret;
 
     /* if pidfile == 0, no pid file is wanted */
     if (pidfile == 0)
     {
         logMsg(LEVEL1, "Not using PID file, there was no '-P' option.\n");
-        return ret;
+        return 0;
     }
 
     /* check PID file */
@@ -1498,7 +1563,7 @@ int doPID()
     if (stat(pidfile, &statbuf) == 0)
     {
         if ((pidptr = fopen(pidfile, "r")) == NULL) return(1);
-        fscanf(pidptr, "%u", &foundpid);
+        ret = fscanf(pidptr, "%u", &foundpid);
         fclose(pidptr);
         if (foundpid) ret = kill(foundpid, 0);
         if (ret == 0 || (ret == -1 && errno != ESRCH)) return(1);
@@ -1528,7 +1593,7 @@ int doPID()
  * Close all file descriptors and restore tty parameters.
  */
 
-cleanup()
+void cleanup()
 {
     int pos;
 
@@ -1560,7 +1625,8 @@ void finish(int sig)
         logMsg(LEVEL1, msgbuf);
     }
 
-    sprintf(msgbuf, "Terminated: %s\n", strdate());
+    sprintf(msgbuf, "Received Signal: %s\nTerminated: %s\n",
+            strsignal(sig), strdate());
     logMsg(LEVEL1, msgbuf);
 
     cleanup();
@@ -1594,7 +1660,7 @@ void reload(int sig)
     if (doAlias()) errorExit(-109, 0, 0);
 }
 
-errorExit(int error, char *msg, char *arg)
+int errorExit(int error, char *msg, char *arg)
 {
     char msgbuf[BUFSIZ];
 
@@ -1633,8 +1699,8 @@ errorExit(int error, char *msg, char *arg)
     }
 
     /* do not print terminated message, or cleanup, if option error */
-    if (error != -100 && error != -101 && error != -106 && error != 107 &&
-        error != 108 && error != 113)
+    if (error != -100 && error != -101 && error != -106 && error != -107 &&
+        error != -108 && error != -113)
     {
         sprintf(msgbuf, "Terminated:  %s\n", strdate());
         logMsg(LEVEL1, msgbuf);
@@ -1647,7 +1713,7 @@ errorExit(int error, char *msg, char *arg)
 /*
  * log messages, and print messages in debug mode
  */
-logMsg(int level, char *message)
+void logMsg(int level, char *message)
 {
     /* write to stderr in debug mode */
     if (debug && verbose >= level) fputs(message, stderr);

@@ -1,8 +1,8 @@
 .\" %W% %G%
 .TH NCIDROTATE 1
 .SH NAME
-.B ncidrotate\^
-- keep lines in logfile after it is rotated
+.B ncidrotate
+- keep lines in cidcall.log after it is rotated
 .SH SYNOPSIS
 .B ncidrotate\^
 {prerotate|postrotate}
@@ -13,14 +13,13 @@ directory.
 .PP
 .B Ncidrotate
 is called by
-.I /etc/logrotate.d/ncidd
-and will keep a number of lines in the logfile after rotation.
+.I /etc/logrotate.d/ncid
+and will keep a number of lines in cidcall.log after rotation.
 The default is 0 lines kept.  The configuration file for
 logrotate is
 .I /etc/ncid/ncidrotate.conf
 .SH FILES
 /etc/ncid/ncidrotate.conf
 .SH SEE ALSO
-ncid.1,
 ncidrotate.conf.5,
-ncidd.8
+ncidd.8, sip2ncid.8

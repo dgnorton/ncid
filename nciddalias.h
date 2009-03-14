@@ -1,4 +1,4 @@
-/*
+/*, 2009
  * Copyright (c) 2005, 2006
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
@@ -46,3 +46,4 @@ struct alias
 extern char *name, *cidalias;
 extern struct alias alias[];
 extern char *cpy2mem();
+extern void rmaliases();

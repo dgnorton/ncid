@@ -1,29 +1,46 @@
 Fedora Install
 
-Last edited: Thu Mar 13, 2008
+Last edited: Fri Mar 6, 2009
 
 If NCID does not work, see INSTALL for some simple tests.
 
-INSTALL:
+INSTALL or UPGRADE:
 
-    - Download the latest NCID rpm package from sourceforge
-    - Open the file viewer to view the NCID rpm package
-    - Install the NCID rpm package by double clicking on it.
+    NCID requires the server and client RPM packages to function.  The
+    server is required on one computer or device, but the client can be
+    installed on as many computers as needed.
 
-    If you want to use ncidsip:
+    The client has a few output modules in its RPM package, and there
+    are optional output modules in their own RPM packages.
 
-    - Use "Add/Remove Software" to install "perl-IO-Interface"
-    - Download, compile, and install the Net-Pcap module
+    - Download RPM Packages from sourceforge if not in Fedora repositories
+          ncid RPM Package         - server and gateways
+          ncid-client RPM Package  - client and default output modules
+
+    - Download any optional output modules wanted:
+        * ncid-MODULE RPM Package  - optional output modules wanted
+
+    - Install or Upgrade the packages:
+        Using the file viewer:
+            - Open the file viewer to view the NCID rpm packages
+            - Select the RPM packages
+            - right click selections and select "Open with Package installer"
+        Using YUM:
+            - sudo yum install ncid-*.rpm
 
 CONFIGURE:
+
+    The ncidd.conf file is used to configure ncidd.
 
     - The default modem port in ncidd is /dev/modem.  This is just a
       symbolic link to the real modem port. It is probably best to
       set your modem port in ncidd.conf.  This assumes serial port 1:
         set ttyport = /dev/ttyS0
-    - If you are using sip2ncid or yac2ncid instead of a modem
+    - If you are using a gateway instead of a local modem,
       you need to set noserial to 1:
         set noserial = 1
+    - If you are using a local modem with or without a gateway
+        set noserial = 0  (this is the default)
 
 STARTUP:
 
@@ -50,12 +67,12 @@ STARTUP:
 
     - If everything is OK, enable the NCID server, gateways, and
       client modules, your are using, to autostart at boot.  The
-      GUI incid client must be started after login, not boot.
+      GUI ncid client must be started after login, not boot.
 
     NOTE: ncid normally starts in the GUI mode and there is no
           ncid.init script to start or stop it.  There are rc.init
           scripts for starting ncid with output modules, for
-          example: ncid-page, ncid-popup, etc.
+          example: ncid-page, ncid-kpopup, etc.
 
 START/STOP/STATUS:
 
@@ -80,7 +97,7 @@ AUTOSTART:
     Here are some examples:
     - autostart ncidd at boot: sudo chkconfig ncidd on
     - autostart ncid-page at boot: sudo chkconfig ncid-page on
-    - autostart ncid-popup at boot: sudo chkconfig ncid-popup on
+    - autostart ncid-kpopup at boot: sudo chkconfig ncid-kpopup on
     - list runlevels for sip2ncid: sudo chkconfig --list sip2ncid
     - remove ncid-speak from starting at boot: sudo chkconfig ncid-speak off
 

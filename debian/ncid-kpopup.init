@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          ncid-popup
+# Provides:          ncid-kpopup
 # Required-Start:    $local_fs $remote_fs
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
@@ -15,9 +15,9 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
-DESC="Network Caller ID PopUp Client"
+DESC="Network Caller ID PopUp KDE Client"
 NAME=ncid
-MODULE=ncid-popup
+MODULE=ncid-kpopup
 DAEMON=/usr/bin/$NAME
 PIDFILE=/var/run/$MODULE.pid
 SCRIPTNAME=/etc/init.d/$MODULE

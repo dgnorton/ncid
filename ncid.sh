@@ -2,7 +2,7 @@
 
 # ncid - Network Caller-ID client
 
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 # by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # ncid is free software; you can redistribute it and/or modify it
@@ -74,8 +74,8 @@ set Raw         0
 # set PIDfile to /var/run/ncid.pid in rc and init scripts
 # set PIDfile to "" to not use a pidfile
 set PIDfile     ""
+set PopupTime   5
 set Program     [list $ProgDir/$ProgName]
-set All         0
 set Verbose     0
 set NoGUI       0
 set Callprog    0
@@ -94,16 +94,14 @@ if {[file exists $ConfigFile]} {
 }
 
 ### global variables that are fixed
-set Connect     0
 set Count       0
 set ExecSh      0
 set Socket      0
 set Try         0
-set Version     0.72.1
+set Version     0.73
 set VersionInfo "NCID Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
-               [--all             | -A]
                [--call-prog       | -C]
                [--delay seconds   | -D seconds]
                [--message         | -M]
@@ -113,6 +111,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
                [--raw             | -R]
                [--ring count      | -r count]
                [--tivo            | -T]
+               [--PopupTime 1-99  | -t 1-99 seconds]
                [--verbose         | -V]
          ARGS: [IP_ADDRESS        | HOSTNAME]
                [PORT_NUMBER]}
@@ -120,7 +119,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
 set About \
 "
 $VersionInfo
-Copyright (C) 2001-2008
+Copyright (C) 2001-2009
 John L. Chmielewski
 http://ncid.sourceforge.net
 "
@@ -156,7 +155,6 @@ proc errorMsg {msg} {
         if $Verbose {puts -nonewline stderr $msg}
         after [expr $Delay*1000] retryConnect
     } else {
-        set Connect 0
         set Count $Delay
         while {$Count > 0} {
             if {$Count == 1} {
@@ -244,36 +242,32 @@ proc getCID {} {
             }
         }
         if {[set type [checkCID $dataBlock]]} {
-            if {$CallOnRing && $type == 5} {
-                # found CIDINFO line
-                set cidinfo [getField RING $dataBlock]
-                if {$NoCID} {
-                     if {$cidinfo == "1"} {handleMSG "Phone Ringing"}
-                } else {
-                    if {$Callprog && $Ring == $cidinfo} {sendCID $cid}
+            if {$type == 5} {
+                # CIDINFO (5) line
+                if {$CallOnRing} {
+                    set cidinfo [getField RING $dataBlock]
+                    if {$NoCID} {
+                        if {$cidinfo == "1"} {handleMSG "Phone Call"}
+                    } else {
+                        if {$Callprog && $Ring == $cidinfo} {sendCID $cid}
+                    }
                 }
             } elseif {$type == 4} {
-                # found MSG line
+                # MSG (4) line
                 regsub {MSG: (.*)} $dataBlock {\1} msg
                 displayCID "$msg\n" 1
-                doPopup
+                displayLog "$msg" 1
+                if !$NoGUI {doPopup}
                 if {$MsgFlag} {sendMSG $msg}
             } else {
-                # found CID, EXTRA, or CIDLOG line
+                # CID (1), EXTRA (2), or CIDLOG (3) line
                 set cid [formatCID $dataBlock]
-                # Clear display window if CIDLOG line is received
-                if {!$Connect && $type == 3} {
-                    set Connect 1
-                    if {!$NoGUI} {clearLog}
-                }
-                # display CID log
-                if {$type < 4} {
-                    if {!$Raw} {displayLog $cid 0}
-                }
+                # display log
+                if {!$Raw} {displayLog $cid 0}
                 # display CID
                 if {$type < 3} {
+                    # CID (1) or EXTRA (2) line
                     if {!$NoGUI} {
-                        wm attributes .
                         displayCID $cid 0
                         doPopup
                     }
@@ -285,12 +279,22 @@ proc getCID {} {
 }
 
 proc doPopup {} {
-    # create a pop-up, even if open, in current desktop
-    wm iconify .
-    update
-    wm deiconify .
-    raise .
-    update
+    # create a popup for popup time
+    # or become top most window for popup time
+    global PopupTime
+    global ncidwin
+
+    set ncidwin [wm state .]
+
+    if {$ncidwin == "iconic"} {wm deiconify .}
+    wm attributes . -topmost 1
+
+    after [expr $PopupTime*1000] {
+        wm attributes . -topmost 0
+        if {[focus] != "."} {
+            if {$ncidwin == "iconic"} {wm iconify .}
+        }
+    }
 }
 
 proc checkCID {dataBlock} {
@@ -378,21 +382,11 @@ proc getField {dataString dataBlock} {
 # pass the CID information to an external program
 # Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
 proc sendCID {cid} {
-    global All
     global Program
     global TivoFlag
     global ExecSh
 
-    if $All {
-      # pass DATE\nTIME\nNUMBER\nNAME\n
-      if $ExecSh {
-        catch {exec sh -c $Program << \
-          "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n" &} oops
-      } else {
-        catch {exec $Program << \
-          "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n" &} oops
-      }
-      } elseif $TivoFlag {
+      if $TivoFlag {
         # pass NAME NUMBER\nLINE\n
         catch {exec $Program << \
           "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n" &} oops
@@ -494,18 +488,20 @@ proc connectCID {Host Port} {
         errorMsg "$Host:$Port - $msg\n"
     } else {
         # set socket to binary I/O and non-blocking
-        fconfigure $Socket -translation {binary binary} -blocking 0 
+        fconfigure $Socket -blocking 0 
         # get response from server as an event
         fileevent $Socket readable getCID
         if $NoGUI { displayLog "Connecting to $Host:$Port" 1
-        } else { displayCID "Connecting to\n$Host:$Port" 1}
+        } else {
+            clearLog
+            displayCID "Connecting to\n$Host:$Port" 1
+        }
     }
 }
 
 proc getArg {} {
     global argc
     global argv
-    global All
     global Raw
     global Host
     global Port
@@ -523,6 +519,7 @@ proc getArg {} {
     global MsgFlag
     global PIDfile
     global NoCID
+    global PopupTime
 
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
@@ -538,8 +535,6 @@ proc getArg {} {
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
             }
             {^--no-gui$} {set NoGUI 1}
-            {^-A$} -
-            {^--all$} {set All 1}
             {^-C$} -
             {^--call-prog$} {set Callprog 1}
             {^-D$} -
@@ -573,6 +568,14 @@ proc getArg {} {
             }
             {^-T$} -
             {^--tivo$} {set TivoFlag 1}
+            {^-t$} -
+            {^--PopupTime$} {
+                incr cnt
+                if {$optarg != ""
+                    && [regexp {^[1-9][0-9]?$} $optarg]} {
+                    set PopupTime $optarg
+                } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
+            }
             {^-V$} -
             {^--verbose$} {set Verbose 1}
             {^-R$} -
@@ -676,7 +679,6 @@ proc reconnect {} {
     after [expr 100] waitOnce
     vwait Once
 
-    set Connect 0
     retryConnect
 }
 

@@ -1,21 +1,15 @@
 The current TODO list (in no particular order)
 
-Last modified: Sat Apr 12, 2008
+Last modified: Fri Feb 27, 2009
 
-DONE- Add a client that does a overlay pop up window for Linux.
-DONE- Finish port to cygwin so server operates under windows.  Problem
-      is the serial port does not ndicate when it has data using poll().
     - Add graphics to view image of who is calling.
     - Add ncid.exe to the Windows tray.
-DONE- Make the ncid client handle multiple modules.
-      or an easy way to start multiple ncid clients with separate modules
     - Add support for PBX.
     - Redo web site
-    - Improve NCID documentation and installation.
     - Add a iax2 gateway
     - Add a GUI configuration program for the server, client, modules,
       and gateways.
-DONE- Record outgoing calls when using a SIP gateway
+    - Add a Gnome applet client
 
 The MAYBE TODO list (in no particular order)
 

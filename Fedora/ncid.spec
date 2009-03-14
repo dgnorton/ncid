@@ -1,59 +1,95 @@
-Summary:    Network Caller ID server, client, and gateways
 Name:       ncid
-Version:    0.72
-Release:    1%{dist}
-Group:      System Environment/Daemons
-License:    GPL
+Version:    0.73
+Release:    1%{?dist}
+Summary:    Network Caller ID server, client, and gateways
+
+Group:      Applications/Communications
+License:    GPLv2+
 Url:        http://ncid.sourceforge.net
-Source:     %{name}-%{version}-src.tar.gz
-BuildRoot:  %{_tmppath}/%{name}-root
-Prereq:     /sbin/chkconfig
-Requires:   tcl tk libpcap perl kdebase
-Buildrequires: libpcap-devel %{_includedir}/pcap.h
+Source0:    http://downloads.sourceforge.net/%{name}/%{name}-%{version}-src.tar.gz
+BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+Buildrequires: libpcap-devel
 
 # Don't build an extra package of debuginfo: we are not going to use it.
 %define debug_package %{nil}
 
 %description
 NCID is Caller ID (CID) distributed over a network to a variety of
-devices and computers.
+devices and computers.  NCID includes a server, gateways, a client,
+and client output modules.
 
-NCID supports messages.  Clients can send a one line message to all
-connected clients.
+The NCID server obtains the Caller ID information from a serial device,
+like a modem, and from a VOIP and YAC gateways.
 
-The server, ncidd, monitors either a modem, device or gateway for the CID
-data.  The data is collected and sent, via TCP, to one or more clients.
-The server supports multiple gateways which can be used with or without
-a modem or device.
+This package contains the server and gateways.  The client is in the
+ncid-client package.
 
-The client, ncid, receives the Caller ID (CID) message and displays it
-in a GUI or terminal window. The client also comes with output modules.
-One module can speak the CID, another can send the CID to a pager or cell
-phone.  There are other output modules including ones that display the
-CID on a TiVo or MythTV.
+%package client
+Summary:    NCID (Network Caller ID) client
+Group:      Applications/Communications
+Requires:   tcl, tk
 
-The client, ncid, normally displays the Caller ID data and the Server
-Caller-ID log in a GUI window. The client output can be changed with
-output modules. One module can speak the CID, another can send the CID
-to a pager or cell phone.  There are other output modules, including
-ones that display the CID on a TiVo or MythTV.
+%description client
+The ncid-client obtains the Caller ID from the ncid-server and normally
+displays it in a GUI window.  It can also display the Called ID in a
+terminal window or, using a output module, format the output and send it
+to another program.
 
-The SIP gateways obtain the Caller ID information from a VOIP system,
-using SIP Invite.
+%package mythtv
+Summary:    NCID mythtv module sends caller ID information MythTV
+Group:      Applications/Communications
+BuildArch:  noarch
+Requires:   %{name}-client = %{version}-%{release}, mythtv-frontend
 
-The YAC gateway obtains the Caller ID information from a YAC server.
+%description mythtv
+NCID mythtv module sends caller ID information MythTV using mythtvosd
+
+%package kpopup
+Summary:    NCID kpopup module displays caller ID info in a KDE window
+Group:      Applications/Communications
+BuildArch:  noarch
+Requires:   %{name}-client = %{version}-%{release}
+Requires:   %{name}-speak = %{version}-%{release}
+Requires:   kdelibs, kdebase, kdemultimedia, festival
+
+%description kpopup
+The NCID kpopup module displays caller ID information in a KDE popup window
+and optionally speaks the number via voice synthesis.
+
+%package samba
+Summary:    NCID samba module sends caller ID information to windows machines
+Group:      Applications/Communications
+BuildArch:  noarch
+Requires:   %{name}-client = %{version}-%{release}, samba-client
+
+%description samba
+The NCID samba module sends caller ID information to a windows machine
+via popup.  This will not work if the messenger service is disabled.
+
+%package speak
+Summary:    NCID speak module speaks caller ID information via voice synthesis
+Group:      Applications/Communications
+BuildArch:  noarch
+Requires:   %{name}-client = %{version}-%{release}, festival
+
+%description speak
+The NCID speak module announces Caller Id information verbally, using
+the Festival text-to-speech voice synthesis system.
 
 %prep
 
-%setup -n %{name}
+%setup -q -n %{name}
 
 %build
-make fedora mandir
+make %{?_smp_mflags} EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
+     STRIP= prefix=/usr prefix2= local fedoradir
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
-make install install-fedora prefix=${RPM_BUILD_ROOT}/usr prefix2=${RPM_BUILD_ROOT} prefix3=${RPM_BUILD_ROOT}
-rm -f ${RPM_BUILD_ROOT}/var/log/*.log
+make install install-fedora prefix=${RPM_BUILD_ROOT}/usr \
+                            prefix2=${RPM_BUILD_ROOT} \
+                            prefix3=${RPM_BUILD_ROOT}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -61,7 +97,9 @@ rm -fr $RPM_BUILD_DIR/%{name}
 
 %files
 %defattr(-,root,root)
-/usr/bin/ncid
+%doc README VERSION doc
+%doc cidgate/README.Gateways Fedora/README.Fedora modules/README.modules
+%doc scripts/README.logfile tools/README.tools
 /usr/bin/cidcall
 /usr/bin/cidalias
 /usr/bin/cidupdate
@@ -69,37 +107,20 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/sbin/ncidd
 /usr/sbin/ncidsip
 /usr/sbin/sip2ncid
+%dir /usr/share/ncid
 /usr/share/ncid/ncidrotate
-/usr/share/ncid/ncid-mythtv
-/usr/share/ncid/ncid-page
-/usr/share/ncid/ncid-popup
-/usr/share/ncid/ncid-samba
-/usr/share/ncid/ncid-speak
-/usr/share/ncid/ncid-skel
-/usr/share/ncid/ncid-tivo
-/usr/share/ncid/ncid-yac
-/usr/share/pixmaps/ncid.gif
-%config /etc/ncid/ncid.conf
-%config /etc/ncid/ncidd.conf
-%config /etc/ncid/ncidd.alias
-%config /etc/ncid/ncidrotate.conf
-%config /etc/ncid/ncidmodules.conf
-%config /etc/ncid/ncidsip.conf
-%config /etc/ncid/sip2ncid.conf
-%config /etc/ncid/yac2ncid.conf
-/etc/rc.d/init.d/ncidd
-/etc/rc.d/init.d/ncidsip
-/etc/rc.d/init.d/sip2ncid
-/etc/rc.d/init.d/yac2ncid
-/etc/rc.d/init.d/ncid-mythtv
-/etc/rc.d/init.d/ncid-page
-/etc/rc.d/init.d/ncid-popup
-/etc/rc.d/init.d/ncid-samba
-/etc/rc.d/init.d/ncid-speak
-/etc/rc.d/init.d/ncid-yac
-/etc/logrotate.d/ncid
-%{_mandir}/man1/ncid.1*
-%{_mandir}/man1/ncidmodules.1*
+%dir /etc/ncid
+%config(noreplace) /etc/ncid/ncidd.conf
+%config(noreplace) /etc/ncid/ncidd.alias
+%config(noreplace) /etc/ncid/ncidrotate.conf
+%config(noreplace) /etc/ncid/ncidsip.conf
+%config(noreplace) /etc/ncid/sip2ncid.conf
+%config(noreplace) /etc/ncid/yac2ncid.conf
+%config(noreplace) /etc/logrotate.d/ncid
+%_initrddir/ncidd
+%_initrddir/ncidsip
+%_initrddir/sip2ncid
+%_initrddir/yac2ncid
 %{_mandir}/man1/ncidrotate.1*
 %{_mandir}/man1/ncidtools.1*
 %{_mandir}/man1/yac2ncid.1*
@@ -107,69 +128,228 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %{_mandir}/man5/sip2ncid.conf.5*
 %{_mandir}/man5/yac2ncid.conf.5*
 %{_mandir}/man5/ncidd.alias.5*
-%{_mandir}/man5/ncid.conf.5*
-%{_mandir}/man5/ncidmodules.conf.5*
+%{_mandir}/man5/ncidrotate.conf.5*
+%{_mandir}/man5/ncidsip.conf.5*
 %{_mandir}/man8/ncidd.8*
 %{_mandir}/man8/ncidsip.8*
 %{_mandir}/man8/sip2ncid.8*
-%doc README VERSION doc
-%doc cidgate/README.Gateways Fedora/README.Fedora  modules/README.modules
-%doc scripts/README.logfile tools/README.tools
-%doc man/*.html
+
+%files client
+%defattr(-,root,root)
+%doc modules/README.modules
+/usr/bin/ncid
+%dir /usr/share/ncid
+/usr/share/ncid/ncid-page
+/usr/share/ncid/ncid-skel
+/usr/share/ncid/ncid-tivo
+/usr/share/ncid/ncid-yac
+/usr/share/pixmaps/ncid.gif
+%dir /etc/ncid
+%config(noreplace) /etc/ncid/ncid.conf
+%config(noreplace) /etc/ncid/ncidmodules.conf
+%_initrddir/ncid-page
+%_initrddir/ncid-yac
+%{_mandir}/man1/ncid.1*
+%{_mandir}/man1/ncidmodules.1*
+%{_mandir}/man5/ncid.conf.5*
+%{_mandir}/man5/ncidmodules.conf.5*
+
+%files mythtv
+%defattr(-,root,root)
+%doc modules/README.modules
+/usr/share/ncid/ncid-mythtv
+%_initrddir/ncid-mythtv
+
+%files kpopup
+%defattr(-,root,root)
+%doc modules/README.modules
+/usr/share/ncid/ncid-kpopup
+%_initrddir/ncid-kpopup
+
+%files samba
+%defattr(-,root,root)
+%doc modules/README.modules
+/usr/share/ncid/ncid-samba
+%_initrddir/ncid-samba
+
+%files speak
+%defattr(-,root,root)
+%doc modules/README.modules
+/usr/share/ncid/ncid-speak
+%_initrddir/ncid-speak
 
 %post
-touch /var/log/cidcall.log
-chmod 644 /var/log/cidcall.log
-if [ $1 = 1 ]; then
-    /sbin/chkconfig --add ncidd
+if [ $1 = 1 ]; then ### install package ###
+    # make services known
+    for SCRIPT in ncidd ncidsip ncidsip
+    do
+        /sbin/chkconfig --add $SCRIPT
+    done
+fi
+
+%post client
+if [ $1 = 1 ]; then ### install package ###
+    # make services known
+    for SCRIPT in ncid-page ncid-yac
+    do
+        /sbin/chkconfig --add $SCRIPT
+    done
+fi
+
+%post mythtv
+if [ $1 = 1 ]; then ### install package ###
+    /sbin/chkconfig --add ncid-mythtv
+fi
+
+%post kpopup
+if [ $1 = 1 ]; then ### install package ###
+    /sbin/chkconfig --add ncid-kpopup
+fi
+
+%post samba
+if [ $1 = 1 ]; then ### install package ###
+    /sbin/chkconfig --add ncid-samba
+fi
+
+%post speak
+if [ $1 = 1 ]; then ### install package ###
+    /sbin/chkconfig --add ncid-speak
 fi
 
 %preun
-if [ $1 = 0 ] ; then
-  ### remove package ###
-  # stop services
-  /sbin/service ncid stop >/dev/null 2>&1 || true
-  /sbin/service ncid-mythtv stop >/dev/null 2>&1 || true
-  /sbin/service ncid-page stop >/dev/null 2>&1 || true
-  /sbin/service ncid-popup stop >/dev/null 2>&1 || true
-  /sbin/service ncid-samba stop >/dev/null 2>&1 || true
-  /sbin/service ncid-speak stop >/dev/null 2>&1 || true
-  /sbin/service ncid-yac stop >/dev/null 2>&1 || true
-  /sbin/service ncidsip stop >/dev/null 2>&1 || true
-  /sbin/service sip2ncid stop >/dev/null 2>&1 || true
-  /sbin/service yac2ncid stop >/dev/null 2>&1 || true
-  /sbin/service ncidd stop >/dev/null 2>&1 || true
-  # remove autostart
-  /sbin/chkconfig ncid && /sbin/chkconfig --del ncid || true
-  /sbin/chkconfig ncid-mythtv && /sbin/chkconfig --del ncid-mythtv || true
-  /sbin/chkconfig ncid-page && /sbin/chkconfig --del ncid-page || true
-  /sbin/chkconfig ncid-popup && /sbin/chkconfig --del ncid-popup || true
-  /sbin/chkconfig ncid-samba && /sbin/chkconfig --del ncid-samba || true
-  /sbin/chkconfig ncid-speak && /sbin/chkconfig --del ncid-speak || true
-  /sbin/chkconfig ncid-yac && /sbin/chkconfig --del ncid-yac || true
-  /sbin/chkconfig ncidsip && /sbin/chkconfig --del ncidsip || true
-  /sbin/chkconfig sip2ncid && /sbin/chkconfig --del sip2ncid || true
-  /sbin/chkconfig yac2ncid && /sbin/chkconfig --del yac2ncid || true
-  /sbin/chkconfig  ncidd && /sbin/chkconfig --del ncidd || true
+if [ $1 = 0 ] ; then ### Uninstall package ###
+    # stop services and remove autostart
+    for SCRIPT in ncidd ncidsip ncidsip
+    do
+        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
+        /sbin/chkconfig --del $SCRIPT
+    done
 fi
-if [ "$1" -ge "1" ]; then
-  ### upgrade package ###
-  /sbin/service ncid stop >/dev/null 2>&1 || true
-  /sbin/chkconfig ncid && /sbin/chkconfig --del ncid || true
+
+%preun client
+if [ $1 = 0 ] ; then ### Uninstall package ###
+    # stop services and remove autostart
+    for SCRIPT in ncid-page ncid-yac
+    do
+        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
+        /sbin/chkconfig --del $SCRIPT
+    done
+fi
+
+# just in case a old package that had the obsolute ncid service is upgraded
+if [ "$1" -ge "1" ]; then ### upgrade package ###
+    /sbin/service ncid stop >/dev/null 2>&1 || true
+    /sbin/chkconfig ncid && /sbin/chkconfig --del ncid || true
+fi
+
+%preun mythtv
+if [ $1 = 0 ] ; then ### Uninstall package ###
+    # stop services and remove autostart
+    for SCRIPT in ncid-mythtv
+    do
+        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
+        /sbin/chkconfig --del $SCRIPT
+    done
+fi
+
+%preun kpopup
+if [ $1 = 0 ] ; then ### Uninstall package ###
+    # stop services and remove autostart
+    for SCRIPT in ncid-kpopup
+    do
+        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
+        /sbin/chkconfig --del $SCRIPT
+    done
+fi
+
+%preun samba
+if [ $1 = 0 ] ; then ### Uninstall package ###
+    # stop services and remove autostart
+    for SCRIPT in ncid-samba
+    do
+        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
+        /sbin/chkconfig --del $SCRIPT
+    done
+fi
+
+%preun speak
+if [ $1 = 0 ] ; then ### Uninstall package ###
+    # stop services and remove autostart
+    for SCRIPT in ncid-speak
+    do
+        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
+        /sbin/chkconfig --del $SCRIPT
+    done
 fi
 
 %postun
-if [ "$1" -ge "1" ]; then
-  ### upgrade package ###
-  # restart services that are running
-  /sbin/service ncidd condrestart >/dev/null 2>&1 || true
-  /sbin/service ncidsip condrestart >/dev/null 2>&1 || true
-  /sbin/service sip2ncid condrestart >/dev/null 2>&1 || true
-  /sbin/service yac2ncid condrestart >/dev/null 2>&1 || true
-  /sbin/service ncid-mythtv condrestart >/dev/null 2>&1 || true
-  /sbin/service ncid-page condrestart >/dev/null 2>&1 || true
-  /sbin/service ncid-popup condrestart >/dev/null 2>&1 || true
-  /sbin/service ncid-samba condrestart >/dev/null 2>&1 || true
-  /sbin/service ncid-speak condrestart >/dev/null 2>&1 || true
-  /sbin/service ncid-yac condrestart >/dev/null 2>&1 || true
+if [ "$1" -ge "1" ]; then ### upgrade package ###
+    # restart services that are running
+    for SCRIPT in ncidd ncidsip ncidsip
+    do
+        /sbin/service $SCRIPT condrestart >/dev/null 2>&1 || :
+    done
 fi
+
+%postun client
+if [ "$1" = 0 ]
+then
+    /sbin/service ncid-kpopup stop > /dev/null 2>&1 || :
+    /sbin/chkconfig --del ncid-kpopup
+fi
+if [ "$1" -ge "1" ]; then ### upgrade package ###
+    # restart services that are running
+    for SCRIPT in /usr/share/ncid/ncid-*
+    do
+        /sbin/service `basename $SCRIPT` condrestart >/dev/null 2>&1 || :
+    done
+fi
+
+%postun mythtv
+if [ "$1" = 0 ]
+then
+    /sbin/service ncid-mythtv stop > /dev/null 2>&1 || :
+    /sbin/chkconfig --del ncid-mythtv
+fi
+if [ "$1" -ge "1" ]; then ### upgrade package ###
+    # restart services if running
+    /sbin/service ncid-mythtv condrestart >/dev/null 2>&1 || :
+fi
+
+%postun kpopup
+if [ "$1" = 0 ]
+then
+    /sbin/service ncid-kpopup stop > /dev/null 2>&1 || :
+    /sbin/chkconfig --del ncid-kpopup
+fi
+if [ "$1" -ge "1" ]; then ### upgrade package ###
+    # restart services if running
+    /sbin/service ncid-kpopup condrestart >/dev/null 2>&1 || :
+fi
+
+%postun samba
+if [ "$1" = 0 ]
+then
+    /sbin/service ncid-samba stop > /dev/null 2>&1 || :
+    /sbin/chkconfig --del ncid-samba
+fi
+if [ "$1" -ge "1" ]; then ### upgrade package ###
+    # restart services if running
+    /sbin/service ncid-samba condrestart >/dev/null 2>&1 || :
+fi
+
+%postun speak
+if [ "$1" = 0 ]
+then
+    /sbin/service ncid-speak stop > /dev/null 2>&1 || :
+    /sbin/chkconfig --del ncid-speak
+fi
+if [ "$1" -ge "1" ]; then ### upgrade package ###
+    # restart service if running
+    /sbin/service ncid-speak condrestart >/dev/null 2>&1 || :
+fi
+
+%changelog
+
+* Thu Mar 12 2009 John Chmielewski <jlc@users.sourceforge.net> 0.73-1
+- Initial build.

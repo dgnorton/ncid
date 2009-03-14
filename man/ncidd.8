@@ -1,7 +1,7 @@
 .\" %W% %G%
 .TH NCIDD 8
 .SH NAME
-.B ncidd\^
+.B ncidd
 - Network Caller ID Server
 .SH SYNOPSIS
 .B ncidd\^
@@ -49,7 +49,7 @@ to one or more
 clients over TCP/IP.
 .B NCIDD
 also allows an alias for the number, an alias for the name,
-and an alias for the line identifier.
+and an alias for the telephone line identifier.
 .PP
 The telephone company limits names to 15 upper case characters,
 so by using the alias function, you can display the name as you
@@ -119,8 +119,14 @@ Data log data file, usually from a modem.
 Default: /var/log/datalog.log
 .TP
 .B -e <identifier> | --lineid <identifier>
-The telephone line identifier can be set if the server is monitoring
-more than one telephone line and noserial is set to 0.
+The telephone line identifier is for a modem.  It is normally 1 to 4
+characters.  The default indicator is not displayed, but for one POTS
+line, you could change it to
+.IR POTS .
+For multiple lines you should use a identifier.
+You could change it to the 4 digit extension for an exchange.
+For example, if the telephone number is 321-555-1212 the identifier
+whould be 1212.
 .br
 Default: -
 .TP
@@ -251,7 +257,7 @@ and \fICIDLOG:\fR lines are identical,
 with data stored as name and value pairs.
 Clients should always locate the line identifier,
 and then scan for a field name and get its value.
-It's possible that additional name/value pairs may be add in the future.
+It's possible that additional name/value pairs may be added in the future.
 .PP
 The \fIMSG:\fR
 and \fIMSGLOG:\fR lines are identical,
@@ -292,7 +298,7 @@ Server log file.  Contents controlled by verbose.
       -109         Alias file error
       -110         PID file already exists
       -111         Cannot init TTY
-      -112         Poll error
+      -112         Serial device error
       -113         string too long
         -?         System error
 .fi

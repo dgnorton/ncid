@@ -6,7 +6,7 @@ Ubuntu service files:
 
     ncid-mythtv.init  - service file for ncid with ncid-mythtv output module
     ncid-page.init    - service file for ncid with ncid-page module
-    ncid-popup.init   - service file for ncid with ncid-popup module
+    ncid-kpopup.init  - service file for ncid with ncid-kpopup module
     ncid-samba.init   - service file for ncid with ncid-samba module
     ncid-speak.init   - service file for ncid with ncid-speak module
     ncid-yac.init     - service file for ncid with ncid-yac module

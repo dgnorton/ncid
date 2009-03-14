@@ -1,7 +1,7 @@
 .\" %W% %G%
 .TH NCID 1
 .SH NAME
-.B ncid\^
+.B ncid
 - Network Caller ID Client
 .SH SYNOPSIS
 .B ncid\^
@@ -17,17 +17,17 @@
 .PP
 .nf
 [--no-gui]
-[--all             | -A]
-[--call-prog       | -C]
-[--delay seconds   | -D seconds]
-[--message         | -M]
-[--nocid           | -N]
-[--program PROGRAM | -P PROGRAM]
-[--pidfile FILE    | -p PIDFILE]
-[--raw             | -R]
-[--ring count      | -r count]
-[--tivo            | -T]
-[--verbose         | -V]
+[--call-prog         | -C]
+[--delay seconds     | -D seconds]
+[--message           | -M]
+[--nocid             | -N]
+[--program PROGRAM   | -P PROGRAM]
+[--pidfile FILE      | -p PIDFILE]
+[--raw               | -R]
+[--ring count        | -r count]
+[--tivo              | -T]
+[--PopupTime seconds | -t seconds]
+[--verbose           | -V]
 .fi
 .PP
 .I Arguments:\^
@@ -45,9 +45,9 @@ startup.  The call log is updated by \fIncid\fR whenever a call
 is received.
 .PP
 .B Ncid
-can also display \fIPhone Ringing\fB if the modem used by the server
-does send the Caller ID information to it.  This is useful if a visual
-indication is also wanted for ringing.
+can also display \fIPhone Call\fB if the modem used by the server
+does not send the Caller ID information to it.  This is useful if
+a visual indication is wanted for ringing.
 .PP
 .B Ncid
 also has a message window that will send a single line message
@@ -107,13 +107,6 @@ Do not display CID information using a GUI
 .br
 Default: display CID using a GUI, except if called tivocid
 .TP
-.B --all | -A
-Obsolete option, do not use, will go away.
-.br
-Output is 4 lines: date time number name
-.br
-Default output is 5 lines: date time number name line
-.TP
 .B --call-prog | -C
 Output the Caller ID information to a external program or output module.
 .br
@@ -130,8 +123,9 @@ Default: 60 seconds
 Send messages to the output modules
 .TP
 .B --nocid | -N
-Configure ncid to indicate \fIPhone Ringing\fR on the first ring
-received from the modem.  It requires a modem that indicates ring.
+Configure ncid to indicate \fIPhone Call\fR on the first ring
+received from the modem.  It requires a modem that indicates ring,
+but does not require a modem that supports caller id.
 .TP
 .B --pidfile | -p
 Name of PID file to create.
@@ -142,7 +136,7 @@ There is no default.  If pidfile is not set, no pid file will be used.
 .TP
 .B --program PROGRAM | -P PROGRAM
 Name of the output module (program) to use.  Some output modules are
-ncid-page, ncid-popup, and ncid-speak.
+ncid-kpopup, ncid-page, and ncid-speak.
 .br
 Default PATH: /usr/share/ncid
 .br
@@ -167,9 +161,17 @@ A count of -2 incdicates a hangup after answer.
 Default: output module called as soon as CID received
 .TP
 .B --Tivo | -T
-This option is only for a TiVo using out2osd.
+This option is for a TiVo using out2osd or text2osd
 .br
-Output is 2 lines: name number
+Changes output to 2 lines: name number line
+.br
+Default output is 5 lines: date time number name line
+.TP
+.B --PopupTime seconds | -t seconds
+Time for the popup to stay on top of all windows.
+Range is 1 second to 99 seconds
+.br
+Default popup time os 5 seconds
 .TP
 .B --verbose | -V
 display formatted CID information, including CID log file
@@ -211,7 +213,7 @@ ncid --no-gui --call-prog --program ncid-page --ring 3
 ncid --no-gui --call-prog --program ncid-page --ring -1
 
 # indicate ring on a popup module as a message
-ncid --no-gui --nocid --message --call-prog --program ncid-popup
+ncid --no-gui --nocid --message --call-prog --program ncid-kpopup
 
 # run ncid on a TiVo using out2osd, server on remote host
 tivocid 192.168.0.1

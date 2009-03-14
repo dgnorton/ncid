@@ -1,16 +1,22 @@
 INIT        = ncidd.init ncidsip.init sip2ncid.init yac2ncid.init \
-              ncid-mythtv.init ncid-page.init ncid-popup.init \
+              ncid-kpopup.init ncid-mythtv.init ncid-page.init \
               ncid-samba.init ncid-speak.init ncid-yac.init
 FILES		= README Makefile $(DIST) ncid.spec
 
 prefix		= /usr/local
 prefix2		= $(prefix)
 prefix3     =
+prefix4     =
+
+ifdef prefix4
+	SHARP   = ;/\# Source networking/,/NETWORKING.*exit/{N;d}
+endif
 
 BIN			= $(prefix)/bin
 SBIN		= $(prefix)/sbin
 ETC			= $(prefix2)/etc
 VAR         = $(prefix3)/VAR
+FUN         = $(prefix4)/etc/rc.d/init.d/functions
 
 RCDIR       = $(ETC)/rc.d
 INITDIR     = $(RCDIR)/init.d
@@ -39,5 +45,5 @@ distclean: clobber
 files:	$(FILES)
 
 % : %.init
-	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
+	sed '/exec/s,/usr/local,$(prefix),;/config/s,/usr/local,$(prefix2),;s,.*/functions,. $(FUN),$(SHARP)' $< > $@
 	chmod +x $@

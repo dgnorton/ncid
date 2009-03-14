@@ -1,5 +1,5 @@
 SHMODULES = ncid-page.sh ncid-samba.sh ncid-speak.sh ncid-mythtv.sh \
-            ncid-popup.sh ncid-skel.sh ncid-tivo.sh ncid-yac.sh
+            ncid-kpopup.sh ncid-skel.sh ncid-tivo.sh ncid-yac.sh
 DIST      = ncidmodules.conf.dist
 FILES     = README.modules Makefile $(MODULES) $(ETCFILE)
 

@@ -62,7 +62,7 @@ Michael Lasevich
     he wrote.  Helped write the man pages.
 
 Randy <randyr505@gmail.com>
-    Wrote and contributed the ncid-popup client output module.
+    Wrote and contributed the ncid-kpopup client output module.
 
 Jonathan Wolf
     Hacked ncid to provide ring indication when Caller ID not available.
@@ -85,6 +85,7 @@ New Feature Requests, Bug Reports, testing fixes, and testing new features:
     David LaPorte
     Joe Nardone
     Ken Appell
+    Lloyd Stahlbush
     Mace Moneta
     Matt Short
     Michael Lasevich
@@ -95,3 +96,4 @@ New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Steve Forman
     Troy Carpenter
     Jonathan Wolf
+    Marko Koski-Vähälä

@@ -1,6 +1,12 @@
 # ncid configuration file
 
-# File last changed: Thu Dec 11, 2008
+# File last changed: Wed Mar 11, 2009
+
+# This configuration file takes effect every time ncid is started.
+# It is for global changes.  For changes to a particular instance
+# of ncid using a output module, use ncidmodules.conf.  For example,
+# to configure the client for the server address, use ncid.conf, but
+# to configure ncid for use with ncid-page, use ncidmodules.conf.
 
 # set PIDfile to /var/run/ncid.pid in rc and init scripts
 # set PIDfile to "" to not use a PID file.
@@ -19,6 +25,11 @@ set Host        127.0.0.1
 # The NCID port default is 3333
 set Port        3333
 
+# Set the popup time interval of the client (time to remain the top window)
+# The range is 1 second to 99 seconds
+# The default is 5 seconds
+set PopupTime   5
+
 # If the connection to the server is lost,
 # try every Delay seconds to reconnect
 # The Default: 60
@@ -29,10 +40,11 @@ set Delay       60
 # Default: 0
 set Raw         0
 
-# If set to 1, output: date time number name
-# If set to 0, output: name number
+# Output to client module or TiVo OSD
+# TivoFlag = 0: date time number name line
+# TivoFlag = 1: name number line
 # Default: 0
-set All         0
+set TivoFlag    0
 
 # If set to 1, display formatted CID, and CID log file on connect
 # If set to 0, ddo not isplay formatted CID, and CID log file on connect
@@ -51,10 +63,6 @@ set Callprog    0
 # ring number to call external program
 # Default: 0
 set CallOnRing  0
-
-# TiVo Flag: send output in format to use OUT2OSD
-# Default: 0
-set TivoFlag    0
 
 # Message Flag: send messages to output modules
 # Default: 0

@@ -1,8 +1,8 @@
 # ncid module and service configuration file
-# Last modified: Tue Dec 9, 2008
+# Last modified: Wed Mar 11, 2009
 
-# This configuration file is called from the ncid-* init or rc files
-# to set the $ringopt, $tivoprog, $tivoargs variables.
+# This configuration file is called from each ncid-* init or rc files
+# to set the $ringopt, $tivoprog, and $tivoargs variables.
 # these variables are only used from the rc or init files
 
 # This configuration file is also called by each output module to
@@ -75,10 +75,10 @@ SpeakDelay=2
 # uncomment to not send messages to MythTV
 #MythMsg=
 
-#############################################
-# Send a popup message to local ncid client #
-#               ncid-popup                  #
-#############################################
+#################################################
+# Send a KDE popup message to local ncid client #
+#               ncid-kpopup                  #
+#################################################
 # uses festival and kdialog
 kdialog=/usr/bin/kdialog
 #

@@ -16,9 +16,9 @@ LEVEL3:
         show modem responses
         show client connect/disconnect
         indicate Non 7-bit ASCII message deleted
-        indicate client sent CALL data
-        incidate client sent CALLINFO data
-        indicate client sent text message
+        indicate Gateway sent CALL data
+        incidate Gateway sent CALLINFO data
+        indicate Client sent text message
         indicate client sent unknown data
         indicate client sent empty line
         show call data input
@@ -26,9 +26,6 @@ LEVEL3:
         show CID line
 
 LEVEL2:
-        show name and location of ncidd logfile
-        show name and location of cid logfile
-        show name and location of data logfile
         indicate cannot write pidfile
         show TTY port opened
         show TTY port speed
@@ -40,15 +37,24 @@ LEVEL2:
 LEVEL1:
         show started with date and time
         show server version
-        indicate no config file
+        indicate if could not create ncidd logfile
+        indicate name and location of ncidd logfile
+        indicate if no config file
         indicate config file processed
         indicate set command skipped in config file
         show error line in config file
         indicate error in opening ncidd log file
         indicate what is configured to send to the clients
         show verbose level
-        indicate CID device instead of modem
-        indicate using CID clients only
+        indicate if created cid logfile
+        indicate if could not create cid logfile
+        indicate name and location of cid logfile
+        indicate if no data logfile
+        indicate name and location of data logfile
+        show Telephone Line Identifier
+        indicate CallerID from serial device and maybe Gateway
+        indicate CallerID from AT Modem and maybe Gateway
+        indicate CallerID from Gateway
         show network port
         indicate not using PID file if no '-P' option
         indicate pid file already exists
@@ -59,7 +65,7 @@ LEVEL1:
         indicate cannot init TTY and terminated with date and time
         indicate TTY port initialized
         indicate modem initialized
-        indicate device hung up and terminated with date and time
+        indicate serial device hung up and terminated with date and time
         indicate device error and terminated with date and time
         indicate poll error
         indicate Invalid Request for file descriptor
@@ -72,5 +78,6 @@ LEVEL1:
         indicate cid log is too large
         indicate sending log to client
         indicate removed pidfile
+        indicate which termination signal received.
         indicate program terminated with date and time
         indicate received SIGHUP - reloading config and alias files

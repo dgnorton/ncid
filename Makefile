@@ -1,42 +1,44 @@
-#########################################################################
-# make local             - builds for /usr/local and /var               #
-# make install           - installs files in /usr/local and /var        #
-#                                                                       #
-# make package           - builds for /usr, /etc, and /var              #
-# make package-install   - installs files in /usr, /etc, and /var       #
-#                                                                       #
-# make fedora            - builds for Fedora (includes init.d/ files)   #
-# make fedora-install    - installs in /usr, /etc, and /var             #
-#                                                                       #
-# make ubuntu            - builds for Ubuntu (includes init.d/ files)   #
-# make ubuntu-install    - installs in /usr, /etc, and /var             #
-#                                                                       #
-# make mandir            - builds man text and html files               #
-#                          (no install for the *.txt and *.html files)  #
-#                                                                       #
-# make tivo-mips         - builds for a mips TiVo in /usr/local         #
-# make tivo-install      - installs in /usr/local                       #
-# make tivo-s1           - builds for a ppc TiVo for /var/hack          #
-# make tivo-s2           - builds for a mips TiVo for /var/hack         #
-# make tivo-hack-install - basic install into /var/hack                 #
-#                          uses the cross compilers at:                 #
-#                          http://tivoutils.sourceforge.net/            #
-#                          usr.local.powerpc-tivo.tar.bz2               #
-#                          (x86 cross compiler for Series1)             #
-#                          usr.local.mips-tivo.tar.bz2                  #
-#                          (x86 cross compiler for Series2)             #
-#                                                                       #
-# gmake freebsd          - builds for FreeBSD in /usr/local             #
-# gmake freebsd-install  - installs in /usr/local                       #
-#                                                                       #
-# make mac               - builds for Macintosh OS X in /usr/local      #
-# make mac-fat           - builds universal OS X binaries in /usr/local #
-# make mac-install       - installs in /usr/local                       #
-#                                                                       #
-# make cygwin            - builds for Windows using cygwin              #
-#                          (does not function with modem or comm port)  #
-# make cygwin-install    - installs files in /usr/local, and /var       #
-#########################################################################
+###########################################################################
+# make local             - builds for /usr/local and /var                 #
+# make install           - installs files in /usr/local and /var          #
+#                                                                         #
+# make package           - builds for /usr, /etc, and /var                #
+# make package-install   - installs files in /usr, /etc, and /var         #
+#                                                                         #
+# make fedora            - builds for Fedora (includes init.d/ files)     #
+# make fedora-install    - installs in /usr, /etc, and /var               #
+#                                                                         #
+# make ubuntu            - builds for Ubuntu (includes init.d/ files)     #
+# make ubuntu-install    - installs in /usr, /etc, and /var               #
+#                                                                         #
+# make mandir            - builds man text and html files                 #
+#                          (no install for the *.txt and *.html files)    #
+#                                                                         #
+# make tivo-mips         - builds for a mips TiVo in /usr/local or prefix #
+#                          can also prefix and prefix[234]                #
+# make tivo-install      - installs in /usr/local                         #
+#                          can also prefix and prefix[234]                #
+# make tivo-s1           - builds for a ppc TiVo for /var/hack            #
+# make tivo-s2           - builds for a mips TiVo for /var/hack           #
+# make tivo-hack-install - basic install into /var/hack                   #
+#                          uses the cross compilers at:                   #
+#                          http://tivoutils.sourceforge.net/              #
+#                          usr.local.powerpc-tivo.tar.bz2                 #
+#                          (x86 cross compiler for Series1)               #
+#                          usr.local.mips-tivo.tar.bz2                    #
+#                          (x86 cross compiler for Series2)               #
+#                                                                         #
+# gmake freebsd          - builds for FreeBSD in /usr/local               #
+# gmake freebsd-install  - installs in /usr/local                         #
+#                                                                         #
+# make mac               - builds for Macintosh OS X in /usr/local        #
+# make mac-fat           - builds universal OS X binaries in /usr/local   #
+# make mac-install       - installs in /usr/local                         #
+#                                                                         #
+# make cygwin            - builds for Windows using cygwin                #
+#                          (does not function with modem or comm port)    #
+# make cygwin-install    - installs files in /usr/local, and /var         #
+###########################################################################
 
 PROG         = ncidd
 SOURCE       = $(PROG).c nciddconf.c nciddalias.c getopt_long.c poll.c
@@ -103,7 +105,7 @@ DEFINES = -DCIDCONF=\"$(CONF)\" \
           -DLOGFILE=\"$(LOGFILE)\" \
           -DPIDFILE=\"$(PIDFILE)\"
 
-CFLAGS  = -O $(DEFINES) $(MFLAGS)
+CFLAGS  = -O $(DEFINES) $(MFLAGS) $(EXTRA_CFLAGS)
 
 STRIP   = -s
 
@@ -140,7 +142,7 @@ local: $(PROG) $(CLIENT) site moduledir cidgatedir tooldir scriptdir
 site: $(SITE)
 
 $(PROG): $(OBJECTS)
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	$(CC) $(EXTRA_CFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
 
 $(OBJECTS): $(HEADER)
 
@@ -211,18 +213,18 @@ tivo-ppc:
 	touch tivo-ppc
 
 tivo-s2:
-	$(MAKE) tivo-mips prefix=/var/hack
+	$(MAKE) tivo-mips mandir prefix=/var/hack
 
 tivo-hack-install:
 	$(MAKE) tivo-install-hack prefix=/var/hack prefix2=$HACK prefix3=$ROOT
 
-tivo-install-hack: dirs install-prog install-etc install-log \
-                   install-modules install-cidgate install-tools
+tivo-install-hack: dirs install-prog install-etc \
+                   install-modules install-cidgate
 	install -m 644 $(LOGO) $(IMAGEDIR)/.
 	cp -a tivocid tivoncid $(BIN)
 
 tivo-mips:
-	$(MAKE) local mandir OS=tivo-mips \
+	$(MAKE) local fedoradir OS=tivo-mips \
 	        CC=$(MIPSXCOMPILE)gcc \
 	        LD=$(MIPSXCOMPILE)ld \
 	        RANLIB=$(MIPSXCOMPILE)ranlib \
@@ -233,9 +235,9 @@ tivo-mips:
 	ln -s ncid tivoncid
 	touch tivo-mips
 
-tivo-install: dirs install-prog install-etc install-log \
-              install-modules install-cidgate install-tools \
-              install-man install-scripts
+tivo-install: dirs install-prog install-etc \
+              install-modules install-cidgate \
+              install-man install-scripts install-fedora
 	install -m 644 $(LOGO) $(IMAGEDIR)/.
 	cp -a tivocid tivoncid $(BIN)
 
@@ -291,7 +293,7 @@ dirs:
 	@if ! test -d $(CONFDIR); then mkdir -p $(CONFDIR); fi
 	@if ! test -d $(IMAGEDIR); then mkdir -p $(IMAGEDIR); fi
 
-install: dirs install-prog install-man install-etc install-log \
+install: dirs install-prog install-man install-etc \
          install-modules install-cidgate install-scripts install-tools
 	install -m 644 $(LOGO) $(IMAGEDIR)/.
 
@@ -313,12 +315,9 @@ install-etc: $(ETCFILE)
 		else install -m 644 ncid.conf $(CONFDIR); \
 	fi
 
-install-log:
-	touch $(CALLLOG)
-
 install-fedora:
 	cd Fedora; \
-	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) prefix4=$(prefix4)
 
 install-ubuntu:
 	cd debian; \
@@ -354,6 +353,7 @@ clean:
 	cd Fedora; $(MAKE) clean
 	cd FreeBSD; $(MAKE) clean
 	cd debian; $(MAKE) clean
+	cd test; $(MAKE) clean
 
 clobber: clean
 	rm -f $(PROG) $(PROG).ppc-tivo $(PROG).mips-tivo tivo-ppc tivo-mips

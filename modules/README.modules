@@ -4,28 +4,28 @@ The following modules are configured be editing /etc/ncid/ncidmodules.conf
 
 The ncidmodules.1 man page documents the following output modules.
 
-Module to send CID to a cell phone, or pager:
+Module to popup Caller ID using KDE:
+    ncid-kpopup
+
+Module to send Caller ID to a cell phone, or pager:
     IMPORTANT: sendmail.cf must hide user root when masquerading is used.
                and root is sending the email
     ncid-page
 
-Module to popup CID on on KDE or GNOME:
-    ncid-popup
-
-Module to send CID to samba to get a popup:
+Module to send Caller ID to samba to get a popup:
     ncid-samba
 
 Module just echos the input.  Modify it to write new modules:
     ncid-skel
 
-Module to send CID to a text-to-speach program:
+Module to send Caller ID to a text-to-speach program:
     ncid-speak
 
-Module to display CID on MythTV
+Module to display Caller ID on MythTV
     ncid-mythtv
 
-Module to display CID on TiVo
+Module to display Caller ID on TiVo
     ncid-tivo
 
-Module to send CID to YAC clients
+Module to send Caller ID to YAC clients
     ncid-yac

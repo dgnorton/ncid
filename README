@@ -2,7 +2,21 @@ NCID - Network CallerID
 
 Web Site: http://ncid.sourceforge.net
 
-File last changed: Thu Dec 11, 2008
+File last changed: Tue Feb 17, 2009
+
+Directories:
+    cidgate:     gateway programs
+    doc:         most of the documentation
+    Debian:      files specific to Debian.
+    Fedora:      files specific to Fedora.
+    FreeBSD:     files specific to FreeBSD.
+    man:         man pages
+    modules:     client modules
+    screenshots: screenshots for ncid and tivocid
+    scripts:     logrotate scripts
+    test:        test scripts for the server and client
+    tools:       log file scripts
+    Win:         files specific to windows
 
 The NCID package contains:
     - a Network CallerID server: ncidd
@@ -84,10 +98,6 @@ The NCID package has the following features:
 
 See the doc directory for most documentation, including OS
 specific INSTALL files.
-
-The Debian directories contains files specific to Debian.
-The Fedora directories contains files specific to Fedora.
-The FreeBSD directories contains files specific to FreeBSD.
 
 See cidgate/README.gateways Fedora/README.Fedora FreeBSD/README.FreeBSD
 modules/README.modules scripts/README.logfile, tools/README.tools, and

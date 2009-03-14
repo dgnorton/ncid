@@ -1,22 +1,22 @@
 .\" %W% %G%
 .TH NCIDTOOLS 1
 .SH NAME
-.B cidlog\^
+.B cidlog
 - view Caller ID log file
 .PP
-.B cidalias\^
+.B cidalias
 - view Caller ID alias definitions
 .PP
-.B cidupdate\^
+.B cidupdate
 - update Caller ID aliases in log file
 .SH SYNOPSIS
-.B cidcall\^
+.B cidcall
 [-r | -m] [cidlog]
 .PP
-.B cidalias\^
+.B cidalias
 [-r] [aliasfile]
 .PP
-.B cidupdate\^
+.B cidupdate
 [-a aliasfile] [-l cidlog] [newcidlog]
 .SH DESCRIPTION
 The script,
@@ -37,6 +37,9 @@ updates the CID log file using the aliases found in the ncidd.alias file.
 Display the raw log file or alias definition.
 .br
 Default: format the log file or alias definition.
+.TP
+.B -m
+Display messages sent.
 .TP
 .B -a aliasfile
 Set the alias file to \fIaliasfile\fR

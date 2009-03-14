@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd.h is free software; you can redistribute it and/or modify
@@ -50,12 +50,13 @@
 #include <signal.h>
 #include <errno.h>
 #include <time.h>
+#include <ctype.h>
 
 #if (!defined(O_SYNC))
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.72"
+#define VERSION     "0.73"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -124,7 +125,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define NOMESG      "NONE"
 #define LOGMAX      110000
 #define LOGMAXNUM   100000000
-#define LOGMSG      "MSG: Caller ID Logfile too big to get: (%d > %d) bytes%s"
+#define LOGMSG      "MSG: Caller ID Logfile too big to get: (%lu > %lu) bytes%s"
 #define TOOMSG      "MSG: Too many clients connected"
 
 #define CIDLINE     "CID: "
@@ -183,5 +184,7 @@ extern char *initstr, *initcid;
 extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile;
 extern int setcid, port, clocal, ttyspeed;
 extern int sendlog, sendinfo;
-extern int nomodem, noserial, cidlogmax, verbose;
-extern int logMsg(int level, char *message);
+extern int nomodem, noserial, verbose;
+extern unsigned long cidlogmax;
+extern void logMsg();
+extern int errorExit();

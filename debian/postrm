@@ -31,7 +31,7 @@ esac
 
 update-rc.d -f ncid-mythtv remove
 update-rc.d -f ncid-page remove
-update-rc.d -f ncid-popup remove
+update-rc.d -f ncid-kpopup remove
 update-rc.d -f ncid-samba remove
 update-rc.d -f ncid-speak remove
 update-rc.d -f ncid-yac remove

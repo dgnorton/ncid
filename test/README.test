@@ -37,6 +37,8 @@ testlog-display:
     It is used as the cidcall.log file.
 
     Testlog-display is how ncid will display testlog.
+    This assumes the "1" digit is not configured to display.
+    This also assumes the display format is for the US.
 
 testscript.data:
     A test file for ncid output modules, like ncid-page and ncid-speak.

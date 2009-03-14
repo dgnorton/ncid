@@ -1,35 +1,35 @@
 .\" %W% %G%
 .TH NCIDMODULES 1
 .SH NAME
-.B ncid-page\^
-- send CID to a pager or cell phone
+.B ncid-kpopup\^
+- Popup Caller ID using KDE
 .PP
-.B ncid-popup\^
-- Popup CID in KDE or Gnome
+.B ncid-page
+- send Caller ID to a pager or cell phone
 .PP
 .B ncid-samba\^
-- send CID to samba to create a popup
+- send Caller ID to samba to create a popup
 .PP
 .B ncid-speak\^
-- send CID to a text-to-speach program
+- send Caller ID to a text-to-speach program
 .PP
 .B ncid-mythtv\^
-- display CID on MythTV using mythtvosd
+- display Caller ID on MythTV using mythtvosd
 .PP
 .B ncid-skel\^
-- display CID on stdout in a terminal window
+- display Caller ID on stdout in a terminal window
 .PP
 .B ncid-tivo\^
-- display CID on TiVo using text2osd
+- display Caller ID on TiVo using text2osd
 .PP
 .B ncid-yac\^
-- Send CID to YAC listeners
+- Send Caller ID to YAC listeners
 .SH SYNOPSIS
 ncid --no-gui [--ring #] [--message] --call-prog --program
 .B ncid-page\^
 .PP
 ncid --no-gui [--message] --call-prog --program
-.B ncid-popup\^
+.B ncid-kpopup\^
 .PP
 ncid --no-gui [--message] --call-prog --program
 .B ncid-samba\^
@@ -49,7 +49,7 @@ ncid --no-gui [--message] --call-prog --program
 ncid --no-gui [--message] --call-prog --program
 .B ncid-yac\^
 .SH DESCRIPTION
-These are CID output modules and are normally located in the
+These are ncid output modules and are normally located in the
 .BR /usr/share/ncid
 directory.
 .PP
@@ -63,7 +63,7 @@ The ncid-skel output module is used as a template for writing
 a shell script output module.  All it does is send the Caller ID
 data to standard output.  This makes it useful for troubleshooting.
 .PP
-The Output Module configuration file is
+Each output module can be independently configured using
 .I /etc/ncid/ncidmodules.conf
 .PD
 .SH FILES

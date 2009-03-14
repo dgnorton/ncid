@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2005, 2006
+ * Copyright (c) 2002, 2005, 2006, 2009
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddconf.h is free software; you can redistribute it and/or modify
@@ -62,3 +62,4 @@ extern char *name, *cidconf;
 extern struct setword setword[];
 extern struct sendclient sendclient[];
 extern char *getWord();
+extern int findWord(), findSend();

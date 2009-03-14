@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# ncid-yac           Start/Stop Network Caller ID client with the YAC Module
+# ncid-kpopup        Start/Stop Network Caller ID client with the PopUp Module
 #
 # chkconfig: - 96 04
-# description: NCID client with the YAC Output Module
+# description: NCID client with the PopUp Output Module
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -18,12 +18,13 @@ RETVAL=0
 prog="ncid"
 exec="/usr/local/bin/$prog"
 config="/usr/local/etc/ncid/ncidmodules.conf"
-module=ncid-yac
+module=ncid-kpopup
 pidfile=/var/run/$module.pid
+PopupMsg=-M
 lockfile=/var/lock/subsys/$module
 
 [ -f $config ] && . $config
-args="--no-gui --pidfile $pidfile -C -P $module"
+args="--no-gui --pidfile $pidfile $PopupMsg -C -P $module"
 
 start() {
     [ -x $exec ] || exit 5
@@ -42,6 +43,19 @@ stop() {
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && rm -f $lockfile
+    return $RETVAL
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    echo -n $"Reloading $prog alias files: "
+    killproc $prog -HUP
+    RETVAL=$?
+    echo
     return $RETVAL
 }
 

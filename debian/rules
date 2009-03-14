@@ -41,7 +41,6 @@ binary-arch:    checkroot build
 		prefix2=$$(pwd)/debian/root \
 		prefix3=$$(pwd)/debian/root \
 		install install-ubuntu
-	rm $$(pwd)/debian/root/var/log/cidcall.log
 	cp -a debian/changelog $(docdir)/changelog.Debian
 	cp -a README VERSION doc debian/README.Debian $(docdir)
 	cp -a cidgate/README.Gateways modules/README.modules $(docdir)

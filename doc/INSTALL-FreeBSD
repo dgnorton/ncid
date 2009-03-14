@@ -1,6 +1,6 @@
 FreeBSD Install
 
-Last edited: Thu Mar 13, 2008
+Last edited: Fri Mar 6, 2009
 
 INSTALL:
 
@@ -25,6 +25,8 @@ INSTALL:
 
 CONFIGURE:
 
+    The ncidd.conf file is used to configure ncidd.
+
     - The default modem port in ncidd is /dev/modem.  This is just a
       symbolic link to the real modem port.
     - You should set the modem in ncidd.conf, if you are not using
@@ -32,6 +34,11 @@ CONFIGURE:
       corresponds to COM1, COM2, COM3, COM4
     - If you are using COM1 then you would add this line to ncidd.cinf:
         set modem = /dev/cuaa0
+    - If you are using a gateway instead of a local modem,
+      you need to set noserial to 1:
+        set noserial = 1
+    - If you are using a local modem with or without a gateway
+        set noserial = 0  (this is the default)
 
 STARTUP:
 
@@ -62,7 +69,7 @@ STARTUP:
     NOTE: ncid normally starts in the GUI mode and there is no
           ncid.rc script to start or stop it.  There are rc.d
           scripts for starting ncid with output modules, for
-          example: ncid-page, ncid-popup, etc.
+          example: ncid-page, ncid-kpopup, etc.
 
 START/STOP/STATUS:
 
@@ -78,7 +85,7 @@ Here are examples:
     sudo /usr/local/etc/rc.d/sip2ncid restart
     sudo /usr/local/etc/rc.d/ncid-speak stop
     sudo /usr/local/etc/rc.d/ncid-page status
-    sudo /usr/local/etc/rc.d/ncid-popup rcvar
+    sudo /usr/local/etc/rc.d/ncid-kpopup rcvar
 
 If a service is not enabled, you must prefix one to the commands;
 start becomes onestart, stop becomes onestop, and so forth.
@@ -98,7 +105,7 @@ AUTOSTART:
         yac2ncid                 yac2ncid_enable="YES"
         ncidsip                  ncidsip_enable="YES"
         ncid-page                ncidpage_enable="YES"
-        ncid-popup               ncidpopup_enable="YES"
+        ncid-kpopup              ncidkpopup_enable="YES"
         ncid-samba               ncidsamba_enable="YES"
         ncid-speak               ncidspeak_enable="YES"
         ncid-yac                 ncidyack_enable="YES"

@@ -2,7 +2,7 @@
 #
 # ncid-page          Start/Stop Network Caller ID client with the Page Module
 #
-# chkconfig: 2345 96 04
+# chkconfig: - 96 04
 # description: NCID client with the Page Output Module
 
 # Source function library.
@@ -12,73 +12,78 @@
 . /etc/sysconfig/network
 
 # Check that networking is up.
-[ ${NETWORKING} = "no" ] && exit 0
+[ ${NETWORKING} = "no" ] && exit 1
 
 RETVAL=0
 prog="ncid"
+exec="/usr/local/bin/$prog"
+config="/usr/local/etc/ncid/ncidmodules.conf"
 module=ncid-page
 pidfile=/var/run/$module.pid
 ringopt="-r 4"
+lockfile=/var/lock/subsys/$module
 
-[ -f /usr/bin/$prog ] || exit 0
-
-ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/ncidmodules.conf
-
-# source config file
-[ -f $ConfigFile ] && . $ConfigFile
-
+[ -f $config ] && . $config
 args="--no-gui --pidfile $pidfile -C -P $module $ringopt"
 
 start() {
-        # Start daemons.
-        echo -n $"Starting $prog with output module $module: "
-        daemon --pidfile=/var/run/$module.pid $prog $args \&
-        RETVAL=$?
-        echo
-        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$module
-        return $RETVAL
+    [ -x $exec ] || exit 5
+    [ -f $config ] || exit 6
+    echo -n $"Starting $prog with output module $module: "
+    daemon --pidfile=/var/run/$module.pid $prog $args \&
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch $lockfile
+    return $RETVAL
 }
 
 stop() {
-        # Stop daemons.
-        echo -n $"Shutting down $prog with output module $module: "
-        killproc -p /var/run/$module.pid $prog
-        RETVAL=$?
-        echo
-        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$module
-        return $RETVAL
+    echo -n $"Shutting down $prog with output module $module: "
+    killproc -p /var/run/$module.pid $prog
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f $lockfile
+    return $RETVAL
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    echo -n $"Reloading $prog alias files: "
+    killproc $prog -HUP
+    RETVAL=$?
+    echo
+    return $RETVAL
 }
 
 # See how we were called.
 case "$1" in
-  start)
+    start)
         start
         ;;
-  stop)
+    stop)
         stop
         ;;
-  reload)
-        stop
-        start
+    reload)
+        # reload
+        restart
         ;;
-  restart)
-        stop
-        start
+    restart)
+        restart
         ;;
-  condrestart)
-        if [ -f /var/lock/subsys/$module ]; then
-            stop
-            start
-        fi
+    condrestart)
+        [ -f $lockfile ] && restart
         ;;
-  status)
+    status)
         status $module
         RETVAL=$?
         ;;
-  *)
+    *)
         echo $"Usage: $prog {start|stop|reload|restart|condrestart|status}"
-        exit 1
+        exit 2
 esac
 
 exit $RETVAL

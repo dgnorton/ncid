@@ -1,6 +1,6 @@
 andLinux Install
 
-Last edited: Wed Apr 23, 2008
+Last edited: Fri Mar 6, 2009
 
 Install either the minimal/XFCE version (about 143 MB) or the KDE version
 (about 665 MB) of andLinux.  If you only intend to run NCID, you should
@@ -56,13 +56,17 @@ INSTALL NCID:
 
 CONFIGURE NCID:
 
+    The ncidd.conf file is used to configure ncidd.
+
     - The default modem port in ncidd is /dev/modem.  This is just a
       symbolic link to the real modem port. It is probably best to
       set your modem port in ncidd.conf.  This assumes serial port 1:
         set ttyport = /dev/ttyS0
-    - If you are using sip2ncid or yac2ncid instead of a modem
+    - If you are using a gateway instead of a local modem,
       you need to set noserial to 1:
         set noserial = 1
+    - If you are using a local modem with or without a gateway
+        set noserial = 0  (this is the default)
 
 FIRST STARTUP:
 
@@ -96,7 +100,7 @@ If NCID does not work, see INSTALL for some simple tests.
     NOTE: ncid normally starts in the GUI mode and there is no
           ncid.init script to start or stop it.  There are rc.init
           scripts for starting ncid with output modules, for
-          example: ncid-page, ncid-popup, etc.
+          example: ncid-page, ncid-kpopup, etc.
 
 START/STOP/STATUS:
 

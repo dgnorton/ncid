@@ -1,7 +1,7 @@
 .\" %W% %G%
 .TH NCIDD.CONF 5
 .SH NAME
-.B ncidd.conf\^
+.B ncidd.conf
 - ncidd configuration file
 .SH DESCRIPTION
 The \fIncidd.conf\fR file contains the configuration information for
@@ -45,14 +45,29 @@ Send the ring count, at each ring, to each client
 	send cidinfo
 .RE
 .PP
-Set the modem CID string to avoid the default:
+Set the modem for Caller ID:
 .RS 0
 	set initcid = "AT#CID=1"
 .RE
 .PP
-Set the modem port to avoid the default:
+Set the modem port:
 .RS 0
-	set ttyport=/dev/ttyS2
+	set ttyport=/dev/ttyS1
+.RE
+.PP
+Set the Telephone Line Indicator for the modem:
+.RS 0
+	set lineid = POTS
+.RE
+.PP
+Use a modem and possibly a Gateway to obtain the Caller ID:
+.RS 0
+	set noseriel = 0
+.RE
+.PP
+Do not use a modem, just use a Gateway to obtain the Caller ID:
+.RS 0
+	set noseriel = 1
 .RE
 .SH SEE ALSO
 ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.alias.5

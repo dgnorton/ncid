@@ -18,9 +18,9 @@
 # default program: /usr/share/ncid/ncid-speak
 #
 # ncid usage examples:
-#   ncid --call-prog --program ncid-popup
-#   ncid --no-gui --call-prog --program ncid-popup
-#   ncid --no-gui --message --call-prog --program ncid-popup
+#   ncid --call-prog --program ncid-kpopup
+#   ncid --no-gui --call-prog --program ncid-kpopup
+#   ncid --no-gui --message --call-prog --program ncid-kpopup
 #
 # The following variables get set from $ConfigDir/$ConfigFile
 # These are the default values if there is no $ConfigDir/$ConfigFile

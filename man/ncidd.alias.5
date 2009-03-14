@@ -1,7 +1,7 @@
 .\" %W% %G%
 .TH NCIDD.ALIAS 5
 .SH NAME
-.B ncidd.alias\^
+.B ncidd.alias
 - ncidd alias file
 .SH DESCRIPTION
 The \fIncidd.alias\fR file contains the alias information for
@@ -54,14 +54,19 @@ Mask a phone number:
 	alias NMBR 4075551212 = "----------"
 .RE
 .PP
-Change the line indicator, from no display,  to display \fIPOTS\fR:
+Change the line indicator, from no display,  to \fIPOTS\fR:
 .RS 0
 	alias LINE - = POTS
 .RE
 .PP
-Change the ncidsip line indicator display (1122) to no display:
+Change the ncidsip line indicator, from 1122, to no display:
 .RS 0
 	alias LINE 1122 = -
+.RE
+.PP
+Change the ncidsip line indicator display, for any line, to \fIVOIP\fR:
+.RS 0
+	alias LINE * = VOIP
 .RE
 .SH SEE ALSO
 ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.conf.5

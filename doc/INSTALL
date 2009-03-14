@@ -1,6 +1,6 @@
 NCID - Network Caller ID Install
 
-Last edited: Tue jan 22, 2008
+Last edited: Mon Jan 12, 2009
 
 Layout:
 	The programs go into $prefix/bin $prefix/sbin
@@ -15,6 +15,9 @@ Layout:
 
     Debian or Ubuntu:
 	The init scripts go into $prefix2/etc/init.d
+
+    FreeBSD:
+    The rc scripts go into $prefix2/etc/rc.d
 
 Compile:
 

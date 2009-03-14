@@ -1,0 +1,30 @@
+.\" %W% %G%
+.TH NCIDROTATE.CONF 5
+.SH NAME
+.B ncidrotate.conf
+- ncidrotate configuration file
+.SH DESCRIPTION
+The \fIncidrotate.conf\fR file contains the configuration information for
+\fIncidrotate\fR, the Network Caller ID Client.
+.PP
+The \fIncidrotate.conf\fR file understands 3 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B Variable=Argument
+.PP
+There is only one variable expected to change: Lines2keep.  The
+other variables should not be changed.
+See ncidrotate.conf for a complete list of variables to set and
+what the default values are.
+.SH EXAMPLES
+Keep 10 lines in cidcall.log after rotation
+.RS 0
+	Lines2keep=10
+.RE
+.SH SEE ALSO
+ncidrotate.1, ncidd.8, sip2ncid.8

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2006, 2008
+ * Copyright (c) 2005, 2006, 2008, 2009
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddalias.c is free software; you can redistribute it and/or modify
@@ -26,12 +26,14 @@ struct alias alias[ALIASSIZE];
 
 extern int errorStatus, configError();
 extern char *getWord();
+int nextAlias();
+void getAlias(), setAlias();
 
 /*
  * Process the alias file.
  */
 
-doAlias()
+int doAlias()
 {
     char input[BUFSIZ], word[BUFSIZ], buf[BUFSIZ], *inptr;
     int lc;
@@ -71,13 +73,13 @@ doAlias()
  *        alias LINE from = to
  */
 
-getAlias(char *inptr, int lc)
+void getAlias(char *inptr, int lc)
 {
     char word[BUFSIZ];
 
     inptr = getWord(inptr, word, lc);
 
-    if (word[0] == '#')    return; /* rest of line is comment */
+    if (word[0] == '#') return; /* rest of line is comment */
 
     if (!strcmp(word, "NMBR")) setAlias(inptr, lc, word, NMBRONLY);
     else if (!strcmp(word, "NAME")) setAlias(inptr, lc, word, NAMEONLY);
@@ -85,17 +87,17 @@ getAlias(char *inptr, int lc)
     else setAlias(inptr, lc, word, NMBRNAME);
 }
 
-setAlias(char *inptr, int lc, char *wdptr, int type)
+void setAlias(char *inptr, int lc, char *wdptr, int type)
 {
     int cnt;
-    char *mem;
+    char *mem = 0;
 
-    if ((cnt = nextAlias(lc)) < 0) return 0;
+    if ((cnt = nextAlias(lc)) < 0) return;
     if (type == NMBRNAME || (inptr = getWord(inptr, wdptr, lc)))
     {
         mem = cpy2mem(wdptr, mem);
         alias[cnt].from = mem;
-        if (inptr = getWord(inptr, wdptr, lc))
+        if ((inptr = getWord(inptr, wdptr, lc)))
         {
             if (*wdptr == '=')
             {
@@ -106,11 +108,11 @@ setAlias(char *inptr, int lc, char *wdptr, int type)
                     if (type == NMBRNAME) alias[cnt].type = type;
                     else
                     {
-                        if (inptr = getWord(inptr, wdptr, lc))
+                        if ((inptr = getWord(inptr, wdptr, lc)))
                         {
                                if (strcmp(wdptr, "if"))
                                 configError(cidalias, lc, wdptr, ERRIF);
-                            else if (inptr = getWord(inptr, wdptr, lc))
+                            else if ((inptr = getWord(inptr, wdptr, lc)))
                             {
                                 mem = cpy2mem(wdptr, mem);
                                 alias[cnt].depend = mem;
@@ -130,7 +132,7 @@ setAlias(char *inptr, int lc, char *wdptr, int type)
     else configError(cidalias, lc, wdptr, ERRARG);
 }
 
-nextAlias(int lc)
+int nextAlias(int lc)
 {
     int i;
 
@@ -150,7 +152,7 @@ char *cpy2mem(char *wdptr, char *memptr)
     return strcpy(memptr, wdptr);
 }
 
-rmaliases()
+void rmaliases()
 {
     int i;
 

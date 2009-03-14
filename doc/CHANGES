@@ -1,5 +1,104 @@
 ncid - Network CallerID
 
+Version 0.73
+    - Makefile: Removed install-log and references, added prefix4 for fedoradir
+                Removed install-tools from tivo-install-hack and tivo-install
+                Added "cd test; $(MAKE) clean" to clean:
+    - README:  Updated
+    - ncid.sh: Removed the -A | -all option
+               Removed variable $Connect
+               Added the -t | --PopupTime option
+               connectCID {}: Added "clearlog" to "if $NoGUI" "else"
+                           Removed -translation {binary binary} from fconfigure
+               doPopup {}: Added $state and "wm attributes . -topmost 0/1"
+                           Added tests for "iconic"
+                           Added popup delay time
+               getCID {}: Changed "Phone Ringing" to "Phone Call"
+                          Removed "if (!Connect ...)" and its comment
+                          Removed: "if {$type < 4}" { and its closing "}"
+                          Separated: "if ($CallOnRing && $type == 5)
+    - ncid.conf.dist: Corrected spelling error and added to comments
+    - ncidd.alias: Added example to display "VOIP" for one SIP telephone line
+                   Added example for using a '*' in a line alias.
+    - ncidd.c: sendlog(): Changed LOGMAX to cidlogmax in all 3 places
+               doPoll(): Changed in 2 places: "Client (sd %d) sent ..."
+                         To: "Gateway (sd %d )sent ..."
+                         Added logic for "POLLOUT" for completeness
+                         Reworded some messages
+                         On read error, if not EGAIN remove client from poll
+               errorExit(): Corrected error codes
+               userAlias(): Allow '*' "alias LINE * = ..." to mean any line
+               main(): Added signals: SIGABRT, SIGILL, and IGSEGV
+                       Added logic for creating cidlog if not present
+               finish(): added "Received Signal" message
+               formatCID(): Removed line: ... if (!isprint(*ptr)) *ptr = '?';
+                            and its comment (this make it pass Unicode)
+               main: Changed wording for using a Gateway and serial device
+                     Added wording for using a AT Modem. 
+                     Changed logfile indicators from level 2 to level 1
+                     Creates cid log if not present, indisates if data log
+                             present
+               Changes to pass lint
+    - ncidd.h: Changes to pass lint
+    - ncidalias.c: Changes to pass lint
+    - ncidalias.h: Changes to pass lint
+    - nciddconf.c: Changes to pass lint
+    - nciddconf.h: Changes to pass lint
+    - cidgate/ncidsip.conf: Changed "args" to "opts", updated comments
+    - debian/README.Debian: Updated
+    - debian/Makefile: Updated
+    - debian/ncid-popup.init: Renamed to ncid-kpopup.init
+    - debian/postinst: removed line: touch /var/log/cidcall.log
+    - debian/rules: removed line: rm $$(pwd)/debian/root/var/log/cidcall.log
+    - doc/CONTRIBUTORS: Updated for ncid-popup to ncid-kpopup name change
+    - doc/CONTRIBUTORS: Added: Lloyd Stahlbush and Marko Koski-Vähälä
+    - doc/INSTALL: Updated
+    - doc/INSTALL-andLinux: Added to CONFIGURE section
+    - doc/INSTALL-Fedora: Added to CONFIGURE section
+    - doc/INSTALL-FreeBSD: Added to CONFIGURE section
+    - doc/INSTALL-Mac: Added to CONFIGURE section
+    - doc/INSTALL-Ubuntu: Added to CONFIGURE section
+    - doc/NetCallerID: Converted \r\n to \n
+    - doc/Verbose-ncidd: Updated
+    - Fedora/Makefile: Updated sed script and variables
+    - Fedora/ncid-popup.init Renamed to ncid-kpopup.init
+    - Fedora/ncid.spec: Updated and broke into multiple packages
+    - Fedora/README.Fedora: Updated
+    - FreeBSD/README.FreeBSD: Updated
+    - FreeBSD/Makefile: Updated
+    - FreeBSD/ncid-popup.rc: Renamed to ncid-kpopup.rc
+    - man/Makefile: Updated
+    - man/ncid.1: Removed "\^" and updated it for ncid changes.
+    - man/ncid.conf.5: Removed "\^"
+    - man/ncidd.8: Spelling corrections and some rewrites
+    - man/ncidd.alias.5: Removed "\^"
+    - man/ncidd.conf.5: Rewrote and expanded the EXAMPLES section
+    - man/ncidmodules.1: Updated, Removed "\^"
+    - man/ncidmodules.conf.5: Updated, Removed "\^"
+    - man/ncidrotate.1: Changed ncidd to ncid, removed ncid.1, added sip2ncid.8
+                       specified cidcall.log as file to keep lines
+    - man/ncidrotate.conf.5: New
+    - man/ncidsip.8: Updated for ncidsip.conf
+    - man/ncidsip.conf.5: New
+    - man/sip2ncid.8: Removed "\^"
+    - man/sip2ncid.conf.5: Removed "\^"
+    - man/ncidtools.1: Explained the -m option
+    - man/yac2ncid.1: Changed title from NCID to YAC2NCID
+    - man/yac2ncid.conf.5: Changed title from NCID.CONF to YAC2NCID.CONF
+    - modules/Makefile: changed ncid-popup.sh to ncid-kpopup.sh
+    - modules/README.modules: Updated
+    - modules/ncid-popup.sh renamed to ncid-kpopup.sh
+    - modules/ncidmodules.conf.dist: Updated
+    - scripts/ncidrotate.conf: Removed the shebang line
+    - test/README.test: Updated
+    - test/Makefile: Created, only has the target: clean
+    - test/ncidd-errors.conf: Updated
+    - test/ncidd-noerrors.conf: Updated
+    - test/testlog: Added and revised call log lines
+    - test/testlog-display: Updated to new display and testlog data
+    - test/testclient.data: added a name using UTF-8, added more CIDINFO lines
+    - test/TestGWcalls.data: updated a name using UTF-8
+
 Version 0.72.1
     - ncid.sh: Changed all if statements that used "ne" to "!="
                Removed the expr statement from the if statement for "US"

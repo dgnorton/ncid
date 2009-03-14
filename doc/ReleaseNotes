@@ -1,79 +1,122 @@
-NCID Source package:                     ncid-0.72-src.tar.gz
+NCID Source package:                     ncid-0.73-src.tar.gz
 
 NCID Binary Packages:
 
-    Fedora package:                      ncid-0.72-1.fc9.i386.rpm
-    Fedora 64 bit package:               ncid-0.72-1.fc9.x86_64.rpm
-    TiVo Series1 package:                ncid-0.72-1-ppc-tivo.tgz
-    TiVo Series 2 and 3 package:         ncid-0.72-1-mips-tivo.tgz
-    Macintosh OS X (i386 & ppc) package: ncid-0.72-1-mac-osx.tgz
-    FreeBSD 5.4 package:                 ncid-0.72-1-freebsd.tgz
-    Cygwin Windows package:              ncid-0.72-1-cygwin.tgz
-    Windows client installer:            ncid-0.72-1-client_setup.exe
-    Ubuntu package:                      ncid_0.72-0ubuntu1_i386.deb
+    Fedora 32 bit packages:              ncid-0.73-1.fc10.i386.rpm
+                                         ncid-client-0.73-1.fc10.i386.rpm
+    Fedora 64 bit packages:              ncid-0.73-1.fc10.x86_64.rpm
+                                         ncid-client-0.73-1.fc10.x86_64.rpm
+    Fedora noarch packages:              ncid-kpopup-0.73-1.fc10.noarch.rpm
+                                         ncid-samba-0.73-1.fc10.noarch.rpm
+                                         ncid-speak-0.73-1.fc10.noarch.rpm
+    TiVo Series1 package:                ncid-0.73-1-ppc-tivo.tgz
+    TiVo Series 2 and 3 package:         ncid-0.73-1-mips-tivo.tgz
+    Macintosh OS X (i386 & ppc) package: ncid-0.73-1-mac-osx.tgz
+    FreeBSD 5.4 package:                 ncid-0.73-1-freebsd.tgz
+    Cygwin Windows package:              ncid-0.73-1-cygwin.tgz
+    Windows client installer:            ncid-0.73-1-client_setup.exe
+    Ubuntu package:                      ncid_0.73-0ubuntu1_i386.deb
 
 Specific distribution Changes:
 
     Fedora:
-        Updated ncidd.init, sip2ncid.init, ncidsip.init
+        The Fedora binary distribution can be used on different Fedora
+        releases, maybe even redhat releases.  A binary package can be
+        built for a specific Fedora or Redhat release by building the
+        package from the tar source archive:
 
-        The Fedora binary distribution can be built for particular Fedora
-        and Redhat releases by rebuilding the package:
+            rpmbuild -tb ncid-0.73-src.tar.gz
 
-            rpmbuild -tb ncid-0.72-src.tar.gz
+        Changed spec file to create sub packages to separate server from
+        client and client modules that have large dependencies.  Here is
+        the list of the RPM packages:
+            ncid        - server and gateways
+            ncid-client - client and some output modules
+            ncid-kpopup - KDE popup and voice module
+            ncid-mythtv - MythTV display module
+            ncid-samba  - windows popup module
+            ncid-speak  - voice module
+
+        Renamed ncid-popup.init to ncid-kpopup.init and updated it
 
     FreeBSD:
-        Updated ncidd.rc, sip2ncid.rc, ncidsip.rc
+        Renamed ncid-popup.rc to ncid-kpopup.rc and updated it
 
     Mac OS-X:
+        No changes.
 
     Ubuntu:
-        Updated ncidd.init, sip2ncid.init, ncidsip.init
+        A binary package can be built from the tar source archive for
+        a specific Ubuntu or Debian release.
+
+        Renamed ncid-popup.init to ncid-kpopup.init and updated it
 
     TiVo:
-        Added the startncid script to easily start NCID.
-        The script sets the local timezone for the Gateways.
-        The script must be reviewed and modified before use.
+        No changes.
 
 NCID Server Changes:
 
     ncidd:
-        Modified to allow a optional pid file
+        A '*' is now allowed for a line alias.  It means any line indicator.
+        If one VOIP line, you can add change the line indicator to generic:
+            alias LINE * = VOIP
+        Or not display a line indicator at all: alias LINE * = -
 
-    ncidd.conf:
-        Added a Mac OSX init string as a comment.
+        More signals are caught and logged in an effort to always note
+        a when the server terminates in the log file.
+
+        Added a fix to try to prevent server from sometimes terminating
+        when a client terminates.
+
+        Handles Caller ID in text Unicode.
+
+        Fixed the maximum call file size so it really is configurable.
+
+        Corrected incorrect error codes used in error logic.
+
+        The cidcall.log file use to be optional.  If it existed it was
+        used.  If not, no calls were logged.  The log file is now
+        required and will be created on startup if missing,
+
+    ncidd.alias:  Updated the line alias comments
 
 NCID Gateway Changes:
 
-    sip2ncid:
-        Fixed a overflow on large sip packets.
-        Fixed some possible logic problems.
-        Modified to run on a TiVo series 1
-        Modified to allow a optional pid file
+    sip2ncid: no changes
 
-    ncidsip:
-        Modified to allow a optional pid file
+    ncidsip: no changes
 
-    yac2ncid:
-        Changed test for broken bash on the TiVo.
+    yac2ncid: no changes
 
 NCID Client Changes:
 
     ncid:
-        Modified telephone number format to handle two countries: US and SE
-        Changed the display separaters for telephone numbers.
-        Fixed a startup problem on the TiVo.
-        Added simple X11 detection to go into GUI mode.
-        Added color to the displayed GUI text.
-        Changed Message display, moved from GUI history window to call label
+        Client will become visable during ringing for the number of
+        seconds configured in ncid.conf.  The time can be configured
+        from 1 to 99 seconds.  The default time is 5 seconds.
+            If the client is on screen, it will become visable.
+            If the client is minimized, it will pop-up.
+            If the client is selected when visable, it stays on top.
+
+        Handles Caller ID text in Unicode.
+
+        Fixed the "reload" menu so window will clear when the cidalias.log
+        file is cleared.
+
+        Changed some if statements tests so it runs on a series 1 TiVo.
+
+        Removed the "-A | --all" obsolute option
 
 NCID Client Module Changes:
 
-    ncidmodules.conf:
-        Updated comments on ncid-page
+    ncidmodules.conf: Updated comments on ncid-page
+
+    ncid-popup renamed to ncid-kpopup since is uses KDE
 
 Documentation Changes:
 
-    Corrected a error in ncidtools.1
-    Updated sip2ncid.8, ncidd.8, ncidsip.8, ncid.1
-    Added CountryCodes to list country codes that the ncid display supports
+    Updated most README files
+    Updated Verbose-ncidd
+    Updated all man pages
+    Updated all INSTALL files
+    Added 2 man pages: ncidrotate.conf.5 and ncidsip.conf.5

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2009
  * by  John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddconf.c is free software; you can redistribute it and/or modify
@@ -22,12 +22,14 @@
 int errorStatus;
 char *cidconf = CIDCONF;
 char *getWord();
+int doset();
+void doSend(), configError(), doSet();
 
 struct setword setword[] = {
     /* char *word; int type; char **buf; int *value; int min; int max */
     {"cidalias",   WORDSTR,            &cidalias, 0,         0,    0},
     {"cidlog",     WORDSTR,            &cidlog,   0,         0,    0},
-    {"cidlogmax",  WORDNUM,            0,         &cidlogmax,1,    LOGMAXNUM},
+    {"cidlogmax",  WORDNUM,            0,         (int *) &cidlogmax,1,    LOGMAXNUM},
     {"datalog",    WORDSTR,            &datalog,  0,         0,    0},
     {"lineid",     WORDSTR,            &lineid,   0,         0,    0},
     {"initcid",    WORDSTR | WORDFLAG, &initcid,  &setcid,   0,    0},
@@ -54,7 +56,7 @@ struct sendclient sendclient[] = {
  * Process the config file.
  */
 
-doConf()
+int doConf()
 {
     char input[BUFSIZ], word[BUFSIZ], buf[BUFSIZ], *inptr;
     int lc;
@@ -92,13 +94,13 @@ doConf()
  *        set word = value
  */
 
-doSet(char *inptr, int lc)
+void doSet(char *inptr, int lc)
 {
     int num;
     char word[BUFSIZ], buf[BUFSIZ];
 
     /* process configuration parameters */
-    while (inptr = getWord(inptr, word, lc))
+    while ((inptr = getWord(inptr, word, lc)))
     {
         if (word[0] == '#')    break; /* rest of line is comment */
 
@@ -180,13 +182,13 @@ int findWord(char *wdptr)
  *        send datatype [datatype] [...]
  */
 
-doSend(char *inptr, int lc)
+void doSend(char *inptr, int lc)
 {
     int num;
-    char word[BUFSIZ], buf[BUFSIZ];
+    char word[BUFSIZ];
 
     /* process configuration parameters */
-    while (inptr = getWord(inptr, word, lc))
+    while ((inptr = getWord(inptr, word, lc)))
     {
         if (word[0] == '#')    break; /* rest of line is comment */
 
@@ -210,7 +212,7 @@ int findSend(char *wdptr)
     return -1;
 }
 
-configError(char *file, int lc, char *word, char *mesg)
+void configError(char *file, int lc, char *word, char *mesg)
 {
     char buf[BUFSIZ];
 

@@ -1,6 +1,6 @@
 Macintosh Install
 
-Last edited: Thu Mar 13, 2008
+Last edited: Mon Feb 9, 2009
 
 INSTALL:
 
@@ -34,6 +34,12 @@ CONFIGURE:
 
     The Makefile preconfigures ncidd.conf for the Mac, but you may
     want to change some of the defaults.
+
+    - If you are using a gateway instead of a local modem,
+      you need to set noserial to 1:
+        set noserial = 1
+    - If you are using a local modem with or without a gateway
+        set noserial = 0  (this is the default)
 
 START:
 

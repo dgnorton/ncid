@@ -1,22 +1,22 @@
 #!/bin/sh
 
 #
-# PROVIDE: ncid-popup
+# PROVIDE: ncid-kpopup
 # REQUIRE: NETWORKING ncidd
 #
-# Add the following lines to /etc/rc.conf to enable ncid-popup:
+# Add the following lines to /etc/rc.conf to enable ncid-kpopup:
 #
-#ncidpopup_enable="YES"
+#ncidkpopup_enable="YES"
 #
-ncidpopup_enable="${ncidpopup_enable-NO}"
+ncidkpopup_enable="${ncidkpopup_enable-NO}"
 
 . /etc/rc.subr
 
-rcvar=`set_rcvar ncidpopup`
+rcvar=`set_rcvar ncidkpopup`
 extra_commands="condrestart"
 
 name=ncid
-module=ncid-popup
+module=ncid-kpopup
 pidfile=/var/run/$module.pid
 PopupMsg=-M
 
