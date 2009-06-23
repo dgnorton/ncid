@@ -151,7 +151,7 @@ fedoradir:
                       prefix3=$(prefix3)
 
 freebsddir:
-	cd FreeBSD; $(MAKE) rcd prefix=$(prefix) prefix2=$(prefix2) \
+	cd FreeBSD; gmake rcd prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3)
 
 ubuntudir:
@@ -247,9 +247,9 @@ freebsd:
             BASH=/usr/local/bin/bash
 
 freebsd-install:
-	$(MAKE) install MAN=$(prefix)/man
+	gmake install MAN=$(prefix)/man
 	cd FreeBSD; \
-	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
+	gmake install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
             MAN=$(prefix)/man
 
 mac-fat:

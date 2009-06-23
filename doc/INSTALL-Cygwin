@@ -1,6 +1,6 @@
 Cygwin Install
 
-Last edited: Tue Jan 22, 2008
+Last edited: Mon Jun 22, 2009
 
 NOTES:
     The server has been tested with sip2ncid and ncidsip
@@ -39,6 +39,12 @@ INSTALL:
       * Check Mark the QuickEdit Mode in Edit Options
 
     -------------
+    Compile ncid:
+    -------------
+
+    - See INSTALL
+
+    -------------
     Install ncid:
     -------------
 
@@ -48,10 +54,11 @@ INSTALL:
             tar -xzvf ncid-VERSION-cygwin.tgz -C /
             EXAMPLE: tar -xzvf ncid-0.64-cygwin.tgz -C /
     - if there is no binary package, you need to compile the source:
-        Copy ncid-VERSION-src.tar.gz
+        Copy ncid-VERSION-src.tar.gz to cygwin, then:
+        tar -xzvf ncid-VERSION-src.tar.gz
         cd ncid
         make cygwin (compiles for /usr/local, see top of Makefile)
-        make install-cygwin
+        make cygwin-install
 
     -----------------------------------------------------
     If phone system is VoIP and you want to use sip2ncid: (Recomented)

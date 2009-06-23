@@ -18,7 +18,7 @@ Module to send Caller ID to samba to get a popup:
 Module just echos the input.  Modify it to write new modules:
     ncid-skel
 
-Module to send Caller ID to a text-to-speach program:
+Module to send Caller ID to a text-to-speech program:
     ncid-speak
 
 Module to display Caller ID on MythTV

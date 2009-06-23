@@ -98,7 +98,7 @@ set Count       0
 set ExecSh      0
 set Socket      0
 set Try         0
-set Version     0.73
+set Version     0.74
 set VersionInfo "NCID Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
@@ -152,7 +152,7 @@ proc errorMsg {msg} {
     if (!$Delay) {exit -1}
 
     if $NoGUI {
-        if $Verbose {puts -nonewline stderr $msg}
+        puts -nonewline stderr $msg
         after [expr $Delay*1000] retryConnect
     } else {
         set Count $Delay
@@ -283,14 +283,22 @@ proc doPopup {} {
     # or become top most window for popup time
     global PopupTime
     global ncidwin
+    global Verbose
 
     set ncidwin [wm state .]
 
     if {$ncidwin == "iconic"} {wm deiconify .}
-    wm attributes . -topmost 1
+    # the -topmost option may not be available
+    if {[catch {wm attributes . -topmost 1} msg]} {
+        raise .
+        if $Verbose {puts "$msg"}
+    }
 
     after [expr $PopupTime*1000] {
-        wm attributes . -topmost 0
+        # the -topmost option may not be available
+        if {[catch {wm attributes . -topmost 0} msg]} {
+            if $Verbose {puts "$msg"}
+        }
         if {[focus] != "."} {
             if {$ncidwin == "iconic"} {wm iconify .}
         }
@@ -440,10 +448,10 @@ proc displayCID {cid ismsg} {
 # Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
 # Input: "message"
 proc displayLog {cid ismsg} {
-    global Verbose
+    global Callprog
     global NoGUI
     if $NoGUI {
-        if $Verbose {
+        if !$Callprog {
             if $ismsg {
                 puts $cid
             } else {
@@ -757,7 +765,7 @@ if $Callprog {
         }
     } else {exitMsg 3 "Program Not Found: $Program"}
     if $Verbose {puts "Using output Module: $Program"}
-} else {set Verbose 1}
+}
 if {$NoGUI} doPID
 connectCID $Host $Port
 if {!$NoGUI} {bind .im <KeyPress-Return> handleGUIMSG}

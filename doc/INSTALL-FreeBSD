@@ -1,6 +1,14 @@
 FreeBSD Install
 
-Last edited: Fri Mar 6, 2009
+Last edited: Mon Jun 22, 2009
+
+If NCID does not work, see INSTALL for some simple tests.
+If using sip2ncid, see Setup-ncidsip
+If using ncidsip, see Setup-ncidsip
+
+COMPILE:
+
+    - See Install
 
 INSTALL:
 
@@ -15,8 +23,10 @@ INSTALL:
             EXAMPLE: tar -xzvf ncid-0.64-freebsd.tgz -C /
     - install NCID package:
         - if there is no binary package, you need to compile the source:
-        gmake freebsd (compiles for /usr/local, see top of Makefile)
-        gmake install-freebsd
+            Copy ncid-VERSION-src.tar.gz to the FreeBSD computer, then:
+            tar -xzvf ncid-VERSION-src.tar.gz
+            gmake freebsd (compiles for /usr/local, see top of Makefile)
+            gmake freebsd-install
 
     If you want to use ncidsip:
 

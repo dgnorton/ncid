@@ -1,7 +1,7 @@
 RCF     = ncidd.rc ncidsip.rc sip2ncid.rc yac2ncid.rc \
           ncid-kpopup.rc ncid-mythtv.rc ncid-page.rc ncid-samba.rc \
           ncid-speak.rc ncid-yac.rc
-FILES   = README Makefile $(RCF) $(MANSRC)
+FILES   = README.FreeBSD Makefile $(RCF)
 
 prefix  = /usr/local
 prefix2 = $(prefix)
@@ -13,12 +13,6 @@ CONFDIR = $(ETC)/ncid
 SITE    = $(RCF:.rc=)
 
 rcd: $(SITE)
-
-man: $(MANSRC1:.1=.man)
-	chmod 644 *.man
-	touch man
-
-html: $(MANSRC1:.1=.html)
 
 install: install-rcd
 

@@ -21,7 +21,7 @@ MODULE=ncid-page
 DAEMON=/usr/bin/$NAME
 PIDFILE=/var/run/$MODULE.pid
 SCRIPTNAME=/etc/init.d/$MODULE
-ringopt="-r 4"
+ringopt=""
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf

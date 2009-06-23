@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Created by John L. Chmielewski on Sun June 11, 2006
-# Last modified by jlc on Sun Dec 30, 2007
+# Last modified by jlc on Tue Mar 31, 2009
 
 # script runs ncidd in debug mode on port 3334 for testing
 # a server or a client
@@ -15,7 +15,7 @@
 NCID="$1"
 shift
 
-touch T-call.log T-data.log T-ncidd.conf T-ncidd.alias
+touch T-data.log T-ncidd.conf T-ncidd.alias
 $NCID -Dv3 \
       -c T-call.log \
       -d T-data.log \

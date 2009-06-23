@@ -1,6 +1,6 @@
 TiVo Install
 
-Last edited: Tue Jan 22, 2008
+Last edited: Mon Jun 22, 2009
 
 The ncid client replaces the old tivocid package.  It
 functions exactly like TiVoCID, if it is called tivocid,
@@ -16,6 +16,12 @@ The NCID package includes both the client and server.
 For a series1, the server would normally be ignored unless
 you have a DirecTiVo, a hardware modified internal modem,
 or a modem connected to the serial port.
+
+------------
+COMPILE NCID
+------------
+
+See INSTALL
 
 ----------------------------------------------
 Install TiVoCID, TiVoNCID, sip2ncid, and ncidd

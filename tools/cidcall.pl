@@ -25,7 +25,7 @@ getopts('mr') || die "Usage: cidcall [-r | -m] [cidlog]\n";
 ($cidlog = shift) || ($cidlog = "/var/log/cidcall.log");
 
 format STDOUT =
-@<<<<<<<<<<<<<<< @<<<<<<<<<<<<< @<<<<<<<<<< @<<<<< @<<<
+@<<<<<<<<<<<<<<< @<<<<<<<<<<<<< @<<<<<<<<<< @<<<<< @<<<<<<<<<
 $name,           $number,       $date,      $time, $line
 .
 

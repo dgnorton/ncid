@@ -18,7 +18,7 @@ extra_commands="condrestart"
 name=ncid
 module=ncid-page
 pidfile=/var/run/$module.pid
-ringopt="-r 4"
+ringopt=""
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf

@@ -56,7 +56,7 @@
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.73"
+#define VERSION     "0.74"
 #define SHOWVER     "%s: Version %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
@@ -119,6 +119,8 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define CRLF        "\r\n"
 #define NL          "\n"
 #define CR          "\r"
+#define NOSEP       0
+#define WITHSEP     1
 
 #define NONAME      "NO NAME"
 #define NONUMB      "NO NUMBER"

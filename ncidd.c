@@ -59,6 +59,9 @@ struct cid
 } cid = {0, "", "", "", "", NOMESG, ONELINE};
 
 char *strdate();
+#ifndef __CYGWIN__
+    extern char *strsignal();
+#endif
 
 void exit(), finish(), free(), reload(), doPoll(), formatCID(),
      writeClients(), writeLog(), sendLog(), builtinAlias(), userAlias(),
@@ -100,7 +103,8 @@ int main(int argc, char *argv[])
         logMsg(LEVEL1, msgbuf);
     }
 
-    sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(), name, VERSION);
+    sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(WITHSEP),
+            name, VERSION);
     logMsg(LEVEL1, msgbuf);
 
     sprintf(msgbuf, "Verbose level: %d\n", verbose);
@@ -356,7 +360,7 @@ int main(int argc, char *argv[])
                             polld[pollpos].fd = 0;
                             close(ttyfd);
                             sprintf(msgbuf, "TTY in use: releasing modem %s\n",
-                                strdate());
+                                strdate(WITHSEP));
                             logMsg(LEVEL1, msgbuf);
                             locked = 1;
                         }
@@ -364,14 +368,14 @@ int main(int argc, char *argv[])
                     else if (locked)
                     {
                         sprintf(msgbuf, "TTY free: using modem again %s\n",
-                            strdate());
+                            strdate(WITHSEP));
                         logMsg(LEVEL1, msgbuf);
                         openTTY();
                         if (doTTY() < 0)
                         {
                             sprintf(msgbuf,
                                 "%sCannot init TTY, Terminated %s\n",
-                                MSGLINE, strdate());
+                                MSGLINE, strdate(WITHSEP));
                             writeClients(mainsock, msgbuf);
                             tcsetattr(ttyfd, TCSANOW, &otty);
                             errorExit(-111, "Fatal", "Cannot init TTY");
@@ -777,7 +781,7 @@ void doPoll(int events, int mainsock)
       if (!noserial && polld[pos].fd == ttyfd)
       {
         sprintf(buf, "%sSerial device Hung Up, Terminated  %s\n",
-          MSGLINE, strdate());
+          MSGLINE, strdate(WITHSEP));
         writeClients(mainsock, buf);
         errorExit(-112, "Fatal", "Serial device hung up");
       }
@@ -792,7 +796,7 @@ void doPoll(int events, int mainsock)
       if (!noserial && polld[pos].fd == ttyfd)
       {
         sprintf(buf, "%sPoll device error, Terminated  %s\n",
-          MSGLINE, strdate());
+          MSGLINE, strdate(WITHSEP));
         writeClients(mainsock, buf);
         errorExit(-112, "Fatal", "Poll device error");
       }
@@ -844,7 +848,7 @@ void doPoll(int events, int mainsock)
             {
               sprintf(buf,
                       "%sSerial device %d returns no data, Terminated  %s\n",
-                MSGLINE, ttyfd, strdate());
+                MSGLINE, ttyfd, strdate(WITHSEP));
               writeClients(mainsock, buf);
               errorExit(-112, "Fatal", "Serial device returns no data");
             }
@@ -1107,8 +1111,9 @@ void formatCID(int mainsock, char *buf)
 
     /*
      * All Caller ID information is between the 1st and 2nd ring
+     *
      * if RING is indicated, clear any Caller ID info received,
-     * unless NAME is the only thing missing.
+     * if NUMBER is not received
      */
     if (strncmp(buf, "RING", 4) == 0)
     {
@@ -1123,8 +1128,6 @@ void formatCID(int mainsock, char *buf)
          */
         if (sendinfo)
         {
-            /* ring == -1 means SIP CANCEL */
-            if (ring < -1) ring = 0;
             ++ring;
             sendInfo(mainsock);
         }
@@ -1133,7 +1136,7 @@ void formatCID(int mainsock, char *buf)
         {
             /*
             * date, time, and number were received
-            * indicate No NAME, and process anyway
+            * indicate No NAME, and process
             */
             strncpy(cid.cidname, NONAME, CIDSIZE - 1);
             cid.status |= CIDNAME;
@@ -1142,18 +1145,41 @@ void formatCID(int mainsock, char *buf)
         {
             /*
             * date, time, and name were received
-            * indicate No Number, and process anyway
+            * indicate No Number, and process
             */
             strncpy(cid.cidnmbr, NONUMB, CIDSIZE - 1);
             cid.status |= CIDNMBR;
         }
+        else if (cid.status & (CIDNMBR | CIDNAME))
+        {
+            /*
+             * number, name or both received but no date and time
+             * add missing data and process
+             */
+            if (!(cid.status & CIDNMBR))
+            {
+                strncpy(cid.cidnmbr, NONUMB, CIDSIZE - 1);
+                cid.status |= CIDNMBR;
+            }
+            else if (!(cid.status & CIDNAME))
+            {
+                strncpy(cid.cidname, NONAME, CIDSIZE - 1);
+                cid.status |= CIDNAME;
+            }
+            ptr = strdate(NOSEP);     /* returns: MMDDYYYY HHMM */
+            for(sptr = cid.ciddate; *ptr && *ptr != ' ';) *sptr++ = *ptr++;
+            *sptr = '\0';
+            for(sptr = cid.cidtime, ptr++; *ptr;) *sptr++ = *ptr++;
+            *sptr = '\0';
+            cid.status |= (CIDDATE | CIDTIME);
+        }
         else
         {
             /*
-            * At a RING
-            * CID already processed or is incomplete
-            * Make sure status is clear
-            */
+             * At a RING
+             * CID already processed or is incomplete
+             * Make sure status is clear
+             */
             cid.status = 0;
             return;
         }
@@ -1521,9 +1547,10 @@ void sendInfo(int mainsock)
 
 /*
  * Returns the current date and time as a string in the format:
- *      MM/DD/YYYY HH:MM
+ *      with separators:    MM/DD/YYYY HH:MM
+ *      without separators: MMDDYYYY HHMM
  */
-char *strdate()
+char *strdate(int separator)
 {
     static char buf[BUFSIZ];
     struct tm *tm;
@@ -1531,8 +1558,12 @@ char *strdate()
 
     (void) gettimeofday(&tv, 0);
     tm = localtime((time_t *) &(tv.tv_sec));
-    sprintf(buf, "%.2d/%.2d/%.4d %.2d:%.2d", tm->tm_mon + 1, tm->tm_mday,
-        tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
+    if (separator)
+        sprintf(buf, "%.2d/%.2d/%.4d %.2d:%.2d", tm->tm_mon + 1, tm->tm_mday,
+            tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
+    else
+        sprintf(buf, "%.2d%.2d%.4d %.2d%.2d", tm->tm_mon + 1, tm->tm_mday,
+            tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
     return buf;
 }
 
@@ -1626,7 +1657,7 @@ void finish(int sig)
     }
 
     sprintf(msgbuf, "Received Signal: %s\nTerminated: %s\n",
-            strsignal(sig), strdate());
+            strsignal(sig), strdate(WITHSEP));
     logMsg(LEVEL1, msgbuf);
 
     cleanup();
@@ -1642,7 +1673,7 @@ void reload(int sig)
     char msgbuf[BUFSIZ];
 
     sprintf(msgbuf, "received SIGHUP - reloading the alias file: %s\n",
-            strdate());
+            strdate(WITHSEP));
     logMsg(LEVEL1, msgbuf);
 
     /*
@@ -1664,11 +1695,11 @@ int errorExit(int error, char *msg, char *arg)
 {
     char msgbuf[BUFSIZ];
 
-    /* should not happen */
-    if (msg == 0) msg = "oops";
-
     if (error == -1)
     {
+        /* should not happen */
+        if (msg == 0) msg = "oops";
+
         /*
          * system error
          * print msg, arg should be zero
@@ -1680,14 +1711,17 @@ int errorExit(int error, char *msg, char *arg)
     else
     {
         /* should not happen */
-        if (arg == 0) arg = "oops";
+        if (msg != 0 && arg == 0) arg = "oops";
 
         /*
          * internal program error
-         * print msg and arg
+         * print msg and arg if both are not 0
          */
-        sprintf(msgbuf, "%s: %s\n", msg, arg);
-        logMsg(LEVEL1, msgbuf);
+        if (msg != 0 && arg != 0)
+        {
+            sprintf(msgbuf, "%s: %s\n", msg, arg);
+            logMsg(LEVEL1, msgbuf);
+        }
     }
 
     /* remove pid file, if it was created */
@@ -1702,7 +1736,7 @@ int errorExit(int error, char *msg, char *arg)
     if (error != -100 && error != -101 && error != -106 && error != -107 &&
         error != -108 && error != -113)
     {
-        sprintf(msgbuf, "Terminated:  %s\n", strdate());
+        sprintf(msgbuf, "Terminated:  %s\n", strdate(WITHSEP));
         logMsg(LEVEL1, msgbuf);
         cleanup();
     }

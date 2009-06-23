@@ -20,7 +20,7 @@ exec="/usr/local/bin/$prog"
 config="/usr/local/etc/ncid/ncidmodules.conf"
 module=ncid-page
 pidfile=/var/run/$module.pid
-ringopt="-r 4"
+ringopt=""
 lockfile=/var/lock/subsys/$module
 
 [ -f $config ] && . $config

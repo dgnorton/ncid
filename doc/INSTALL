@@ -1,6 +1,9 @@
 NCID - Network Caller ID Install
 
-Last edited: Mon Jan 12, 2009
+Last edited: Mon Jun 22, 2009
+
+If using sip2ncid, see Setup-ncidsip
+If using ncidsip, see Setup-ncidsip
 
 Layout:
 	The programs go into $prefix/bin $prefix/sbin
@@ -20,6 +23,8 @@ Layout:
     The rc scripts go into $prefix2/etc/rc.d
 
 Compile:
+
+    The libpcap library and header files are required.
 
 	To configure programs and config file for /usr/local:
 		- make local

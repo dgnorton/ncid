@@ -27,7 +27,7 @@ case "$1" in
         [ -x /etc/init.d/ncid-speak ] && invoke-rc.d ncid-speak stop
         [ -x /etc/init.d/ncid-yac ] && invoke-rc.d ncid-yac stop
         [ -x /etc/init.d/ncidsip ] && invoke-rc.d ncidsip stop
-        [ -x /etc/init.d/ncidsip ] && invoke-rc.d sip2ncid stop
+        [ -x /etc/init.d/sip2ncid ] && invoke-rc.d sip2ncid stop
         [ -x /etc/init.d/yac2ncid ] && invoke-rc.d yac2ncid stop
         [ -x /etc/init.d/ncidd ] && invoke-rc.d ncidd stop
     ;;

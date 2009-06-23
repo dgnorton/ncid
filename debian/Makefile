@@ -1,7 +1,7 @@
 DIST        = ncidd.init ncidsip.init sip2ncid.init yac2ncid.init \
               ncid-kpopup.init ncid-mythtv.init ncid-page.init \
               ncid-samba.init ncid-speak.init ncid-yac.init
-FILES		= README Makefile $(DIST) ncid.spec
+FILES		= README Makefile.Debain $(DIST)
 
 prefix		= /usr/local
 prefix2		= $(prefix)

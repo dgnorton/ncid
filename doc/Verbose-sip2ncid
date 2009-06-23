@@ -2,7 +2,7 @@
 sip2ncid server verbose levels.  Higher levels include lower levels.
 --------------------------------------------------------------------
 
-Sat Feb 2, 2008
+Wed Apr 15, 2009
 
 LEVEL5:
         show lines received from the NCID server
@@ -17,6 +17,7 @@ LEVEL4:
 LEVEL3:
         show UDP SIP packets
         give character count of lines received from the NCID server
+        show alarm timeout, pcap_loop() return value, and msgsent flags
 
 LEVEL2:
         indicate cannot write pidfile

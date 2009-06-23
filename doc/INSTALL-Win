@@ -1,6 +1,6 @@
 Windows Install
 
-Last edited: Mon Mar 10, 2008
+Last edited: Mon Jun 22, 2009
 
 Install either the windows client package or the complete package.
 
@@ -16,6 +16,10 @@ WINDOWS CLIENT INSTALL:
     - The installer will not auto start ncid at login, you can create
       a link in the start menu if you like.  See below for configuring
       the link.
+
+WINDOWS COMPLETE COMPILE:
+
+    See INSTALL, INSTALL-Cygwin, and INSTALL-andLinux
 
 WINDOWS COMPLETE INSTALL:
 

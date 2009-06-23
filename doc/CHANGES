@@ -1,5 +1,42 @@
 ncid - Network CallerID
 
+Version 0.74
+    - Makefile: changed $(MAKE) to gmake in freebsd/freebsd-install targets
+    - ncid.sh: use catch to trap -topmost error in Ubuntu 8.04
+               displayLog{}: changed $Verbose to $Callprog
+               removed set Verbose to 1 if $Callprog set
+    - ncidd.c: errorExit(): do not print error message if msg = arg = 0
+               formatCID(): allow number and or name without date and time
+    - cidgate/sip2ncid.h: added PKTWAIT
+    - cidgate/sip2ncid.c: knows more signals, logs signal on exit
+                          doPCAP(): alarm(), pcapret, msgsent and logic
+                          processPackets(): added alarm() amd msgsent
+                          fixed warnings in doPID() and processPaqckets()
+    - debian/Makefile: Fixed "FILES" line
+    - debian/ncid-page.init: Changed ringopt="-r 4" to ringopt=""
+    - debian/prerm: Fixed test to stop sip2ncid
+    - doc/INSTALL: Updated
+    - doc/INSTALL-andLinux: Updated
+    - doc/INSTALL-Cygwin: Corrected a couple of errors, updated
+    - doc/INSTALL-Fedora: Updated
+    - doc/INSTALL-FreeBSD: Corrected a couple of errors, updated
+    - doc/INSTALL-Mac: Corrected a couple of errors, updated
+    - doc/INSTALL-TiVo: Updated
+    - doc/INSTALL-Ubuntu: Updated
+    - doc/INSTALL-Win: Updated
+    - doc/INSTALL-Setup-ncidsip: Updated
+    - Fedora/ncidsip.init: Added the line: opts=""
+    - Fedora/ncid-page.init: Changed ringopt="-r 4" to ringopt=""
+    - Fedora/Makefile: Fixed "FILES" line
+    - Fedora/ncidsip.init: Updated
+    - Fedora/ncid.spec: added Fedora changes by Eric Sandeen
+    - FreeBSD/Makefile: Fixed "FILES" line, removed man and html targets
+    - FreeBSD/ncid-page.rc: Changed ringopt="-r 4" to ringopt=""
+    - modules/ncidmodules.conf.dist: Added more information for ring options
+    - test/README.test: Updated
+    - test/testserver: Updated to handle new cidcall.log logic.
+    - tools/cidcall.pl: allow 10 characters for LINE ID instead of 4
+
 Version 0.73
     - Makefile: Removed install-log and references, added prefix4 for fedoradir
                 Removed install-tools from tivo-install-hack and tivo-install

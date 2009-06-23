@@ -19,6 +19,7 @@ prog="ncidsip"
 exec="/usr/local/sbin/$prog"
 config="/usr/local/etc/ncid/$prog.conf"
 lockfile=/var/lock/subsys/$prog
+opts=""
 
 [ -f $config ] && . $config
 args="--pidfile /var/run/$prog.pid $opts"

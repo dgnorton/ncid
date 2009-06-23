@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008
+ * Copyright 2007, 2008, 2009
  * by  John L. Chmielewski <jlc@cfl.rr.com>
  *
  * sip2ncid.h is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@
 #include <time.h>
 #include "config.h"
 
-#define VERSION     "0.8"
+#define VERSION     "0.9.1"
 #define SHOWVER     "%s: %s\n"
 #define DESC        "%s - Inject CID info by snooping SIP invites\n"
 #define USAGE       "\
@@ -75,6 +75,7 @@ Options: [-C configfile      | --config configfile]\n\
 #define NUMSIZ      50
 #define CIDSIZ      75
 #define SIPSIZ      2048
+#define PKTWAIT     60
 
 /* ethernet headers are always exactly 14 bytes */
 #define SIZE_ETHERNET 14

@@ -22,7 +22,10 @@ PageFrom=mail
 # email address: (usual format: Cell_Phone_Number@Cell_Phone_Company_URL)
 PageTo=
 # ------------------------------------------------------------------------
-# Only for modems that indicate ring
+# Ring options available for a modem that indicates ring
+#
+# These options cannot be used for a modem does not indicate ring,
+# the NetCallerID device, or a (SIP or YAC) Gateway.
 #
 # uncomment to call external program on ring number number 4 (default)
 #ringopt="-r 4"
@@ -31,13 +34,16 @@ PageTo=
 # uncomment to eliminate the ring option
 #ringopt=""
 # ------------------------------------------------------------------------
-# Only for the NetCallerID device, or modems that do not indicate ring
+# The ring option must be eliminated if using the NetCallerID device,
+# or a modem that do not indicate ring, or using the YAC Gateway
 #
 # uncomment to eliminate the ring option or a message will never be sent
 #ringopt=""
 # ------------------------------------------------------------------------
-# Only if using SIP (sip2ncid and ncidsip)
-# This will not work for modems or the NetCallerID device
+# Ring options available for the SIP (sip2ncid and ncidsip) gateways.
+#
+# These options cannot be used for modems, the NetCallerID device,
+# or the YAC Gateway
 #
 # uncomment to call external program if hangup without answer
 #ringopt="-r -1"

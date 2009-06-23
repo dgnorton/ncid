@@ -1,6 +1,14 @@
 Macintosh Install
 
-Last edited: Mon Feb 9, 2009
+Last edited: Mon Jun 22, 2009
+
+If NCID does not work, see INSTALL for some simple tests.
+If using sip2ncid, see Setup-ncidsip
+If using ncidsip, see Setup-ncidsip
+
+COMPILE:
+
+    - See INSTALL
 
 INSTALL:
 
@@ -20,10 +28,11 @@ INSTALL:
                 tar -xzvf ncid-VERSION-mac-osx.tgz -C /
                 EXAMPLE: tar -xzvf ncid-0.64.mac-osx.tgz -C /
         - if there is no binary package, you need to compile the source:
-            Copy ncid-VERSION.tar.gz
+            Copy ncid-VERSION-src.tar.gz to the mac, then:
+            tar -xzvf ncid-VERSION-src.tar.gz
             cd ncid
             make mac (compiles for /usr/local, see top of Makefile)
-            make install-mac
+            make mac-install
 
     If you want to use ncidsip:
 

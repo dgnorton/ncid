@@ -1,8 +1,14 @@
 Ubuntu Install
 
-Last edited: Fri Mar 6, 2009
+Last edited: Mon Jun 22, 2009
 
 If NCID does not work, see INSTALL for some simple tests.
+If using sip2ncid, see Setup-ncidsip
+If using ncidsip, see Setup-ncidsip
+
+COMPILE:
+
+    See INSTALL
 
 INSTALL:
 
@@ -25,10 +31,10 @@ CONFIGURE:
       symbolic link to the real modem port. It is probably best to
       set your modem port in ncidd.conf.  This assumes serial port 1:
         set ttyport = /dev/ttyS0
-    - If you are using a gateway instead of a local modem,
+    - If you are using a SIP or YAC gateway instead of a local modem,
       you need to set noserial to 1:
         set noserial = 1
-    - If you are using a local modem with or without a gateway
+    - If you are using a local modem with or without a SIP or YAC gateway:
         set noserial = 0  (this is the default)
 
 FIRST STARTUP:

@@ -1,7 +1,7 @@
 /*
  * sip2ncid - Inject CID info by snooping SIP invites
  *
- * Copyright 2007, 2008
+ * Copyright 2007, 2008, 2009
  *  by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * sip2ncid is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 #include "sip2ncid.h"
 
 /* globals */
-int debug, listdevs, nofilter, test, sd;
+int debug, listdevs, msgsent, nofilter, test, sd;
 int ncidport   = NCIDPORT;
 int sipport    = SIPPORT;
 int verbose    = 1;
@@ -34,11 +34,15 @@ pid_t pid;
 FILE *logptr;
 pcap_t *descr;
 pcap_dumper_t *dumpfile;
+struct sigaction sigact;
 
 int doPID(), getOptions(), pcapListDevs(), parseLine(), getCallID(), rmCallID();
-void cleanup(), doPCAP(), exitExit(), finish();
+void cleanup(), doPCAP(), exitExit(), sigdetect();
 void errorExit(), socketConnect();
 char *strdate(), *inet_ntoa(), *strmatch();
+#ifndef __CYGWIN__
+    extern char *strsignal();
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -110,10 +114,17 @@ int main(int argc, char *argv[])
     sprintf(msgbuf, "Verbose level: %d\n", verbose);
     logMsg(LEVEL1, msgbuf);
 
-    signal(SIGHUP, finish);
-    signal(SIGTERM, finish);
-    signal(SIGINT, finish);
-    signal(SIGQUIT, finish);
+    sigact.sa_handler = sigdetect;
+
+    sigaction(SIGHUP,  &sigact, NULL);
+    sigaction(SIGTERM, &sigact, NULL);
+    sigaction(SIGINT,  &sigact, NULL);
+    sigaction(SIGQUIT, &sigact, NULL);
+    sigaction(SIGALRM, &sigact, NULL);
+    sigaction(SIGILL,  &sigact, NULL);
+    sigaction(SIGABRT, &sigact, NULL);
+    sigaction(SIGFPE,  &sigact, NULL);
+    sigaction(SIGSEGV, &sigact, NULL);
 
     if (!debug)
     {
@@ -314,7 +325,7 @@ int doPID()
     char msgbuf[BUFSIZ];
     FILE *pidptr;
     pid_t curpid, foundpid = 0;
-    int ret = 0;
+    int retval, ret = 0;
 
     /* if pidfile == 0, no pid file is wanted */
     if (pidfile == 0)
@@ -328,7 +339,7 @@ int doPID()
     if (stat(pidfile, &statbuf) == 0)
     {
         if ((pidptr = fopen(pidfile, "r")) == NULL) return(1);
-        fscanf(pidptr, "%u", &foundpid);
+        retval = fscanf(pidptr, "%u", &foundpid);
         fclose(pidptr);
         if (foundpid) ret = kill(foundpid, 0);
         if (ret == 0 || (ret == -1 && errno != ESRCH)) return(1);
@@ -467,7 +478,7 @@ void processPackets(u_char *args,
     const struct udphdr *udp;               /* UDP Header */
     const char   *pdata;                    /* Packet Data */
 
-    int size_ip, size_udp, size_pdata, cnt, outcall, pos;
+    int size_ip, size_udp, size_pdata, cnt, outcall, pos, retval;
 
     char sipbuf[SIPSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ],
          tonumber[NUMSIZ], callid[CIDSIZ];
@@ -475,6 +486,9 @@ void processPackets(u_char *args,
 
     struct tm *tm;
     struct timeval tv;
+
+    alarm(PKTWAIT); /* reset SIP packet timeout alarm */
+    msgsent = 0;    /* reset message log flag */
 
     /* 
      * if socket is open:
@@ -687,12 +701,12 @@ void processPackets(u_char *args,
                     sprintf(cidmsg, CIDLINE, strdate(NOYEAR),
                             line, number, name);
                 }
-                if (sd) write(sd, cidmsg, strlen(cidmsg));
+                if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
 
                 if (!pos)
                 {
-                    sprintf(msgbuf, "%s simultaneous calls exceeded\n",
+                    sprintf(msgbuf, "%d simultaneous calls exceeded\n",
                             MAXCALL);
                     logMsg(LEVEL1, msgbuf);
                 }
@@ -750,7 +764,7 @@ void processPackets(u_char *args,
                 }
 
                 sprintf(cidmsg, CIDCAN, number, strdate(NOYEAR));
-                if (sd) write(sd, cidmsg, strlen(cidmsg));
+                if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
             }
 
@@ -801,7 +815,7 @@ void processPackets(u_char *args,
                 }
 
                 sprintf(cidmsg, CIDBYE, number, strdate(NOYEAR));
-                if (sd) write(sd, cidmsg, strlen(cidmsg));
+                if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
             }
 
@@ -1037,7 +1051,7 @@ int rmCallID(char *calls[], char *callid)
 
 void doPCAP()
 {
-    int i;
+    int i, pcapret;
     char errbuf[PCAP_ERRBUF_SIZE], msgbuf[BUFSIZ], filter_exp[BUFSIZ];
     const u_char *packet;
     struct pcap_pkthdr hdr;     /* pcap.h                    */
@@ -1106,7 +1120,49 @@ void doPCAP()
         logMsg(LEVEL1, msgbuf);
     }
 
-    pcap_loop(descr, -1, processPackets, (u_char *) dumpfile);
+    while (1)
+    {
+        alarm(PKTWAIT); /* set timer for SIP packet timeout */
+        pcapret = pcap_loop(descr, -1, processPackets, (u_char *) dumpfile);
+
+        /*
+        * pcapret values
+        *     #:  partial packet count
+        *     0:  packet count reached
+        *     -1: error
+        *     -2: pcap_loop() terminated by pcap_breakloop()
+        *
+        * msgsent values
+        *     0x0: no messages logged
+        *     0x1: timeout message logged
+        *     0x2: error message logged
+        */
+        sprintf(msgbuf,
+                "ALARM TIMEOUT: pcap_loop return = %d, msgsent flag = %d\n",
+                pcapret, msgsent);
+        logMsg(LEVEL3, msgbuf);
+        if (pcapret == -2)
+        {
+            if ((msgsent & 0x1) == 0)
+            {
+                /* log only one timeout message */
+                sprintf(msgbuf, "No SIP packets at port %d in %d seconds\n",
+                        sipport, PKTWAIT);
+                logMsg(LEVEL1, msgbuf);
+                msgsent |= 0x1;
+            }
+        }
+        else if (pcapret == -1)
+        {
+            if ((msgsent & 0x2) == 0)
+            {
+                /* log only one error message */
+                sprintf(msgbuf, "pcap_loop error\n");
+                logMsg(LEVEL1, msgbuf);
+                msgsent |= 0x2;
+            }
+        }
+    }
 }
 
 /*
@@ -1179,12 +1235,29 @@ void errorExit(int error, char *msg, char *arg)
     exit(error);
 }
 
-/* signal exit */
-void finish(int sig)
+/* process signals */
+void sigdetect(int sig)
 {
-    cleanup(0);
+    char msgbuf[BUFSIZ];
 
-    /* allow signal to terminate the process */
-    signal (sig, SIG_DFL);
-    raise (sig);
+    if (sig == SIGALRM)
+    {
+        /*
+         * signal to break out of pcap_loop()
+         * to make sure packets are received
+         */
+        pcap_breakloop(descr);
+    }
+    else
+    {
+        sprintf(msgbuf, "Received Signal: %s\nn", strsignal(sig));
+        logMsg(LEVEL1, msgbuf);
+
+        /* termination signals */
+        cleanup(0);
+
+        /* allow signal to terminate the process */
+        signal (sig, SIG_DFL);
+        raise (sig);
+    }
 }

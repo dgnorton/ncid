@@ -1,6 +1,6 @@
 Name:       ncid
-Version:    0.73
-Release:    1%{?dist}
+Version:    0.74
+Release:    2%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
 Group:      Applications/Communications
@@ -9,10 +9,7 @@ Url:        http://ncid.sourceforge.net
 Source0:    http://downloads.sourceforge.net/%{name}/%{name}-%{version}-src.tar.gz
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Buildrequires: libpcap-devel
-
-# Don't build an extra package of debuginfo: we are not going to use it.
-%define debug_package %{nil}
+BuildRequires: libpcap-devel
 
 %description
 NCID is Caller ID (CID) distributed over a network to a variety of
@@ -20,7 +17,7 @@ devices and computers.  NCID includes a server, gateways, a client,
 and client output modules.
 
 The NCID server obtains the Caller ID information from a serial device,
-like a modem, and from a VOIP and YAC gateways.
+like a modem, and from VOIP and YAC gateways.
 
 This package contains the server and gateways.  The client is in the
 ncid-client package.
@@ -28,7 +25,7 @@ ncid-client package.
 %package client
 Summary:    NCID (Network Caller ID) client
 Group:      Applications/Communications
-Requires:   tcl, tk
+Requires:   tcl, tk, mailx
 
 %description client
 The ncid-client obtains the Caller ID from the ncid-server and normally
@@ -52,6 +49,7 @@ BuildArch:  noarch
 Requires:   %{name}-client = %{version}-%{release}
 Requires:   %{name}-speak = %{version}-%{release}
 Requires:   kdelibs, kdebase, kdemultimedia, festival
+Requires:   kdebase, kdemultimedia, festival, /usr/bin/dcop
 
 %description kpopup
 The NCID kpopup module displays caller ID information in a KDE popup window
@@ -87,7 +85,7 @@ make %{?_smp_mflags} EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
-make install install-fedora prefix=${RPM_BUILD_ROOT}/usr \
+make install install-fedora prefix=${RPM_BUILD_ROOT}/%{_prefix} \
                             prefix2=${RPM_BUILD_ROOT} \
                             prefix3=${RPM_BUILD_ROOT}
 
@@ -179,42 +177,30 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %_initrddir/ncid-speak
 
 %post
-if [ $1 = 1 ]; then ### install package ###
-    # make services known
-    for SCRIPT in ncidd ncidsip ncidsip
-    do
-        /sbin/chkconfig --add $SCRIPT
-    done
-fi
+# make services known
+for SCRIPT in ncidd ncidsip ncidsip
+do
+    /sbin/chkconfig --add $SCRIPT
+done
 
 %post client
-if [ $1 = 1 ]; then ### install package ###
-    # make services known
-    for SCRIPT in ncid-page ncid-yac
-    do
-        /sbin/chkconfig --add $SCRIPT
-    done
-fi
+# make services known
+for SCRIPT in ncid-page ncid-yac
+do
+    /sbin/chkconfig --add $SCRIPT
+done
 
 %post mythtv
-if [ $1 = 1 ]; then ### install package ###
-    /sbin/chkconfig --add ncid-mythtv
-fi
+/sbin/chkconfig --add ncid-mythtv
 
 %post kpopup
-if [ $1 = 1 ]; then ### install package ###
-    /sbin/chkconfig --add ncid-kpopup
-fi
+/sbin/chkconfig --add ncid-kpopup
 
 %post samba
-if [ $1 = 1 ]; then ### install package ###
-    /sbin/chkconfig --add ncid-samba
-fi
+/sbin/chkconfig --add ncid-samba
 
 %post speak
-if [ $1 = 1 ]; then ### install package ###
-    /sbin/chkconfig --add ncid-speak
-fi
+/sbin/chkconfig --add ncid-speak
 
 %preun
 if [ $1 = 0 ] ; then ### Uninstall package ###
@@ -236,7 +222,7 @@ if [ $1 = 0 ] ; then ### Uninstall package ###
     done
 fi
 
-# just in case a old package that had the obsolute ncid service is upgraded
+# just in case an old package that had the obsolute ncid service is upgraded
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     /sbin/service ncid stop >/dev/null 2>&1 || true
     /sbin/chkconfig ncid && /sbin/chkconfig --del ncid || true
@@ -245,41 +231,29 @@ fi
 %preun mythtv
 if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
-    for SCRIPT in ncid-mythtv
-    do
-        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
-        /sbin/chkconfig --del $SCRIPT
-    done
+    /sbin/service ncid-mythtv stop > /dev/null 2>&1 || :
+    /sbin/chkconfig --del ncid-mythtv
 fi
 
 %preun kpopup
 if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
-    for SCRIPT in ncid-kpopup
-    do
-        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
-        /sbin/chkconfig --del $SCRIPT
-    done
+    /sbin/service ncid-kpopup stop > /dev/null 2>&1 || :
+    /sbin/chkconfig --del ncid-kpopup
 fi
 
 %preun samba
 if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
-    for SCRIPT in ncid-samba
-    do
-        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
-        /sbin/chkconfig --del $SCRIPT
-    done
+    /sbin/service ncid-samba stop > /dev/null 2>&1 || :
+    /sbin/chkconfig --del ncid-samba
 fi
 
 %preun speak
 if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
-    for SCRIPT in ncid-speak
-    do
-        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
-        /sbin/chkconfig --del $SCRIPT
-    done
+    /sbin/service ncid-speak stop > /dev/null 2>&1 || :
+    /sbin/chkconfig --del ncid-speak
 fi
 
 %postun
@@ -292,11 +266,6 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %postun client
-if [ "$1" = 0 ]
-then
-    /sbin/service ncid-kpopup stop > /dev/null 2>&1 || :
-    /sbin/chkconfig --del ncid-kpopup
-fi
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart services that are running
     for SCRIPT in /usr/share/ncid/ncid-*
@@ -306,50 +275,35 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %postun mythtv
-if [ "$1" = 0 ]
-then
-    /sbin/service ncid-mythtv stop > /dev/null 2>&1 || :
-    /sbin/chkconfig --del ncid-mythtv
-fi
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart services if running
     /sbin/service ncid-mythtv condrestart >/dev/null 2>&1 || :
 fi
 
 %postun kpopup
-if [ "$1" = 0 ]
-then
-    /sbin/service ncid-kpopup stop > /dev/null 2>&1 || :
-    /sbin/chkconfig --del ncid-kpopup
-fi
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart services if running
     /sbin/service ncid-kpopup condrestart >/dev/null 2>&1 || :
 fi
 
 %postun samba
-if [ "$1" = 0 ]
-then
-    /sbin/service ncid-samba stop > /dev/null 2>&1 || :
-    /sbin/chkconfig --del ncid-samba
-fi
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart services if running
     /sbin/service ncid-samba condrestart >/dev/null 2>&1 || :
 fi
 
 %postun speak
-if [ "$1" = 0 ]
-then
-    /sbin/service ncid-speak stop > /dev/null 2>&1 || :
-    /sbin/chkconfig --del ncid-speak
-fi
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart service if running
     /sbin/service ncid-speak condrestart >/dev/null 2>&1 || :
 fi
 
 %changelog
+* Fri Jun 19 2009 John Chmielewski <sandeen@redhat.com> 0.74-1
+- New release
+
+* Sun Mar 29 2009 Eric Sandeen <sandeen@redhat.com> 0.73-2
+- First Fedora build.
 
 * Thu Mar 12 2009 John Chmielewski <jlc@users.sourceforge.net> 0.73-1
 - Initial build.

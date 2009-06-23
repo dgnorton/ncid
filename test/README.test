@@ -12,18 +12,23 @@ ncidd-noerrors.conf:
 testclient:
 testclient.data:
     The program is a NCID test server used to send various NCID
-    lines to test a client.  The test server uses port 3000.  It
+    lines to test a client.  The test server uses port 3334.  It
     sends one or more lines from the testclient.data file with each
     press of <ENTER>.  The last <ENTER> will terminate the server.
     Blank lines are used to terminate a send initiated by <ENTER>.
 
     To test a client:
 	    Start testclient (it will give instructions and send a 200 line)
-	    Start the NCID client on port 3000 (it will receive the 200 line)
-	    Press <ENTER> to send 2 MSG lines
+	    Start the NCID client on port 3334 (it will receive the 200 line)
+	    Press <ENTER> to send 1 MSG line
 	    Press <ENTER> to send 5 CIDLOG lines
-	    Press <ENTER> to send one CID (call) line (there are 4 CID lines)
-	    Press <ENTER> to send one CID and CIDINFO lines (there are 3 groups)
+	    Press <ENTER> to send 1 MSG line
+	    Press <ENTER> to send a CID line (there are 2 CID lines)
+	    Press <ENTER> to send various combinations of CID and CIDINFO lines
+                      (there a 8 CID and CIDINFO line combinations)
+	    Press <ENTER> to send a CID line with a specific number of digits
+                      (there are 7 CID lines)
+	    Press <ENTER> to send 1 CIDINFO RING line
 	    Press <ENTER> to end testclient
 
 	    Usage: testclient [datafile]
