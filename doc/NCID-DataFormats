@@ -1,6 +1,6 @@
 # File NCID-DataFormats
 
-# Last modified Fri May 23, 2008
+# File last changed by jlc on Mon Oct 19, 2009
 
 =====================
 Example ncid outputs:
@@ -24,26 +24,37 @@ Example ncid outputs:
 Example ncidsip and sip2ncid output:
 ====================================
 
-  CALL: ###DATEmmddhhss...LINEidentifier...NMBRnumber...NAMEwords+++
+  CALL: ###DATEmmddhhss...LINElabel...NMBRnumber...NAMEwords+++
 
   CALL: ###DATE05111525...LINE1122...NMBR14075555000...NAMEJohn @ home+++
 
-  CALLINFO: ###CANCEL...NMBRnumber...DATEmmddhhmm+++
+  CALLINFO: ###CANCEL...DATEmmddhhmm...LINElabel...NMBRnumber+++
 
-  CALLINFO: ###BYE...NMBRnumber...DATEmmddhhmm+++
+  CALLINFO: ###CANCEL...DATE05221534...LINE7711...NMBR17025551145+++
 
-  CALLINFO: ###CALLED...NMBRnumber...DATEmmddhhmm+++
+  CALLINFO: ###BYE...DATEmmddhhmm...LINElabel...NMBRnumber+++
+
+  CALLINFO: ###BYE...DATE05212111...LINE5555...NMBR12125554000+++
+
+  CALLINFO: ###CALLED...DATEmmddhhmm...LINElabel...NMBRnumber+++
+
+  CALLINFO: ###CALLED...DATE05071516...LINE1234...NMBR14075551212++
 
 ======================
 Example ncidd outputs:
 ======================
 
-TCP/IP: (seven types of lines are generated)
+TCP/IP: (eight types of lines are generated)
 
   --------------------------------
   The announce line when connected
   --------------------------------
   200 Network CallerID Server Version 0.60
+
+  ----------------------------------
+  Line sent after sending a call log
+  ----------------------------------
+  300 end of call log
 
   ------------------------------------------------------------
   The CIDLOG line is generated from the cidcall.log at connect
@@ -69,7 +80,7 @@ TCP/IP: (seven types of lines are generated)
   ------------------------------------------------------------
   The MSG line is generated to display a message on the client
   ------------------------------------------------------------
-  MSG: Caller ID Logfile too big to get: (95000 > 90000) bytes
+  MSG: Caller ID Logfile too big: (95000 > 90000) bytes
   MSG: Too many clients connected
 
   ----------------------------------------------------------------
@@ -120,15 +131,9 @@ Example Modem/Device or Gateway Input
   --------------------------
   Example NetCallerID lines:
   --------------------------
+  ###DATEmmddhhmm...NMBR[number]...NAMEwords+++\r
+
   ###DATE03301423...NMBR4075551212...NAMEWIRELESS CALL+++\r
   ###DATE03301423...NMBR...NAME-UNKNOWN CALLER-+++\r
   ###DATE03301423..NMBR...NAME+++\r
   ###DATE...NMBR...NAME   -MSG OFF-+++\r
-
-  ----------------------
-  Example Gateway lines:
-  ----------------------
-  CALL: ###DATE05212111...LINE7711...NMBR12125554000...NAMEBarefoot Joe+++
-  CALLINFO: ###BYE...NMBR12125554000...DATE05212111+++
-  CALLINFO: ###CANCEL...NMBR17025551145...DATE05221534+++
-  CALLINFO: ###CALLED...NMBR14075551212...DATE05071516+++

@@ -1,6 +1,6 @@
 NCID - Network Caller ID Install
 
-Last edited: Mon Jun 22, 2009
+Last edited: Sun Nov 1, 2009
 
 If using sip2ncid, see Setup-ncidsip
 If using ncidsip, see Setup-ncidsip
@@ -24,7 +24,13 @@ Layout:
 
 Compile:
 
-    The libpcap library and header files are required.
+    The libpcap library and header files must be installed
+    to compile the sip2ncid gateway.
+
+    Obtain libpcap from from http://www.tcpdump.org/ or
+    the package depository of your Linux distribution.
+    For example, if your distribution uses yum try:
+    yum install libpcap libpcap-devel
 
 	To configure programs and config file for /usr/local:
 		- make local
@@ -33,10 +39,13 @@ Compile:
 		- make package
 
 	To cross-compile for the TiVo:
-		- make tivo-series1 (requires TiVo cross-development:
-          /usr/local/tivo)
-		- make tivo-series2 (requires TiVo cross-development:
-          /usr/local/mips-tivo)
+		- make tivo-s1 (requires TiVo PPC cross-development:
+          /usr/local/tivo
+		- make tivo-s2 (requires TiVo MIPS cross-development:
+          uses $(MIPSXCOMPILE) prefix
+
+    Note: The Makefile requires GNU make
+          See the top of the Makefile for more information on targets.
 
 INSTALL:
 
@@ -48,15 +57,11 @@ INSTALL:
 
 	To install programs in /usr, config file in /etc,
 		and man pages in /usr/share/man:
-        - make install-package
+        - make package-install
         This also works:
 		- make install prefix=/usr prefix2=
 
-    Note: The install target installs files into /etc/logrotate.d
-          and /etc/rc.d/init.d.  If you do not have these directories
-          use install-base instead of install in the above.
-
-          See the top of the Makefile for more information on targets.
+    Note: See the top of the Makefile for more information on targets.
 
 TEST USING A MODEM:
 

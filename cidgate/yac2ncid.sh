@@ -12,7 +12,7 @@
 ##
 ## Version: 1.0.[123] (5/29/2008) by John L. Chmielewski
 ##
-VERSION="1.0.4)"
+VERSION="(NCID) XxXxX"
 
 ME="$(basename $0)"
 ME="${ME%.sh}"

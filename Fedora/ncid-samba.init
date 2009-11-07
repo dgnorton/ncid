@@ -3,7 +3,11 @@
 # ncid-samba         Start/Stop Network Caller ID client with the Samba Module
 #
 # chkconfig: - 96 04
-# description: NCID client with the Samba Output Module
+# description: ncid using the Samba Output Module
+
+### BEGIN INIT INFO
+# Short-Description: NCID Client using the samba module
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -21,9 +25,10 @@ config="/usr/local/etc/ncid/ncidmodules.conf"
 module=ncid-samba
 pidfile=/var/run/$module.pid
 lockfile=/var/lock/subsys/$module
+sambaopt="-M"
 
 [ -f $config ] && . $config
-args="--no-gui --pidfile $pidfile -C -P $module"
+args="--no-gui --pidfile $pidfile -C -P $module $sambaopt"
 
 start() {
     [ -x $exec ] || exit 5

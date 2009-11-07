@@ -5,7 +5,7 @@
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
-# Short-Description: Network Caller ID Server
+# Short-Description: NCID (Network Caller ID) Server
 # Description:       The ncidd server collects Caller ID data from a modem or
 #                    CID device on a telephone line, a CID gateway, or both.
 ### END INIT INFO

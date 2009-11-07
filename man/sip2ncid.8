@@ -25,6 +25,7 @@
 [-u                 | --usage]
 [-V                 | --version]
 [-v <1-9>           | --verbose <1-9>]
+[-W <1/0>           | --warn <1/0>]
 [-w <dumpfile>      | --writefile <dumpfile>]
 .fi
 .SH DESCRIPTION
@@ -115,6 +116,11 @@ Default: verbose = 1
 .br
 Most Useful: verbose = 3 (displays payload of all packets that matched
 the libpcap filter.
+.TP
+.B -W <0/1> | --warn <0/1>
+Send clients 'No SIP packets' messages
+.br
+Default: warn = 0
 .TP
 .B -w <dumpfile> | --writefile <dumpfile>
 Write packets to a libpcap capture file.

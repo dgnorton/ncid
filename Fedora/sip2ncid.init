@@ -1,9 +1,13 @@
 #!/bin/sh
 #
-# ncidd          Start/Stop Network Caller ID SIP Gateway
+# sip2ncid          Start/Stop Network Caller ID SIP Gateway
 #
 # chkconfig: - 95 05
 # description: The NCID SIP Gateway inputs Caller ID information
+
+### BEGIN INIT INFO
+# Short-Description: NCID SIP Gateway
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions

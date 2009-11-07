@@ -12,7 +12,9 @@
 package = ncid
 prog    = ncidd
 
-docdir  = debian/root/usr/share/doc/$(package)
+pkg = client mythtv kpopup samba speak
+
+docdir  = usr/share/doc/$(package)
 
 build:
 	$(checkdir)
@@ -23,7 +25,7 @@ clean:
 	$(checkdir)
 	rm -f build
 	-$(MAKE) -i distclean
-	rm -rf *~ debian/root debian/*~ debian/files* debian/substvars
+	rm -rf *~ debian/tmp* debian/*~ debian/files* debian/substvars
 
 binary-indep:   checkroot build
 	$(checkdir)
@@ -33,26 +35,109 @@ binary-indep:   checkroot build
 
 binary-arch:    checkroot build
 	$(checkdir)
-	rm -rf debian/root
-	install -d debian/root/DEBIAN $(docdir)
-	install -m 755 debian/postinst debian/prerm debian/postrm debian/root/DEBIAN
+	rm -rf debian/tmp*
+	install -d debian/tmp/DEBIAN debian/tmp/$(docdir) \
+                   debian/tmp-ncid/DEBIAN debian/tmp-ncid/$(docdir)
+	for i in $(pkg); do \
+		install -d debian/tmp-$$i/DEBIAN \
+                           debian/tmp-$$i/usr/share/doc/$(package)-$$i; \
+        done
 	$(MAKE) \
-		prefix=$$(pwd)/debian/root/usr \
-		prefix2=$$(pwd)/debian/root \
-		prefix3=$$(pwd)/debian/root \
+		prefix=$$(pwd)/debian/tmp/usr \
+		prefix2=$$(pwd)/debian/tmp \
+		prefix3=$$(pwd)/debian/tmp \
 		install install-ubuntu
-	cp -a debian/changelog $(docdir)/changelog.Debian
-	cp -a README VERSION doc debian/README.Debian $(docdir)
-	cp -a cidgate/README.Gateways modules/README.modules $(docdir)
-	cp -a scripts/README.logfile tools/README.tools $(docdir)
-	rm -f debian/root/$(docdir)/CHANGES
-	find debian/root -name \*CVS -print | xargs rm -fr
-	gzip -r9 debian/root/usr/share/man
-	dpkg-shlibdeps debian/root/usr/sbin/ncidd
-	dpkg-gencontrol -isp -Pdebian/root
-	chown -R root:root debian/root
-	chmod -R u+w,go=rX debian/root
-	dpkg --build debian/root ..
+
+        # NCID server and gateways and support utilities
+	install -m 755 debian/postinst debian/prerm debian/postrm \
+                       debian/tmp-ncid/DEBIAN
+	cp -a debian/tmp/* debian/tmp-ncid
+	rm -f debian/tmp-ncid/etc/init.d/ncid-* \
+	      debian/tmp-ncid/etc/ncid/ncid.* \
+          debian/tmp-ncid/etc/ncid/ncidmodules.conf \
+	      debian/tmp-ncid/usr/bin/ncid \
+	      debian/tmp-ncid/usr/share/doc/ncid/README.modules \
+	      debian/tmp-ncid/usr/share/man/man1/ncid.1 \
+          debian/tmp-ncid/usr/share/man/man1/ncidmodules.1 \
+	      debian/tmp-ncid/usr/share/man/man5/ncid.conf.5 \
+          debian/tmp-ncid/usr/share/man/man5/ncidmodules.conf.5 \
+          debian/tmp-ncid/usr/share/ncid/ncid-*
+	rm -fr debian/tmp-ncid/usr/share/pixmaps
+	cp -a debian/changelog debian/tmp-ncid/$(docdir)/changelog.Debian
+	cp -a README VERSION doc debian/README.Debian debian/tmp-ncid/$(docdir)
+	cp -a cidgate/README.Gateways debian/tmp/$(docdir)
+	cp -a scripts/README.logfile tools/README.tools \
+              debian/tmp-ncid/$(docdir)
+	rm -f debian/tmp-ncid/$(docdir)/doc/CHANGES
+	dpkg-shlibdeps debian/tmp-ncid/usr/sbin/ncidd \
+                       debian/tmp-ncid/usr/sbin/sip2ncid
+
+        # NCID client and base output modules
+	install -m 755 debian/postinst debian/tmp-client/DEBIAN
+	install -m 755 debian/prerm-client debian/tmp-client/DEBIAN/prerm
+	install -m 755 debian/postrm-client debian/tmp-client/DEBIAN/postrm
+	cd debian/tmp-client; mkdir -p etc/init.d etc/ncid usr/bin \
+       usr/share/ncid usr/share/man/man1 usr/share/man/man5
+	cp -a ncid debian/tmp-client/usr/bin/.
+	cd modules; cp -a ../ncid.conf ncid.blacklist ncid.minicom \
+                      ncidmodules.conf ../debian/tmp-client/etc/ncid
+	cd modules; cp -a ncid-hangup ncid-page ncid-skel ncid-yac \
+                      ../debian/tmp-client/usr/share/ncid
+	cp -a modules/README.modules \
+          debian/tmp-client/usr/share/doc/ncid-client/.
+	cd debian; cp -a ncid-hangup ncid-page ncid-yac \
+                     ../debian/tmp-client/etc/init.d
+	cp -a man/ncid.1 man/ncidmodules.1 debian/tmp-client/usr/share/man/man1
+	cp -a man/ncid.conf.5 man/ncidmodules.conf.5 \
+          debian/tmp-client/usr/share/man/man5
+
+        # NCID client KDE popup module
+	install -m 755 debian/postinst debian/tmp-kpopup/DEBIAN
+	install -m 755 debian/prerm-kpopup debian/tmp-kpopup/DEBIAN/prerm
+	install -m 755 debian/postrm-kpopup debian/tmp-kpopup/DEBIAN/postrm
+	cd debian/tmp-kpopup; mkdir -p etc/init.d usr/share/ncid
+	cp -a modules/README.modules debian/tmp-kpopup/usr/share/doc/ncid-kpopup
+	cp -a modules/ncid-kpopup debian/tmp-kpopup/usr/share/ncid/.
+	cp -a debian/ncid-kpopup debian/tmp-kpopup/etc/init.d/.
+
+        # NCID client MythTV module
+	install -m 755 debian/postinst debian/tmp-mythtv/DEBIAN
+	install -m 755 debian/prerm-mythtv debian/tmp-mythtv/DEBIAN/prerm
+	install -m 755 debian/postrm-mythtv debian/tmp-mythtv/DEBIAN/postrm
+	cd debian/tmp-mythtv; mkdir -p etc/init.d usr/share/ncid
+	cp -a modules/README.modules debian/tmp-mythtv/usr/share/doc/ncid-mythtv
+	cp -a modules/ncid-mythtv debian/tmp-mythtv/usr/share/ncid/.
+	cp -a debian/ncid-mythtv debian/tmp-mythtv/etc/init.d/.
+
+        # NCID client samba module
+	install -m 755 debian/postinst debian/tmp-samba/DEBIAN
+	install -m 755 debian/prerm-samba debian/tmp-samba/DEBIAN/prerm
+	install -m 755 debian/postrm-samba debian/tmp-samba/DEBIAN/postrm
+	cd debian/tmp-samba; mkdir -p etc/init.d usr/share/ncid
+	cp -a modules/README.modules debian/tmp-samba/usr/share/doc/ncid-samba
+	cp -a modules/ncid-samba debian/tmp-samba/usr/share/ncid/.
+	cp -a debian/ncid-samba debian/tmp-samba/etc/init.d/.
+
+        # NCID client speak module
+	install -m 755 debian/postinst debian/tmp-speak/DEBIAN
+	install -m 755 debian/prerm-speak debian/tmp-speak/DEBIAN/prerm
+	install -m 755 debian/postrm-speak debian/tmp-speak/DEBIAN/postrm
+	cd debian/tmp-speak; mkdir -p etc/init.d usr/share/ncid
+	cp -a modules/README.modules debian/tmp-speak/usr/share/doc/ncid-speak
+	cp -a modules/ncid-speak debian/tmp-speak/usr/share/ncid/.
+	cp -a debian/ncid-speak debian/tmp-speak/etc/init.d/.
+
+        # cleanup and build packages
+	gzip -r9 debian/tmp-ncid/usr/share/man debian/tmp-client/usr/share/man
+	for i in $(package) $(pkg); do \
+        find debian/tmp-$$i -name \*CVS -print | xargs rm -fr; \
+        chown -R root:root debian/tmp-$$i; \
+        chmod -R u+w,go=rX debian/tmp-$$i; \
+        if [ $$i = "ncid" ] ; then \
+            dpkg-gencontrol -isp -Pdebian/tmp-$$i -pncid; else  \
+            dpkg-gencontrol -isp -Pdebian/tmp-$$i -pncid-$$i; fi; \
+        dpkg --build debian/tmp-$$i ..; \
+        done
 
 define checkdir
 	test -f $(prog).c -a -f debian/rules

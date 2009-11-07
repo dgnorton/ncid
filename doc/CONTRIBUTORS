@@ -1,4 +1,4 @@
-Last edited on Sat Dec 6, 2008
+Last edited on Mon Oct 19, 2009
 
 John L. Chmielewski:
     Designed and wrote most of the programs.
@@ -74,6 +74,14 @@ littlepepper@users.sourceforge.net
 Marko Koski-Vähälä <marko@koski-vahala.com>
     Contributed ncid client code to format numbers for Sweden.
     The client can now format numbers for "US" and "SE"
+
+Chris Lenderman <chris@lenderman.com>
+    - Helped rewrite sendLog() code to eliminate corruption sending
+      large log files (greater than 2,000 lines).
+    - converted testclient from using netcat to using sockets
+
+Todd Andrews <taa@pobox.com>
+    - Corrected problems in the INSTALL document
 
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Adam 'Starblazer' Romberg

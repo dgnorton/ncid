@@ -1,7 +1,9 @@
-SHMODULES = ncid-page.sh ncid-samba.sh ncid-speak.sh ncid-mythtv.sh \
-            ncid-kpopup.sh ncid-skel.sh ncid-tivo.sh ncid-yac.sh
+SHMODULES = ncid-hangup ncid-page.sh ncid-samba.sh ncid-speak.sh \
+            ncid-mythtv.sh ncid-kpopup.sh ncid-skel.sh ncid-tivo.sh \
+            ncid-yac.sh
+ETCFILES  = ncid.blacklist ncid.minicom
 DIST      = ncidmodules.conf.dist
-FILES     = README.modules Makefile $(MODULES) $(ETCFILE)
+FILES     = README.modules Makefile $(SHMODULES) $(ETCFILES) $(DIST)
 
 prefix    = /usr/local
 prefix2   = $(prefix)
@@ -16,9 +18,9 @@ CONFDIR   = $(ETC)/ncid
 
 MODULES   = $(SHMODULES:.sh=)
 
-ETCFILE   = $(DIST:.dist=)
+CONFFILE  = $(DIST:.dist=)
 
-modules: $(MODULES) $(ETCFILE)
+modules: $(MODULES) $(CONFFILE)
 
 install: install-etc install-modules
 
@@ -26,16 +28,17 @@ install-modules: $(MODULES)
 	@if test ! -d $(MODULEDIR); then mkdir -p $(MODULEDIR); fi
 	install -m 755 $(MODULES) $(MODULEDIR)
 
-install-etc: $(ETCFILE)
-	@if test -f $(CONFDIR)/$(ETCFILE); \
-		then install -m 644 $(ETCFILE) $(CONFDIR)/$(ETCFILE).new; \
-		else install -m 644 $(ETCFILE) $(CONFDIR); \
+install-etc: $(CONFFILE)
+	install -m 644 $(ETCFILES)
+	@if test -f $(CONFDIR)/$(CONFFILE); \
+		then install -m 644 $(CONFFILE) $(CONFDIR)/$(CONFFILE).new; \
+		else install -m 644 $(CONFFILE) $(CONFDIR); \
 	fi
 
 clean:
 
 clobber: clean
-	rm -f $(MODULES) $(ETCFILE)
+	rm -f $(MODULES) $(CONFFILE)
 
 distclean: clobber
 
@@ -45,5 +48,5 @@ files:	$(FILES)
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod 755 $@
 
-% : %.dist
+% : %-in
 	sed '/"$(setmod)"/s/#//;s,/usr/local,$(prefix),' $< > $@

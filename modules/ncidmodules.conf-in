@@ -1,5 +1,5 @@
 # ncid module and service configuration file
-# Last modified: Wed Mar 11, 2009
+# Last modified: Wed Sep 23, 2009
 
 # This configuration file is called from each ncid-* init or rc files
 # to set the $ringopt, $tivoprog, and $tivoargs variables.
@@ -9,77 +9,16 @@
 # set variables needed for it.  Uncomment or give the variable a
 # value for the output module called.
 
-############################################
-# Send a email SMS message to a cell phone #
-#               ncid-page                  #
-############################################
-# IMPORTANT: sendmail.cf must hide user root when masquerading is used,
-#            unless $PageFrom is set to a ID other than root
-#
-# user sending the mail, ignored unless root is running ncid-page
-# the default mail user is the ID running ncid-page, usually root
-PageFrom=mail
-# email address: (usual format: Cell_Phone_Number@Cell_Phone_Company_URL)
-PageTo=
-# ------------------------------------------------------------------------
-# Ring options available for a modem that indicates ring
-#
-# These options cannot be used for a modem does not indicate ring,
-# the NetCallerID device, or a (SIP or YAC) Gateway.
-#
-# uncomment to call external program on ring number number 4 (default)
-#ringopt="-r 4"
-# uncomment to call external program after ringing stops
-#ringopt="-r 0"
-# uncomment to eliminate the ring option
-#ringopt=""
-# ------------------------------------------------------------------------
-# The ring option must be eliminated if using the NetCallerID device,
-# or a modem that do not indicate ring, or using the YAC Gateway
-#
-# uncomment to eliminate the ring option or a message will never be sent
-#ringopt=""
-# ------------------------------------------------------------------------
-# Ring options available for the SIP (sip2ncid and ncidsip) gateways.
-#
-# These options cannot be used for modems, the NetCallerID device,
-# or the YAC Gateway
-#
-# uncomment to call external program if hangup without answer
-#ringopt="-r -1"
-# uncomment to call external program if hangup after answer
-#ringopt="-r -2"
-# uncomment to eliminate the ring option
-#ringopt=""
-
-###########################
-# Send Caller ID to Samba #
-#       ncid-samba        #
-###########################
-SambaClient=
-
-#######################
-# Speak the Caller ID #
-#     ncid-speak      #
-#######################
-# If festival is being used:
-T2S='`echo $SAY | festival --tts`'
-# If using a Macintosh without festival:
-#T2S='/usr/bin/osascript -e \"say $SAY\"'
-# What to say
-SAY="Telephone call from $CIDNAME"
-#SAY="$CIDNAME"
-# Number of times to speak
-SAYNUM=1
-# delay between speaking
-SpeakDelay=2
-
-##################
-# MythTV Display #
-#   ncid-mythtv  #
-##################
-# uncomment to not send messages to MythTV
-#MythMsg=
+#########################
+# Hang up on the caller #
+#      ncid-hangup      #
+#########################
+# IMPORTANT: minicom is required and must be configured using: minicom -s
+#            If ncidd is using a modem, minicom must use the same ttyport
+#            configured in ncidd.conf
+# 
+# the log file containing calls that were terminated
+HangupLog=/var/log/ncid-hangup.log
 
 #################################################
 # Send a KDE popup message to local ncid client #
@@ -105,8 +44,83 @@ timeout=10
 cidtype="$CIDNAME"
 cidcaller=""
 #
-# uncomment to not send messages to popup
+# uncomment to not send user messages to popup
 #PopupMsg=
+
+##################
+# MythTV Display #
+#   ncid-mythtv  #
+##################
+# uncomment to not send user messages to MythTV
+#MythMsg=
+
+###########################################
+# Email a message to a cell phone as SMS, #
+# or to a pager, or to a mailbox          #    
+#               ncid-page                 #
+###########################################
+# IMPORTANT: sendmail.cf must hide user root when masquerading is
+#            used, unless $PageFrom is set to a ID other than root
+#
+# user sending the mail, ignored unless root is running ncid-page
+# the default mail user is the ID running ncid-page, usually root
+PageFrom=mail
+# email address: (usual format: Cell_Phone_Number@Cell_Phone_Company_URL)
+PageTo=
+# ------------------------------------------------------------------------
+# Ring options available for a modem that indicates ring.
+#
+# Without a ring option, a message is sent as soon as the
+# Caller ID is received.  This is the default.
+#
+# These options cannot be used for a modem does not not indicate ring,
+# the NetCallerID device, or a (SIP or YAC) Gateway; otherwise a
+# message will never be sent.
+#
+# uncomment to send a message on ring number number 4 or
+# uncomment and change the ring number to whatever is wanted.
+#ringopt="-r 4"
+# uncomment to send a message after ringing stops
+#ringopt="-r 0"
+# ------------------------------------------------------------------------
+# Ring options available for the SIP (sip2ncid and ncidsip) gateways.
+#
+# These options cannot be used for modems, the NetCallerID device,
+# or the YAC Gateway; otherwise the message will never be sent.
+#
+# uncomment to send a message if hangup without answer
+#ringopt="-r -1"
+# uncomment to send a message if hangup after answer
+#ringopt="-r -2"
+# ------------------------------------------------------------------------
+# uncomment to not send user messages
+#pageopt=""
+
+###########################
+# Send Caller ID to Samba #
+#       ncid-samba        #
+###########################
+SambaClient=
+# uncomment to not send user messages
+#sambaopt=""
+
+#######################
+# Speak the Caller ID #
+#     ncid-speak      #
+#######################
+# If festival is being used:
+T2S='`echo $SAY | festival --tts`'
+# If using a Macintosh without festival:
+#T2S='/usr/bin/osascript -e \"say $SAY\"'
+# What to say
+SAY="Telephone call from $CIDNAME"
+#SAY="$CIDNAME"
+# Number of times to speak
+SAYNUM=1
+# delay between speaking
+SpeakDelay=2
+# uncomment to not send user messages
+speakopt=""
 
 ##################
 #  TiVo Display  #

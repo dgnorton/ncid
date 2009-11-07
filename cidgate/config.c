@@ -30,6 +30,7 @@ struct setword setword[] = {
    {"siphost",    WORDSTR,  &siphost,      0,             0,         0},
    {"sipport",    WORDNUM,  0,             &sipport,      0,         0},
    {"verbose",    WORDNUM,  0,             &verbose,      1,         MAXLEVEL},
+   {"warn",       WORDNUM,  0,             &warn,         OFF,       ON},
    {0,            0,        0,             0,             0,         0}
 };
 

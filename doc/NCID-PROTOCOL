@@ -1,6 +1,6 @@
 NCID Client, Gateway, and Server Protocol
 
-Last modified by jlc on Fri May 23, 2008
+File last changed by jlc on Mon Oct 19, 2009
 
 The NCID-FORMAT file explains the lines sent to the client by the server.
 It also explains lines sent by a gateway to the server.
@@ -14,6 +14,7 @@ Client Implementation:
         - receive a CID line whenever a call comes in
         - ignore lines that do not begin with:
           200
+          300
           CID:
           CIDLOG:
           MSG:
@@ -42,8 +43,8 @@ Gateway Implementation:
 Server Implementation:
         - listen to port 3333 for a connection,
         - send a connect line to identify the server
-        - if configured, send CIDLOG and MSGLOG lines when a client connects
-          these are the CID: and MSG: lines in cidcall.log
+        - if configured, send the call log file (cidcall.log)
+        - send a 300 line if a call log was sent (cidcall.log)
         - send a CID line when a call is received to connected clients
         - send a MSG line with important information, if needed
         - send a CIDINFO line at each ring with a line indicator (default -)

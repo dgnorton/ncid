@@ -1,5 +1,23 @@
 #!/usr/bin/perl
 
+# Copyright (c) 2006 by Clayton O'Neill
+# Copyright (c) 2006, 2007, 2008, 2009
+# by John L. Chmielewski <jlc@users.sourceforge.net>
+
+# ncidsip is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# any later version.
+
+# ncidsip is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+
 use strict;
 use warnings;
 
@@ -10,7 +28,7 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case_always);
 use Pod::Usage;
 
-our $VERSION = "0.8";
+our $VERSION = "(NCID) XxXxX";
 
 my ($host, $port) = ('localhost', 3333);
 my ($siphost, $sipport) = ('', 10000);
@@ -45,7 +63,7 @@ my $result = GetOptions("ncid=s" => \$host,
                "pidfile|p=s" => \$pidfile
              ) || pod2usage(2);
 
-die "ncidsip: version $VERSION\n" if $version;
+die "ncidsip $VERSION\n" if $version;
 
 pod2usage(-verbose => 2) if $help;
 
@@ -144,6 +162,7 @@ sub processPacket {
   my $number;
   my $tonumber;
   my $line;
+  my $toline;
   my $msg;
 
   print $sip,"\n" if $debug;
@@ -175,25 +194,26 @@ sub processPacket {
 
       if ($sip =~ /^To:\s+<sip:(.+)(\w\w\w\w)@/imo) {
         $tonumber = "$1$2";
-        $line = $2;
+        $toline = $2;
       } else {$line = "UNKNOWN";}
 
       if ($sip =~ /^From:\s+\"?(.+?)"?\s+<sip:/imo) {
         $name = $1;
       } else {$name = "NO NAME";}
 
-      if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
-        ($number) = $1;
+      if ($sip =~ /^From:.*<sip:(.+)(\w\w\w\w)@/imo) {
+        ($number) = "$1$2";
+        $line = $2;
         } else {$number = "NO NUMBER";}
 
       if (grep(/^$number$/, @locals)) {
         # Outgoing Call
-        $msg = sprintf("CALLINFO: ###CALLED...NMBR%s...DATE%s+++",
-                           $tonumber, $date);
+        $msg = sprintf("CALLINFO: ###CALLED...DATE%s...LINE%s...NMBR%s+++",
+                        $date, $line, $tonumber);
       } else {
-      # Incoming Call
-      $msg = sprintf("CALL: ###DATE%s...LINE%s...NMBR%s...NAME%s+++",
-        $date, $line, $number,$name);
+        # Incoming Call
+        $msg = sprintf("CALL: ###DATE%s...LINE%s...NMBR%s...NAME%s+++",
+                        $date, $toline, $number,$name);
       }
 
       print $msg, "\n" if $verbose;
@@ -210,17 +230,25 @@ sub processPacket {
         if ($tcallid ne $callid) {
           push (@callids, $tcallid);
         } else {
-          if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
-            ($number) = $1;
-            } else {$number = "NO NUMBER";}
+          if ($sip =~ /^From:.*<sip:(.+)(\w\w\w\w)@/imo) {
+            ($number) = "$1$2";
+            $line = $2;
+          } else {$number = "NO NUMBER";}
+
+          if ($sip =~ /^To:.*<sip:(.+)(\w\w\w\w)@/imo) {
+            ($tonumber) = "$1$2";
+            $toline = $2;
+          } else {$tonumber = "NO NUMBER";}
+
           if (grep(/^$number$/, @locals)) {
             # number is in the To line instead of From line
-            if ($sip =~ /^To:.*<sip:(.+?)@/imo) {
-              ($number) = $1;
-            } else {$number = "NO NUMBER";}
+            $msg = sprintf("CALLINFO: ###CANCEL...DATE%s...LINE%s...NMBR%s+++",
+                            $date, $line, $tonumber);
+          } else {
+            $msg = sprintf("CALLINFO: ###CANCEL...DATE%s...LINE%s...NMBR%s+++",
+                            $date, $toline, $number);
           }
-          $msg = sprintf("CALLINFO: ###CANCEL...NMBR%s...DATE%s+++",
-                         $number, $date);
+
           print "Removed $callid from CallID list\n" if ($debug);
           print $msg, "\n" if $verbose;
           if (!$test) { print $sock $msg, "\r\n"; }
@@ -238,17 +266,25 @@ sub processPacket {
         if ($tcallid ne $callid) {
           push (@callids, $tcallid);
         } else {
-          if ($sip =~ /^From:.*<sip:(.+?)@/imo) {
-            ($number) = $1;
-            } else {$number = "NO NUMBER";}
+          if ($sip =~ /^From:.*<sip:(.+)(\w\w\w\w)@/imo) {
+            ($number) = "$1$2";
+            $line = $2;
+          } else {$number = "NO NUMBER";}
+
+          if ($sip =~ /^To:.*<sip:(.+)(\w\w\w\w)@/imo) {
+            ($tonumber) = "$1$2";
+            $toline = $2;
+          } else {$number = "NO NUMBER";}
+
           if (grep(/^$number$/, @locals)) {
             # number is in the To line instead of From line
-            if ($sip =~ /^To:.*<sip:(.+?)@/imo) {
-              ($number) = $1;
-            } else {$number = "NO NUMBER";}
+            $msg = sprintf("CALLINFO: ###BYE...DATE%s...LINE%s...NMBR%s+++",
+                            $date, $line, $tonumber);
+          } else {
+            $msg = sprintf("CALLINFO: ###BYE...DATE%s...LINE%s...NMBR%s+++",
+                            $date, $toline, $number);
           }
-          $msg = sprintf("CALLINFO: ###BYE...NMBR%s...DATE%s+++",
-                         $number, $date);
+
           print "Removed $callid from CallID list\n" if ($debug);
           print $msg, "\n" if $verbose;
           if (!$test) { print $sock $msg, "\r\n"; }

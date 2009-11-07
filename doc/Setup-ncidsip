@@ -1,5 +1,7 @@
 How to setup VoIP Caller ID using ncidsip
 
+Last edited by jlc on Thu Oct 22, 2009
+
 The server, ncidd, always checks for a CID message, so if you have a
 standard telephone line modem configured, and you have at least one VoIP
 telephone line, all you need to do is to configure and start ncidsip.
@@ -30,8 +32,8 @@ The interface name is everything up to the first space.
 On Windows the interface name contains a path that has '\' instead of
 '/'.  You must give the name using '/' instead of '\'.
 
-If you do not see any SIP packets, change to port 10000 and try again:
-As root run: ncidsip --test --sip :10000
+If you do not see any SIP packets, change to port 5061 and try again:
+As root run: ncidsip --test --sip :5061
 
 You should see something like:
 
@@ -41,12 +43,12 @@ You should see something like:
 Then about every 20 seconds you should see something like:
 
   SIP/2.0 200 OK
-  Via: SIP/2.0/UDP 70.119.157.214:5061;branch=z9hG4bK-22b185d1
-  From: 321-249-7722 <sip:13215551212@atlas2.atlas.vonage.net:5061>;tag=46f26356c0a3394bo0
-  To: 321-249-7722 <sip:13215551212@atlas2.atlas.vonage.net:5061>
+  Via: SIP/2.0/UDP 70.119.157.214:10000;branch=z9hG4bK-22b185d1
+  From: 321-249-7722 <sip:13215551212@atlas2.atlas.vonage.net:10000>;tag=46f26356c0a3394bo0
+  To: 321-249-7722 <sip:13215551212@atlas2.atlas.vonage.net:10000>
   Call-ID: fa72d1c2-ead1bdcf@70.119.157.214
   CSeq: 86785 REGISTER
-  Contact: 321-555-1212 <sip:13215551212@70.119.157.214:5061>;expires=20
+  Contact: 321-555-1212 <sip:13215551212@70.119.157.214:10000>;expires=20
   Content-Length: 0
 
 If you do not get the above, you may need to specify a address and or port

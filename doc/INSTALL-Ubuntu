@@ -1,6 +1,6 @@
 Ubuntu Install
 
-Last edited: Mon Jun 22, 2009
+Last edited: Sun Nov 1, 2009
 
 If NCID does not work, see INSTALL for some simple tests.
 If using sip2ncid, see Setup-ncidsip
@@ -10,12 +10,31 @@ COMPILE:
 
     See INSTALL
 
-INSTALL:
+INSTALL or UPGRADE:
 
-    - Download the latest NCID deb package from sourceforge
-    - Use the the menu item "Add/Remove.." to download GDebi Package Installer.
-    - Open the file viewer (Places->Home Folder) to view the NCID deb package
-    - Install the NCID deb package by double clicking on it.
+    NCID requires the server and client DEB packages to function.  The
+    server is required on one computer or device, but the client can be
+    installed on as many computers as needed.
+
+    The client has a few output modules in its RPM package, and there
+    are optional output modules in their own RPM packages.
+
+    - Download the latest NCID deb packages from sourceforge
+          ncid DEB Package
+          ncid-client DEB Package - client and default output modules
+
+    - Download any optional output modules wanted:
+      (if installing ncid-kpopup, ncid-speak needs to be installed first)
+          ncid-MODULE DEB Package  - optional client output modules
+
+    - Install or Upgrade the packages:
+        * If needed use the the menu item "Add/Remove.." to install the
+          GDebi Package Installer.
+        * Using the file viewer:
+            - Open the file viewer to view the NCID DEB packages
+            - Select the DEB packages
+            - double click selections or right click selections and select
+              "Open with GDebi Package installer"
 
     If you want to use ncidsip:
 

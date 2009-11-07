@@ -5,8 +5,8 @@
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
-# Short-Description: NCID Speak Client
-# Description:       NCID client with the YAC Output Module
+# Short-Description: NCID Client using the yac module
+# Description:       NCID client using the YAC Output Module
 ### END INIT INFO
 
 # Author: John L. Chmielewski <jlc@users.sourceforge.net>

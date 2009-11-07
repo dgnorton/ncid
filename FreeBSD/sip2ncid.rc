@@ -12,10 +12,9 @@ sip2ncid_enable="${sip2ncid_enable-NO}"
 
 . /etc/rc.subr
 
+name=sip2ncid
 rcvar=`set_rcvar`
 extra_commands="condrestart"
-
-name=sip2ncid
 
 command=/usr/local/sbin/$name
 pidfile="/var/run/${name}.pid"

@@ -1,6 +1,9 @@
 .\" %W% %G%
 .TH NCIDMODULES 1
 .SH NAME
+.B ncid-hangup\^
+- hangup calls based on Caller ID
+.PP
 .B ncid-kpopup\^
 - Popup Caller ID using KDE
 .PP
@@ -25,11 +28,14 @@
 .B ncid-yac\^
 - Send Caller ID to YAC listeners
 .SH SYNOPSIS
-ncid --no-gui [--ring #] [--message] --call-prog --program
-.B ncid-page\^
+ncid --no-gui --call-prog --program
+.B ncid-hangup\^
 .PP
 ncid --no-gui [--message] --call-prog --program
 .B ncid-kpopup\^
+.PP
+ncid --no-gui [--ring #] [--message] --call-prog --program
+.B ncid-page\^
 .PP
 ncid --no-gui [--message] --call-prog --program
 .B ncid-samba\^

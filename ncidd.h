@@ -51,13 +51,13 @@
 #include <errno.h>
 #include <time.h>
 #include <ctype.h>
+#include "version.h"
 
 #if (!defined(O_SYNC))
 # define O_SYNC 0
 #endif
 
-#define VERSION     "0.74"
-#define SHOWVER     "%s: Version %s\n"
+#define SHOWVER     "%s %s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define USAGE       "\
 Usage: %s [-A aliasfile  | --alias aliasfile]\n\
@@ -108,12 +108,13 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define MODEMTRY    6
 #define TTYSPEED    B19200
 #define LOCKFILE    "/var/lock/LCK.."
-#define ANNOUNCE    "200 NCID Server: "
+#define ANNOUNCE    "200 Server:"
+#define LOGEND      "300 end of call log"
 #define INITSTR     "AT Z S0=0 E1 V1 Q0"
 #define INITCID1    "AT+VCID=1"
 #define INITCID2    "AT#CID=1"
 #define PORT        3333
-#define CONNECTIONS 15
+#define CONNECTIONS 25
 #define TIMEOUT     200
 #define RINGWAIT    25
 #define CRLF        "\r\n"
@@ -127,7 +128,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define NOMESG      "NONE"
 #define LOGMAX      110000
 #define LOGMAXNUM   100000000
-#define LOGMSG      "MSG: Caller ID Logfile too big to get: (%lu > %lu) bytes%s"
+#define LOGMSG      "MSG: Caller ID Logfile too big: (%lu > %lu) bytes%s"
 #define TOOMSG      "MSG: Too many clients connected"
 
 #define CIDLINE     "CID: "

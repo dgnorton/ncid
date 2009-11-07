@@ -1,0 +1,7 @@
+# ncid.hangup blacklist file
+
+# numbers or names can be used to hangup on the caller
+# the number format must match the ncid display format
+# upper and lower case is important
+
+PRIVATE                   # blocked names or numbers

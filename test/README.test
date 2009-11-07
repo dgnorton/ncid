@@ -10,12 +10,16 @@ ncidd-noerrors.conf:
     file will permit ncidd to run after the config file is read.
 
 testclient:
-testclient.data:
     The program is a NCID test server used to send various NCID
     lines to test a client.  The test server uses port 3334.  It
     sends one or more lines from the testclient.data file with each
     press of <ENTER>.  The last <ENTER> will terminate the server.
     Blank lines are used to terminate a send initiated by <ENTER>.
+
+testclient.data:
+    Used with "testclient" to test client with different types of data.
+
+    Usage: ./testclient
 
     To test a client:
 	    Start testclient (it will give instructions and send a 200 line)
@@ -35,6 +39,18 @@ testclient.data:
 	    Default Data File: testclient.data
 
 	    NOTE: testclient and testclient.data must be in the same directory
+
+testclient.log
+    Used with "testclient" to provide client with data for a screenshot.
+
+    Usage: ./testclient testclient.log
+
+	Start testclient (it will give instructions and send a 200 line)
+	Start the NCID client on port 3334 (it will receive the 200 line)
+	Press <ENTER> to send CIDLOG lines (logfile)
+	Press <ENTER> to send first CID line (call)
+	Press <ENTER> to send second CID line (call)
+	Press <ENTER> to end testclient
 
 testlog:
 testlog-display:

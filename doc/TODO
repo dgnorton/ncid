@@ -1,6 +1,6 @@
 The current TODO list (in no particular order)
 
-Last modified: Fri Feb 27, 2009
+Last modified: Sun Sep 13, 2009
 
     - Add graphics to view image of who is calling.
     - Add ncid.exe to the Windows tray.
@@ -15,8 +15,6 @@ The MAYBE TODO list (in no particular order)
 
     - Add ringtone support.
     - Add a firefox module.
-    - Add a new client output module to hang up the phone if the number
-      is blacklisted.
     - Add SSL between server and client for secure use over Internet.
     - Use separate ports for clients and gateways
     - Rewrite the ncid client and split it into two:

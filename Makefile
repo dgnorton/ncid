@@ -1,3 +1,5 @@
+# This Makefile requires GNU make
+
 ###########################################################################
 # make local             - builds for /usr/local and /var                 #
 # make install           - installs files in /usr/local and /var          #
@@ -28,8 +30,8 @@
 #                          usr.local.mips-tivo.tar.bz2                    #
 #                          (x86 cross compiler for Series2)               #
 #                                                                         #
-# gmake freebsd          - builds for FreeBSD in /usr/local               #
-# gmake freebsd-install  - installs in /usr/local                         #
+# make freebsd           - builds for FreeBSD in /usr/local using gmake   #
+# make freebsd-install   - installs in /usr/local using gmake             #
 #                                                                         #
 # make mac               - builds for Macintosh OS X in /usr/local        #
 # make mac-fat           - builds universal OS X binaries in /usr/local   #
@@ -51,6 +53,8 @@ DOCFILE      = doc/CHANGES doc/COPYING README doc/README-FreeBSD \
 DIST         = ncidd.conf.dist ncid.conf.dist
 FILES        = Makefile $(CLIENT).sh $(DIST) $(HEADER) $(SOURCE) \
                $(DOCFILE) $(ETCFILE)
+
+Version := $(shell sed 's/.* //; 1q' VERSION)
 
 # the prefix must end in a - (if part of a name) or a / (if part of a path)
 MIPSXCOMPILE = mips-TiVo-linux-
@@ -116,35 +120,38 @@ OBJECTS = $(SOURCE:.c=.o)
 default:
 	@echo "make requires an argument, see top of Makefile for description:"
 	@echo
-	@echo "    make  local             # builds for /usr/local and /var"
-	@echo "    make  install           # installs into /usr/local and /var"
-	@echo "    make  package           # builds for /usr and /var"
-	@echo "    make  package-install   # installs into for /usr and /var"
-	@echo "    make  fedora            # builds for Fedora, includes init.d/"
-	@echo "    make  fedora-install    # installs in /usr, /etc, and /var"
-	@echo "    make  ubuntu            # builds for Ubuntu, includes init.d/"
-	@echo "    make  ubuntu-install    # installs in /usr, /etc, and /var"
-	@echo "    make  tivo-mips         # builds for Tivo in /usr/local, /var"
-	@echo "    make  tivo-install      # installs in /usr/local, /var"
-	@echo "    make  tivo-s1           # builds for a series1 in /var/hack"
-	@echo "    make  tivo-s2           # builds for a series[23] in /var/hack"
-	@echo "    make  tivo-hack-install # installs in /var/hack, /var"
-	@echo "    gmake freebsd           # builds for FreeBSD in /usr/local, /var"
-	@echo "    gmake freebsd-install   # installs in /usr/local, /var"
-	@echo "    make  mac               # builds for Mac in /usr/local, /var"
-	@echo "    make  mac-fat           # builds for Mac in /usr/local, /var"
-	@echo "    make  mac-install       # installs in /usr/local, /var"
-	@echo "    make  cygwin            # builds for windows using Cygwin"
-	@echo "    make  cygwin-install    # installs in /usr/local"
+	@echo "    make local              # builds for /usr/local and /var"
+	@echo "    make install            # installs into /usr/local and /var"
+	@echo "    make package            # builds for /usr and /var"
+	@echo "    make package-install    # installs into for /usr and /var"
+	@echo "    make fedora             # builds for Fedora, includes init.d/"
+	@echo "    make fedora-install     # installs in /usr, /etc, and /var"
+	@echo "    make ubuntu             # builds for Ubuntu, includes init.d/"
+	@echo "    make ubuntu-install     # installs in /usr, /etc, and /var"
+	@echo "    make tivo-mips          # builds for Tivo in /usr/local, /var"
+	@echo "    make tivo-install       # installs in /usr/local, /var"
+	@echo "    make tivo-s1            # builds for a series1 in /var/hack"
+	@echo "    make tivo-s2            # builds for a series[23] in /var/hack"
+	@echo "    make tivo-hack-install  # installs in /var/hack, /var"
+	@echo "    make freebsd            # builds for FreeBSD in /usr/local, /var"
+	@echo "    make freebsd-install    # installs in /usr/local, /var"
+	@echo "    make mac                # builds for Mac in /usr/local, /var"
+	@echo "    make mac-fat            # builds for Mac in /usr/local, /var"
+	@echo "    make mac-install        # installs in /usr/local, /var"
+	@echo "    make cygwin             # builds for windows using Cygwin"
+	@echo "    make cygwin-install     # installs in /usr/local"
 
 local: $(PROG) $(CLIENT) site moduledir cidgatedir tooldir scriptdir
 
 site: $(SITE)
 
-$(PROG): $(OBJECTS)
+$(PROG): version.h $(OBJECTS)
 	$(CC) $(EXTRA_CFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
 
 $(OBJECTS): $(HEADER)
+
+version.h: version.h-in
+	sed "s/XXX/$(Version)/" $? > $@
 
 fedoradir:
 	cd Fedora; $(MAKE) init prefix=$(prefix) prefix2=$(prefix2) \
@@ -359,7 +366,7 @@ clobber: clean
 	rm -f $(PROG) $(PROG).ppc-tivo $(PROG).mips-tivo tivo-ppc tivo-mips
 	rm -f $(PROG).ppc-mac $(PROG).i386-mac
 	rm -f tivocid tivoncid $(CLIENT) $(SITE)
-	rm -f a.out *.log *.zip *.tar.gz
+	rm -f version.h a.out *.log *.zip *.tar.gz *.tgz
 	cd man; $(MAKE) clobber
 	cd tools; $(MAKE) clobber
 	cd scripts; $(MAKE) clobber
@@ -377,8 +384,8 @@ files: $(FILES)
         install-logrotate install-man install-var clean clobber files
 
 % : %.sh
-	sed 's,/usr/local/share/ncid,$(MODULEDIR),;s,/usr/local/etc/ncid,$(CONFDIR),;s,/usr/local/share/pixmaps,$(IMAGEDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),;s,/usr/local/bin,$(BIN),' $< > $@
+	sed 's,/usr/local/share/ncid,$(MODULEDIR),;s,/usr/local/etc/ncid,$(CONFDIR),;s,/usr/local/share/pixmaps,$(IMAGEDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),;s,/usr/local/bin,$(BIN),;s,XxXxX,$(Version),' $< > $@
 	chmod 755 $@
 
-% : %.dist
+% : %-in
 	sed '/share/s,/usr/local,$(prefix),;/$(settag)/s/# set/set/;/$(setname)/s/# set/set/' $< > $@

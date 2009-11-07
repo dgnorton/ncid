@@ -18,6 +18,7 @@ extra_commands="condrestart"
 name=ncid
 module=ncid-samba
 pidfile=/var/run/$module.pid
+sambaopt="-M"
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf
@@ -26,7 +27,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 [ -f $ConfigFile ] && . $ConfigFile
 
 command=/usr/local/bin/$name
-command_args="--no-gui -p $pidfile -C -P $module &"
+command_args="--no-gui -p $pidfile -C -P $module $sambaopt &"
 procname=/usr/local/bin/tclsh8.4
 
 load_rc_config $name

@@ -1,0 +1,4 @@
+/*
+ * The version number is obtained from the file: VERSION
+ */
+#define VERSION     "(NCID) XXX"

@@ -5,17 +5,17 @@
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * This file is part of ncidd, a caller-id program for your TiVo.
- * 
+ *
  * ncidd is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * ncidd is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
@@ -43,6 +43,8 @@ int verbose = 1;
 unsigned long cidlogmax = LOGMAX;
 pid_t pid;
 
+char ringline[CIDSIZE] = "-";
+
 struct pollfd polld[CONNECTIONS + 2];
 static struct termios otty, ntty;
 FILE *logptr;
@@ -63,7 +65,7 @@ char *strdate();
     extern char *strsignal();
 #endif
 
-void exit(), finish(), free(), reload(), doPoll(), formatCID(),
+void exit(), finish(), free(), reload(), ignore(), doPoll(), formatCID(),
      writeClients(), writeLog(), sendLog(), builtinAlias(), userAlias(),
      openTTY(), sendInfo(), logMsg(), cleanup();
 
@@ -77,17 +79,15 @@ int main(int argc, char *argv[])
     struct stat statbuf;
     char msgbuf[BUFSIZ];
 
-    signal(SIGHUP, finish);
-    signal(SIGINT, finish);
+    signal(SIGHUP,  finish);
+    signal(SIGINT,  finish);
     signal(SIGQUIT, finish);
-    signal(SIGILL, finish);
     signal(SIGABRT, finish);
-    signal(SIGFPE, finish);
     signal(SIGSEGV, finish);
     signal(SIGALRM, finish);
     signal(SIGTERM, finish);
-    signal(SIGUSR1, finish);
-    signal(SIGUSR2, finish);
+
+    signal(SIGPIPE, ignore);
 
     /* global containing name of program */
     name = strrchr(argv[0], (int) '/');
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
     {
         /* Create the call log file if not present */
         if ((fd = open(cidlog, O_WRONLY | O_APPEND | O_CREAT,
-             S_IRWXU | S_IRGRP | S_IROTH)) < 0)
+             S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) < 0)
         {
             sprintf(msgbuf, "%s: %s\n", cidlog, strerror(errno));
             logMsg(LEVEL1, msgbuf);
@@ -374,7 +374,7 @@ int main(int argc, char *argv[])
                         if (doTTY() < 0)
                         {
                             sprintf(msgbuf,
-                                "%sCannot init TTY, Terminated %s\n",
+                                "%sCannot init TTY, Terminated %s",
                                 MSGLINE, strdate(WITHSEP));
                             writeClients(mainsock, msgbuf);
                             tcsetattr(ttyfd, TCSANOW, &otty);
@@ -780,7 +780,7 @@ void doPoll(int events, int mainsock)
     {
       if (!noserial && polld[pos].fd == ttyfd)
       {
-        sprintf(buf, "%sSerial device Hung Up, Terminated  %s\n",
+        sprintf(buf, "%sSerial device Hung Up, Terminated  %s",
           MSGLINE, strdate(WITHSEP));
         writeClients(mainsock, buf);
         errorExit(-112, "Fatal", "Serial device hung up");
@@ -795,7 +795,7 @@ void doPoll(int events, int mainsock)
     {
       if (!noserial && polld[pos].fd == ttyfd)
       {
-        sprintf(buf, "%sPoll device error, Terminated  %s\n",
+        sprintf(buf, "%sPoll device error, Terminated  %s",
           MSGLINE, strdate(WITHSEP));
         writeClients(mainsock, buf);
         errorExit(-112, "Fatal", "Poll device error");
@@ -847,7 +847,7 @@ void doPoll(int events, int mainsock)
             if (cnt == 10)
             {
               sprintf(buf,
-                      "%sSerial device %d returns no data, Terminated  %s\n",
+                      "%sSerial device %d returns no data, Terminated  %s",
                 MSGLINE, ttyfd, strdate(WITHSEP));
               writeClients(mainsock, buf);
               errorExit(-112, "Fatal", "Serial device returns no data");
@@ -895,7 +895,6 @@ void doPoll(int events, int mainsock)
           else
           {
             sprintf(buf, "%s %s %s%s", ANNOUNCE, name, VERSION, CRLF);
-            //strcat(strcat(strcpy(buf, ANNOUNCE), VERSION), CRLF);
             ret = write(sd, buf, strlen(buf));
             if (addPoll(sd) < 0)
             {
@@ -999,23 +998,28 @@ void doPoll(int events, int mainsock)
                  * Found a CALLINFO Line
                  *
                  * CALLINFO Line Format:
-                 *    CALLINFO: ###CALLED...
-                 *    CALLINFO: ###CANCEL...
-                 *    CALLINFO: ###BYE...
+                 *    CALLINFO: ###CALLED...DATE%s...LINE%s...NMBR%s+++
+                 *    CALLINFO: ###CANCEL...DATE%s...LINE%s...NMBR%s+++
+                 *    CALLINFO: ###BYE...DATE%s...LINE%s...NMBR%s+++
                  */
 
-                /* Get word between "+++" and "..." */
-                sptr = index(buf, (int) '#') + 3;
-                *(eptr = index(buf, (int) '.')) = '\0';
-
-                sprintf(msgbuf, "Gateway (sd %d) sent CALLINFO for %s.\n",
-                        polld[pos].fd, sptr);
+                sprintf(msgbuf, "Gateway (sd %d) sent CALLINFO:\n",
+                        polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
 
-                /* Restore buffer by replacing '\0' with '.' */
-                *eptr = '.';
-
                 writeLog(datalog, buf);
+
+                /* get the line label */
+                if ((sptr = strstr(buf, "LINE")) == NULL)
+                    strcpy(ringline, "-");
+                else
+                {
+                    *(eptr = index(sptr + 4, (int) '.')) = '\0';
+                    strcpy(ringline, sptr + 4);
+                    /* Restore buffer by replacing '\0' with '.' */
+                    *eptr = '.';
+                }
+
                 if (strstr(buf, CANCEL))
                 {
                   ring = -1;
@@ -1318,10 +1322,6 @@ void formatCID(int mainsock, char *buf)
     {
         strncpy(cid.cidmesg, buf[4] == '=' ? buf + 5 : buf + 7, CIDSIZE - 1);
         cid.status |= CIDMESG;
-
-        /* some systems send MESG instead of NAME, set NONAME */
-        strncpy(cid.cidname, NONAME, CIDSIZE - 1);
-        cid.status |= CIDNAME;
     }
 
     if ((cid.status & CIDALL4) == CIDALL4)
@@ -1408,17 +1408,18 @@ void userAlias(char *nmbr, char *name, char *line)
  * Send string to all TCP/IP CID clients.
  */
 
-void writeClients(int mainsock, char *buf)
+void writeClients(int mainsock, char *inbuf)
 {
     int pos, ret;
+    char buf[BUFSIZ];
 
+    strcat(strcpy(buf, inbuf), CRLF);
     for (pos = 0; pos < CONNECTIONS + 2; ++pos)
     {
         if (polld[pos].fd == 0 || polld[pos].fd == ttyfd ||
             polld[pos].fd == mainsock)
             continue;
         ret = write(polld[pos].fd, buf, strlen(buf));
-        ret = write(polld[pos].fd, CRLF, strlen(CRLF));
     }
 }
 
@@ -1429,9 +1430,9 @@ void writeClients(int mainsock, char *buf)
 void sendLog(int sd, char *logbuf)
 {
     struct stat statbuf;
-    char *iptr, *optr, input[BUFSIZ], msgbuf[BUFSIZ];
+    char *iptr = 0, *optr, input[BUFSIZ], msgbuf[BUFSIZ];
     FILE *fp;
-    int ret;
+    int ret, len;
 
     if (stat(cidlog, &statbuf) == 0)
     {
@@ -1459,7 +1460,10 @@ void sendLog(int sd, char *logbuf)
      */
     while (fgets(input, BUFSIZ - sizeof(LINETYPE), fp) != NULL)
     {
+        /* strip <CR> and <LF> */
+        if ((iptr = strchr( input, '\r')) != NULL) *iptr = 0;
         if ((iptr = strchr( input, '\n')) != NULL) *iptr = 0;
+
         optr = logbuf;
         if (strstr(input, ": ") != NULL)
         {
@@ -1469,28 +1473,51 @@ void sendLog(int sd, char *logbuf)
         }
         else iptr = input;
         strcat(strcat(strcpy(optr, LOGLINE), iptr), CRLF);
-        if ((ret = write(sd, logbuf, strlen(logbuf))) == -1)
-        {
-            while (ret == -1 && errno == EAGAIN)
-                ret = write(sd, logbuf, strlen(logbuf));
+        len = strlen(logbuf);
+        ret = write(sd, logbuf, len);
 
-            if (ret == -1 && errno != EAGAIN)
+        optr = logbuf;
+        while ((ret != -1 && ret != len) ||
+               (ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)))
+        {
+            /* short write or resource busy, need to attempt subsequent write*/
+
+            if (ret != -1 && ret != len)
             {
-                sprintf(msgbuf, "sending log: %d %s\n", errno, strerror(errno));
-                logMsg(LEVEL1, msgbuf);
+               /* short write, */
+               len -= ret;
+               optr += ret;
             }
+
+            /* short delay before trying to rewrite line or rest of line */
+            usleep(INITWAIT);
+            ret = write(sd, optr, len);
+        }
+
+        if (ret == -1)
+        {
+            /* write error */
+            sprintf(msgbuf, "sending log: %d %s\n", errno, strerror(errno));
+            logMsg(LEVEL1, msgbuf);
         }
     }
 
     (void) fclose(fp);
 
-    sprintf(msgbuf, "Client %d connected, sent call log: %s\n",
-        sd, cidlog);
+    /* Determine if a Call Log was sent */
+    if (iptr)
+    {
+        /* Indicate end of the Call Log */
+        sprintf(msgbuf, "%s%s", LOGEND, CRLF);
+        ret = write(sd, msgbuf, strlen(msgbuf));
+    }
+
+    sprintf(msgbuf, "Client %d connected, sent call log: %s\n", sd, cidlog);
     logMsg(LEVEL3, msgbuf);
 }
 
 /*
- * Write log, if log file exists.
+ * Write log, if logfile exists.
  */
 
 void writeLog(char *logf, char *logbuf)
@@ -1505,16 +1532,13 @@ void writeLog(char *logf, char *logbuf)
     }
     else
     {
-        ret = write(logfd, logbuf, strlen(logbuf));
-        ret = write(logfd, NL, strlen(NL));
+        /* write log entry */
+        sprintf(msgbuf, "%s\n", logbuf);
+        ret = write(logfd, msgbuf, strlen(msgbuf));
         close(logfd);
 
-        /* log to server log, if not blank */
-        if (*logbuf)
-        {
-            sprintf(msgbuf, "%s\n", logbuf);
-            logMsg(LEVEL3, msgbuf);
-        }
+        /* log to server log */
+        logMsg(LEVEL3, msgbuf);
     }
 }
 
@@ -1530,18 +1554,11 @@ void sendInfo(int mainsock)
 {
     char buf[BUFSIZ], *ptr;
 
-    sprintf(buf, "%s%s%s%s%d%s%s", CIDINFO,
-            LINE, cid.cidline,
-            RING, ring,
-            STAR, CRLF);
+    userAlias("", "", ringline);
+    sprintf(buf, "%s%s%s%s%d%s",CIDINFO, LINE, ringline, RING, ring, STAR);
     writeClients(mainsock, buf);
 
-    /* strip <CR> */
-    if ((ptr = strchr(buf, '\r')))
-    {
-        *ptr++ = '\n';
-        *ptr = '\0';
-    }
+    strcat(buf, NL);
     logMsg(LEVEL3, buf);
 }
 
@@ -1656,8 +1673,8 @@ void finish(int sig)
         logMsg(LEVEL1, msgbuf);
     }
 
-    sprintf(msgbuf, "Received Signal: %s\nTerminated: %s\n",
-            strsignal(sig), strdate(WITHSEP));
+    sprintf(msgbuf, "Received Signal %d: %s\nTerminated: %s\n",
+            sig, strsignal(sig), strdate(WITHSEP));
     logMsg(LEVEL1, msgbuf);
 
     cleanup();
@@ -1672,8 +1689,8 @@ void reload(int sig)
 {
     char msgbuf[BUFSIZ];
 
-    sprintf(msgbuf, "received SIGHUP - reloading the alias file: %s\n",
-            strdate(WITHSEP));
+    sprintf(msgbuf, "Received Signal %d: %s\nReloading the alias file: %s\n",
+            sig, strsignal(sig), strdate(WITHSEP));
     logMsg(LEVEL1, msgbuf);
 
     /*
@@ -1689,6 +1706,16 @@ void reload(int sig)
 
     /* reload alias file, but quit on error */
     if (doAlias()) errorExit(-109, 0, 0);
+}
+
+/* ignored signals */
+void ignore(int sig)
+{
+    char msgbuf[BUFSIZ];
+
+    sprintf(msgbuf, "Received Signal %d: %s\nIgnored: %s\n",
+            sig, strsignal(sig), strdate(WITHSEP));
+    logMsg(LEVEL1, msgbuf);
 }
 
 int errorExit(int error, char *msg, char *arg)

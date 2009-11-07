@@ -1,6 +1,6 @@
 andLinux Install
 
-Last edited: Mon Jun 22, 2009
+Last edited: Wed Nov 4, 2009
 
 If NCID does not work, see INSTALL for some simple tests.
 If using sip2ncid, see Setup-ncidsip
@@ -17,6 +17,7 @@ INSTALL andLinux:
     - download andLinux-VERSION-minimal.exe or andLinux-VERSION-KDE.exe
       from http://www.andlinux.org/
     - accept the installation defaults (you may want to add more memory)
+      (the default is to autostart, this can be changed in window services)
     - add "Xming.exe" and "colinux-slirp-net-daemon.exe" programs to your 
       firewall program exceptions so they are allowed
     - edit C:\Program Files\andLinux\settings.txt (you can use notepad.exe)
@@ -27,30 +28,21 @@ INSTALL andLinux:
       (this forwards the SIP, NCID, and YAC ports to andLinux)
     - if you would like to ssh into andLinux, append /tcp:22:22 to the end
       of the line.
-    - The andLinux Beta 1 rc6 release has problems with some virus checkers
-      that cause the startup to take minutes to complete.  Virus scanners
-      will usually scan files that end in .dvr, so a workaround is to rename
-      the files:
-        * modify these lines if they end in .dvr, skip otherwise:
-          cobd0=Drives\base.dvr
-          cobd1=Drives\swap.dvr
-          so they become:
-          cobd0=Drives\base.vdi
-          cobd1=Drives\swap.vdi
-        * rename these files from .dvr to .vdi only if you did the above
-          Drives\base.dvr
-          Drives\swap.dvr
     - reboot
 
 COMPILE NCID: see INSTALL-Ubuntu and INSTALL
 
 INSTALL NCID:
 
-    - Download the latest NCID deb package from sourceforge
+    - Download the latest NCID deb packages from sourceforge
       * You can use the andLinux version of Netscape
       * You can use wget in a andLinux terminal window
-        (using version 0.70 as an example)
-        wget  http://downloads.sourceforge.net/ncid/ncid_0.70-0ubuntu1_i386.deb
+        (downloading the server package using version 0.75 as an example)
+        wget  http://downloads.sourceforge.net/ncid/ncid_0.75-0ubuntu1_i386.deb
+      Example server package: ncid_0.75-0ubuntu1_i386.deb
+      Example client package: ncid-client_0.75-0ubuntu1_all.deb
+      The server package must be installed, the client package does
+      not need to be installed if you want to run a Windows client.
     - Use Synaptic to locate and install gdebi
     - Use Thunar (file viewer) to locate the NCID deb package
     - Install the NCID deb package by double clicking on it.

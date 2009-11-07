@@ -5,8 +5,8 @@
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
-# Short-Description: NCID MythTV Client
-# Description:       NCID client with the MythTV Output Module
+# Short-Description: NCID Client using the mythtv module
+# Description:       NCID client using the MythTV Output Module
 ### END INIT INFO
 
 # Author: John L. Chmielewski <jlc@users.sourceforge.net>

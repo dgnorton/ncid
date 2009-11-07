@@ -82,7 +82,7 @@ set Callprog    0
 set CallOnRing  0
 set TivoFlag    0
 set MsgFlag     0
-set Ring        0
+set Ring        999
 set NoCID       0
 
 ###  global variables that can be changed by the configuration file
@@ -90,7 +90,7 @@ set Country     "US"
 set NoOne       1
 
 if {[file exists $ConfigFile]} {
-    catch [source $ConfigFile]
+    catch {source $ConfigFile}
 }
 
 ### global variables that are fixed
@@ -98,8 +98,8 @@ set Count       0
 set ExecSh      0
 set Socket      0
 set Try         0
-set Version     0.74
-set VersionInfo "NCID Client: ncid $Version"
+set Version     "(NCID) XxXxX"
+set VersionInfo "Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
                [--call-prog       | -C]
@@ -109,7 +109,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
                [--program PROGRAM | -P PROGRAM]
                [--pidfile FILE    | -p pidfile]
                [--raw             | -R]
-               [--ring count      | -r count]
+               [--ring 0-9|-1|-2  | -r 0-9|-1|-2]
                [--tivo            | -T]
                [--PopupTime 1-99  | -t 1-99 seconds]
                [--verbose         | -V]
@@ -210,7 +210,10 @@ proc getCID {} {
     global Ring
     global Socket
     global Try
+    global Verbose
     global VersionInfo
+    global lineLabel
+    global call
 
     set msg {CID connection closed}
     set cnt 0
@@ -245,11 +248,17 @@ proc getCID {} {
             if {$type == 5} {
                 # CIDINFO (5) line
                 if {$CallOnRing} {
-                    set cidinfo [getField RING $dataBlock]
+                    set ringinfo [getField RING $dataBlock]
+                    set lineinfo [getField LINE $dataBlock]
                     if {$NoCID} {
-                        if {$cidinfo == "1"} {handleMSG "Phone Call"}
+                        if {$ringinfo == "1"} {handleMSG "Phone Call"}
+                        if {$ringinfo == "0"} {handleMSG " "}
                     } else {
-                        if {$Callprog && $Ring == $cidinfo} {sendCID $cid}
+                        # must use $call($lineinfo) instead of $cid
+                        if {$Callprog && $Ring == $ringinfo} {
+                            catch {sendCID $call($lineinfo)} oops
+                            if $Verbose {puts "$oops"}
+                        }
                     }
                 }
             } elseif {$type == 4} {
@@ -262,15 +271,18 @@ proc getCID {} {
             } else {
                 # CID (1), EXTRA (2), or CIDLOG (3) line
                 set cid [formatCID $dataBlock]
-                # display log
+                array set call "$lineLabel [list $cid]"
+                # display log - $cid set above, no need for $call($lineLabel)
                 if {!$Raw} {displayLog $cid 0}
                 # display CID
                 if {$type < 3} {
                     # CID (1) or EXTRA (2) line
                     if {!$NoGUI} {
+                        # $cid set above, no need for $call($lineLabel)
                         displayCID $cid 0
                         doPopup
                     }
+                    # $cid set above, no need for $call($lineLabel)
                     if {!$CallOnRing && $Callprog} {sendCID $cid}
                 }
             }
@@ -319,6 +331,7 @@ proc checkCID {dataBlock} {
 proc formatCID {dataBlock} {
     global Country
     global NoOne
+    global lineLabel
 
     set cidname [getField NAME $dataBlock]
     set cidnumber [getField NU*MBE*R $dataBlock]
@@ -371,9 +384,12 @@ proc formatCID {dataBlock} {
     regsub {([0-9][0-9])([0-9][0-9])} $cidtime {\1:\2} cidtime
     if [string match {*\*LINE\**} $dataBlock] {
         set cidline [getField LINE $dataBlock]
-        regsub {(.*)} $cidline {<\1>} cidline
     # set default line indicator
-    } else {set cidline <->}
+    } else {set cidline -}
+    # create call line label
+    set lineLabel $cidline
+    # put line label inside <>
+    regsub {(.*)} $cidline {<\1>} cidline
     # make default line indicator a blank
     regsub {<->} $cidline {} cidline
 
@@ -746,6 +762,9 @@ proc doPID {} {
         if $Verbose {puts "Using pidfile: $PIDfile"}
     } else {if $Verbose {puts "Not using a PID file"}}
 }
+
+# This is the default, except when using freewrap
+encoding system utf-8
 
 getArg
 if {!$NoGUI} makeWindow

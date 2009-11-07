@@ -1,8 +1,10 @@
 FreeBSD rc scripts:
+
 ncidd.rc
 ncid.rc
 ncidsip.rc
 yac2ncid.rc
+ncid-hangup.rc
 ncid-mythtv.rc
 ncid-page.rc
 ncid-kpopup.rc

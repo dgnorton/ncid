@@ -1,8 +1,12 @@
 NCID Client Output Modules:
 
-The following modules are configured be editing /etc/ncid/ncidmodules.conf
+The following modules are configured by editing /etc/ncid/ncidmodules.conf
 
 The ncidmodules.1 man page documents the following output modules.
+
+Module to terminate a call using a modem
+    IMPORTANT: uses minicom to control the modem
+    ncid-hangup
 
 Module to popup Caller ID using KDE:
     ncid-kpopup

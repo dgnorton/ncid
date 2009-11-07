@@ -2,7 +2,7 @@
 sip2ncid server verbose levels.  Higher levels include lower levels.
 --------------------------------------------------------------------
 
-Wed Apr 15, 2009
+Last edited by jlc on Thu Oct 22, 2009
 
 LEVEL5:
         show lines received from the NCID server
@@ -28,6 +28,7 @@ LEVEL1:
         show server version
         indicate test mode activated
         show verbose level
+        show status of sending "no SIP" warning messages
         show NCID server host:port
         indicate no config file
         indicate config file processed

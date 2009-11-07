@@ -5,6 +5,10 @@
 # chkconfig:   - 95 05
 # description: Inject CID info by snooping SIP invites
 
+### BEGIN INIT INFO
+# Short-Description: NCID SIP Gateway (using Perl)
+### END INIT INFO
+
 # Source function library.
 . /etc/rc.d/init.d/functions
 

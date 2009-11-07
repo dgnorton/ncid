@@ -3,7 +3,11 @@
 # ncid-yac           Start/Stop Network Caller ID client with the YAC Module
 #
 # chkconfig: - 96 04
-# description: NCID client with the YAC Output Module
+# description: ncid using the YAC Output Module
+
+### BEGIN INIT INFO
+# Short-Description: NCID Client using the yac module
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions

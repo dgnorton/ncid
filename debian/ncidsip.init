@@ -5,7 +5,7 @@
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
-# Short-Description: NCID SIP Gateway
+# Short-Description: NCID SIP Gateway (using Perl)
 # Description:       Inject CID info by snooping SIP Invites
 ### END INIT INFO
 

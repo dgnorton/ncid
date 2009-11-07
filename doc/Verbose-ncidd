@@ -2,7 +2,7 @@
 NCIDD server verbose levels.  Higher levels include lower levels.
 ----------------------------------------------------------------
 
-Sat Feb 2, 2008
+Last edited by jlc on Thu Oct 22, 2009
 
 LEVEL5:
         print alias table
@@ -78,6 +78,6 @@ LEVEL1:
         indicate cid log is too large
         indicate sending log to client
         indicate removed pidfile
-        indicate which termination signal received.
-        indicate program terminated with date and time
-        indicate received SIGHUP - reloading config and alias files
+        indicate signal received and terminate program with date and time
+        indicate SIGHUP received and reload alias files
+        indicate SIGPIPE received and ignored with date and time

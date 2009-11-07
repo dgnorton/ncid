@@ -1,11 +1,20 @@
 #!/usr/bin/perl
 
-# Created by John L. Chmielewski on Fri Mar 14, 2003
-# Last updated by jlc on Tue Mar 31, 2009
+# Created on Fri Mar 14, 2003 by John L. Chmielewski
+# Converted from using netcat to using sockets - Chris Lenderman
+# Last updated on Mon Oct 12, 2009 by jlc
+
+use Socket;
 
 ($testfile = shift) || ($testfile = "testclient.data");
 
-open(OUTPUT, '|nc -l localhost 3334') || die "Could not open netcat\n";
+$server_port = 3334;
+socket(SERVER, PF_INET, SOCK_STREAM, getprotobyname('tcp'));
+setsockopt(SERVER, SOL_SOCKET, SO_REUSEADDR, 1);
+$my_addr = sockaddr_in($server_port, INADDR_ANY);
+bind(SERVER, $my_addr) or die "Couldn't bind to port $server_port : $!\n";
+listen(SERVER, SOMAXCONN) or die "Couldn't listen on port $server_port : $!\n";
+
 open(TESTFILE, $testfile) || die "Could not open $testfile\n";
 
 print "Connect client to port 3334 to test, for example: ncid 3334\n\n";
@@ -16,13 +25,16 @@ print "    send CID:     line\n";
 print "    send CIDINFO: lines\n";
 print "    end  program\n\n";
 
-select(OUTPUT);
+accept(CLIENT, SERVER);
+# do something with CLIENT
+select(CLIENT);
 $| = 1;
 
 while (<TESTFILE>) {
-    if (/^#/) { next; }
+	if (/^#/) { next; }
 	if (/\w.*/) { print STDOUT; print; }
 	else { $response = <STDIN>; }
 }
+close(CLIENT);
 
 exit 0;

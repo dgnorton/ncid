@@ -22,7 +22,7 @@
 #include "sip2ncid.h"
 
 /* globals */
-int debug, listdevs, msgsent, nofilter, test, sd;
+int debug, listdevs, msgsent, nofilter, test, sd, warn;
 int ncidport   = NCIDPORT;
 int sipport    = SIPPORT;
 int verbose    = 1;
@@ -114,6 +114,10 @@ int main(int argc, char *argv[])
     sprintf(msgbuf, "Verbose level: %d\n", verbose);
     logMsg(LEVEL1, msgbuf);
 
+    sprintf(msgbuf, "Send clients 'No SIP packets' warning meaaages? %s\n",
+            warn ? "YES" : "NO");
+    logMsg(LEVEL1, msgbuf);
+
     sigact.sa_handler = sigdetect;
 
     sigaction(SIGHUP,  &sigact, NULL);
@@ -174,7 +178,6 @@ int getOptions(int argc, char *argv[])
     static struct option long_options[] = {
         {"config", 1, 0, 'C'},
         {"debug", 0, 0, 'D'},
-        {"dumpfile", 1, 0, 'd'},
         {"help", 0, 0, 'h'},
         {"interface", 1, 0, 'i'},
         {"listdevs", 0, 0, 'l'},
@@ -186,10 +189,12 @@ int getOptions(int argc, char *argv[])
         {"testall", 0, 0, 'T'},
         {"verbose", 1, 0, 'v'},
         {"version", 0, 0, 'V'},
+        {"writefile", 1, 0, 'w'},
+        {"warn", 1, 0, 'W'},
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "hi:ln:r:s:tv:w:C:DL:P:TV",
+    while ((c = getopt_long (argc, argv, "hi:ln:r:s:tv:w:C:DL:P:TVW",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -282,6 +287,13 @@ int getOptions(int argc, char *argv[])
             case 'V': /* version */
                 fprintf(stderr, SHOWVER, name, VERSION);
                 exit(0);
+            case 'W':
+                warn = atoi(optarg);
+                if (strlen(optarg) != 1 ||
+                    (!(warn == 0 && *optarg == '0') && warn != 1))
+                    errorExit(-107, "Invalid number", optarg);
+                if ((num = findWord("warn")) >= 0) setword[num].type = 0;
+                break;
             case '?': /* bad option */
                 fprintf(stderr, USAGE, name);
                 exit(-100);
@@ -481,7 +493,7 @@ void processPackets(u_char *args,
     int size_ip, size_udp, size_pdata, cnt, outcall, pos, retval;
 
     char sipbuf[SIPSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ],
-         tonumber[NUMSIZ], callid[CIDSIZ];
+         tonumber[NUMSIZ], fromnumber[NUMSIZ], callid[CIDSIZ];
     char *line, *number, *name;
 
     struct tm *tm;
@@ -667,7 +679,6 @@ void processPackets(u_char *args,
                     if (isdigit(*number))
                         strcpy(tonumber, number);
                     else strcpy(tonumber, "????");
-                    line = tonumber + strlen(tonumber) - 4;
                 }
 
                /*
@@ -678,12 +689,12 @@ void processPackets(u_char *args,
                 if (parseLine(sipbuf, INVITE, FROM,
                     (char *) &name, (char *) &number) == 0)
                 {
+                    strcpy(fromnumber, number);
                     /* if number is LINE NUMBER, it is a outgoing call */
                     for (cnt = 0, outcall = 0; cnt < MAXLINE; ++cnt)
                     {
                         if (linenum[cnt] && !strcmp(linenum[cnt], number))
                         {
-                            number = tonumber;
                             outcall = 1;
                             break;
                         }
@@ -693,13 +704,15 @@ void processPackets(u_char *args,
                 if (outcall)
                 {
                     /* Outgoing Call */
-                    sprintf(cidmsg, CIDCALL, number, strdate(NOYEAR));
+                    line = fromnumber + strlen(fromnumber) - 4;
+                    sprintf(cidmsg, CIDCALL, strdate(NOYEAR), line, tonumber);
                 }
                 else
                 {
                     /* Incoming Call */
+                    line = tonumber + strlen(tonumber) - 4;
                     sprintf(cidmsg, CIDLINE, strdate(NOYEAR),
-                            line, number, name);
+                            line, fromnumber, name);
                 }
                 if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
@@ -745,6 +758,7 @@ void processPackets(u_char *args,
                  */
                 if (parseLine(sipbuf, CANCEL, FROM, (char *) 0,
                     (char *) &number)) return;
+                strcpy(fromnumber, number);
 
                 /*
                  * if number is a telephone line number, it is a outgoing call
@@ -752,18 +766,38 @@ void processPackets(u_char *args,
                  *
                  * To: [["]NAME["]] <sip:CALLED_NMBR@IP_ADDR>;tag=TAG_NMBR
                  */
-                for (cnt = 0; cnt < MAXLINE; ++cnt)
+                if (parseLine(sipbuf, CANCEL, TO, (char *) 0,
+                    (char *) &number) == 0)
                 {
-                    if (linenum[cnt] && !strcmp(linenum[cnt], number))
+                    strcpy(tonumber, number);
+
+                    /* if number is LINE NUMBER, it is a outgoing call */
+                    for (cnt = outcall = 0; cnt < MAXLINE; ++cnt)
                     {
-                        /* get the called number from the TO line */
-                        if (parseLine(sipbuf, CANCEL, TO, (char *) 0,
-                            (char *) &number)) return;
-                        break;
+                        if (linenum[cnt] && !strcmp(linenum[cnt], fromnumber))
+                        {
+                            outcall = 1;
+                            break;
+                        }
                     }
                 }
 
-                sprintf(cidmsg, CIDCAN, number, strdate(NOYEAR));
+                if (outcall)
+                {
+                    /* Outgoing Call */
+                    line = fromnumber + strlen(fromnumber) - 4;
+                    /* get the called number from the TO line */
+                    number = tonumber;
+                }
+                else
+                {
+                    /* Incoming Call */
+                    line = tonumber + strlen(tonumber) - 4;
+                    /* get the calling number from the From line */
+                    number = fromnumber;
+                }
+
+                sprintf(cidmsg, CIDCAN, strdate(NOYEAR), line, number);
                 if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
             }
@@ -796,6 +830,7 @@ void processPackets(u_char *args,
                  */
                 if (parseLine(sipbuf, BYE, TO, (char *) 0,
                     (char *) &number)) return;
+                strcpy(fromnumber, number);
 
                 /*
                  * if number is the telephone line number,
@@ -803,18 +838,36 @@ void processPackets(u_char *args,
                  *
                  * From: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDR>;tag=TAG_NMBR
                  */
-                for (cnt = 0; cnt < MAXLINE; ++cnt)
+                if (parseLine(sipbuf, BYE, FROM, (char *) 0,
+                    (char *) &number))
                 {
-                    if (linenum[cnt] && !strcmp(linenum[cnt], number))
+                    strcpy(fromnumber, number);
+
+                    /* if number is LINE NUMBER, it is a outgoing call */
+                    for (cnt = outcall = 0; cnt < MAXLINE; ++cnt)
                     {
-                        /* get the calling number from the FROM line */
-                        if (parseLine(sipbuf, BYE, FROM, (char *) 0,
-                            (char *) &number)) return;
-                        break;
+                        if (linenum[cnt] && !strcmp(linenum[cnt], fromnumber))
+                        {
+                            outcall = 1;
+                            break;
+                        }
                     }
                 }
 
-                sprintf(cidmsg, CIDBYE, number, strdate(NOYEAR));
+                if (outcall)
+                {
+                    /* Outgoing Call */
+                    line = fromnumber + strlen(fromnumber) - 4;
+                    number = tonumber;
+                }
+                else
+                {
+                    /* Incoming Call */
+                    line = tonumber + strlen(tonumber) - 4;
+                    number = fromnumber;
+                }
+
+                sprintf(cidmsg, CIDBYE, strdate(NOYEAR), line, number);
                 if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
             }
@@ -877,12 +930,12 @@ int parseLine(char *sipbuf, char *plabel, char *llabel,
     int ret = 0;
     char *sptr, *eptr, *elptr;
     char msgbuf[BUFSIZ];
-    static linebuf[SIPSIZ];
+    static char linebuf[SIPSIZ];
 
     /* make copy of input buffer */
-    strcpy((char *)linebuf, sipbuf);
+    strcpy(linebuf, sipbuf);
 
-    if ((sptr = strstr((char *)linebuf, llabel)))
+    if ((sptr = strstr(linebuf, llabel)))
     {
         /* Terminate end of line */
         if ((elptr = index(sptr, (int) NL)))
@@ -1051,8 +1104,9 @@ int rmCallID(char *calls[], char *callid)
 
 void doPCAP()
 {
-    int i, pcapret;
+    int i, pcapret, retval;
     char errbuf[PCAP_ERRBUF_SIZE], msgbuf[BUFSIZ], filter_exp[BUFSIZ];
+    char warnmsg[BUFSIZ];
     const u_char *packet;
     struct pcap_pkthdr hdr;     /* pcap.h                    */
     struct ether_header *eptr;  /* net/ethernet.h            */
@@ -1138,7 +1192,7 @@ void doPCAP()
         *     0x2: error message logged
         */
         sprintf(msgbuf,
-                "ALARM TIMEOUT: pcap_loop return = %d, msgsent flag = %d\n",
+                "Alarm Timeout: pcap_loop(): return = %d, msgsent flag = %d\n",
                 pcapret, msgsent);
         logMsg(LEVEL3, msgbuf);
         if (pcapret == -2)
@@ -1150,6 +1204,15 @@ void doPCAP()
                         sipport, PKTWAIT);
                 logMsg(LEVEL1, msgbuf);
                 msgsent |= 0x1;
+                if (warn && sd)
+                {
+                    /*
+                     * send clients warning message to if warn option
+                     * set and if connected to the NCID server
+                     */
+                    sprintf(warnmsg, "MSG: %s", msgbuf);
+                    retval =  write(sd, warnmsg, strlen(warnmsg));
+                }
             }
         }
         else if (pcapret == -1)

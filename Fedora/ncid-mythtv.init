@@ -3,7 +3,11 @@
 # ncid-mythtv       Start/Stop Network Caller ID client with the MythTV Module
 #
 # chkconfig: - 96 04
-# description: NCID client with the MythTV Output Module
+# description: ncid using the MythTV Output Module
+
+### BEGIN INIT INFO
+# Short-Description: NCID Client using the mythtv module
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions

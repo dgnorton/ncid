@@ -1,6 +1,6 @@
 Name:       ncid
-Version:    0.74
-Release:    2%{?dist}
+Version:    0.75
+Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
 Group:      Applications/Communications
@@ -25,13 +25,17 @@ ncid-client package.
 %package client
 Summary:    NCID (Network Caller ID) client
 Group:      Applications/Communications
-Requires:   tcl, tk, mailx
+BuildArch:  noarch
+Requires:   tcl, tk, mailx, minicom
 
 %description client
 The ncid-client obtains the Caller ID from the ncid-server and normally
 displays it in a GUI window.  It can also display the Called ID in a
 terminal window or, using a output module, format the output and send it
 to another program.
+
+This package contains the NCID client with the hangup, page, yac, and
+skel output modules.
 
 %package mythtv
 Summary:    NCID mythtv module sends caller ID information MythTV
@@ -40,7 +44,7 @@ BuildArch:  noarch
 Requires:   %{name}-client = %{version}-%{release}, mythtv-frontend
 
 %description mythtv
-NCID mythtv module sends caller ID information MythTV using mythtvosd
+The NCID MythTV module displays caller ID information using mythtvosd
 
 %package kpopup
 Summary:    NCID kpopup module displays caller ID info in a KDE window
@@ -63,7 +67,7 @@ Requires:   %{name}-client = %{version}-%{release}, samba-client
 
 %description samba
 The NCID samba module sends caller ID information to a windows machine
-via popup.  This will not work if the messenger service is disabled.
+as a popup.  This will not work if the messenger service is disabled.
 
 %package speak
 Summary:    NCID speak module speaks caller ID information via voice synthesis
@@ -96,7 +100,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %files
 %defattr(-,root,root)
 %doc README VERSION doc
-%doc cidgate/README.Gateways Fedora/README.Fedora modules/README.modules
+%doc cidgate/README.Gateways Fedora/README.Fedora
 %doc scripts/README.logfile tools/README.tools
 /usr/bin/cidcall
 /usr/bin/cidalias
@@ -137,6 +141,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %doc modules/README.modules
 /usr/bin/ncid
 %dir /usr/share/ncid
+/usr/share/ncid/ncid-hangup
 /usr/share/ncid/ncid-page
 /usr/share/ncid/ncid-skel
 /usr/share/ncid/ncid-tivo
@@ -145,6 +150,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %dir /etc/ncid
 %config(noreplace) /etc/ncid/ncid.conf
 %config(noreplace) /etc/ncid/ncidmodules.conf
+%_initrddir/ncid-hangup
 %_initrddir/ncid-page
 %_initrddir/ncid-yac
 %{_mandir}/man1/ncid.1*
@@ -299,7 +305,11 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
-* Fri Jun 19 2009 John Chmielewski <sandeen@redhat.com> 0.74-1
+* Mon Oct 19 2009 John Chmielewski <jlc@users.sourceforge.net> 0.75-1
+- New release
+- client package changed from i386 to noarch
+
+* Fri Jun 19 2009 John Chmielewski <jlc@users.sourceforge.net> 0.74-1
 - New release
 
 * Sun Mar 29 2009 Eric Sandeen <sandeen@redhat.com> 0.73-2

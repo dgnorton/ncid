@@ -3,7 +3,11 @@
 # ncid-kpopup        Start/Stop Network Caller ID client with the PopUp Module
 #
 # chkconfig: - 96 04
-# description: NCID client with the PopUp Output Module
+# description: ncid using the KDE PopUp Output Module
+
+### BEGIN INIT INFO
+# Short-Description: NCID Client using the kpopup module
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions

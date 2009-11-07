@@ -1,6 +1,6 @@
 Fedora Install
 
-Last edited: Mon Jun 22, 2009
+Last edited: Sun Nov 1, 2009
 
 If NCID does not work, see INSTALL for some simple tests.
 If using sip2ncid, see Setup-ncidsip
@@ -19,20 +19,20 @@ INSTALL or UPGRADE:
     The client has a few output modules in its RPM package, and there
     are optional output modules in their own RPM packages.
 
-    - Download RPM Packages from sourceforge if not in Fedora repositories
+    - Download server and client RPM Packages from Fedora repositories
           ncid RPM Package         - server and gateways
           ncid-client RPM Package  - client and default output modules
 
     - Download any optional output modules wanted:
-        * ncid-MODULE RPM Package  - optional output modules wanted
+          ncid-MODULE RPM Package  - optional client output modules
 
     - Install or Upgrade the packages:
         Using the file viewer:
-            - Open the file viewer to view the NCID rpm packages
+            - Open the file viewer to view the NCID RPM packages
             - Select the RPM packages
             - right click selections and select "Open with Package installer"
         Using YUM:
-            - sudo yum install ncid-*.rpm
+            - sudo yum install ncid*.rpm
 
 CONFIGURE:
 

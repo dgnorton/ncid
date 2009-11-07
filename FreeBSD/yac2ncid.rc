@@ -12,10 +12,10 @@ yac2ncid_enable="${yac2ncid_enable-NO}"
 
 . /etc/rc.subr
 
+name=yac2ncid
 rcvar=`set_rcvar`
 extra_commands="condrestart"
 
-name=yac2ncid
 pidfile="/var/run/${name}.pid"
 args=""
 

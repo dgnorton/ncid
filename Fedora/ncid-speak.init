@@ -3,7 +3,11 @@
 # ncid-speak         Start/Stop Network Caller ID client with the Speak Module
 #
 # chkconfig: - 96 04
-# description: NCID client with the Speak Output Module
+# description: ncid using the Speak Output Module
+
+### BEGIN INIT INFO
+# Short-Description: NCID Client using the speak module
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -21,9 +25,10 @@ config="/usr/local/etc/ncid/ncidmodules.conf"
 module=ncid-speak
 pidfile=/var/run/$module.pid
 lockfile=/var/lock/subsys/$module
+speakopt="-M"
 
 [ -f $config ] && . $config
-args="--no-gui --pidfile $pidfile -C -P $module"
+args="--no-gui --pidfile $pidfile -C -P $module $speakopt"
 
 start() {
     [ -x $exec ] || exit 5

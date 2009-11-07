@@ -3,7 +3,11 @@
 # ncid-page          Start/Stop Network Caller ID client with the Page Module
 #
 # chkconfig: - 96 04
-# description: NCID client with the Page Output Module
+# description: ncid using the Page Output Module
+
+### BEGIN INIT INFO
+# Short-Description: NCID Client using the page module
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -21,10 +25,11 @@ config="/usr/local/etc/ncid/ncidmodules.conf"
 module=ncid-page
 pidfile=/var/run/$module.pid
 ringopt=""
+pageopt="-M"
 lockfile=/var/lock/subsys/$module
 
 [ -f $config ] && . $config
-args="--no-gui --pidfile $pidfile -C -P $module $ringopt"
+args="--no-gui --pidfile $pidfile -C -P $module $ringopt $pageopt"
 
 start() {
     [ -x $exec ] || exit 5

@@ -1,9 +1,13 @@
 #!/bin/sh
 #
-# yca2ncid:    Start/Stop YAC CID client
+# yac2ncid:    Start/Stop YAC CID client
 #
 # chkconfig:   - 95 05
 # description: The NCID YAC Gateway inputs CID from a YAC server
+
+### BEGIN INIT INFO
+# Short-Description: NCID YAC Gateway
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions

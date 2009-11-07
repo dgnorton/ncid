@@ -5,7 +5,7 @@
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
-# Short-Description: Network Caller ID Server
+# Short-Description: NCID SIP Gateway
 # Description:       The sip2ncid gateway collects Caller ID data from SIP
 #                    Invite packets
 ### END INIT INFO

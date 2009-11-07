@@ -1,5 +1,6 @@
 Fedora service files:
 
+    ncid-hangup.init  - service file for ncid with ncid-hangup output module
     ncid-mythtv.init  - service file for ncid with ncid-mythtv output module
     ncid-page.init    - service file for ncid with ncid-page output module
     ncid-kpopup.init  - service file for ncid with ncid-kpopup output module

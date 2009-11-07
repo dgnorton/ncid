@@ -3,7 +3,11 @@
 # ncidd      Start/Stop Network Caller ID server
 #
 # chkconfig: - 94 06
-# description: ncidd provides Caller ID information
+# description: ncidd provides Caller ID information to clients
+
+### BEGIN INIT INFO
+# Short-Description: NCID (Network Caller ID) Server
+### END INIT INFO
 
 # Source function library.
 . /etc/rc.d/init.d/functions

@@ -1,5 +1,127 @@
 ncid - Network CallerID
 
+Version 0.75
+    - Makefile: Added rule to make version.h from the VERSION file
+                Changed *.dist files to *-in files and rules to make them
+                remove *.tgz files in clobber:
+                Changed gmake to make for freebsd and freebsd-install targets
+    - ncid.conf-in: renamed from ncid.conf.dist
+    - ncid.sh: changed version to indicate NCID version
+               removed NCID from VersionInfo
+               added line: encoding system utf-8
+               getCID {}: ($type == 1,2, or 3) created $call($lineLabel)
+                          ($type == 5) call on ring uses $call($lineinfo)
+                                       instead of $cid
+    - ncidd.h: changed version to indicate NCID version
+               increased CONNECTIONS from 15 to 25
+               removed NCID from ANNOUNCE
+               removed " to get" from LOGMSG
+    - ncidd.c: sendLog(): changed write() to handle short write & EWOULDBLOCK
+                          if call log sent send line: 300 end of call log
+                          added line to strip <CR>
+               sendInfo(): removed CRLF in sprintf()
+                           removed strip <CR> code and added strcat()
+               main(): removed \n from sprintf() just before writeClients()
+               main(): added: signal(SIGPIPE, ignore);
+                       removed signals: SIGFPE, SIGILL, SIGUSR1, SIGUSR2,
+                                        SIGILL
+                       create call log in mode 644 instead of 744
+                       added ignore()
+               reload(): replaced SIGHUP with strsignal(sig)
+               writeClients(): added buf() and removed write() for CRLF
+               writeLog(): removed write() for NL moved sprintf(msgbuf,...)
+               doPoll(): CALLINFO line: removed buf from sprintf()
+               formatCID(): removed setting NONAME when MESG line received
+    - ncidd.conf-in: renamed from ncidd.conf.dist
+    - version.h-in: Added
+    - cidgate/Makefile: Added rule to make ../version.h from ../VERSION file
+                        Changed *.dist to *-in files and rules to make them
+    - cidgate/config.c: added the "warn" configure option
+    - cidgate/ncidsip.pl: changed version to indicate NCID version
+                          Modified all the CALLINFO lines
+    - cidgate/sip2ncid.h: changed version to indicate NCID version
+                          changed PKTWAIT from 60 to 90
+                          changed CIDCAN, CIDBYE, CIDCALL defines to
+                                  include LINE
+    - cidgate/sip2ncid.c: doPCAP() if warn & sd, send message to clients
+                          getOption() corrected dumpfile to writegile
+                                      added --warn, -W option
+                          processPackets() modified INVITE, CANCEL, and BYE
+                                           to output the telephone line used
+    - cidgate/sip2ncid.conf: added the "warn" configure option
+    - cidgate/yac2ncid.sh: changed version to indicate NCID version
+    - debian/Makefile: Updated for ncid-hangup.init
+    - debian/control: added libpcap0.8-devel to Build-Depends
+                      split package into multiple packages
+    - debian/*.init: changed Description and added Short Description
+    - debian/postrm: changed for server package
+    - debian/postrm-client: Added
+    - debian/postrm-kpopup: Added
+    - debian/postrm-mythtv: Added
+    - debian/postrm-samba: Added
+    - debian/postrm-speak: Added
+    - debian/prerm: changed for server package
+    - debian/prerm-client: Added
+    - debian/prerm-kpopup: Added
+    - debian/prerm-mythtv: Added
+    - debian/prerm-samba: Added
+    - debian/prerm-speak: Added
+    - debian/rules: changed to generate multiple DEB packages
+    - debian/ncid-hangup.init: Added
+    - debian/ncid-page.init: added --message|-M option
+    - debian/ncid-samba.init: added --message|-M option
+    - debian/ncid-speakopt.init: added --message|-M option
+    - debian/postrm: added ncid-hangup
+    - debian/prerm: added ncid-hangup
+    - debian/rules: added debian/root/usr/sbin/sip2ncid to dpkg-shlibdeps
+                    generate multiple packages
+    - doc/CONTRIBUTORS: Updated
+    - doc/INSTALL: Updated
+    - doc/INSTALL-andLinux: Updated
+    - doc/INSTALL-Fedora: Updated and Corrected typo
+    - doc/INSTALL-Ubuntu: Updated
+    - doc/NCID-DataFormats: Updated
+    - doc/NCID-PROTOCOL: Updated for the "300" line
+    - doc/Setup-ncidsip: Corrected port 5061 to port 10000 in test example
+    - doc/Setup-sip2ncid: Corrected port 5061 to port 10000 in test example
+    - doc/Verbose-ncidd: Added signal ignore message
+    - doc/Verbose-sip2ncid: added "no SIP" warning message
+    - Fedora/Makefile: Updated for ncid-hangup.init
+    - Fedora/README.Fedora: Updated for ncid-hangup.init
+    - Fedora/ncid.spec: removed modules/README.modules from server build
+    - Fedora/*.init: modified Description and added Short Description
+    - Fedora/ncid-hangup.init: Added
+    - Fedora/ncid-page.init: added --message|-M option
+    - Fedora/ncid-samba.init: added --message|-M option
+    - Fedora/ncid-speak.init: added --message|-M option
+    - FreeBSD/Makefile: Updated for ncid-hangup.rc
+    - FreeBSD/README.FreeBSD: Updated for ncid-hangup.rc
+    - FreeBSD/ncidd: moved line name=ncidd above line rcvar=`set_rcvar`
+    - FreeBSD/ncidsip: moved line name=ncidd above line rcvar=`set_rcvar`
+    - FreeBSD/sip2ncid: moved line name=ncidd above line rcvar=`set_rcvar`
+    - FreeBSD/yac2ncid: moved line name=ncidd above line rcvar=`set_rcvar`
+    - FreeBSD/ncid-hangup.rc: Added
+    - FreeBSD/ncid-page.rc: added --message|-M option
+    - FreeBSD/ncid-samba.rc: added --message|-M option
+    - FreeBSD/ncid-speak.rc: added --message|-M option
+    - man/ncidmodules.1: Updated for ncid-hangup
+    - man/ncidmodules.conf.5: Updated for ncid-hangup and --message|-M option
+    - man/sip2ncid.8: Updated for --warn|-W option
+    - modules/Makefile: Updated for ncid-hangup
+    - modules/README.modules: Updated foe ncid-hangup
+    - modules/ncidmodules.conf.dist: Updated for ncid-hangup
+    - modules/ncidmodules.conf-in: renamed from ncidmodules.conf.dist
+    - modules/ncid.blacklist: Added
+    - modules/ncid.hangup.sh: Added
+    - modules/ncid.minicom: Added
+    - test/README.test: Updated to include testclient.log
+    - test/testclient.log: Added
+    - test/testclient: Replaced using netcat with sockets
+    - test/testclient.data: Updated for specific tests
+    - test/testclient.log: Added
+    - test/testlog: Added all missing line labels but one
+    - test/testlog-display: Updated for modified testlog
+
 Version 0.74
     - Makefile: changed $(MAKE) to gmake in freebsd/freebsd-install targets
     - ncid.sh: use catch to trap -topmost error in Ubuntu 8.04
@@ -179,7 +301,9 @@ Version 0.72
                                             Changed calls[] logic
                                             Improved linenum[] logic
                                             Added exceeded Telephone ling msg
-                          parseLine(): linebuf[BUFSIZ] -> linebuf[SIPSIZ]
+                          parseLine(): changed: static linebuf[BUFSIZ]
+                                       to: static char linebuf[SIPSIZ]
+                                       removed (char *) in strcpy() & strstr()
                           socketConnect: added ifdef TIVO_S1 and ifndef TIVO_S1
                                          to replace gethostbyname() on the S1
                                          with inet_addr()

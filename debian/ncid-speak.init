@@ -5,8 +5,8 @@
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
-# Short-Description: NCID Speak Client
-# Description:       NCID client with the Speak Output Module
+# Short-Description: NCID Client using the speak module
+# Description:       NCID client using the Speak Output Module
 ### END INIT INFO
 
 # Author: John L. Chmielewski <jlc@users.sourceforge.net>
@@ -21,11 +21,12 @@ MODULE=ncid-speak
 DAEMON=/usr/bin/$NAME
 PIDFILE=/var/run/$MODULE.pid
 SCRIPTNAME=/etc/init.d/$MODULE
+speakopt="-M"
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf
 
-DAEMON_ARGS="--no-gui -p $PIDFILE -C -P $MODULE"
+DAEMON_ARGS="--no-gui -p $PIDFILE -C -P $MODULE $speakopt"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0

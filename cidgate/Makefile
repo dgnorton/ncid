@@ -7,6 +7,8 @@ PLSOURCE    = ncidsip.pl
 SHSOURCE    = yac2ncid.sh
 FILES       = README Makefile $(SOURCES) $(PLSOURCE) $(SHSOURCE)
 
+Version := $(shell sed 's/.* //; 1q' ../VERSION)
+
 # the prefix must end in a - (if part of a name) or a / (if part of a path)
 MIPSXCOMPILE = mips-TiVo-linux-
 PPCXCOMPILE  = /usr/local/tivo/bin/
@@ -87,10 +89,13 @@ local:
 
 tivo: $(PROG)
 
-$(PROG): $(OBJECTS)
+$(PROG): ../version.h $(OBJECTS)
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 $(OBJECTS): $(HEADER)
+
+../version.h: ../version.h-in
+	sed "s/XXX/$(Version)/" $? > $@
 
 cidgate: $(PROG) $(PLSCRIPT) $(SHSCRIPT)
 
@@ -136,9 +141,10 @@ files:	$(FILES)
 	chmod +x $@
 
 % : %.pl
-	cp $< $@
+	#cp $< $@
+	sed 's/XxXxX/$(Version)/' $< > $@
 	chmod +x $@
 
 % : %.sh
-	sed '1s,/bin/bash,$(BASH),;/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
+	sed '1s,/bin/bash,$(BASH),;/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),;s/XxXxX/$(Version)/' $< > $@
 	chmod +x $@

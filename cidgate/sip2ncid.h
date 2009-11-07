@@ -35,9 +35,9 @@
 #include <netinet/udp.h>
 #include <time.h>
 #include "config.h"
+#include "../version.h"
 
-#define VERSION     "0.9.1"
-#define SHOWVER     "%s: %s\n"
+#define SHOWVER     "%s %s\n"
 #define DESC        "%s - Inject CID info by snooping SIP invites\n"
 #define USAGE       "\
 Usage:   %s [options]\n\
@@ -58,6 +58,7 @@ Options: [-C configfile      | --config configfile]\n\
          [-V                 | --version]\n\
          [-v 1-9             | --verbose 1-9]\n\
          [-w <dumpfile>      | --writefile <dumpfile>]\n\
+         [-W 0/1             | --warn 0/1]\n\
 \n\
 "
 
@@ -75,7 +76,7 @@ Options: [-C configfile      | --config configfile]\n\
 #define NUMSIZ      50
 #define CIDSIZ      75
 #define SIPSIZ      2048
-#define PKTWAIT     60
+#define PKTWAIT     90
 
 /* ethernet headers are always exactly 14 bytes */
 #define SIZE_ETHERNET 14
@@ -127,9 +128,9 @@ Options: [-C configfile      | --config configfile]\n\
 #define NONUMBER    "NO NUMBER"
 #define BADNUMBER   "BAD NUMBER"
 
-#define CIDCAN      "CALLINFO: ###CANCEL...NMBR%s...DATE%s+++\r\n"
-#define CIDBYE      "CALLINFO: ###BYE...NMBR%s...DATE%s+++\r\n"
-#define CIDCALL     "CALLINFO: ###CALLED...NMBR%s...DATE%s+++\r\n"
+#define CIDCAN      "CALLINFO: ###CANCEL...DATE%s...LINE%s...NMBR%s+++\r\n"
+#define CIDBYE      "CALLINFO: ###BYE...DATE%s...LINE%s...NMBR%s+++\r\n"
+#define CIDCALL     "CALLINFO: ###CALLED...DATE%s...LINE%s...NMBR%s+++\r\n"
 #define CIDLINE     "CALL: ###DATE%s...LINE%s...NMBR%s...NAME%s+++\r\n"
 #define REGLINE     "Registered Line Number"
 
@@ -146,7 +147,7 @@ enum
     LEVEL9
 };
 
-extern int ncidport, sipport;
+extern int ncidport, sipport, warn;
 extern char *device, *pidfile, *ncidhost, *siphost;
 
 extern void logMsg(int level, char *message);
