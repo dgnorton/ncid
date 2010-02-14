@@ -50,7 +50,7 @@ HEADER       = ncidd.h nciddconf.h nciddalias.h getopt_long.h poll.h
 ETCFILE      = ncid.conf ncidd.conf ncidd.alias
 DOCFILE      = doc/CHANGES doc/COPYING README doc/README-FreeBSD \
                doc/NCID-FORMAT doc/PROTOCOL VERSION
-DIST         = ncidd.conf.dist ncid.conf.dist
+DIST         = ncidd.conf-in ncid.conf-in
 FILES        = Makefile $(CLIENT).sh $(DIST) $(HEADER) $(SOURCE) \
                $(DOCFILE) $(ETCFILE)
 
@@ -81,7 +81,7 @@ VAR          = $(prefix3)/var
 
 CONFDIR      = $(ETC)/ncid
 MODULEDIR    = $(SHARE)/ncid
-IMAGEDIR	 = $(SHARE)/pixmaps
+IMAGEDIR	 = $(SHARE)/pixmaps/ncid
 MAN          = $(SHARE)/man
 LOG          = $(VAR)/log
 RUN          = $(VAR)/run
@@ -94,7 +94,7 @@ DATALOG      = $(LOG)/ciddata.log
 LOGFILE      = $(LOG)/ncidd.log
 PIDFILE      = $(RUN)/ncidd.pid
 
-SITE         = $(DIST:.dist=)
+SITE         = $(DIST:-in=)
 WISH         = wish
 TCLSH        = tclsh
 
@@ -384,7 +384,7 @@ files: $(FILES)
         install-logrotate install-man install-var clean clobber files
 
 % : %.sh
-	sed 's,/usr/local/share/ncid,$(MODULEDIR),;s,/usr/local/etc/ncid,$(CONFDIR),;s,/usr/local/share/pixmaps,$(IMAGEDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),;s,/usr/local/bin,$(BIN),;s,XxXxX,$(Version),' $< > $@
+	sed 's,/usr/local/share/ncid,$(MODULEDIR),;s,/usr/local/etc/ncid,$(CONFDIR),;s,/usr/local/share/pixmaps/ncid,$(IMAGEDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),;s,/usr/local/bin,$(BIN),;s,XxXxX,$(Version),' $< > $@
 	chmod 755 $@
 
 % : %-in

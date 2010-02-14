@@ -1,7 +1,7 @@
 /*
  * sip2ncid - Inject CID info by snooping SIP invites
  *
- * Copyright 2007, 2008, 2009
+ * Copyright 2007, 2008, 2009, 2010
  *  by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * sip2ncid is free software; you can redistribute it and/or modify
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     sprintf(msgbuf, "Verbose level: %d\n", verbose);
     logMsg(LEVEL1, msgbuf);
 
-    sprintf(msgbuf, "Send clients 'No SIP packets' warning meaaages? %s\n",
+    sprintf(msgbuf, "Send clients warning meaaages for No SIP packets? %s\n",
             warn ? "YES" : "NO");
     logMsg(LEVEL1, msgbuf);
 
@@ -304,8 +304,9 @@ int getOptions(int argc, char *argv[])
 
 /*
  * Returns the current date and time as a string in the format:
- *      With a year:    MM/DD/YYYY HH:MM
- *      Without a year: MMDDHHMM
+ *      WITHYEAR: MM/DD/YYYY HH:MM:SS
+ *      NOYEAR:   MMDDHHMM
+ *      ONLYTIME: HH:MM:SS
  */
 char *strdate(int withyear)
 {
@@ -315,12 +316,15 @@ char *strdate(int withyear)
 
     (void) gettimeofday(&tv, 0);
     tm = localtime((const time_t *)&(tv.tv_sec));
-    if (withyear)
-        sprintf(buf, "%.2d/%.2d/%.4d %.2d:%.2d", tm->tm_mon + 1, tm->tm_mday,
-                tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
-    else
+    if (withyear & WITHYEAR)
+        sprintf(buf, "%.2d/%.2d/%.4d %.2d:%.2d:%.2d", tm->tm_mon + 1,
+                tm->tm_mday, tm->tm_year + 1900, tm->tm_hour, tm->tm_min,
+                tm->tm_sec);
+    else if (withyear & NOYEAR)
         sprintf(buf, "%.2d%.2d%.2d%.2d", tm->tm_mon + 1,
                 tm->tm_mday, tm->tm_hour, tm->tm_min);
+    else
+        sprintf(buf, "%.2d:%.2d:%.2d",  tm->tm_hour, tm->tm_min, tm->tm_sec);
     return buf;
 }
 
@@ -1060,7 +1064,7 @@ int getCallID(char *sipbuf, char *callid, int size)
     {
         /* using sizeof() will skip end space */
         sptr += sizeof(CALLID);
-        if ((eptr = index(sptr, (int) SIPAT)))
+        if ((eptr = index(sptr, (int) NL)))
         {
             len = eptr - sptr;
             if (len < size)
@@ -1197,22 +1201,19 @@ void doPCAP()
         logMsg(LEVEL3, msgbuf);
         if (pcapret == -2)
         {
-            if ((msgsent & 0x1) == 0)
+            /* log timeout messages */
+            sprintf(msgbuf, "No SIP packets in %d seconds: port %d %s\n",
+                    PKTWAIT, sipport, strdate(ONLYTIME));
+            logMsg(LEVEL1, msgbuf);
+            msgsent |= 0x1;
+            if (warn && sd)
             {
-                /* log only one timeout message */
-                sprintf(msgbuf, "No SIP packets at port %d in %d seconds\n",
-                        sipport, PKTWAIT);
-                logMsg(LEVEL1, msgbuf);
-                msgsent |= 0x1;
-                if (warn && sd)
-                {
-                    /*
-                     * send clients warning message to if warn option
-                     * set and if connected to the NCID server
-                     */
-                    sprintf(warnmsg, "MSG: %s", msgbuf);
-                    retval =  write(sd, warnmsg, strlen(warnmsg));
-                }
+                /*
+                 * send clients warning message to if warn option
+                 * set and if connected to the NCID server
+                 */
+                sprintf(warnmsg, "MSG: %s", msgbuf);
+                retval =  write(sd, warnmsg, strlen(warnmsg));
             }
         }
         else if (pcapret == -1)

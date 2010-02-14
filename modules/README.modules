@@ -4,7 +4,7 @@ The following modules are configured by editing /etc/ncid/ncidmodules.conf
 
 The ncidmodules.1 man page documents the following output modules.
 
-Module to terminate a call using a modem
+Module to terminate a call using a modem and the ncid.blacklist file
     IMPORTANT: uses minicom to control the modem
     ncid-hangup
 

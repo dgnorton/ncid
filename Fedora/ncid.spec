@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.75
+Version:    0.76
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -146,7 +146,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/share/ncid/ncid-skel
 /usr/share/ncid/ncid-tivo
 /usr/share/ncid/ncid-yac
-/usr/share/pixmaps/ncid.gif
+/usr/share/pixmaps/ncid/ncid.gif
 %dir /etc/ncid
 %config(noreplace) /etc/ncid/ncid.conf
 %config(noreplace) /etc/ncid/ncidmodules.conf
@@ -305,8 +305,10 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+* Mon Dec 28 2009 John Chmielewski <jlc@users.sourceforge.net> 0.76-1
+- changed /usr/share/pixmaps/ncid.gif to /usr/share/pixmaps/ncid/ncid.gif
+
 * Mon Oct 19 2009 John Chmielewski <jlc@users.sourceforge.net> 0.75-1
-- New release
 - client package changed from i386 to noarch
 
 * Fri Jun 19 2009 John Chmielewski <jlc@users.sourceforge.net> 0.74-1

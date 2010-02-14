@@ -64,8 +64,8 @@ Then about every 20 seconds you should see something like:
      Protocol: UDP
   SIP/2.0 200 OK
   Via: SIP/2.0/UDP 70.119.157.214:10000;branch=z9hG4bK-22b185d1
-  From: 321-249-7722 <sip:13215551212@atlas2.atlas.vonage.net:10000>;tag=46f26356c0a3394bo0
-  To: 321-249-7722 <sip:13215551212@atlas2.atlas.vonage.net:10000>
+  From: 321-555-7722 <sip:13215551212@atlas2.atlas.vonage.net:10000>;tag=46f26356c0a3394bo0
+  To: 321-555-7722 <sip:13215551212@atlas2.atlas.vonage.net:10000>
   Call-ID: fa72d1c2-ead1bdcf@70.119.157.214
   CSeq: 86785 REGISTER
   Contact: 321-555-1212 <sip:13215551212@70.119.157.214:10000>;expires=20

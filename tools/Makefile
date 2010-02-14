@@ -27,7 +27,7 @@ MAN1		= $(MAN)/man1
 
 PLSCRIPT    = $(PLSOURCE:.pl=)
 SHSCRIPT    = $(SHSOURCE:.sh=)
-SITE        = $(DIST:.dist=)
+SITE        = $(DIST:-in=)
 
 tools: $(PLSCRIPT) $(SHSCRIPT) $(SITE)
 
@@ -55,5 +55,5 @@ files:	$(FILES)
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod 755 $@
 
-% : %.dist
+% : %-in
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@

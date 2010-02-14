@@ -1,5 +1,32 @@
 ncid - Network CallerID
 
+Version 0.76
+    - Makefile: Changed IMAGEDIR from pixmaps to pixmaps/ncid
+    - ncidd.c: strdate(): Changed "with separators" to return time in HH:MM:SS
+                          added ONLYTIME (HH:MM:SS)
+               main(): Added usleep(INITWAIT) when TTY is freed by another prog
+    - ncidd.h: changed NOSEP to 2 and added ONLYTIME
+    - ncid.sh: add catch{} for encoding system utf-8 - it is missing on a TiVo
+               changed LOGO from /usr/local/share/pixmaps/ncid.gif
+                            to /usr/local/share/pixmaps/ncid/ncid.gif
+               Added the --noexit|-X option to disable "Close Window"
+    - ncid.conf-in: added the --noexit|-X option
+    - cidgate/sip2ncid.c: doPCAP(): added time to the no SIP messages
+                          strdate(): added seconds to WITHYEAR
+                                     added ONLYTIME (HH:MM:SS)
+                          main(): changed wording of "No SIP line"
+                          getCallID(): eptr set to NL instead of SIPAT
+    - cidgate/sip2ncid.h: changed NOYEAR to 2 and added ONLYTIME
+    - cidgate/ncidsip.pl: Call-ID regular expression changed from
+                          /^Call-ID:(.+)@/imo to /^Call-ID: ([0-9_@.]+)/imo
+    - doc/Setup-ncidsip: Updated
+    - doc/Setup-sip2ncid: Updated
+    - Fedora/ncid.spec: changed /usr/share/pixmaps/ncid.gif
+                        to /usr/share/pixmaps/ncid/ncid.gif
+    - modules/Makefile: changed: $(DIST:.dist=) to: $(DIST:-in=)
+    - modules/ncid.minicom: Replaced script (was overwritten by ncid.blacklist)
+    - tools/Makefile: changed: $(DIST:.dist=) to: $(DIST:-in=)
+
 Version 0.75
     - Makefile: Added rule to make version.h from the VERSION file
                 Changed *.dist files to *-in files and rules to make them

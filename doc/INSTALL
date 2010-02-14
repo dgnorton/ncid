@@ -1,6 +1,6 @@
 NCID - Network Caller ID Install
 
-Last edited: Sun Nov 1, 2009
+Last edited: Wed Feb 10, 2010
 
 If using sip2ncid, see Setup-ncidsip
 If using ncidsip, see Setup-ncidsip
@@ -77,7 +77,7 @@ TEST USING A MODEM:
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last three lines will be simular to:
+    The last three lines will be similar to:
         Modem set for CallerID.
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid
@@ -91,7 +91,7 @@ TEST USING A MODEM:
         # set sttyclocal = 1
 
     If you only see RING for each ring, the modem does not support
-    Caller ID.  You should see the Caller ID lines betreen the
+    Caller ID.  You should see the Caller ID lines between the
     first and second RING.
 
 	Once you solve the problems, restart ncidd normally
@@ -110,7 +110,7 @@ TEST USING A DEVICE (like the NetCallerID box):
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last three lines will be simular to:
+    The last three lines will be similar to:
         CallerID TTY port initialized.
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid
@@ -132,7 +132,7 @@ TEST USING sip2ncid:
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last three lines will be simular to:
+    The last three lines will be similar to:
         CallerID only from CID gateways
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid
@@ -154,7 +154,7 @@ TEST USING yac2ncid:
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last three lines will be simular to:
+    The last three lines will be similar to:
         CallerID only from CID gateways
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid

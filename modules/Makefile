@@ -2,7 +2,7 @@ SHMODULES = ncid-hangup ncid-page.sh ncid-samba.sh ncid-speak.sh \
             ncid-mythtv.sh ncid-kpopup.sh ncid-skel.sh ncid-tivo.sh \
             ncid-yac.sh
 ETCFILES  = ncid.blacklist ncid.minicom
-DIST      = ncidmodules.conf.dist
+DIST      = ncidmodules.conf-in
 FILES     = README.modules Makefile $(SHMODULES) $(ETCFILES) $(DIST)
 
 prefix    = /usr/local
@@ -18,7 +18,7 @@ CONFDIR   = $(ETC)/ncid
 
 MODULES   = $(SHMODULES:.sh=)
 
-CONFFILE  = $(DIST:.dist=)
+CONFFILE  = $(DIST:-in=)
 
 modules: $(MODULES) $(CONFFILE)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd.h is free software; you can redistribute it and/or modify
@@ -120,8 +120,9 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define CRLF        "\r\n"
 #define NL          "\n"
 #define CR          "\r"
-#define NOSEP       0
 #define WITHSEP     1
+#define NOSEP       2
+#define ONLYTIME    4
 
 #define NONAME      "NO NAME"
 #define NONUMB      "NO NUMBER"

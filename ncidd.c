@@ -1,7 +1,7 @@
 /*
  * ncidd - Network Caller ID Daemon
  *
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * This file is part of ncidd, a caller-id program for your TiVo.
@@ -370,6 +370,7 @@ int main(int argc, char *argv[])
                         sprintf(msgbuf, "TTY free: using modem again %s\n",
                             strdate(WITHSEP));
                         logMsg(LEVEL1, msgbuf);
+                        usleep(INITWAIT); /* 0.1 seconds */
                         openTTY();
                         if (doTTY() < 0)
                         {
@@ -1564,8 +1565,9 @@ void sendInfo(int mainsock)
 
 /*
  * Returns the current date and time as a string in the format:
- *      with separators:    MM/DD/YYYY HH:MM
- *      without separators: MMDDYYYY HHMM
+ *      WITHSEP: MM/DD/YYYY HH:MM:SS
+ *      NOSEP:   MMDDYYYY HHMM
+ *      NODATE:  HH:MM:SS
  */
 char *strdate(int separator)
 {
@@ -1575,12 +1577,15 @@ char *strdate(int separator)
 
     (void) gettimeofday(&tv, 0);
     tm = localtime((time_t *) &(tv.tv_sec));
-    if (separator)
-        sprintf(buf, "%.2d/%.2d/%.4d %.2d:%.2d", tm->tm_mon + 1, tm->tm_mday,
-            tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
-    else
+    if (separator & WITHSEP)
+        sprintf(buf, "%.2d/%.2d/%.4d %.2d:%.2d:%.2d", tm->tm_mon + 1,
+            tm->tm_mday, tm->tm_year + 1900, tm->tm_hour, tm->tm_min,
+            tm->tm_sec);
+    else if (separator & NOSEP)
         sprintf(buf, "%.2d%.2d%.4d %.2d%.2d", tm->tm_mon + 1, tm->tm_mday,
             tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
+    else
+        sprintf(buf, "%.2d:%.2d:%.2d",  tm->tm_hour, tm->tm_min, tm->tm_sec);
     return buf;
 }
 

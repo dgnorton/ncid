@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Copyright (c) 2006 by Clayton O'Neill
-# Copyright (c) 2006, 2007, 2008, 2009
+# Copyright (c) 2006, 2007, 2008, 2009, 2010
 # by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # ncidsip is free software; you can redistribute it and/or modify it
@@ -179,7 +179,7 @@ sub processPacket {
   if ($sip =~ /^CSeq:\s+\d+\s+INVITE/imo) {
       # Start of Call
       if (!$sip =~ /^SIP\/.*Request Terminated/imo) {return}
-      if ($sip =~ /^Call-ID:(.+)@/imo) {
+      if ($sip =~ /^Call-ID: ([0-9_@.]+)/imo) {
         $callid = $1;
       } else {print "No INVITE Call-ID found in packet\n" if ($debug);}
 

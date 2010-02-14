@@ -2,7 +2,7 @@
 
 # ncid - Network Caller-ID client
 
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+# Copyright (c) 2001-2010
 # by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # ncid is free software; you can redistribute it and/or modify it
@@ -60,7 +60,7 @@ set ConfigDir   /usr/local/etc/ncid
 set ConfigFile  [list $ConfigDir/ncid.conf]
 
 ### Constants
-set Logo        /usr/local/share/pixmaps/ncid.gif
+set Logo        /usr/local/share/pixmaps/ncid/ncid.gif
 set ProgDir     /usr/local/share/ncid
 set ProgName    ncid-speak
 set CygwinBat   /cygwin.bat
@@ -84,6 +84,8 @@ set TivoFlag    0
 set MsgFlag     0
 set Ring        999
 set NoCID       0
+set NoExit      0
+set ExitOn      exit
 
 ###  global variables that can be changed by the configuration file
 set Country     "US"
@@ -106,6 +108,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
                [--delay seconds   | -D seconds]
                [--message         | -M]
                [--nocid           | -N]
+               [--noexit          | -X]
                [--program PROGRAM | -P PROGRAM]
                [--pidfile FILE    | -p pidfile]
                [--raw             | -R]
@@ -119,7 +122,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
 set About \
 "
 $VersionInfo
-Copyright (C) 2001-2009
+Copyright (C) 2001-2010
 John L. Chmielewski
 http://ncid.sourceforge.net
 "
@@ -544,6 +547,7 @@ proc getArg {} {
     global PIDfile
     global NoCID
     global PopupTime
+    global NoExit
 
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
@@ -604,6 +608,8 @@ proc getArg {} {
             {^--verbose$} {set Verbose 1}
             {^-R$} -
             {^--raw$} {set Raw 1}
+            {^-X} -
+            {^--noexit} {set NoExit 1}
             {^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$} {set Host $opt}
             {^[A-Za-z]+[.A-Za-z0-9-]+$} {set Host $opt}
             {^[0-9]+$} {set Port $opt}
@@ -612,10 +618,15 @@ proc getArg {} {
     }
 }
 
+proc do_nothing {} {
+}
+
 proc makeWindow {} {
+    global ExitOn
+
     frame .fr -borderwidth 2
     wm title . "Network Caller ID"
-    wm protocol . WM_DELETE_WINDOW exit
+    wm protocol . WM_DELETE_WINDOW $ExitOn
     wm resizable . 0 0
     pack .fr
 
@@ -763,14 +774,19 @@ proc doPID {} {
     } else {if $Verbose {puts "Not using a PID file"}}
 }
 
-# This is the default, except when using freewrap
-encoding system utf-8
+# This is the default, except when using freewrap or on the TiVo
+if {[catch {encoding system utf-8} msg]} {
+    if $Verbose {puts "$msg"}
+}
 
 getArg
-if {!$NoGUI} makeWindow
+if {!$NoGUI} {
+    if {$NoExit} {set ExitOn do_nothing}
+    makeWindow
+}
 if {$Country != "US" && $Country != "SE"} {
     exitMsg 7 "Country is set to \"$Country\"\nIt must be \"US\" or \"SE\""
-   }
+}
 if $Callprog {
     if {[file exists $Program]} {
         if {![file executable $Program]} {

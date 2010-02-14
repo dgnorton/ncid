@@ -1,6 +1,6 @@
 Macintosh Install
 
-Last edited: Mon Jun 22, 2009
+Last edited: Wed Feb 10, 2010
 
 If NCID does not work, see INSTALL for some simple tests.
 If using sip2ncid, see Setup-ncidsip
@@ -60,14 +60,14 @@ START:
 TEST USING A MODEM:
 
     - The easiest way to test the setup is to run ncidd in debug mode,
-      it will stay attached to the terminal and not go into deamon mode:
+      it will stay attached to the terminal and not go into daemon mode:
 		ncidd -D
     - to get more information, add the verbose flag:
         ncidd -Dv3
     - to also look at the alias structure
         ncidd -Dv5
 
-    - The last three lines will be simular to:
+    - The last three lines will be similar to:
         Modem set for CallerID.
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid
@@ -76,7 +76,7 @@ TEST USING A MODEM:
 
     - Call yourself and you should see the CallerID lines.
     - If you only see RING for each ring, the modem does not support
-      Caller ID.  You should see the Caller ID lines betreen the
+      Caller ID.  You should see the Caller ID lines between the
       first and second RING.
     - If you see: /dev/ttyS1: No such file or directory
       you need to set sttyclocal in ncidd.conf
@@ -99,7 +99,7 @@ TEST USING A DEVICE (like the NetCallerID box):
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last three lines will be simular to:
+    The last three lines will be similar to:
         CallerID TTY port initialized.
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid
@@ -121,7 +121,7 @@ Start (in this order):
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last three lines will be simular to:
+    The last three lines will be similar to:
         CallerID only from CID gateways
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid
@@ -143,7 +143,7 @@ TEST USING yac2ncid:
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last three lines will be simular to:
+    The last three lines will be similar to:
         CallerID only from CID gateways
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid

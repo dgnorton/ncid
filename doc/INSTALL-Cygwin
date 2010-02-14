@@ -1,6 +1,6 @@
 Cygwin Install
 
-Last edited: Mon Jun 22, 2009
+Last edited: Wed Feb 10, 2010
 
 NOTES:
     The server has been tested with sip2ncid and ncidsip
@@ -8,13 +8,13 @@ NOTES:
     - The server does not function with a modem so it is configured
       for "noserial".  It requires sip2ncid, ncidsip or yac2ncid to
       function.
-    - the supplied sip2ncid gateway is recomended over ncidsip
+    - the supplied sip2ncid gateway is recommended over ncidsip
     - the supplied yac2ncid gateway requires YAC to control the modem
     - The supplied ncidsip gateway requires perl and the Net-Pcap module
       http://search.cpan.org/CPAN/authors/S/SA/SAPER
     - Net-Pcap requires WinPcap: http://www.winpcap.org/
     - The Net-Pcap module has been successfully built under cygwin
-    - Latested Versions Tested: WpdPack_41b.zip and Net-Pcap-0.14.tar.gz
+    - Latest Versions Tested: WpdPack_41b.zip and Net-Pcap-0.14.tar.gz
 
 INSTALL:
 
@@ -33,7 +33,7 @@ INSTALL:
     - Run setup.exe
     - select cygwin download site
     - Let default setup download
-    - It is strongly recomended you enable cut and past in the Cygwin window.
+    - It is strongly recommended you enable cut and past in the Cygwin window.
       * Left click on the icon in upper left
       * Select Properties
       * Check Mark the QuickEdit Mode in Edit Options
@@ -61,7 +61,7 @@ INSTALL:
         make cygwin-install
 
     -----------------------------------------------------
-    If phone system is VoIP and you want to use sip2ncid: (Recomented)
+    If phone system is VoIP and you want to use sip2ncid: (Recompensed)
     -----------------------------------------------------
 
     - nothing else to do
@@ -74,11 +74,11 @@ INSTALL:
     - configure the YAC server for a listener at localhost (127.0.0.1)
 
     ----------------------------------------------------
-    If phone system is VoIP and you want to use ncidsip: (Not Recomended)
+    If phone system is VoIP and you want to use ncidsip: (Not Recommended)
     ----------------------------------------------------
 
     - install a development system using gcc
-    - install perl and cpan
+    - install perl and CPAN
     - install lynx, wget, and ncftp
     - install WpdPack at C:\ from http://www.winpcap.org/
     - run "cpan" and it will configure itself, accept defaults
@@ -153,13 +153,13 @@ TEST:
       you are ready to set up NCID.
 
     - The easiest way to test the setup is to run ncidd in debug mode,
-      it will stay attached to the terminal and not go into deamon mode:
+      it will stay attached to the terminal and not go into daemon mode:
         ncidd -D
     - to get more information, add the verbose flag:
         ncidd -Dv3
     - to also look at the alias structure
         ncidd -Dv5
-    - The last three lines will be simular to:
+    - The last three lines will be similar to:
         CallerID only from CID gateways
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid

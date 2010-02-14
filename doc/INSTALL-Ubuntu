@@ -1,6 +1,6 @@
 Ubuntu Install
 
-Last edited: Sun Nov 1, 2009
+Last edited: Wed Feb 10, 2010
 
 If NCID does not work, see INSTALL for some simple tests.
 If using sip2ncid, see Setup-ncidsip
@@ -81,7 +81,7 @@ FIRST STARTUP:
 
     - If everything is OK, enable the NCID server, gateways, and
       client modules, your are using, to autostart at boot.  The
-      GUI incid client must be started after login, not boot
+      GUI ncid client must be started after login, not boot
 
     NOTE: ncid normally starts in the GUI mode and there is no
           ncid.init script to start or stop it.  There are rc.init

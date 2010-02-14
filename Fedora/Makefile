@@ -2,7 +2,10 @@ INIT        = ncidd.init ncidsip.init sip2ncid.init yac2ncid.init \
               ncid-kpopup.init ncid-mythtv.init ncid-page.init \
               ncid-samba.init ncid-speak.init ncid-yac.init \
               ncid-hangup
-FILES		= README.Fedora Makefile ncid.spec
+SPEC        = ncid.spec
+FILES		= README.Fedora Makefile $(INIT) $(SPEC)
+
+Version := $(shell sed 's/.* //; 1q' ../VERSION)
 
 prefix		= /usr/local
 prefix2		= $(prefix)
@@ -48,3 +51,6 @@ files:	$(FILES)
 % : %.init
 	sed '/exec/s,/usr/local,$(prefix),;/config/s,/usr/local,$(prefix2),;s,.*/functions,. $(FUN),$(SHARP)' $< > $@
 	chmod +x $@
+
+% : %-in
+	sed 's,X.XX,$(Version),' $< > $@

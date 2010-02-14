@@ -1,26 +1,26 @@
 NCID distributions:
 
     sourceforge:
-        NCID Source package:           ncid-0.75-src.tar.gz
+        NCID Source package:           ncid-0.76-src.tar.gz
 
-        Cygwin 32 bit Windows package: ncid-0.75-1-cygwin.tgz
+        Cygwin 32 bit Windows package: ncid-0.76-1-cygwin.tgz
 
-        TiVo Series1 package:          ncid-0.75-1-ppc-tivo.tgz
-        TiVo Series 2 and 3 package:   ncid-0.75-1-mips-tivo.tgz
+        TiVo Series1 package:          ncid-0.76-1-ppc-tivo.tgz
+        TiVo Series 2 and 3 package:   ncid-0.76-1-mips-tivo.tgz
 
-        Ubuntu 32 bit packages:        ncid_0.75-0ubuntu1_i386.deb
-                                       ncid-client_0.75-0ubuntu1_all.deb
-                                       ncid-kpopup_0.75-0ubuntu1_all.deb
-                                       ncid-mythtv_0.75-0ubuntu1_all.deb
-                                       ncid-samba_0.75-0ubuntu1_all.deb
-                                       ncid-speak_0.75-0ubuntu1_all.deb
+        Ubuntu 32 bit packages:        ncid_0.76-0ubuntu1_i386.deb
+                                       ncid-client_0.76-0ubuntu1_all.deb
+                                       ncid-kpopup_0.76-0ubuntu1_all.deb
+                                       ncid-mythtv_0.76-0ubuntu1_all.deb
+                                       ncid-samba_0.76-0ubuntu1_all.deb
+                                       ncid-speak_0.76-0ubuntu1_all.deb
 
-        Windows client installer:      ncid-0.75-1-client_setup.exe
+        Windows client installer:      ncid-0.76-1-client_setup.exe
 
     Fedora packages:
         # available at the Fedora repository
         # there is a server, client, and optional output module packages
-        # normally you need to install the ncid and ncid-client rpm packages
+        # normally you only need to install the ncid & ncid-client rpm packages
         # The yum list command will show you the packages available
         yum list ncid\*
 
@@ -35,92 +35,67 @@ NCID distributions:
 Specific distribution Changes:
 
     Fedora and Redhat:
-        Added the ncid-hangup service file.
-
-        Updated the ncid.spec file.
 
         NOTES:
             If you need to build packages for your specific OS release:
-                rpmbuild -tb ncid-0.75-src.tar.gz
+                rpmbuild -tb ncid-0.76-src.tar.gz
 
     FreeBSD:
-        Added the ncid-hangup rc file.
 
     Mac OS-X:
 
     Ubuntu:
-        Split the single package into the same packages as Fedora.  The
-        server and client packages are mormally installed, but you can
-        just install one package if the other is not needed.
-
-        Added the ncid-hangup service file.
 
         NOTES:
             If you need to build a package for your specific OS release, the
             build-essential, fakeroot, & libpcap packages must be installed:
                 sudo apt-get build-essential fakeroot libpcap0.8-dev
-                tar -xzf ncid-0.75-src.tar.gz
-                mv ncid ncid-0.75
-                cd ncid-0.75
+                tar -xzf ncid-0.76-src.tar.gz
+                mv ncid ncid-0.76
+                cd ncid-0.76
                 fakeroot debian/rules build
                 fakeroot debian/rules binary
                 fakeroot debian/rules clean
 
     TiVo:
+        Fixed the ncid client terminating because of no utf-8 encoding.
 
     Windows:
-        Fixed client build to use UTF-8 instead of cp1252
 
 NCID Server Changes:
 
     ncidd:
-        Version number is now the NCID distribution version
-        Fixed a corruption problem when sending log files over 2.000 lines
-        Fixed a problem where a client can sometimes terminate the server
-        Fixed call indicator problem for RING and hangup identification
-        Fixed sending a second CID line when MESG and NAME lines received
-        Added a 300 message after the call log is sent to clients
-        Improved code for writing to logs and and sending to clients
-        Increased number of clients from 15 to 25
+        Added seconds to date and time in debug and log file
 
 NCID Gateway Changes:
 
     sip2ncid:
-        Version number is now the NCID distribution version.
-        Added option to warn if no SIP packets are received in 90 seconds
-        Added telephone line labels to call termination information
-        Corrected usage message
+        Added seconds to date and time in debug and log file
+
+        Added time to the no SIP packets warning message
+
+        Fixed Warning message and eliminated multiple messages on
+        same call for Babytel in Montreal
 
     ncidsip:
-        Version number is now the NCID distribution version.
-        Added telephone line labels to call termination information
+        Fixed Warning message and eliminated multiple messages on
+        same call for Babytel in Montreal
 
     yac2ncid:
-        Version number is now the NCID distribution version.
 
 NCID Client Changes:
 
     ncid:
-        Version number is now the NCID distribution version
-        The UTF-8 encoding is set because it is not the default in Windows
-        Fixed call identification problem on RING/hangup for simultaneous calls
+        Modified the ncid client so a failure to set utf-8 encoding
+        would not result in the program terminating.
+
+        Added option to disable the "close Window" button.  With this
+        option enabled, the menu item File/Quit must be used to terminate
+        the program.
 
 NCID Client Module Changes:
 
-    ncid-hangup:
-        A new output module that terminates a call for a blacklisted name
-        or number.  Use with caution.
-
-    ncid-page:
-    ncid-samba:
-    ncid-speak:
-        Added message option
-
-    ncidmodules.conf:
-        Updated for the new module and above option
-
 Documentation Changes:
+        Updated ncid.1, Setup-ncidsip, and Setup-sip2ncid
+        Corrected spelling errors in the INSTALL* files
 
-    Updated the man pages for ncid-hangup and the new sip2ncid warn option
-    Updated NCID-DataFormats, NCID-PROTOCOL, and Setup-sip2ncid
-    Updated INSTALL, INSTALL-andLinux, INSTALL-Fedora, and INSTALL-Ubuntu

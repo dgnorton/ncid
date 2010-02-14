@@ -80,6 +80,12 @@ set Country     "US"
 # Default: 1
 set NoOne       1
 
+# Disable the "Close Window" button.  When disabled use the menu Item
+# "File/Exit" to terminate program
+# set NoExit to 1 to disable
+# Default: 0
+set NoExit      0
+
 # This variable must be at the end of the file for tivosh
 # external called program
 set Program     [list $ProgDir/$EXTPROG]

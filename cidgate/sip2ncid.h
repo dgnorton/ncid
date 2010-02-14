@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009
+ * Copyright 2007, 2008, 2009, 2010
  * by  John L. Chmielewski <jlc@cfl.rr.com>
  *
  * sip2ncid.h is free software; you can redistribute it and/or modify
@@ -71,7 +71,8 @@ Options: [-C configfile      | --config configfile]\n\
 #define FATAL       1
 #define NONFATAL    0
 #define WITHYEAR    1
-#define NOYEAR      0
+#define NOYEAR      2
+#define ONLYTIME    4
 #define MAXCALL     30
 #define NUMSIZ      50
 #define CIDSIZ      75

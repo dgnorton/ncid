@@ -21,6 +21,7 @@
 [--delay seconds     | -D seconds]
 [--message           | -M]
 [--nocid             | -N]
+[--noexit            | -X]
 [--program PROGRAM   | -P PROGRAM]
 [--pidfile FILE      | -p PIDFILE]
 [--raw               | -R]
@@ -126,6 +127,9 @@ Send messages to the output modules
 Configure ncid to indicate \fIPhone Call\fR on the first ring
 received from the modem.  It requires a modem that indicates ring,
 but does not require a modem that supports caller id.
+.TP
+.B --noexit | -X
+Configure ncid to to ignore the close window button.
 .TP
 .B --pidfile | -p
 Name of PID file to create.

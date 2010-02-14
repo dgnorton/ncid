@@ -1,6 +1,6 @@
 TiVo Install
 
-Last edited: Mon Jun 22, 2009
+Last edited: Wed Feb 10, 2010
 
 The ncid client replaces the old tivocid package.  It
 functions exactly like TiVoCID, if it is called tivocid,
@@ -10,7 +10,7 @@ the CID information on the TV screen.
 
 The ncid client is also called tivoncid and uses the new
 ncid-tivo output module that uses /tvbin/text2osd to
-display the CID informatio.
+display the CID information.
 
 The NCID package includes both the client and server.
 For a series1, the server would normally be ignored unless
@@ -53,7 +53,7 @@ Optional: Install Perl
 ----------------------
 
 If you would like to use the cidcall, cidalias, and update
-scripts, you need to get and install Prel into /var/hack/bin
+scripts, you need to get and install Perl into /var/hack/bin
 
 If you would like to use the ncidsip CID client, you need
 to get and install Perl, the Net-Pcap Perl module and libpcap.
@@ -66,7 +66,7 @@ NCIDD is compiled to use directories under /var/hack.
 You can change this if you like, by using the
 command line to specify the location of the config
 file, and then using the config file to set the
-options for your new diectory structure.
+options for your new directory structure.
 
 If you are using a modem:
 
@@ -78,7 +78,7 @@ If you are using a modem:
         set lockfile = /var/tmp/modemlock # needed for TiVo Modem Port
 
     If you are using a standalone series1 without the modem hardware
-    modification to enable Caller ID, you need to uncoment the line:
+    modification to enable Caller ID, you need to uncomment the line:
 
         # set modem = /dev/ttyS3 # TiVo Serial Port
 
@@ -155,21 +155,23 @@ and are using tivoncid with yac2ncid:
 Call yourself and see if it works, if not, kill off ncidd, if
 it is running, and continue reading the test sections.
 
-If everything is OK, add the line or lines to your rc file
-so NCID can start when the TiVo boots.
+Once you are satisfied that everything is working OK, add
+startncid to your rc.sysinit.author to start NCID at boot.
+You will probably need to edit it to start the NCID programs
+you are using.
 
 ------------------
 Test using a Modem
 ------------------
 
 The easiest way to test the setup is to run ncidd in debug mode,
-it will stay attached to the terminal and not go into deamon mode:
+it will stay attached to the terminal and not go into daemon mode:
     ncidd -D
 to get more information, add the verbose flag:
     ncidd -Dv3
 to also look at the alias structure
     ncidd -Dv5
-The last three lines will be simular to:
+The last three lines will be similar to:
     Modem set for CallerID.
     Network Port: 3333
     Wrote pid 20996 in pidfile: /var/run/ncidd.pid
@@ -205,7 +207,7 @@ Start (in this order):
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last three lines will be simular to:
+    The last three lines will be similar to:
         CallerID only from CID gateways
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid
@@ -229,7 +231,7 @@ TEST USING yac2ncid:
         ncidd -Dv3
     to also look at the alias structure
         ncidd -Dv5
-    The last three lines will be simular to:
+    The last three lines will be similar to:
         CallerID only from CID gateways
         Network Port: 3333
         Wrote pid 20996 in pidfile: /var/run/ncidd.pid
@@ -257,9 +259,9 @@ Start tivocid:
 	If ncidd is on another computer: tivocid -V IP.Server.Address.
 	You should see the Server connect message.
 
-If it doesn't start, the error message should give you a clue.
+If it dosen't start, the error message should give you a clue.
 
-There is one report of tivocid aborting with a message simular to:
+There is one report of tivocid aborting with a message similar to:
 
     bash-2.02# Tmk Assertion Failure:
     FsAllocateFunction, line 131 ()
@@ -277,7 +279,7 @@ The fix is to start it this way:
 Call yourself.  The display should show up for 10 seconds
 and then erase itself.
 
-If tivocid doesn't display the Caller ID information,
+If tivocid dosen't display the Caller ID information,
 try: tivocid -R -V IP.Server.Address.
 This will show everything received from the server, and
 the CID information it processes.
@@ -300,9 +302,9 @@ Start tivoncid:
 	If ncidd is on another computer: tivoncid -V IP.Server.Address.
 	You should see the Server connect message.
 
-If it doesn't start, the error message should give you a clue.
+If it dosen't start, the error message should give you a clue.
 
-There is one report of tivocid aborting with a message simular to:
+There is one report of tivocid aborting with a message similar to:
 
     bash-2.02# Tmk Assertion Failure:
     FsAllocateFunction, line 131 ()
@@ -361,7 +363,7 @@ The tar files creates the following:
    cidcall             ncidmodules.conf          ReleaseNotes      ncid-tivo
    cidalias            ncidsip.conf              INSTALL notes     README
    cidupdate                                     Documentation   
-                                                 man pages (.txt)
+   startncid                                     man pages (.txt)
                                                  man pages (.html)
 
 Note: tivocid is a symbolic link to ncidd

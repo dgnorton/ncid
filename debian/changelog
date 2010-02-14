@@ -1,14 +1,20 @@
+ncid (0.76-0ubuntu1) Karmic Koala; urgency=low
+
+  * See NCID CHANGES file
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Sat,  23 Jan 2010 21:41:00 -0400
+
 ncid (0.75-0ubuntu1) Jaunty Jackalope; urgency=low
 
   * See NCID CHANGES file
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Sat,  12 Feb 2009 18:01:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Sat,  12 Sep 2009 18:01:00 -0400
 
 ncid (0.74-0ubuntu1) Jaunty Jackalope; urgency=low
 
   * See NCID CHANGES file
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri,  19 Feb 2009 16:20:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri,  19 Jun 2009 16:20:00 -0400
 
 ncid (0.73-0ubuntu1) Hardy Heron; urgency=low
 
