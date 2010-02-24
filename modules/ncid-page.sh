@@ -3,7 +3,7 @@
 # Page a cell phone, pager, or mail address
 # Requires mail
 
-# Last changed by jlc: Fri Feb 13, 2009
+# Last changed by jlc: Mon Feb 15, 2010
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -54,10 +54,10 @@ if [ -n "$rootID" ]
 then
     # send mail as user $PageFrom
     echo -e $MailMsg |
-        su -s /bin/sh -c "/bin/mail -s \"$MailSubject\" $PageTo" $PageFrom
+        su -s /bin/sh -c "mail -s \"$MailSubject\" $PageTo" $PageFrom
 else
     # send mail as user running script
-    echo -e $MailMsg | /bin/mail -s "$MailSubject" $PageTo
+    echo -e $MailMsg | mail -s "$MailSubject" $PageTo
 fi
 
 exit 0
