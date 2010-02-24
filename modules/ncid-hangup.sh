@@ -17,7 +17,7 @@
 #   ncid --no-gui --call-prog --program ncid-hangup
 
 ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/ncidscript.conf
+ConfigFile=$ConfigDir/ncidmodules.conf
 Blacklist=$ConfigDir/ncid.blacklist
 HangupScript=$ConfigDir/ncid.minicom
 HangupProg=minicom
