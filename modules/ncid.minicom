@@ -1,7 +1,27 @@
-# ncid.hangup blacklist file
+# This minicom script uses a modem to hangup a telephone call
+#
+# This script is normally called by ncid-hangup but can be called
+# directly to verify it communicating properly with the modem.
 
-# numbers or names can be used to hangup on the caller
-# the number format must match the ncid display format
-# upper and lower case is important
+# Usage: minicom -o -S ncid.minicom
+#        The -o option tells minicom not to initialize the modem
+#        The -S <script> option tells minicom to run the script
 
-PRIVATE                   # blocked names or numbers
+# ncid-hangup terminates minicom, after running this script, without
+# resetting the modem by using this commane line:
+#       echo -e "\0001q" | minicom ncid.minicom
+
+# Minicom script documentation: man runscript
+
+# pickup
+send ATH1
+expect OK
+print
+
+# hangup
+send ATH0
+expect OK
+print
+
+# minicom does not exit when script terminates
+# exit with: ^AQ
