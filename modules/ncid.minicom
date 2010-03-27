@@ -2,8 +2,9 @@
 #
 # This script is normally called by ncid-hangup but can be called
 # directly to verify it communicating properly with the modem.
+# Last modified: Tue Mar 23, 2010
 
-# Usage: minicom -o -S ncid.minicom
+# Usage: minicom -o -S <path>/ncid.minicom
 #        The -o option tells minicom not to initialize the modem
 #        The -S <script> option tells minicom to run the script
 
@@ -16,12 +17,14 @@
 # pickup
 send ATH1
 expect OK
-print
+
+# delay
+send AT
+expect OK
 
 # hangup
 send ATH0
 expect OK
-print
 
 # minicom does not exit when script terminates
 # exit with: ^AQ
