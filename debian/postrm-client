@@ -29,6 +29,7 @@ case "$1" in
     ;;
 esac
 
+update-rc.d -f ncid-initmodem remove
 update-rc.d -f ncid-hangup remove
 update-rc.d -f ncid-page remove
 update-rc.d -f ncid-yac remove
