@@ -4,8 +4,8 @@
 
 # this script sends CALL and CALLINFO lines to the server
 # The way to test ncid and ncidd
-# ./testserver -D
-# ./TestGWcalls
+# ./testserver ../ncidd OR ./testserver /usr/sbin/ncidd
+# ./TestGWcalls -N1
 # ./ncid 3334
 
 ($testfile = shift) || ($testfile = "TestGWcalls.data");
@@ -14,7 +14,7 @@ open(OUTPUT, '|nc localhost 3334') || die "Could not open netcat\n";
 open(TESTFILE, $testfile) || die "Could not open $testfile\n";
 
 print "Connect server to port 3334 for test: ./testserver ../ncid\n\n";
-print "Then press <ENTERN> multiple times to:\n";
+print "Then press <ENTER> multiple times to:\n";
 print "    send CALL:     line (Incoming Call)\n";
 print "    send CALLINFO: line (Hangup After Answer)\n";
 print "    send CALL:     line (Incoming Call)\n";
