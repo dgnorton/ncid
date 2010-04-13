@@ -22,9 +22,9 @@ $NCID -Dv3 \
       -L T-server.log \
       -A T-ncidd.alias \
       -C T-ncidd.conf \
-      -N 1 \
       -P T-ncidd.pid \
       -p 3334 \
       -s cidlog \
       -s cidinfo \
+      -t ./vmodem0 \
       $*
