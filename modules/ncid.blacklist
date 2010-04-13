@@ -2,6 +2,11 @@
 
 # numbers or names can be used to hangup on the caller
 # the number format must match the ncid display format
-# upper and lower case is important
+# each name or number must begin on a separate line
+# must match upper and lower case
+
+# partial names or numbers can match so be careful
+# you can blacklist an entire areacode, for example
+# to block area code 999, enter 999 on a new line
 
 PRIVATE                   # blocked names or numbers
