@@ -83,11 +83,11 @@ binary-arch:    checkroot build
 	install -m 644 ncid.gif debian/tmp-client/usr/share/pixmaps/ncid
 	cd modules; cp -a ../ncid.conf ncid.blacklist ncid.minicom \
                       ncidmodules.conf ../debian/tmp-client/etc/ncid
-	cd modules; cp -a ncid-hangup ncid-page ncid-skel ncid-yac \
+	cd modules; cp -a ncid-initmodem ncid-hangup ncid-page ncid-skel ncid-yac \
                       ../debian/tmp-client/usr/share/ncid
 	cp -a modules/README.modules \
           debian/tmp-client/usr/share/doc/ncid-client/.
-	cd debian; cp -a ncid-hangup ncid-page ncid-yac \
+	cd debian; cp -a ncid-initmodem ncid-hangup ncid-page ncid-yac \
                      ../debian/tmp-client/etc/init.d
 	cp -a man/ncid.1 man/ncidmodules.1 debian/tmp-client/usr/share/man/man1
 	cp -a man/ncid.conf.5 man/ncidmodules.conf.5 \
@@ -95,12 +95,9 @@ binary-arch:    checkroot build
 
         # NCID client KDE popup module
 	install -m 755 debian/postinst debian/tmp-kpopup/DEBIAN
-	install -m 755 debian/prerm-kpopup debian/tmp-kpopup/DEBIAN/prerm
-	install -m 755 debian/postrm-kpopup debian/tmp-kpopup/DEBIAN/postrm
-	cd debian/tmp-kpopup; mkdir -p etc/init.d usr/share/ncid
+	cd debian/tmp-kpopup; mkdir -p usr/share/ncid
 	cp -a modules/README.modules debian/tmp-kpopup/usr/share/doc/ncid-kpopup
 	cp -a modules/ncid-kpopup debian/tmp-kpopup/usr/share/ncid/.
-	cp -a debian/ncid-kpopup debian/tmp-kpopup/etc/init.d/.
 
         # NCID client MythTV module
 	install -m 755 debian/postinst debian/tmp-mythtv/DEBIAN
