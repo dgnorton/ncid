@@ -6,7 +6,7 @@
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
 # Short-Description: NCID Client using the hangup module
-# Description:       NCID client using the MythTV Output Module
+# Description:       NCID client using the hangup Output Module
 ### END INIT INFO
 
 # Author: John L. Chmielewski <jlc@users.sourceforge.net>
@@ -15,7 +15,7 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
-DESC="Network Caller ID MythTV Client"
+DESC="Network Caller ID hangup Client"
 NAME=ncid
 MODULE=ncid-hangup
 DAEMON=/usr/bin/$NAME
