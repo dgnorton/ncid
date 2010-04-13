@@ -38,6 +38,7 @@ clean:
 
 clobber: clean
 	rm -f $(ROTATE) $(SCRIPTS)
+	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber
 
