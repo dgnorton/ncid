@@ -4,16 +4,19 @@ NCID for Debian
 
 Ubuntu service files:
 
-    ncid-mythtv.init  - service file for ncid with ncid-mythtv output module
-    ncid-page.init    - service file for ncid with ncid-page module
-    ncid-kpopup.init  - service file for ncid with ncid-kpopup module
-    ncid-samba.init   - service file for ncid with ncid-samba module
-    ncid-speak.init   - service file for ncid with ncid-speak module
-    ncid-yac.init     - service file for ncid with ncid-yac module
-    ncidd.init        - service file for ncidd
-    ncidsip.init      - service file for ncidsip
-    sip2ncid.init     - service file for sip2ncid
-    yac2ncid.init     - service file for yac2ncid
+  ncid-hangup.init    - service file for ncid with ncid-hangup output module
+  ncid-initmodem.init - service file for ncid with ncid-initmodem output module
+  ncid-mythtv.init    - service file for ncid with ncid-mythtv output module
+  ncid-page.init      - service file for ncid with ncid-page module
+  ncid-samba.init     - service file for ncid with ncid-samba module
+  ncid-speak.init     - service file for ncid with ncid-speak module
+  ncid-yac.init       - service file for ncid with ncid-yac module
+  ncidd.init          - service file for ncidd
+  ncidsip.init        - service file for ncidsip
+  sip2ncid.init       - service file for sip2ncid
+  yac2ncid.init       - service file for yac2ncid
+
+See Doc/INSTALL-Ubuntu for install instructions
 
 Makefile:
 
@@ -34,21 +37,21 @@ Ubuntu files for building the package:
 
 ---------------------------------------------------
 Steps required to build a Ubuntu or Debian package:
-The steps use ncid-0.76-src.tar.gz as an example:
+The steps use ncid-0.77-src.tar.gz as an example:
 ---------------------------------------------------
 
-    mkdir ncid (and put ncid-0.76-src.tar.gz in it)
+    mkdir ncid (and put ncid-0.77-src.tar.gz in it)
     cd ncid
-    tar -xzvf ncid-0.76-src.tar.gz
-    mv ncid ncid-0.76
-    cd ncid-0.76
+    tar -xzvf ncid-0.77-src.tar.gz
+    mv ncid ncid-0.77
+    cd ncid-0.77
     fakeroot debian/rules build
     fakeroot debian/rules binary
     fakeroot debian/rules clean
 
 Binary package built:
 
-    ncid_0.76-0ubuntu1_i386.deb
+    ncid_0.77-0ubuntu1_i386.deb
 
 Build the source package (not needed)
 
@@ -56,14 +59,14 @@ Build the source package (not needed)
 
 Source file built:
 
-    ncid_0.76-0ubuntu1.tar.gz
+    ncid_0.77-0ubuntu1.tar.gz
 
 The ncid directory may contain:
 
-    ncid-0.76/
-    ncid-0.76.tar.gz
-    ncid_0.76-0ubuntu1_i386.deb
-    ncid_0.76-0ubuntu1.tar.gz
+    ncid-0.77/
+    ncid-0.77.tar.gz
+    ncid_0.77-0ubuntu1_i386.deb
+    ncid_0.77-0ubuntu1.tar.gz
 
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Sun, 14 Feb 2010 11:22:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Thu, 8 Apr 2010 11:07:00 -0400
