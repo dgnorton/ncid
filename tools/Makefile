@@ -1,5 +1,5 @@
 PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl
-SHSOURCE	= startncid.sh
+SHSOURCE	= startncid.sh initmodem.sh
 ETCFILE     =
 FILES		= Makefile $(PLSOURCE) $(SHSOURCE) $(MANSRC)
 DIST        =
@@ -42,6 +42,7 @@ clean:
 
 clobber: clean
 	rm -f $(PLSCRIPT) $(SHSCRIPT) $(SITE)
+	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber
 
