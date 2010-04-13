@@ -5,16 +5,22 @@ The following modules are configured by editing /etc/ncid/ncidmodules.conf
 The ncidmodules.1 man page documents the following output modules.
 
 Module to terminate a call using a modem and the ncid.blacklist file
-    IMPORTANT: uses minicom to control the modem
     ncid-hangup
+    IMPORTANT: uses minicom to control the modem
+               uses ncid.blacklist and ncid.minicom
+
+Module to reinitialize the modem when RING is received as the number
+    ncid-initmodem
+    IMPORTANT: module should only be used if the modem stops sending
+               CID to ncidd and only sends RING from that point on
 
 Module to popup Caller ID using KDE:
     ncid-kpopup
 
 Module to send Caller ID to a cell phone, or pager:
+    ncid-page
     IMPORTANT: sendmail.cf must hide user root when masquerading is used.
                and root is sending the email
-    ncid-page
 
 Module to send Caller ID to samba to get a popup:
     ncid-samba
