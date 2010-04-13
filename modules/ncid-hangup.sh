@@ -2,6 +2,8 @@
 
 # hangup a call based on a number or name
 
+# last changed by jlc on Sat Apr 3, 2010
+
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
 #
@@ -21,7 +23,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 Blacklist=$ConfigDir/ncid.blacklist
 HangupScript=$ConfigDir/ncid.minicom
 HangupProg=minicom
-HangupOpts="-o -S $HangupScript"
+HangupOpts="-S $HangupScript"
 HangupLog=/var/log/ncid-hangup.log
 EndProg="\0001q"
 
