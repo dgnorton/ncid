@@ -1,5 +1,7 @@
-The files in this directory are used as follows:
-------------------------------------------------
+=================================================================
+This directory contains test programs and test files for the NCID
+server and clients, and client output modules.
+=================================================================
 
 aliasfile:
     Used to test "cidalias".
@@ -10,16 +12,14 @@ ncidd-noerrors.conf:
     file will permit ncidd to run after the config file is read.
 
 testclient:
+testclient.data:
     The program is a NCID test server used to send various NCID
     lines to test a client.  The test server uses port 3334.  It
     sends one or more lines from the testclient.data file with each
     press of <ENTER>.  The last <ENTER> will terminate the server.
     Blank lines are used to terminate a send initiated by <ENTER>.
 
-testclient.data:
-    Used with "testclient" to test client with different types of data.
-
-    Usage: ./testclient
+    Usage: ./testclient [data_file]
 
     To test a client:
 	    Start testclient (it will give instructions and send a 200 line)
@@ -65,33 +65,63 @@ testscript.data:
     A test file for ncid output modules, like ncid-page and ncid-speak.
     To test ncid-page: cat testscript.data | ncidpage
 
+    Output modules can be tested buy supplying 5 lines of input.
+    The input lines are not error checked.  They are:
+        Date
+        Time
+        Number
+        Name
+        Line Label
+
+    As an example, to check ncid-initmodem:
+        sh -x /usr/share/ncid/ncid-initmodem
+            d
+            t
+            RING
+            n
+            l
+
 testserver:
     This program is used to test ncidd or a client.  The server is
-    optioned for "noserial" mode, verbose level 3, and port 3334.
-    The test server can be run at the same time as one in actual use.
+    optioned for verbose level 3, port 3334 and debug mode.  The test
+    server can be run at the same time as one in actual use.
 
     It will create needed empty files that have a name that start with
     "T-".  The config and alias files can be populated.  All "T-*"
     files can be removed when testing is finished.
 
-    Usage: testserver {FULLY_QUALIFIED_PATH/ncidd} [-nciddOption(s)]
+    Usage: testserver {<path>/ncidd} [<ncidd_option(s)>]
 
     Examples: #run the test server in verbose level 4:
               ./testserver /usr/sbin/ncidd -v4
 
-              # Run testserver in debug mode:
-              ./testserver /usr/sbin/ncidd -D
+              # Run testserver in noserial mode:
+              ./testserver /usr/sbin/ncidd -N1
 
 TestGWcalls:
 TestGWcalls.data:
     This program emulates the output from a gateway.  It is usually
-    run at the same time as testserver and ncid
+    run at the same time as testserver and ncid.
 
     To test a server or client, start all three programs in 3 different
-    terminal windows:
-        ./testserver ../ncidd -D
+    terminal windows in this order:
+        ./testserver ../ncidd -N1
         ./TestGWcalls
-        ./ncid
+        ./ncid 3334
+
+    Press <ENTER> to send the first line
+    Press <ENTER> to keep sending lines until program terminates
+
+TestMdmcalls:
+TestMdmcalls.data:
+    This program simulates the output of a modem.  It is usually
+    run at the same time as testserver and ncid.
+
+    To test a server or client, start all three programs in 3 different
+    terminal windows in this order:
+        ./TestGWcalls
+        ./testserver ../ncidd
+        ./ncid 3334
 
     Press <ENTER> to send the first line
     Press <ENTER> to keep sending lines until program terminates
