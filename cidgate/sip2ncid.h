@@ -77,7 +77,7 @@ Options: [-C configfile      | --config configfile]\n\
 #define NUMSIZ      50
 #define CIDSIZ      75
 #define SIPSIZ      2048
-#define PKTWAIT     90
+#define PKTWAIT     120
 
 /* ethernet headers are always exactly 14 bytes */
 #define SIZE_ETHERNET 14
