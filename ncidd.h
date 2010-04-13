@@ -71,7 +71,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
              [-i cidstr     | --initcid cidstr]\n\
              [-L logfile    | --logfile logfile]\n\
              [-l lockfile   | --lockfile lockfile]\n\
-             [-M MaxBytes   | --cidlogmax MaxBytes ]\n\
+             [-M MaxBytes   | --cidlogmax MaxBytes]\n\
              [-N 0/1        | --noserial 0/1]\n\
              [-n 0/1        | --nomodem 0/1]\n\
              [-P pidfile    | --pidfile pidfile]\n\
@@ -115,8 +115,8 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define INITCID2    "AT#CID=1"
 #define PORT        3333
 #define CONNECTIONS 25
-#define TIMEOUT     200
-#define RINGWAIT    25
+#define TIMEOUT     200     /* poll() timeout in milliseconds */
+#define RINGWAIT    25      /* number of poll() timeouts to wait for RING */
 #define CRLF        "\r\n"
 #define NL          "\n"
 #define CR          "\r"
@@ -126,6 +126,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 
 #define NONAME      "NO NAME"
 #define NONUMB      "NO NUMBER"
+#define NOCID       "No Caller ID"
 #define NOMESG      "NONE"
 #define LOGMAX      110000
 #define LOGMAXNUM   100000000
@@ -165,6 +166,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define CIDNMBR      0x04
 #define CIDNAME      0x08
 #define CIDMESG      0x10
+#define CIDSENT      0x20
 #define CIDALL3      0x07
 #define CIDALT3      0x0B
 #define CIDALL4      0x0F
