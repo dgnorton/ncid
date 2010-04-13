@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.76
+Version:    0.77
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -141,6 +141,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %doc modules/README.modules
 /usr/bin/ncid
 %dir /usr/share/ncid
+/usr/share/ncid/ncid-initmodem
 /usr/share/ncid/ncid-hangup
 /usr/share/ncid/ncid-page
 /usr/share/ncid/ncid-skel
@@ -148,8 +149,11 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/share/ncid/ncid-yac
 /usr/share/pixmaps/ncid/ncid.gif
 %dir /etc/ncid
+/etc/ncid/ncid.minicom
+%config(noreplace) /etc/ncid/ncid.blacklist
 %config(noreplace) /etc/ncid/ncid.conf
 %config(noreplace) /etc/ncid/ncidmodules.conf
+%_initrddir/ncid-initmodem
 %_initrddir/ncid-hangup
 %_initrddir/ncid-page
 %_initrddir/ncid-yac
@@ -305,11 +309,20 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+* Fri Apr 9 2010 John Chmielewski <jlc@users.sourceforge.net> 0.77-1
+- removed line: %_initrddir/ncid-kpopup
+- added line: %_initrddir/ncid-initmodem
+- added line: /usr/share/ncid/ncid-initmodem
+- added line: /etc/ncid/ncid.minicom
+- added line: %config(noreplace) /etc/ncid/ncid.blacklist
+
 * Mon Dec 28 2009 John Chmielewski <jlc@users.sourceforge.net> 0.76-1
 - changed /usr/share/pixmaps/ncid.gif to /usr/share/pixmaps/ncid/ncid.gif
 
 * Mon Oct 19 2009 John Chmielewski <jlc@users.sourceforge.net> 0.75-1
 - client package changed from i386 to noarch
+- added line: %_initrddir/ncid-hangup
+- added line: /usr/share/ncid/ncid-hangup
 
 * Fri Jun 19 2009 John Chmielewski <jlc@users.sourceforge.net> 0.74-1
 - New release
