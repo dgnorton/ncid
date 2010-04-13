@@ -1,16 +1,21 @@
+---------------
+NCID for Fedora
+---------------
+
 Fedora service files:
 
-    ncid-hangup.init  - service file for ncid with ncid-hangup output module
-    ncid-mythtv.init  - service file for ncid with ncid-mythtv output module
-    ncid-page.init    - service file for ncid with ncid-page output module
-    ncid-kpopup.init  - service file for ncid with ncid-kpopup output module
-    ncid-samba.init   - service file for ncid with ncid-samba output module
-    ncid-speak.init   - service file for ncid with ncid-speak output module
-    ncid-tivo.init    - service file for ncid with a TiVo output module
-    ncid-yac.init     - service file for ncid with ncid-yac output module
-    ncidd.init        - service file for ncidd
-    sip2ncid.init     - service file for yac2ncid
-    yac2ncid.init     - service file for yac2ncid
+  ncid-hangup.init    - service file for ncid with ncid-hangup output module
+  ncid-initmodem.init - service file for ncid with ncid-initmodem output module
+  ncid-mythtv.init    - service file for ncid with ncid-mythtv output module
+  ncid-page.init      - service file for ncid with ncid-page output module
+  ncid-samba.init     - service file for ncid with ncid-samba output module
+  ncid-speak.init     - service file for ncid with ncid-speak output module
+  ncid-yac.init       - service file for ncid with ncid-yac output module
+  ncidd.init          - service file for ncidd
+  sip2ncid.init       - service file for yac2ncid
+  yac2ncid.init       - service file for yac2ncid
+
+See Doc/INSTALL-Fedora for install instructions
 
 Makefile:
 
