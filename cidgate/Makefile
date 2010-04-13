@@ -131,6 +131,7 @@ clean:
 clobber: clean
 	rm -f $(PROG) $(PLSCRIPT) $(SHSCRIPT)
 	rm -f $(PROG).ppc-mac $(PROG).i386-mac
+	rm -f a.out *.log *.zip *.tar.gz *.tgz
 
 distclean: clobber
 
