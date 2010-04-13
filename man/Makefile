@@ -44,6 +44,7 @@ clean:
 
 clobber: clean
 	rm -f man txt *.man *.txt *.html
+	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber
 
