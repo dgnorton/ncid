@@ -1,0 +1,71 @@
+#!/usr/bin/perl -w
+
+# Created by Chris Lenderman on March 25, 2010
+#
+# This script simulates a TTY connection and sends modem CallerID data to NCIDD
+# The initstr or initcid variable in ncidd.conf must not be ""
+# The way to test ncid and ncidd
+# ./TestMdmcalls
+# ./testserver ../ncidd
+# ./ncid 3334
+#
+use strict;
+use IO::Socket;
+
+#Open the testfile
+my $testfile;
+($testfile = shift) || ($testfile = "TestMdmcalls.data");
+open(TESTFILE, $testfile) || die "Could not open $testfile\n";
+
+#Obtain an ephemeral socket
+my $temp_sock = socket(SOCK, AF_INET, SOCK_STREAM, 6 );
+bind(SOCK, pack('S n a4 x8', AF_INET, 0, pack('C4', 127,0,0,1))) or die;
+(my $port, my $tmp_addr) = sockaddr_in(getsockname(SOCK));
+close (SOCK);
+
+#Launch socat
+system("socat PTY,link=./vmodem0,raw,echo=0 TCP4-LISTEN:$port &");
+
+sleep 2;
+
+#Open a new socket based on the ephemeral port
+my $BitMask=''; 
+my $SocketAddress = pack('S n a4 x8', AF_INET, $port, pack('C4', 127,0,0,1)); 
+socket(NEWSOCK, AF_INET, SOCK_STREAM, 6);
+connect(NEWSOCK,$SocketAddress) || die "Could not establish socket connection.  Please ensure that the package \"socat\" is installed and that its path is included in \$PATH";
+select(NEWSOCK); $| = 1;select(STDOUT);
+vec($BitMask,fileno(NEWSOCK),1)=1;
+
+#prompt for NCIDD connection
+print "Connect server to port 3334 and tty ./vmodem0 for test: ./testserver ../ncidd -t ./vmodem0 \n\n";
+print "Then press <ENTER> multiple times to send different caller data\n\n";
+
+#Send the "OK" in response to AT commands
+my $total_cmds = 0; my $buf; my $rout; my $wout; my $eout; my $dataline="";
+while ($total_cmds < 2)
+{
+   select($rout=$BitMask,$wout=$BitMask,$eout=$BitMask,0);
+   sysread(NEWSOCK, $buf, 1);
+   $dataline.=$buf; 
+   
+   if ($dataline =~/\r/)
+   {
+      if ($dataline =~/^AT/)
+      {
+         #print "INIT STRING: $dataline\nSENDING: OK\n\n";
+         print NEWSOCK "OK\n";
+	 $total_cmds++;
+      }
+      $dataline = "";
+   }
+   select($rout=$BitMask,$wout=$BitMask,$eout=$BitMask,0);
+}
+
+#send the data
+while (<TESTFILE>) {
+    if (/^#/) { next; }
+	if (/\w.*/) { $_ =~s/\\n/\n/g; print; print NEWSOCK; }
+	else { my $response = <STDIN>; }
+}
+
+exit 0;
