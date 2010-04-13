@@ -54,6 +54,8 @@ DIST         = ncidd.conf-in ncid.conf-in
 FILES        = Makefile $(CLIENT).sh $(DIST) $(HEADER) $(SOURCE) \
                $(DOCFILE) $(ETCFILE)
 
+subdirs      = cidgate modules scripts tools man debian Fedora FreeBSD test
+
 Version := $(shell sed 's/.* //; 1q' VERSION)
 
 # the prefix must end in a - (if part of a name) or a / (if part of a path)
@@ -352,29 +354,14 @@ install-man:
 
 clean:
 	rm -f *.o
-	cd man; $(MAKE) clean
-	cd tools; $(MAKE) clean
-	cd scripts; $(MAKE) clean
-	cd modules; $(MAKE) clean
-	cd cidgate; $(MAKE) clean
-	cd Fedora; $(MAKE) clean
-	cd FreeBSD; $(MAKE) clean
-	cd debian; $(MAKE) clean
-	cd test; $(MAKE) clean
+	for i in $(subdirs); do cd $$i; $(MAKE) clean; cd ..; done
 
 clobber: clean
 	rm -f $(PROG) $(PROG).ppc-tivo $(PROG).mips-tivo tivo-ppc tivo-mips
 	rm -f $(PROG).ppc-mac $(PROG).i386-mac
 	rm -f tivocid tivoncid $(CLIENT) $(SITE)
 	rm -f version.h a.out *.log *.zip *.tar.gz *.tgz
-	cd man; $(MAKE) clobber
-	cd tools; $(MAKE) clobber
-	cd scripts; $(MAKE) clobber
-	cd modules; $(MAKE) clobber
-	cd cidgate; $(MAKE) clobber
-	cd Fedora; $(MAKE) clobber
-	cd FreeBSD; $(MAKE) clobber
-	cd debian; $(MAKE) clobber
+	for i in $(subdirs); do cd $$i; $(MAKE) clobber; cd ..; done
 
 distclean: clobber
 
