@@ -1,59 +1,65 @@
 .\" %W% %G%
 .TH NCIDMODULES 1
 .SH NAME
-.B ncid-hangup\^
-- hangup calls based on Caller ID
+.B ncid-hangup
+- hangup calls based on Caller ID using minicom
 .PP
-.B ncid-kpopup\^
-- Popup Caller ID using KDE
+.B ncid-initmodem
+- use ncidd to reinitialize modem to Caller ID mode
+.PP
+.B ncid-kpopup
+- popup Caller ID using KDE
 .PP
 .B ncid-page
-- send Caller ID to a pager or cell phone
+- send Caller ID to a pager or cell phone using mail
 .PP
-.B ncid-samba\^
+.B ncid-samba
 - send Caller ID to samba to create a popup
 .PP
-.B ncid-speak\^
+.B ncid-speak
 - send Caller ID to a text-to-speach program
 .PP
-.B ncid-mythtv\^
+.B ncid-mythtv
 - display Caller ID on MythTV using mythtvosd
 .PP
-.B ncid-skel\^
+.B ncid-skel
 - display Caller ID on stdout in a terminal window
 .PP
-.B ncid-tivo\^
+.B ncid-tivo
 - display Caller ID on TiVo using text2osd
 .PP
-.B ncid-yac\^
+.B ncid-yac
 - Send Caller ID to YAC listeners
 .SH SYNOPSIS
 ncid --no-gui --call-prog --program
-.B ncid-hangup\^
+.B ncid-hangup
+.PP
+ncid --no-gui --call-prog --program
+.B ncid-initmodem
 .PP
 ncid --no-gui [--message] --call-prog --program
-.B ncid-kpopup\^
+.B ncid-kpopup
 .PP
-ncid --no-gui [--ring #] [--message] --call-prog --program
-.B ncid-page\^
-.PP
-ncid --no-gui [--message] --call-prog --program
-.B ncid-samba\^
+ncid --no-gui [--message] [--ring #] --call-prog --program
+.B ncid-page
 .PP
 ncid --no-gui [--message] --call-prog --program
-.B ncid-speak\^
+.B ncid-samba
 .PP
 ncid --no-gui [--message] --call-prog --program
-.B ncid-mythtv\^
+.B ncid-speak
 .PP
 ncid --no-gui [--message] --call-prog --program
-.B ncid-skel\^
+.B ncid-mythtv
 .PP
 ncid --no-gui [--message] --call-prog --program
-.B ncid-tivo\^
+.B ncid-skel
 .PP
 ncid --no-gui [--message] --call-prog --program
-.B ncid-yac\^
+.B ncid-tivo
+.PP
+ncid --no-gui [--message] --call-prog --program
+.B ncid-yac
 .SH DESCRIPTION
 These are ncid output modules and are normally located in the
 .BR /usr/share/ncid
@@ -62,19 +68,67 @@ directory.
 The client,
 .BR ncid ,
 can be configured to call any one module.  It cannot call multiple modules,
-but multiple \fBncid\fR clients can be used each calling a different output
-module.
+but multiple clients can be used, each calling a different output module.
 .PP
-The ncid-skel output module is used as a template for writing
+The
+.B ncid-hangup
+module uses a modem to hang up on a phone call.
+It works with either a modem or gateway providing the Caller ID
+information.  The module uses minicom and runscript to talk to
+the modem.
+.PP
+The
+.B ncid-initmodem
+module reinitializes the modem obtaining the Caller ID
+for the server.  It can only be used if the modem supports Caller ID and
+sends "RING" at each ringing signal.  If the server indicates a non-CID
+call, ncid-initmodem will cause ncidd to re-initialize the modem for CID.
+Never use this module with a modem that does not support Caller ID.  The
+module can be used with TiVo modems that drop out of Caller ID mode.
+.PP
+The
+.B ncid-page module
+is used to send a call message to a cell phone, pager,
+or email address.  It normally sends the message as soon as the Caller ID
+is received.  It can be configured to wait until a specific number of rings
+before sending the message when using a modem that indicates RING, or it
+can send the message if the call was unanswered or at the completion of
+the call when using a SIP gateway.  The module requires \fIPageTo\fR
+in \fIncidmodules.conf\fR to be set to the SMS gateway for your cell phone
+carrier.
+.PP
+The
+.B ncid-skel
+output module is used as a template for writing
 a shell script output module.  All it does is send the Caller ID
 data to standard output.  This makes it useful for troubleshooting.
 .PP
-Each output module can be independently configured using
-.I /etc/ncid/ncidmodules.conf
+Each output module can be independently configured using the module
+configuration file:
+.I ncidmodules.conf
 .PD
+.SH EXAMPLES
+Before using a module, review \fIncidmodules.conf\fR to see if the
+module has a variable that must be configured.  The \fIncid-page\fR
+modules requires the \fIPageTo\fR variable to be set.
+.PP
+ncid command line options to call ncid-page at ring number 4
+.RS 0
+    ncid --no-gui --call-prog --program ncid-page --ring 4
+.RE
+.PP
+Messages are normally excluded, to include messages:
+.RS 0
+    ncid --no-gui --message --call-prog --program ncid-page --ring 4
+.RE
 .SH FILES
 /etc/ncid/ncidmodules.conf
+.br
+http://en.wikipedia.org/wiki/List_of_carriers_providing_SMS_transit
 .SH SEE ALSO
 ncid.1,
 ncidmodules.conf.5,
-ncidd.8
+ncidd.8,
+.br
+minicom.1,
+runscript.1

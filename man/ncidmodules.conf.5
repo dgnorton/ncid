@@ -15,6 +15,8 @@ The \fIncidmodules.conf\fR file is used to set options for:
 .RS
 .I ncid-hangup
 .br
+.I ncid-initmodem
+.br
 .I ncid-kpopup
 .br
 .I ncid-mythtv
@@ -40,17 +42,18 @@ skip it
 .TP
 .B shell variable set lines.
 .PP
-See ncidsmodules.conf for more details on the variables that
-can be set.
+The \fIncidmodules.conf\fR file has a separate section for each module
+and describes each shell variable that can be configured.  Some modules,
+like ncid-page and ncid-samba must be configured before use.  Other
+modules may need to be configured or not require any configuration.
 .SH EXAMPLES
-ncid command line options to call ncid-page at ring number 4:
+Configure the email address for ncid-page in ncidmodules.conf.
 .RS 0
-	ncid --call-prog --program ncid-page --ring 4
+	PageTo=<cellphone_number@carrier_Internet_address>
 .RE
-.PP
-set the email address for ncid-page in ncidmodules.conf:
-.RS 0
-	PageTo=cellphone@isp.com
-.RE
+.SH FILES
+/etc/ncid/ncidmodules.conf
+.br
+http://en.wikipedia.org/wiki/List_of_carriers_providing_SMS_transit
 .SH SEE ALSO
 ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidmodules.1

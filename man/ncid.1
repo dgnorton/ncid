@@ -20,7 +20,6 @@
 [--call-prog         | -C]
 [--delay seconds     | -D seconds]
 [--message           | -M]
-[--nocid             | -N]
 [--noexit            | -X]
 [--program PROGRAM   | -P PROGRAM]
 [--pidfile FILE      | -p PIDFILE]
@@ -44,11 +43,6 @@ In the default GUI mode, if the server is configured to send the
 CID Call Log, it will load the call log in the CID log window at
 startup.  The call log is updated by \fIncid\fR whenever a call
 is received.
-.PP
-.B Ncid
-can also display \fIPhone Call\fB if the modem used by the server
-does not send the Caller ID information to it.  This is useful if
-a visual indication is wanted for ringing.
 .PP
 .B Ncid
 also has a message window that will send a single line message
@@ -122,12 +116,6 @@ Default: 60 seconds
 .TP
 .B --message | -M
 Send messages to the output modules
-.TP
-.B --nocid | -N
-Configure ncid to indicate \fIPhone Call\fR on the first ring
-received from the modem.  It requires a modem that indicates ring,
-but does not require a modem that supports caller id.
-.TP
 .B --noexit | -X
 Configure ncid to to ignore the close window button.
 .TP

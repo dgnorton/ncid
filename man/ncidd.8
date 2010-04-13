@@ -217,7 +217,9 @@ Display the version number.
 .TP
 .B -v <1-9> | --verbose <1-9>
 Output information, used for the logfile and the -D option.
-Set higher number for more information.
+Set higher number for more information.  Do not use level 9
+unless there is a problem in poll().  It grows the logfile
+very fast.
 .br
 Default: verbose = 1
 .br
@@ -288,7 +290,7 @@ Server log file.  Contents controlled by verbose.
          0         Successful
       -100         Usage
       -101         Invalid port number
-      -102         TTY port is in use
+      -102         TTY lockfile exists
       -103         Unable to set modem for Caller ID
       -104         Configuration file error
       -105         No modem found
