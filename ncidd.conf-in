@@ -29,7 +29,7 @@
 ##########################
 
 # Set the verbose level
-# The default value is 1, the range is 1-9
+# The default value is 1, the range is 1-8
 # set verbose = 3
 
 ############################
@@ -182,6 +182,10 @@ send cidinfo
 # set initcid = "AT+FCLASS=8;+VCID=1"
 # set initcid = "AT-STE=1;+VCID=1"
 # set initcid = "AT-STE=1;#CID=1"
+#
+# CID init string to skip sending any CID string to modem
+# Useful if NCID is used only as a visual call indicator
+# set initcid = ""
 
 #################
 # TiVo Settings #
