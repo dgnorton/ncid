@@ -83,7 +83,6 @@ set CallOnRing  0
 set TivoFlag    0
 set MsgFlag     0
 set Ring        999
-set NoCID       0
 set NoExit      0
 set ExitOn      exit
 
@@ -107,7 +106,6 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
                [--call-prog       | -C]
                [--delay seconds   | -D seconds]
                [--message         | -M]
-               [--nocid           | -N]
                [--noexit          | -X]
                [--program PROGRAM | -P PROGRAM]
                [--pidfile FILE    | -p pidfile]
@@ -206,7 +204,6 @@ proc getCID {} {
     global Connect
     global Host
     global MsgFlag
-    global NoCID
     global NoGUI
     global Port
     global Raw
@@ -253,15 +250,10 @@ proc getCID {} {
                 if {$CallOnRing} {
                     set ringinfo [getField RING $dataBlock]
                     set lineinfo [getField LINE $dataBlock]
-                    if {$NoCID} {
-                        if {$ringinfo == "1"} {handleMSG "Phone Call"}
-                        if {$ringinfo == "0"} {handleMSG " "}
-                    } else {
-                        # must use $call($lineinfo) instead of $cid
-                        if {$Callprog && $Ring == $ringinfo} {
-                            catch {sendCID $call($lineinfo)} oops
-                            if $Verbose {puts "$oops"}
-                        }
+                    # must use $call($lineinfo) instead of $cid
+                    if {$Callprog && $Ring == $ringinfo} {
+                        catch {sendCID $call($lineinfo)} oops
+                        if $Verbose {puts "$oops"}
                     }
                 }
             } elseif {$type == 4} {
@@ -416,15 +408,15 @@ proc sendCID {cid} {
       if $TivoFlag {
         # pass NAME NUMBER\nLINE\n
         catch {exec $Program << \
-          "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n" &} oops
+          "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n"} oops
       } else {
         # pass DATE\nTIME\nNUMBER\nNAME\nLINE\n
         if $ExecSh {
           catch {exec sh -c $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n" &} oops
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n"} oops
         } else {
           catch {exec $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n" &} oops
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n"} oops
         }
       }
 }
@@ -439,14 +431,14 @@ proc sendMSG {msg} {
     if $TivoFlag {
       # send "$msg\n"
       # instead of: $ciddate $cidnumber\n$cidline
-      catch {exec [lindex $Program 0] << "$msg\n" &} oops
+      catch {exec [lindex $Program 0] << "$msg\n"} oops
     } else {
       # send "\n\n\n$msg\n\n"
       # in place of: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n"
       if $ExecSh {
-        catch {exec sh -c $Program << "\n\n\n$msg\n\n" &} oops
+        catch {exec sh -c $Program << "\n\n\n$msg\n\n"} oops
       } else {
-        catch {exec $Program << "\n\n\n$msg\n\n" &} oops
+        catch {exec $Program << "\n\n\n$msg\n\n"} oops
       }
     }
 }
@@ -545,7 +537,6 @@ proc getArg {} {
     global TivoFlag
     global MsgFlag
     global PIDfile
-    global NoCID
     global PopupTime
     global NoExit
 
@@ -575,11 +566,6 @@ proc getArg {} {
             }
             {^-M$} -
             {^--message$} {set MsgFlag 1}
-            {^-N$} -
-            {^--nocid$} {
-                set NoCID 1
-                set CallOnRing 1
-            }
             {^-P$} -
             {^--program$} {
                 incr cnt
