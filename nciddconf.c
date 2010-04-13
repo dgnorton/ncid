@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2009
+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
  * by  John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddconf.c is free software; you can redistribute it and/or modify
@@ -42,7 +42,7 @@ struct setword setword[] = {
     {"ttyclocal",  WORDNUM,            0,         &clocal,   OFF, ON},
     {"ttyport",    WORDSTR,            &ttyport,  0,         0,    0},
     {"ttyspeed",   WORDSTR,            &TTYspeed, 0,         0,    0},
-    {"verbose",    WORDNUM,            0,         &verbose,  1,    MAXLEVEL},
+    {"verbose",    WORDNUM,            0,         &verbose,  1,    MAXLEVEL - 1},
     {0,            0,                  0,         0,         0,    0}
 };
 
