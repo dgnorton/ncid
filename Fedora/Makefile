@@ -1,7 +1,7 @@
 INIT        = ncidd.init ncidsip.init sip2ncid.init yac2ncid.init \
-              ncid-kpopup.init ncid-mythtv.init ncid-page.init \
+              ncid-mythtv.init ncid-page.init \
               ncid-samba.init ncid-speak.init ncid-yac.init \
-              ncid-hangup
+              ncid-hangup.init ncid-initmodem.init
 SPEC        = ncid.spec
 FILES		= README.Fedora Makefile $(INIT) $(SPEC)
 
@@ -43,6 +43,7 @@ clean:
 
 clobber: clean
 	rm -f $(SITE)
+	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber
 
