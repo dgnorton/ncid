@@ -1,4 +1,11 @@
-# Makefile just to clean created test files
+# Makefile to clean created test files and archive files
+
+default:
 
 clean:
-	rm -f T-*
+	rm -f T-* vmodem0
+
+clobber: clean
+	rm -f *.zip *.tar.gz *.tgz
+
+distclean: clobber
