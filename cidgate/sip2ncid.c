@@ -496,7 +496,7 @@ void processPackets(u_char *args,
 
     int size_ip, size_udp, size_pdata, cnt, outcall, pos, retval;
 
-    char sipbuf[SIPSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ],
+    char sipbuf[SIPSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ], warnmsg[BUFSIZ],
          tonumber[NUMSIZ], fromnumber[NUMSIZ], callid[CIDSIZ];
     char *line, *number, *name;
 
@@ -504,6 +504,23 @@ void processPackets(u_char *args,
     struct timeval tv;
 
     alarm(PKTWAIT); /* reset SIP packet timeout alarm */
+    if (msgsent & 0x1)
+    {
+        /* log only one SIP packets returned message */
+        sprintf(msgbuf, "SIP packets returned: port %d %s\n",
+                sipport, strdate(ONLYTIME));
+        logMsg(LEVEL1, msgbuf);
+
+        if (warn && sd)
+        {
+            /*
+            * send clients SIP OK message if warn option
+            * set and if connected to the NCID server
+            */
+            sprintf(warnmsg, "MSG: %s", msgbuf);
+            retval =  write(sd, warnmsg, strlen(warnmsg));
+        }
+    }
     msgsent = 0;    /* reset message log flag */
 
     /* 
@@ -642,7 +659,7 @@ void processPackets(u_char *args,
             if (strmatch(sipbuf, CSEQ, INVITE))
             {
                 /* Get the unique Call-ID */
-                getCallID(sipbuf, callid, sizeof(callid));
+                getCallID(sipbuf, callid, sizeof(callid), INVITE);
 
                 /* Ignore a Request Terminated packet */
                 if (strmatch(sipbuf, SIPVER, REQUEST))
@@ -666,10 +683,19 @@ void processPackets(u_char *args,
                     if (!strcmp(calls[cnt], callid)) return;
                 }
 
-                /* enter Call-ID in calls in-progress table */
                 if (pos)
                 {
-                        calls[pos] = strdup(callid);
+                    /* add Call-ID to calls in-progress table */
+                    calls[pos] = strdup(callid);
+                    sprintf(msgbuf, "Added calls[%d]=%s\n", pos, callid);
+                    logMsg(LEVEL2, msgbuf);
+                }
+                else
+                {
+                    /* calls in-progress table filled */
+                    sprintf(msgbuf, "%d simultaneous calls exceeded\n",
+                            MAXCALL);
+                    logMsg(LEVEL1, msgbuf);
                 }
 
                 /*
@@ -718,20 +744,9 @@ void processPackets(u_char *args,
                     sprintf(cidmsg, CIDLINE, strdate(NOYEAR),
                             line, fromnumber, name);
                 }
+
                 if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
-
-                if (!pos)
-                {
-                    sprintf(msgbuf, "%d simultaneous calls exceeded\n",
-                            MAXCALL);
-                    logMsg(LEVEL1, msgbuf);
-                }
-                else
-                {
-                    sprintf(msgbuf, "Added calls[%d]=%s\n", pos, callid);
-                    logMsg(LEVEL2, msgbuf);
-                }
             }
 
             /*
@@ -747,7 +762,7 @@ void processPackets(u_char *args,
             else if (strmatch(sipbuf, CSEQ, CANCEL))
             {
                 /* Get the unique Call-ID */
-                getCallID(sipbuf, callid, sizeof(callid));
+                getCallID(sipbuf, callid, sizeof(callid), CANCEL);
 
                 /*
                  * If Call-ID found remove it
@@ -820,7 +835,7 @@ void processPackets(u_char *args,
             else if (strmatch(sipbuf, CSEQ, BYE))
             {
                 /* Get the unique Call-ID */
-                getCallID(sipbuf, callid, sizeof(callid));
+                getCallID(sipbuf, callid, sizeof(callid), BYE);
 
                 /*
                  * If Call-ID found remove it
@@ -1053,10 +1068,12 @@ char *strmatch(char *strbuf, char *fword, char *eword)
 
 /*
  * Get the unique Call-ID
+ * return 0 if Call-ID not found
+ * return 1 Call-ID found
  */
-int getCallID(char *sipbuf, char *callid, int size)
+int getCallID(char *sipbuf, char *callid, int size, char *label)
 {
-    int len;
+    int len, ret = 0;
     char *sptr, *eptr;
     char msgbuf[BUFSIZ];
 
@@ -1072,13 +1089,21 @@ int getCallID(char *sipbuf, char *callid, int size)
             else
             {
                 *(strncpy(callid, sptr, size -1) + size) = '\0';
-                sprintf(msgbuf, "Warning: %s truncated: %u > %u\n",
-                        CALLID, len, size - 1);
+                sprintf(msgbuf, "Warning: %s packet - %s truncated: %u > %u\n",
+                        label, CALLID, len, size - 1);
                 logMsg(LEVEL1, msgbuf);
             }
+            ret = 1;
         }
     }
-    return 0;
+    if (!ret)
+    {
+        *callid = '\0';
+        sprintf(msgbuf, "Warning: cannot get %s in %s\n", CALLID, label);
+        logMsg(LEVEL1, msgbuf);
+    }
+
+    return ret;
 }
 
 /*
@@ -1198,32 +1223,40 @@ void doPCAP()
         sprintf(msgbuf,
                 "Alarm Timeout: pcap_loop(): return = %d, msgsent flag = %d\n",
                 pcapret, msgsent);
-        logMsg(LEVEL3, msgbuf);
-        if (pcapret == -2)
+        logMsg(LEVEL4, msgbuf);
+        if (msgsent ^ 0x3)
         {
-            /* log timeout messages */
-            sprintf(msgbuf, "No SIP packets in %d seconds: port %d %s\n",
-                    PKTWAIT, sipport, strdate(ONLYTIME));
-            logMsg(LEVEL1, msgbuf);
-            msgsent |= 0x1;
-            if (warn && sd)
+            /* need to send either timeout or error message */
+            if (pcapret == -2)
             {
-                /*
-                 * send clients warning message to if warn option
-                 * set and if connected to the NCID server
-                 */
-                sprintf(warnmsg, "MSG: %s", msgbuf);
-                retval =  write(sd, warnmsg, strlen(warnmsg));
+                if ((msgsent & 0x1) == 0)
+                {
+                    /* log only one SIP packet timeout message */
+                    sprintf(msgbuf,
+                            "No SIP packets in %d seconds: port %d %s\n",
+                            PKTWAIT, sipport, strdate(ONLYTIME));
+                    logMsg(LEVEL1, msgbuf);
+                    msgsent |= 0x1;
+                    if (warn && sd)
+                    {
+                        /*
+                        * send clients one warning message if warn option
+                        * set and if connected to the NCID server
+                        */
+                        sprintf(warnmsg, "MSG: %s", msgbuf);
+                        retval =  write(sd, warnmsg, strlen(warnmsg));
+                    }
+                }
             }
-        }
-        else if (pcapret == -1)
-        {
-            if ((msgsent & 0x2) == 0)
+            else if (pcapret == -1)
             {
-                /* log only one error message */
-                sprintf(msgbuf, "pcap_loop error\n");
-                logMsg(LEVEL1, msgbuf);
-                msgsent |= 0x2;
+                if ((msgsent & 0x2) == 0)
+                {
+                    /* log only one error message */
+                    sprintf(msgbuf, "pcap_loop error\n");
+                    logMsg(LEVEL1, msgbuf);
+                    msgsent |= 0x2;
+                }
             }
         }
     }
@@ -1314,7 +1347,7 @@ void sigdetect(int sig)
     }
     else
     {
-        sprintf(msgbuf, "Received Signal: %s\nn", strsignal(sig));
+        sprintf(msgbuf, "Received Signal: %s\n", strsignal(sig));
         logMsg(LEVEL1, msgbuf);
 
         /* termination signals */
