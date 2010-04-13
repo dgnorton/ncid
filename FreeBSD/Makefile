@@ -1,6 +1,6 @@
 RCF     = ncidd.rc ncidsip.rc sip2ncid.rc yac2ncid.rc \
-          ncid-kpopup.rc ncid-mythtv.rc ncid-page.rc ncid-samba.rc \
-          ncid-speak.rc ncid-yac.rc ncid-hangup.rc
+          ncid-mythtv.rc ncid-page.rc ncid-samba.rc \
+          ncid-speak.rc ncid-yac.rc ncid-hangup.rc ncid-initmodem.rc
 FILES   = README.FreeBSD Makefile $(RCF)
 
 prefix  = /usr/local
@@ -24,6 +24,7 @@ clean:
 
 clobber: clean
 	rm -f $(SITE)
+	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber
 
