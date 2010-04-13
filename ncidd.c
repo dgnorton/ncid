@@ -69,7 +69,7 @@ void exit(), finish(), free(), reload(), ignore(), doPoll(), formatCID(),
      writeClients(), writeLog(), sendLog(), builtinAlias(), userAlias(),
      openTTY(), sendInfo(), logMsg(), cleanup();
 
-int getOptions(), doConf(), errorExit(), doAlias(), doTTY(),
+int getOptions(), doConf(), errorExit(), doAlias(), doTTY(), CheckForLockfile(),
     addPoll(), tcpOpen(), doModem(), initModem(), gettimeofday(), doPID();
 
 int main(int argc, char *argv[])
@@ -107,9 +107,6 @@ int main(int argc, char *argv[])
             name, VERSION);
     logMsg(LEVEL1, msgbuf);
 
-    sprintf(msgbuf, "Verbose level: %d\n", verbose);
-    logMsg(LEVEL1, msgbuf);
-
     if (stat(logfile, &statbuf) == 0)
     {
         sprintf(msgbuf, "ncidd logfile: %s\n", logfile);
@@ -121,6 +118,9 @@ int main(int argc, char *argv[])
      * do not override any options set on the command line
      */
     if (doConf()) errorExit(-104, 0, 0);
+
+    sprintf(msgbuf, "Verbose level: %d\n", verbose);
+    logMsg(LEVEL1, msgbuf);
 
     /*
      * indicate what is configured to send to the clients
@@ -226,8 +226,8 @@ int main(int argc, char *argv[])
         }
 
         /* check TTY port lock file */
-        if (stat(lockfile, &statbuf) == 0)
-            errorExit(-102, "Exiting - TTY port in use (lockfile exists)",
+        if (CheckForLockfile())
+            errorExit(-102, "Exiting - TTY lockfile exists",
                   lockfile);
 
         /* Open tty port; exit program if it fails */
@@ -250,14 +250,14 @@ int main(int argc, char *argv[])
         }
 
         sprintf(msgbuf, "TTY port opened: %s\n", ttyport);
-        logMsg(LEVEL2, msgbuf);
+        logMsg(LEVEL1, msgbuf);
         sprintf(msgbuf, "TTY port speed: %s\n", TTYspeed);
-        logMsg(LEVEL2, msgbuf);
+        logMsg(LEVEL1, msgbuf);
         sprintf(msgbuf, "TTY lock file: %s\n", lockfile);
-        logMsg(LEVEL2, msgbuf);
+        logMsg(LEVEL1, msgbuf);
         sprintf(msgbuf, "TTY port control signals %s\n",
             clocal ? "disabled" : "enabled");
-        logMsg(LEVEL2, msgbuf);
+        logMsg(LEVEL1, msgbuf);
 
         if (nomodem)
         {
@@ -349,10 +349,12 @@ int main(int argc, char *argv[])
                 if (!noserial)
                 {
                     /* TTY port lockfile */
-                    if (stat(lockfile, &statbuf) == 0)
+                    if (CheckForLockfile())
                     {
                         if (!locked)
                         {
+                            /* lockfile just found */
+
                             /* save TTY events */
                             pollevents = polld[pollpos].events;
                             /* remove TTY poll events */
@@ -363,14 +365,15 @@ int main(int argc, char *argv[])
                                 strdate(WITHSEP));
                             logMsg(LEVEL1, msgbuf);
                             locked = 1;
+                            ringwait = 0;
                         }
                     }
                     else if (locked)
                     {
+                        /* lockfile just went away */
                         sprintf(msgbuf, "TTY free: using modem again %s\n",
                             strdate(WITHSEP));
                         logMsg(LEVEL1, msgbuf);
-                        usleep(INITWAIT); /* 0.1 seconds */
                         openTTY();
                         if (doTTY() < 0)
                         {
@@ -593,61 +596,103 @@ int doTTY()
     ntty.c_lflag = (ICANON);
     if (tcsetattr(ttyfd, TCSANOW, &ntty) < 0) return -1;
 
-    if (nomodem) sprintf(msgbuf, "CallerID TTY port initialized.\n");
-    else sprintf(msgbuf, "Modem set for CallerID.\n");
-    logMsg(LEVEL1, msgbuf);
+    if (nomodem)
+    {
+        sprintf(msgbuf, "CallerID TTY port initialized.\n");
+        logMsg(LEVEL1, msgbuf);
+    }
 
     return 0;
 }
 
+/*
+ * Configure the modem
+ * returns:  0 if successful
+ *          -1 if cannot read from or write to modem
+ * exits program if major problem
+ */
 int doModem()
 {
     int cnt, ret = 2;
     char msgbuf[BUFSIZ];
 
-    /*
-     * Try to initialize modem, sometimes the modem
-     * fails to respond the 1st time, so try multiple
-     * times on a no response return code, before
-     * indicating no modem.
-     */
-    for (cnt = 0; ret == 2 && cnt < MODEMTRY; ++cnt)
+    if (*initstr)
     {
-        if ((ret = initModem(initstr)) < 0) return -1;
-        sprintf(msgbuf, "Try %d to init modem: return = %d.\n", cnt + 1, ret);
-        logMsg(LEVEL3, msgbuf);
-    }
-
-    if (ret)
-    {
-        tcsetattr(ttyfd, TCSANOW, &otty);
-        if (ret == 1) errorExit(-103, "Unable to initialize modem", ttyport);
-        else errorExit(-105, "No modem found", ttyport);
-    }
-
-    sprintf(msgbuf, "Modem initialized.\n");
-    logMsg(LEVEL1, msgbuf);
-
-    /* Initialize CID */
-    if ((ret = initModem(initcid)) < 0) return -1;
-    if (ret)
-    {
-        if (!setcid)
+        /*
+        * Try to initialize modem, sometimes the modem
+        * fails to respond the 1st time, so try multiple
+        * times on a no response return code, before
+        * indicating no modem.
+        */
+        for (cnt = 0; ret == 2 && cnt < MODEMTRY; ++cnt)
         {
+            if ((ret = initModem(initstr)) < 0) return -1;
+            sprintf(msgbuf, "Try %d to init modem: return = %d.\n",
+                    cnt + 1, ret);
+            logMsg(LEVEL3, msgbuf);
+        }
+
+        if (ret)
+        {
+            tcsetattr(ttyfd, TCSANOW, &otty);
+            if (ret == 1) errorExit(-103, "Unable to initialize modem",
+                                    ttyport);
+            else errorExit(-105, "No modem found", ttyport);
+        }
+
+        sprintf(msgbuf, "Modem initialized.\n");
+        logMsg(LEVEL1, msgbuf);
+    }
+    else
+    {
+        /* initstr is null */
+        sprintf(msgbuf, "Initialization string for modem is null.\n");
+        logMsg(LEVEL1, msgbuf);
+    }
+
+    if (*initcid)
+    {
+        /* try to initialize modem for CID */
+        if ((ret = initModem(initcid)) < 0) return -1;
+
+        if (ret && !setcid)
+        {
+            /*default init string 1 failed, try default init string 2 */
             if (!(initcid = strdup(INITCID2))) errorExit(-1, name, 0);
             if ((ret = initModem(initcid)) < 0) return -1;
         }
 
         if (ret)
         {
+            /* CID initialization failed */
             tcsetattr(ttyfd, TCSANOW, &otty);
             errorExit(-103, "Unable to set modem CallerID", ttyport);
         }
+        else
+        {
+            /* CID initialization succeeded */
+            sprintf(msgbuf, "Modem set for CallerID.\n");
+            logMsg(LEVEL1, msgbuf);
+        }
+    }
+    else
+    {
+        /* initcid is null */
+        sprintf(msgbuf, "CallerID initialization string for modem is null.\n");
+        logMsg(LEVEL1, msgbuf);
     }
 
     return 0;
 }
 
+/*
+ * Initialize modem
+ * expects:  initialization string
+ * returns:  0 if successful
+ *           1 if modem returns "ERROR"
+ *           2 if no response, or unexpected response from modem
+ *          -1 if cannot read from or write to modem
+ */
 int initModem(char *ptr)
 {
     int num = 0, size = 0;
@@ -775,7 +820,7 @@ void doPoll(int events, int mainsock)
     /* log event flags */
     sprintf(msgbuf, "polld[%d].revents: 0x%X, fd: %d\n",
       pos, polld[pos].revents, polld[pos].fd);
-    logMsg(LEVEL4, msgbuf);
+    logMsg(LEVEL9, msgbuf);
 
     if (polld[pos].revents & POLLHUP) /* Hung up */
     {
@@ -1178,6 +1223,21 @@ void formatCID(int mainsock, char *buf)
             *sptr = '\0';
             cid.status |= (CIDDATE | CIDTIME);
         }
+        else if ((cid.status & CIDSENT) == 0 && ring == 2 )
+        {
+            /*
+             * CID information always received between RING 1 and 2
+             * but no CID information received, so create one.
+             */
+            ptr = strdate(NOSEP);     /* returns: MMDDYYYY HHMM */
+            for(sptr = cid.ciddate; *ptr && *ptr != ' ';) *sptr++ = *ptr++;
+            *sptr = '\0';
+            for(sptr = cid.cidtime, ptr++; *ptr;) *sptr++ = *ptr++;
+            *sptr = '\0';
+            strncpy(cid.cidnmbr, "RING", CIDSIZE - 1);
+            strncpy(cid.cidname, NOCID, CIDSIZE - 1);
+            cid.status = (CIDDATE | CIDTIME | CIDNMBR | CIDNAME);
+        }
         else
         {
             /*
@@ -1344,8 +1404,11 @@ void formatCID(int mainsock, char *buf)
         writeLog(cidlog, cidbuf);
         writeClients(mainsock, cidbuf);
 
-        /* Reset status, mesg, and line. */
-        cid.status = 0;
+        /*
+         * Reset mesg, and line.
+         * Set status = CIDSENT
+         */
+        cid.status = CIDSENT;
         strncpy(cid.cidmesg, NOMESG, CIDSIZE - 1);
         strcpy(cid.cidline, lineid); /* default line */
     }
@@ -1640,6 +1703,79 @@ int doPID()
     }
 
     return(0);
+}
+
+/*
+ * Check if lockfile present and has an active process number in it
+ * ret == 0 if lockfile is not present or lockfile has stale process number
+ * ret == 1 if lockfile present and preocess number active, or error
+ */
+
+int CheckForLockfile()
+{
+    int kret, ret = 0, lockp;
+    static unsigned int sentmsg = 0;
+    FILE *fp;
+    char lockbuf[BUFSIZ];
+    char msgbuf[BUFSIZ];
+    struct stat statbuf;
+
+    if (lockfile != 0)
+    {
+        if (stat(lockfile, &statbuf) == 0)
+        {
+            ret = 1;
+            if ((fp = fopen(lockfile, "r")) == NULL)
+            {
+                if (!(sentmsg & 1))
+                {
+                    sprintf(msgbuf, "%s: %s\n", lockfile, strerror(errno));
+                    logMsg(LEVEL1, msgbuf);
+                    sentmsg |= 1;
+                }
+            }
+            else
+            {
+                if (fgets(lockbuf, BUFSIZ - 1, fp) != NULL)
+                {
+                    lockp = atoi(lockbuf);
+                    if (lockp)
+                    {
+                        /* lockfile contains a process number */
+                        kret = kill(lockp, 0);
+                        if (kret && errno != EPERM)
+                        {
+                            /* the error is not permission denied */
+                            if (unlink(lockfile))
+                            {
+                                if (!(sentmsg & 2))
+                                {
+                                    sprintf(msgbuf,
+                                        "Failed to remove stale lockfile: %s\n",
+                                        lockfile);
+                                    logMsg(LEVEL1, msgbuf);
+                                    sentmsg |= 2;
+                                }
+                            }
+                            else
+                            {
+                                sprintf(msgbuf, "Removed stale lockfile: %s\n",
+                                        lockfile);
+                                logMsg(LEVEL1, msgbuf);
+                                ret = 0;
+                            }
+                        }
+                    }
+                    fclose(fp);
+                }
+            }
+        }
+    }
+
+/* clear all locally latched failures if lockfile no longer present */
+if (ret == 0) sentmsg = 0;
+
+return ret;
 }
 
 /*
