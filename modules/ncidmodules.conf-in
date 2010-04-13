@@ -1,5 +1,5 @@
 # ncid module and service configuration file
-# Last modified: Wed Sep 23, 2009
+# Last modified: Sat Mar 27, 2010
 
 # This configuration file is called from each ncid-* init or rc files
 # to set the $ringopt, $tivoprog, and $tivoargs variables.
@@ -8,6 +8,13 @@
 # This configuration file is also called by each output module to
 # set variables needed for it.  Uncomment or give the variable a
 # value for the output module called.
+
+##################a#####################
+# reinitialize modem to Caller ID mode #
+# if server sends "RING" as the number #
+#            ncid-initmodem            #
+######################################@#
+# no configuration needed
 
 #########################
 # Hang up on the caller #
@@ -22,7 +29,7 @@ HangupLog=/var/log/ncid-hangup.log
 
 #################################################
 # Send a KDE popup message to local ncid client #
-#               ncid-kpopup                  #
+#                  ncid-kpopup                  #
 #################################################
 # uses festival and kdialog
 kdialog=/usr/bin/kdialog
@@ -65,7 +72,8 @@ cidcaller=""
 # user sending the mail, ignored unless root is running ncid-page
 # the default mail user is the ID running ncid-page, usually root
 PageFrom=mail
-# email address: (usual format: Cell_Phone_Number@Cell_Phone_Company_URL)
+# email address: (usual format: Cell_Phone_Number@carrier_Internet_address
+# http://en.wikipedia.org/wiki/List_of_carriers_providing_SMS_transit
 PageTo=
 # ------------------------------------------------------------------------
 # Ring options available for a modem that indicates ring.
@@ -74,8 +82,8 @@ PageTo=
 # Caller ID is received.  This is the default.
 #
 # These options cannot be used for a modem does not not indicate ring,
-# the NetCallerID device, or a (SIP or YAC) Gateway; otherwise a
-# message will never be sent.
+# the NetCallerID device, or a Gateway; otherwise a message will never
+# be sent.
 #
 # uncomment to send a message on ring number number 4 or
 # uncomment and change the ring number to whatever is wanted.
@@ -88,9 +96,9 @@ PageTo=
 # These options cannot be used for modems, the NetCallerID device,
 # or the YAC Gateway; otherwise the message will never be sent.
 #
-# uncomment to send a message if hangup without answer
+# uncomment to send a message if the call had a hangup without answer
 #ringopt="-r -1"
-# uncomment to send a message if hangup after answer
+# uncomment to send a message if the call had a hangup after answer
 #ringopt="-r -2"
 # ------------------------------------------------------------------------
 # uncomment to not send user messages
@@ -103,6 +111,12 @@ PageTo=
 SambaClient=
 # uncomment to not send user messages
 #sambaopt=""
+
+#########################
+# Example output module #
+#       ncid-skel       #
+#########################
+# no configuration needed
 
 #######################
 # Speak the Caller ID #
