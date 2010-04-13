@@ -1,3 +1,13 @@
+ncid (0.77-0ubuntu1) Karmic Koala; urgency=low
+
+  * removed postrm-kpopup and prerm-kpopup
+  * removed ncid-kpopup.init file, and ncid-kpopup.init from rules
+  * removed prerm-ncid-kpopup file, and postrm-ncid-kpopup from rules
+  * added ncid-initmodem.init files, and ncid-initmodem.init to rules
+  * added ncid-initmodem to postrm-client and prerm-client
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Thu,  25 Mar 2010 23:20:00 -0400
+
 ncid (0.76-0ubuntu1) Karmic Koala; urgency=low
 
   * See NCID CHANGES file
