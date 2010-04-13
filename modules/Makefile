@@ -1,6 +1,6 @@
 SHMODULES = ncid-hangup ncid-page.sh ncid-samba.sh ncid-speak.sh \
             ncid-mythtv.sh ncid-kpopup.sh ncid-skel.sh ncid-tivo.sh \
-            ncid-yac.sh
+            ncid-yac.sh ncid-initmodem.sh
 ETCFILES  = ncid.blacklist ncid.minicom
 DIST      = ncidmodules.conf-in
 FILES     = README.modules Makefile $(SHMODULES) $(ETCFILES) $(DIST)
@@ -29,7 +29,7 @@ install-modules: $(MODULES)
 	install -m 755 $(MODULES) $(MODULEDIR)
 
 install-etc: $(CONFFILE)
-	install -m 644 $(ETCFILES)
+	install -m 644 $(ETCFILES) $(CONFDIR)
 	@if test -f $(CONFDIR)/$(CONFFILE); \
 		then install -m 644 $(CONFFILE) $(CONFDIR)/$(CONFFILE).new; \
 		else install -m 644 $(CONFFILE) $(CONFDIR); \
@@ -39,6 +39,7 @@ clean:
 
 clobber: clean
 	rm -f $(MODULES) $(CONFFILE)
+	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber
 
