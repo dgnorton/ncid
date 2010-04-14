@@ -13,6 +13,7 @@ LEVEL4:
         UDP source port
         UDP destination port
         UDP data size in bytes
+        indicate Alarm Timeout and msgsent flag
 
 LEVEL3:
         show UDP SIP packets
@@ -24,27 +25,42 @@ LEVEL2:
         show packet number received
 
 LEVEL1:
+        indicate cannot create or open existing logfile
         show start date and time
         show server version
-        indicate test mode activated
-        show verbose level
-        show status of sending "no SIP" warning messages
-        show NCID server host:port
+        indicate test mode
+        indicate Debug mode
         indicate no config file
         indicate config file processed
         indicate set command skipped in config file
         show error line in config file
+        indicate Reading from dumpfile
+        indicate Writing to dumpfile
+        show verbose level
+        show status of sending "no SIP" warning messages
+        show NCID server host:port
         show network interface used
         show applied filter
         indicate no filter applied
+        indicate No SIP packets received
+        indicate SIP packets returned
         indicate not using PID file, there was no '-P' option
         indicate pid file already exists
         indicate found stale pidfile
         indicate wrote pid in pidfile
+        Warning: could not connect to the NCID server
+        alarm SIP packets returned
+        Warning: SIP Packet truncated
+        Warning: simultaneous calls exceeded
         invalid IP header length
         show registered line number
+        indicate Number of telephone lines exceed
         show CID line sent to NCID
         indicate packet parse problems
-        indicate caller hung up
+        indicate caller hangup before answer
+        indicate hangup after answer
+        Warning: cannot get CallID
+        Warning: Warning no SIP packets
+        indicate pcap_loop error
         indicate removed pidfile
         indicate program terminated with date and time

@@ -4,12 +4,19 @@ NCIDD server verbose levels.  Higher levels include lower levels.
 
 Last edited by jlc on Thu Oct 22, 2009
 
+LEVEL9:
+        (can only be set by the command line)
+        show poll() revents flag
+
+LEVEL8: not used
+LEVEL7: not used
+LEVEL6: not used
+
 LEVEL5:
         print alias table
 
 LEVEL4:
         show optional files failed to open
-        show poll() revents flag
 
 LEVEL3:
         show number of tries to init modem
@@ -27,10 +34,6 @@ LEVEL3:
 
 LEVEL2:
         indicate cannot write pidfile
-        show TTY port opened
-        show TTY port speed
-        show name and location of TTY lockfile
-        indicate TTY port control signals enabled or disabled
         indicate network client hung up
         indicate device or modem returned no data
 
@@ -52,6 +55,10 @@ LEVEL1:
         indicate if no data logfile
         indicate name and location of data logfile
         show Telephone Line Identifier
+        show TTY port opened
+        show TTY port speed
+        show name and location of TTY lockfile
+        indicate TTY port control signals enabled or disabled
         indicate CallerID from serial device and maybe Gateway
         indicate CallerID from AT Modem and maybe Gateway
         indicate CallerID from Gateway
@@ -63,8 +70,11 @@ LEVEL1:
         indicate TTY in use with date and time
         indicate TTY free with date and time
         indicate cannot init TTY and terminated with date and time
-        indicate TTY port initialized
-        indicate modem initialized
+        indicate Modem initialized.
+        indicate Initialization string for modem is null.
+        indicste Modem set for CallerID.
+        incidate CallerID initialization string for modem is null.
+        indicate CallerID TTY port initialized
         indicate serial device hung up and terminated with date and time
         indicate device error and terminated with date and time
         indicate poll error
@@ -81,3 +91,5 @@ LEVEL1:
         indicate signal received and terminate program with date and time
         indicate SIGHUP received and reload alias files
         indicate SIGPIPE received and ignored with date and time
+        indicate Failed to remove stale lockfile
+        indicate Removed stale lockfile

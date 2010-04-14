@@ -1,6 +1,6 @@
 Ubuntu Install
 
-Last edited: Wed Feb 10, 2010
+Last edited: Thu Apr 0, 2010
 
 If NCID does not work, see INSTALL for some simple tests.
 If using sip2ncid, see Setup-ncidsip
@@ -16,8 +16,8 @@ INSTALL or UPGRADE:
     server is required on one computer or device, but the client can be
     installed on as many computers as needed.
 
-    The client has a few output modules in its RPM package, and there
-    are optional output modules in their own RPM packages.
+    The client has a few output modules in its DEB package, and there
+    are optional output modules in their own DEB packages.
 
     - Download the latest NCID deb packages from sourceforge
           ncid DEB Package

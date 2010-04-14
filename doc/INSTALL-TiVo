@@ -1,6 +1,6 @@
 TiVo Install
 
-Last edited: Wed Feb 10, 2010
+Last edited: Mon Apr 11, 2010
 
 The ncid client replaces the old tivocid package.  It
 functions exactly like TiVoCID, if it is called tivocid,
@@ -21,7 +21,7 @@ or a modem connected to the serial port.
 COMPILE NCID
 ------------
 
-See INSTALL
+See the Compile section of INSTALL.
 
 ----------------------------------------------
 Install TiVoCID, TiVoNCID, sip2ncid, and ncidd
@@ -32,10 +32,19 @@ client.  Tivocid uses out2osd which does not work on all TiVo software
 hardware combinations.  Tivoncid should work on all TiVo software and
 hardware combinations.
 
+If this is an upgrade, you need to save the configuration filesfirst:
+    cp -a /var/hack/etc/ncid /var/hack/etc/ncid.old
+
 If you have a series 1 TiVo, Copy ncid-VERSION-tivo-ppc.tgz to the tivo.
 If you have a series 2 TiVo, Copy ncid-VERSION-tivo-mips.tgz to the tivo.
     - tar -xzvf ncid-VERSION-tivo-mips.tgz -C /var
       EXAMPLE: tar -xzvf ncid-0.5-tivo-mips.tgz -C /var
+
+If this is a upgeade, modify any of the configuration files previously
+modified and saved in /var/hack/etc/ncid.old.  The new configuration
+files may have new comments and lines that can be modified so do not
+replace a new configuration with the old one.  Normally you would have
+modified just ncidd.conf and ncidd.alias.
 
 ----------------------------------------
 Install the TiVo OUT2OSD display program 
@@ -62,7 +71,7 @@ to get and install Perl, the Net-Pcap Perl module and libpcap.
 Configure ncidd, if you are running it on the TiVo
 --------------------------------------------------
 
-NCIDD is compiled to use directories under /var/hack.
+Ncidd is compiled to use directories under /var/hack.
 You can change this if you like, by using the
 command line to specify the location of the config
 file, and then using the config file to set the
@@ -92,9 +101,9 @@ If you are using using sip2ncid or yac2ncid instead of a modem:
 
     # set noserial = 1
 
-----------------------
-Start the ncid package
-----------------------
+--------------------------------------------
+Start and verify the ncid package is working
+--------------------------------------------
 
 If you are running the server and client on the TiVo
 and are using tivocid with a modem:
@@ -155,10 +164,33 @@ and are using tivoncid with yac2ncid:
 Call yourself and see if it works, if not, kill off ncidd, if
 it is running, and continue reading the test sections.
 
-Once you are satisfied that everything is working OK, add
-startncid to your rc.sysinit.author to start NCID at boot.
-You will probably need to edit it to start the NCID programs
-you are using.
+Once you are satisfied that everything is working OK, complete the
+setup of NCID.
+
+
+----------------
+Completing setup
+----------------
+
+NCID has a start up script, /var/hack/bin/startncid, to start the
+server, gateway, cliets you are using, and to set up the environment.
+It is preconfigured to start ncidd, and tivoncid.  You need to edit
+it if you want to set up your local timezone, or if you want to start
+tivoncid instead of tivocid, sip2ncid, ncid-yac, or ncid-initmodem.
+Do not configure both tivocid and tivoncid or both will try to display
+the Caller ID on screen.
+
+After you customise startncid, add /var/hack/bin/startncid to the
+/etc/rc.d/rc.sysinit.author file.
+
+If you have a problem with your modem dropping out of Caller ID,
+you can use the ncid-initmodem module to re-initialize the modem
+when a call is detected without Caller ID.  This module must only
+be used when you are using a modem to obtain the Caller ID.  The
+modem must provide ring detection for this to work.
+
+You can also use /var/hack/bin/initmodem manually or call it from
+cron to re-initialize the modem.  It can be used with ncid-initmodem.
 
 ------------------
 Test using a Modem
