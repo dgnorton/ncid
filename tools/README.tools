@@ -7,6 +7,9 @@ cidupdate	   - update aliases in the CID alias file
 startncid      - used to start ncid on a TiVo that does not have services
                  consider this as a example script
 
+initmodem      - used to signal ncidd to re-initialize the modem
+                 will also start ncidd if it is not running
+
 The Makefile is used to create the runable scripts.
 
 	prefix2 controls where to look for the config file,
