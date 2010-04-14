@@ -43,10 +43,17 @@ the CID information over the network to its clients.  The server can alias
 the NUMBER, NAME, NUMBER and NAME, and LINE identifier received before it
 is sent to its clients.
 
+The telco always sends the CID between RING 1 and RING 2.  If ncidd does
+not receive the CID by RING 2, ncidd will indicate a call by sending RING
+as the number and "No CID From Modem" as the name.  This permits NCID
+to display a visual indication of a call along with the date and time.
+This requires of a modem that indicates RING.
+
 The NCID package has the following features:
 
     Server Features (ncidd):
     - Gets CID information from a modem, device or gateway.
+    - Indicates a call from modems that indicate ring but not Caller ID.
     - Shares the modem for outgoing calls.
     - Supports CID devices like NetCallerID
     - Allows multiple clients and gateways.
