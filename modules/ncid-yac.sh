@@ -3,7 +3,7 @@
 # NCID to YAC Clients
 # Requires YAC
 
-# Last changed by jlc: Wed Dec 10, 2008
+# Last changed by jlc: Wed Apr 14, 2008
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -33,7 +33,14 @@ read CIDLINE
 
 for YACCLIENT in ${YACLIST}
 do
-    echo -n "@CALL${CIDNAME}~${CIDNMBR}" | nc -w1 $YACCLIENT $YACPORT
+    if [ -n "$CIDNMBR" ]
+    then
+        # Display Caller ID information
+        echo -n "@CALL${CIDNAME}~${CIDNMBR}" | nc -w1 $YACCLIENT $YACPORT
+    else
+        # Display Message
+        echo -n "$CIDNAME" | nc -w1 $YACCLIENT $YACPORT
+    fi
 done
 
 exit 0
