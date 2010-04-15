@@ -71,6 +71,7 @@ prefix3      =
 OS           = host
 
 settag       = NONE
+setlock      = NONE
 setname      = NONE
 setmod       = NONE
 
@@ -209,14 +210,15 @@ tivo-s1:
 	$(MAKE) tivo-ppc prefix=/var/hack
 
 tivo-ppc:
-	$(MAKE) local mandir prefix=/var/hack OS=tivo-s1 \
-	        CC=$(PPCXCOMPILE)gcc \
-	        MFLAGS=-D__need_timeval \
-	        LD=$(PPCXCOMPILE)ld \
-	        RANLIB=$(PPCXCOMPILE)ranlib \
-	        setname="TiVo requires CLOCAL" \
-	        settag="TiVo Modem Port" \
-	        setmod="out2osd"
+	$(MAKE) local mandir OS=tivo-ppc \
+			CC=$(PPCXCOMPILE)gcc \
+			MFLAGS=-D__need_timeval \
+			LD=$(PPCXCOMPILE)ld \
+			RANLIB=$(PPCXCOMPILE)ranlib \
+			setname="TiVo requires CLOCAL" \
+			settag="TiVo PPC Modem Port" \
+			setlock="TiVo Modem Lockfile" \
+			setmod="out2osd"
 	ln -s ncid tivocid
 	ln -s ncid tivoncid
 	touch tivo-ppc
@@ -225,7 +227,7 @@ tivo-s2:
 	$(MAKE) tivo-mips mandir prefix=/var/hack
 
 tivo-hack-install:
-	$(MAKE) tivo-install-hack prefix=/var/hack prefix2=$HACK prefix3=$ROOT
+	$(MAKE) tivo-install-hack prefix=/var/hack prefix2=$(prefix) prefix3=
 
 tivo-install-hack: dirs install-prog install-etc \
                    install-modules install-cidgate
@@ -234,12 +236,13 @@ tivo-install-hack: dirs install-prog install-etc \
 
 tivo-mips:
 	$(MAKE) local fedoradir OS=tivo-mips \
-	        CC=$(MIPSXCOMPILE)gcc \
-	        LD=$(MIPSXCOMPILE)ld \
-	        RANLIB=$(MIPSXCOMPILE)ranlib \
-	        setname="TiVo requires CLOCAL" \
-	        settag="TiVo Modem Port" \
-	        setmod="ncid-tivo"
+			CC=$(MIPSXCOMPILE)gcc \
+			LD=$(MIPSXCOMPILE)ld \
+			RANLIB=$(MIPSXCOMPILE)ranlib \
+			setname="TiVo requires CLOCAL" \
+			settag="TiVo MIPS Modem Port" \
+			setlock="TiVo Modem Lockfile" \
+			setmod="ncid-tivo"
 	ln -s ncid tivocid
 	ln -s ncid tivoncid
 	touch tivo-mips
@@ -375,4 +378,4 @@ files: $(FILES)
 	chmod 755 $@
 
 % : %-in
-	sed '/share/s,/usr/local,$(prefix),;/$(settag)/s/# set/set/;/$(setname)/s/# set/set/' $< > $@
+	sed '/share/s,/usr/local,$(prefix),;/$(settag)/s/# set/set/;/$(setname)/s/# set/set/;/$(setlock)/s/# set/set/' $< > $@
