@@ -48,7 +48,7 @@ SHSCRIPT    = $(SHSOURCE:.sh=)
 
 OS          = host
 
-ifeq ($(OS),tivo-s1)
+ifeq ($(OS),tivo-ppc)
     CC = $(PPCXCOMPILE)gcc
     LD = $(PPCXCOMPILE)ld
     CFLAGS += -DTIVO_S1
@@ -74,7 +74,7 @@ usage:
 	@echo "to install in /usr/local: make install"
 
 tivo-s1:
-	make OS=tivo-s1 cidgate prefix=/var/hack
+	make OS=tivo-ppc cidgate prefix=/var/hack
 
 tivo-s2:
 	make OS=tivo-mips cidgate prefix=/var/hack
