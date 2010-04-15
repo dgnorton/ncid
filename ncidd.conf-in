@@ -191,8 +191,11 @@ send cidinfo
 # TiVo Settings #
 #################
 # set ttyclocal = 1 # TiVo requires CLOCAL
-# set ttyport = /dev/ttyS1 # TiVo Modem Port
-# set lockfile = /var/tmp/modemlock # needed for TiVo Modem Port
+#
+# set ttyport = /dev/ttyS1 # TiVo PPC Modem Port
+# set ttyport = /dev/ttyS3 # TiVo MIPS Modem Port
+#
+# set lockfile = /var/tmp/modemlock # TiVo Modem Lockfile
 #
 # To use a modem on the TiVo serial port
 #   Tivo (stereo mini jack) ->
@@ -202,8 +205,6 @@ send cidinfo
 # if the modem has switches, disable DTR
 # Use this string to set the modem before attaching it to the TiVo:
 #   AT&F0&D0&B1&W
-#
-# set ttyport = /dev/ttyS3 # TiVo Serial Port
 #
 # End TiVo Settings
 
