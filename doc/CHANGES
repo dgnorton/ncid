@@ -1,5 +1,119 @@
 ncid - Network CallerID
 
+Version 0.77
+    - Makefile: removed cd into specific subdirs in clean: and clobber:
+                added "subdirs =" line
+                added a for loop to go into $subdirs in clean: and clobber:
+                fixed clean: so it did make clean in subdirectories
+                changed OS=tivo-s1 to OS=tivo-ppc
+                tivo:ppc removed prefix=/var/hack, replaced spaces with tabs
+                         added setlock="TiVo Modem Lockfile"
+                         changed: settag="TiVo Modem Port"
+                         to:      settag="TiVo PPC Modem Port"
+                added setlock
+    - README: uopdated for new ncidd RING feature
+    - ncid.sh: sendMSG {} removed & from exec
+               sendCID {} removed & from exec
+               removed the "--nocid| -N option
+    - ncidd.c: main{} reworded errorExit() for "check tty port lock file"
+                      changed: if (stat(lockfile, &statbuf) == 0)
+                      to: if (CheckForLockfile())
+                      added to if (!locked): ringwait = 0;
+                      changed TTY port, speed, lockfile from LEVEL2 to LEVEL1
+                      Removed usleep(INITWAIT) when TTY is freed
+                      moved verbose level indicator lines
+                            after line: if (doConf()) errorExit(-104, 0, 0);
+               CheckForLockfile(): added
+               formatCID(): Created CID messgae when no CID received by Ring 2
+               doPoll(): poll() event flag from LEVEL4 to LEVEL9
+               doTTY(): removed line:
+                          else sprintf(msgbuf, "Modem set for CallerID.\n");
+                         added comments
+               doModem(): added if (*initstr) {...} else {...}
+                            and if (*initcid) {...} else {...}
+                          added comments
+               initModem(): added comments
+    - nciddconf.c: struct setword setword[]: changed verbose max value
+                   from MAXLEVEL to MAXLEVEL -1
+    - ncidd.conf-in: updated to show how to skip sending a CID init string
+    - ncidd.h: added #define NOCID       "No CID From Modem"
+               added #define CIDSENT      0x20
+    - cidgate/Makefile: added linei to clobber:
+                        rm -f a.out *.log *.zip *.tar.gz *.tgz
+                        changed tivo-s1 to tivo-ppc
+    - cidgate/sip2ncid.h: changed PKTWAIT from 90 to 120 (seconds)
+    - cidgate/sip2ncid.c: processPackets(): added "if (msgsent & 0x1)" to
+                                            inform SIP packets returned
+                                            INVITE: - added INVITE argument to
+                                                      getCallID()
+                                                    - moved added calls and sim
+                                                      calls to if (pos) line
+                          doPCAP(): inside of while(1) loop, added logic to
+                                    only print each message once
+                          getCallID() added char *label argument
+                          sigdetect() fixed string in sprintf()
+    - debian/Makefile: removed ncid-kpopup.init
+                       added ncid-initmodem.init
+                       Added line to clobber: rm -f *.zip *.tar.gz *.tgz
+    - debian/README.debian: updated
+    - debian/ncid-kpopup.init: removed
+    - debian/ncid-initmodem.init: added
+    - debian/rules: removed ncid-kpopup
+                    added ncid-initmodem
+    - doc/INSTALL-Ubuntu: corrected 2 words
+    - doc/INSTALL-andLinux: updated
+    - doc/INSTALL-TiVo: updated for startncid and initmodem
+    - doc/Verbose-ncidd: updated
+    - doc/Verbose-sip2ncid: updated
+    - Fedora/Makefile: Removed ncid-kpopup.init
+                       Added ncid-initmodem.init
+                       Added line to clobber: rm -f *.zip *.tar.gz *.tgz
+    - Fedora/README.Fedora: updated
+    - Fedora/ncid-kpopup.init: removed
+    - Fedora/ncid-initmodem.init: added
+    - Fedora/ncid.spec: updated for improved ncid-hangup
+    -                   removed ncid-kpopup module
+                        Added ncid-initmodem.init
+    - FreeBSD/Makefile: Removed ncid-kpopup.rc
+                        Added ncid-initmodem.rc
+                        Added line to clobber: rm -f *.zip *.tar.gz *.tgz
+    - FreeBSD/README.FreeBSD: updated
+    - FreeBSD/ncid-kpopup.rc: removed
+    - FreeBSD/ncid-initmodem.rc: added
+    - man/Makefile: rm -f *.zip *.tar.gz *.tgz
+    - man/ncid.1: removed "--nocid|-N" option
+    - man/ncidd.8: reworded exit message -102
+                   added warning about using verbose level 9
+    - man/ncidmodules.1: updated to include ncid-initmodem
+    - man/ncidmodules.conf.5: updated for URL of SMS gateways
+    - modules/Makefile: - added ncid-initmodem.sh
+                        - added line to clobber: rm -f *.zip *.tar.gz *.tgz
+                        - fixed bad line in install-etc that replaced
+                          ncid.minicom with ncid.blacklist
+    - modules/README.modules: added ncid-initmodem
+    - modules/ncid-initmodem.sh: added
+    - modules/ncid-page.sh: changed "/bin/mail" to "mail"
+    - modules/ncid-hangup.sh: changed "ncidscript.conf" to "ncidmodiles.conf"
+                              removed "-o" option from HangupOpts
+    - modules/ncid.minicom: corrected script as it was suppose to be in 0.76
+                            updated comments and removed obsolute comments
+                            replaced print with "send AT/expect OK"
+    - modules/ncidmodules.conf-in: added comment: URL listing SMS gateways
+    - modules/ncid-yac.sh: modified to handle messages
+    - scripts/Makefile: added line to clobber: rm -f *.zip *.tar.gz *.tgz
+    - test/Makefile: added default: clobber: and distclean:
+    - test/README.test: updated to include TestMdmcalls
+      test/testserver: removed the "-N 1" line
+                       added the "-t vmodem0 \" line
+      test/TestGWcalls: updated usage comments, fixed a spelling error
+      test/TestMdmcalls.data: added
+    - tools/startncid.sh: check process is not running to start programs
+                          removed ncid-page module (requires a mail program)
+                          added ncid-initmodem
+                          improved somments and program sections
+      tools/Makefile: added line to clobber: rm -f *.zip *.tar.gz *.tgz
+    - tools/initmodem.sh: added
+
 Version 0.76
     - Makefile: Changed IMAGEDIR from pixmaps to pixmaps/ncid
     - ncidd.c: strdate(): Changed "with separators" to return time in HH:MM:SS
@@ -78,6 +192,7 @@ Version 0.75
     - cidgate/sip2ncid.conf: added the "warn" configure option
     - cidgate/yac2ncid.sh: changed version to indicate NCID version
     - debian/Makefile: Updated for ncid-hangup.init
+    - debian/README.Debian: Updated
     - debian/control: added libpcap0.8-devel to Build-Depends
                       split package into multiple packages
     - debian/*.init: changed Description and added Short Description
