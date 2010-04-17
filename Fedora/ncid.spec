@@ -26,7 +26,7 @@ ncid-client package.
 Summary:    NCID (Network Caller ID) client
 Group:      Applications/Communications
 BuildArch:  noarch
-Requires:   tcl, tk, mailx, minicom
+Requires:   tcl, tk, mailx, nc, minicom
 
 %description client
 The ncid-client obtains the Caller ID from the ncid-server and normally
@@ -34,8 +34,8 @@ displays it in a GUI window.  It can also display the Called ID in a
 terminal window or, using a output module, format the output and send it
 to another program.
 
-This package contains the NCID client with the hangup, page, yac, and
-skel output modules.
+This package contains the NCID client with the initmodem hangup, page,
+skel, tivo, and yac output modules.
 
 %package mythtv
 Summary:    NCID mythtv module sends caller ID information MythTV
@@ -57,7 +57,8 @@ Requires:   kdebase, kdemultimedia, festival, /usr/bin/dcop
 
 %description kpopup
 The NCID kpopup module displays caller ID information in a KDE popup window
-and optionally speaks the number via voice synthesis.
+and optionally speaks the number via voice synthesis.  The KDE or Gnome
+desktop must be running.
 
 %package samba
 Summary:    NCID samba module sends caller ID information to windows machines
@@ -172,7 +173,6 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %defattr(-,root,root)
 %doc modules/README.modules
 /usr/share/ncid/ncid-kpopup
-%_initrddir/ncid-kpopup
 
 %files samba
 %defattr(-,root,root)
@@ -195,16 +195,13 @@ done
 
 %post client
 # make services known
-for SCRIPT in ncid-page ncid-yac
+for SCRIPT in ncid-initmodem ncid-hangup ncid-page ncid-yac
 do
     /sbin/chkconfig --add $SCRIPT
 done
 
 %post mythtv
 /sbin/chkconfig --add ncid-mythtv
-
-%post kpopup
-/sbin/chkconfig --add ncid-kpopup
 
 %post samba
 /sbin/chkconfig --add ncid-samba
@@ -225,14 +222,14 @@ fi
 %preun client
 if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
-    for SCRIPT in ncid-page ncid-yac
+    for SCRIPT in ncid-initmodem ncid-hangup ncid-page ncid-yac
     do
         /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
         /sbin/chkconfig --del $SCRIPT
     done
 fi
 
-# just in case an old package that had the obsolute ncid service is upgraded
+# just in case an old package with the obsolute ncid service is upgraded
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     /sbin/service ncid stop >/dev/null 2>&1 || true
     /sbin/chkconfig ncid && /sbin/chkconfig --del ncid || true
@@ -243,13 +240,6 @@ if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
     /sbin/service ncid-mythtv stop > /dev/null 2>&1 || :
     /sbin/chkconfig --del ncid-mythtv
-fi
-
-%preun kpopup
-if [ $1 = 0 ] ; then ### Uninstall package ###
-    # stop services and remove autostart
-    /sbin/service ncid-kpopup stop > /dev/null 2>&1 || :
-    /sbin/chkconfig --del ncid-kpopup
 fi
 
 %preun samba
@@ -278,6 +268,7 @@ fi
 %postun client
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart services that are running
+    # service could have been installed by another package
     for SCRIPT in /usr/share/ncid/ncid-*
     do
         /sbin/service `basename $SCRIPT` condrestart >/dev/null 2>&1 || :
@@ -288,12 +279,6 @@ fi
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart services if running
     /sbin/service ncid-mythtv condrestart >/dev/null 2>&1 || :
-fi
-
-%postun kpopup
-if [ "$1" -ge "1" ]; then ### upgrade package ###
-    # restart services if running
-    /sbin/service ncid-kpopup condrestart >/dev/null 2>&1 || :
 fi
 
 %postun samba
@@ -311,10 +296,15 @@ fi
 %changelog
 * Fri Apr 9 2010 John Chmielewski <jlc@users.sourceforge.net> 0.77-1
 - removed line: %_initrddir/ncid-kpopup
+- removed section: %post kpopup
+- removed section: %preun kpopup
+- removed section: %postun kpopup
 - added line: %_initrddir/ncid-initmodem
 - added line: /usr/share/ncid/ncid-initmodem
 - added line: /etc/ncid/ncid.minicom
-- added line: %config(noreplace) /etc/ncid/ncid.blacklist
+- added line: %config(noreplace) /etc/ncid/ncid.blacklist in client section
+- added ncid-initmodem and ncid-hangup to SCRIPT lines in client sections
+- added more comments
 
 * Mon Dec 28 2009 John Chmielewski <jlc@users.sourceforge.net> 0.76-1
 - changed /usr/share/pixmaps/ncid.gif to /usr/share/pixmaps/ncid/ncid.gif
