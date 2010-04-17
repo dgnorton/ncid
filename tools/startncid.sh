@@ -1,19 +1,23 @@
 #!/bin/sh
 # script to start NCID
-# Last modified  by jlc: Sat Dec 20, 2008
+# Requires the "ps" command
+# Last modified  by jlc: Thu Apr 15, 2010
 
 ### This script can be run from:
 ### rc.sysinit.author:   /var/hack/bin/startncid rmpid
 ### or manually:         /var/hack/bin/startncid
 
-### This script starts ncidd, sip2ncid, yac2ncid, tivocid, tivoncid, or
-### ncid with the page or YAC module. It can also set the local timezone.
+### This script can start ncidd, sip2ncid, yac2ncid, tivocid, tivoncid,
+### ncid-initmodem, and ncid-yac.  It can also set the local timezone.
 ### 
 ### The default is to start ncidd and tivocid.
-### Uncomment/comment lines to start the NCID programs needed.
+### Uncomment or comment out lines to start the NCID programs required.
 ###
-### If you are using sip2ncid or yac2ncid, you need to uncomment the
-### TZ line and modify it for your timezone.
+### The NCID programs will not start if already running.
+### Kill programs manually to stop them
+###
+### If you are using sip2ncid or yac2ncid, you need to uncomment
+### one of the TZ lines or modify one for your timezone.
 
 # Indicate usage if a argument is given and it is not rmpid
 [ "$1" != "" -a "$1" != "rmpid" ] && \
@@ -27,43 +31,106 @@
 
 # Set the Path to include the NCID bin and sbin directories
 export PATH TZ
-PATH=/bin:/sbin:/tvbin:/devbin:/var/hack:/var/hack/bin:/var/hack/sbin
+PATH=/bin:/sbin:/tvbin:/devbin:/var/hack:/var/hack/bin:/var/hack/sbin:/hack/bin
 
-### The TiVo Timezone is UTC
-### If you are using sip2ncid or yac2ncid and you want calls in your local
-### timezone, set TZ to the local timezone.
-###
+################################################
+### The TiVo Timezone is UTC                 ###
+###                                          ###
+### If you are using sip2ncid or yac2ncid,   ###
+### you should set TZ to the local timezone. ###
+################################################
 ### Here are example TZ lines for EST:
-### TZ=EST5EDT,M3.2.0,M11.1.0 # With daylight savings time
-### TZ=EST5EDT                # With daylight savings time
+### TZ=EST5EDT,M3.2.0,M11.1.0 # Gives daylight savings start and end dates
+### TZ=TIMEZONE.Mmonth.week.day/time,month.week.day/time
+###    EST5EDT .  M3  . 2  . 0      , M11 . 1  . 0  (time defaults to 2:00 AM)
 ### TZ=EST                    # No daylight savings time
 ###
-#TZ=EST5EDT,M3.2.0,M11.1.0
+### Remove one of the following '#' to enable your time zone
+### or modify it, or add your missing timezone
+#TZ=AST4ADT,M3.2.0,M11.1.0    # ATLANTIC TIME
+#TZ=EST5EDT,M3.2.0,M11.1.0    # EASTERN TIME
+#TZ=CST6CDT,M3.2.0,M11.1.0    # CENTRAL TIME
+#TZ=MST7MDT,M3.2.0,M11.1.0    # MOUNTAIN TIME
+#TZ=PST8PDT,M3.2.0,M11.1.0    # PACIFIC TIME
+#TZ=AKST9AKDT,M3.2.0,M11.1.0  # ALASKAN TIME
+#TZ=HST10,M3.2.0,M11.1.0      # HAWAII-ALEUTIAN STANDARD TIME
 
-### Start the server
-ncidd
+###########################
+### Start Programs Used ###
+###########################
+### remove '#' from beginning of line to enable program
+### add '#' to beginning of line disable program
 
-### Start the SIP Gateway
-#sip2ncid
+# Enable Server if using it on this TiVo
+SERVER=ncidd
 
-### Start either client, but not both ###
-# Start the client that uses out2osd
-tivocid &
-# or start the client that uses text2osd
-#tivoncid &
+# Enable SIP Gateway if using SIP (VoIP) to get Caller ID
+#SIPGW=sip2ncid
 
-### Start ncid with the page module to send call information to a cell phone
-### Must configure "PageTo" in ncidmodules.conf
-### Ring Count is only used for modems, for SIP, use: --ring -1
-###
-#ncid --no-gui --ring 4 --message --call-prog --program ncid-page &
+# Enable YAC Gateway if using yac to get Caller ID
+#YACGW=yac2ncid
 
-### Start ncid with the YAC module to send call information to YAC clients
-### Must configure "YACLIST" in ncidmodules.conf
-###
-#ncid --no-gui --message --call-prog --program ncid-yac &
+# Clients, enable only one client
+# if out2osd works on your system use tivocid
+# test2osd should work on all systems, but is not as good
+#
+# Enable tivoncid client if using text2osd, disable tivocid client
+OSDCLIENT=tivoncid
+#
+# Enable tivocid client if using out2osd, disable tivoncid client
+#OSDCLIENT=tivocid
 
-### start the YAC Gateway
-### needed if running a YAC Server on a PC to obtain the Caller ID
-###
-#yac2ncid &
+# Enable Initmodem Client Module if need to re-initialize modem
+#INITMOD=ncid-initmodem
+
+# Enable YAC Client Module if sending Caller ID to yac clients
+# Must configure "YACLIST" in ncidmodules.conf
+#YACMOD=ncid-yac
+
+################################
+### End of all Modifications ###
+################################
+
+### Server
+[ -n "$SERVER" ] &&
+ps auxw | grep $SERVER | grep -v grep > /dev/null || $SERVER
+
+### SIP Gayteway
+[ -n "$SIPGW" ] &&
+ps auxw | grep $SIPGW | grep -v grep > /dev/null || $SIPGW 
+
+### YAC Gateway
+[ -n "$YACGW" ] &&
+{
+    if ! ps auxw | grep $YACGW | grep -v grep > /dev/null
+    then
+        $YACGW&
+    fi
+}
+
+### Client
+[ -n "$OSDCLIENT" ] &&
+{
+    if !  ps auxw | grep -E "out2osd|ncid-tivo" | grep -v grep > /dev/null
+    then
+        $OSDCLIENT&
+    fi
+}
+
+### Initmodem Client Module
+[ -n "$INITMOD" ] &&
+{
+    if ! ps auxw | grep $INITMOD | grep -v grep > /dev/null
+    then
+        ncid --no-gui --call-prog --program $INITMOD&
+    fi
+}
+
+### YAC Client Module
+[ -n "$YACMOD" ] &&
+{
+    if ! ps auxw | grep $YACMOD | grep -v grep > /dev/null
+    then
+        ncid --no-gui --messages --call-prog --program $YACMOD&
+    fi
+}
