@@ -24,7 +24,7 @@ NCID distributions:
         # The yum list command will show you the packages available
             yum list ncid\*
         # if the above does not show version 0.77
-            yum --enable-repro=rawhide list ncid\*
+            yum --enablerepo=rawhide list ncid\*
 
     Macintosh OS X package:
         # available at MacPorts
