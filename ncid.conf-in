@@ -1,6 +1,6 @@
 # ncid configuration file
 
-# File last changed: Wed Mar 11, 2009
+# File last changed: Fri Jan 22, 2010
 
 # This configuration file takes effect every time ncid is started.
 # It is for global changes.  For changes to a particular instance
