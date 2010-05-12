@@ -1,6 +1,6 @@
 # File NCID-DataFormats
 
-# File last changed by jlc on Mon Oct 19, 2009
+# File last changed by jlc on Mon May 10, 2010
 
 =====================
 Example ncid outputs:
@@ -16,9 +16,9 @@ Example ncid outputs:
   ----------------------------------------------------------
   09/20/2002            (date)
   18:20                 (time)
-  (800)555-1212         (number)
+  800-555-1212         (number)
   PASADENA, CA          (name)
-  <1122>                (line indicator, can be blank line)
+  <1122>                (line indicator, can be a name, number, or a blank line)
 
 ====================================
 Example ncidsip and sip2ncid output:
@@ -121,6 +121,7 @@ Example Modem/Device or Gateway Input
 
   RING
 
+  MESG = 110101
   DATE = 0511
   TIME = 1852
   NMBR = 4075550000
