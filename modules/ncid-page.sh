@@ -3,7 +3,7 @@
 # Page a cell phone, pager, or mail address
 # Requires mail
 
-# Last changed by jlc: Mon Feb 15, 2010
+# Last changed by jlc: Sat Apr 14, 2010
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -41,8 +41,14 @@ read CIDNMBR
 read CIDNAME
 read CIDLINE
 
-MailMsg="\nNAME: $CIDNAME\nNMBR: $CIDNMBR\nTIME: $CIDTIME\nDATE: $CIDDATE\n"
-MailSubject="$CIDNAME $CIDNMBR"
+if [ -n "$CIDNMBR" ]
+then
+    MailMsg="\nNAME: $CIDNAME\nNMBR: $CIDNMBR\nTIME: $CIDTIME\nDATE: $CIDDATE\n"
+    MailSubject="$CIDNAME $CIDNMBR"
+else
+    MailMsg="$CIDNAME"
+    MailSubject="Message"
+fi
 
 # if line indicator found, include it
 [ -n "$CIDLINE" ] && MailMsg="${MailMsg}LINE: $CIDLINE\n"

@@ -3,7 +3,7 @@
 # TiVo Display
 # Requires a TiVo
 
-# Last changed by jlc: Wed Sep 19, 2007
+# Last changed by jlc: Sat Apr 24, 2010
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -42,12 +42,19 @@ read CIDNMBR
 read CIDNAME
 read CIDLINE
 
-if [ -z "$CIDLINE" ]
+if [ -n "$CIDNMBR" ]
 then
-    # no line indicator
-    echo -e "$CIDNAME $CIDNMBR\n" | $TivoOSD $TivoOpt
+    # Display Caller ID information
+    if [ -z "$CIDLINE" ]
+    then
+        # no line indicator
+        echo -e "$CIDNAME $CIDNMBR\n" | $TivoOSD $TivoOpt
+    else
+        echo -e "$CIDNAME $CIDNMBR\n$CIDLINE\n" | $TivoOSD $TivoOpt
+    fi
 else
-    echo -e "$CIDNAME $CIDNMBR\n$CIDLINE\n" | $TivoOSD $TivoOpt
+    # Display Message
+    echo -e "$CIDNAME\n" | $TivoOSD $TivoOpt
 fi
 
 sleep $TivoDelay
