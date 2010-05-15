@@ -495,7 +495,7 @@ proc displayLog {cid ismsg} {
     }
 }
 
-# Open a connection to the CID server
+# Open a connection to the NCID server
 proc connectCID {Host Port} {
     global Try
     global Socket
@@ -677,6 +677,7 @@ proc clearLog {} {
     .vh configure -state disabled
 }
 
+# close connection to NCID server if open, then reconnect
 proc reconnect {} {
     global Connect
     global Socket
@@ -685,8 +686,8 @@ proc reconnect {} {
     global Host
     global Port
 
-    # connection to server already closed
     if $Count {
+        # already waiting to reconnect, force a retry
         set Count 0
         return
     }
