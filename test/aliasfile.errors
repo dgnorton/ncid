@@ -1,0 +1,16 @@
+# ncidd alias errors test file
+
+# checks various alias errors
+# start ncidd with debugging enabled: ncidd -DA aliasfile
+
+alias name =
+alias 123456789
+alias 123456789 987654321
+alias NMBR 123456789 = 987654321 name
+alias NMBR 4075551212 = "xxx
+alias NMBR 4075551212 = xxx"yyyyy
+alias NMBR 4075551212 = xxx" yyyyy
+alias NMBR 4075551212 = "xxx	yyy"
+                    
+alias "xxx xxx" = "yyy yyy"
+alias NAME "wireless call" = john if 4075551212

@@ -4,22 +4,29 @@ server and clients, and client output modules.
 =================================================================
 
 aliasfile:
-    Used to test "cidalias".
+    Used to view the cidalias array in the server.  Called
+    from the ncidd-noerrors.conf file.
+
+aliasfile.errors:
+    Various alias file errors: ncidd -DA aliasfile.errors:
 
 ncidd-errors.conf:
+    Server configuration file with errors: ncidd -DC ncidd-errors.conf
+
 ncidd-noerrors.conf:
-    Used to test the configuration of ncidd.  Neither config
-    file will permit ncidd to run after the config file is read.
+    Server configuration file with no errors.  It reads the aliasfile.
+    ncidd -Dv5 -C ncidd-noerrors.conf
 
 testclient:
 testclient.data:
-    The program is a NCID test server used to send various NCID
-    lines to test a client.  The test server uses port 3334.  It
-    sends one or more lines from the testclient.data file with each
-    press of <ENTER>.  The last <ENTER> will terminate the server.
-    Blank lines are used to terminate a send initiated by <ENTER>.
+    The program is a NCID server emulator used lines to test a client.
+    The test server uses port 3334.  It sends one or more lines from
+    the testclient.data file with each press of <ENTER>.  The last
+    <ENTER> will terminate the server.  Blank lines are used to
+    terminate a send initiated by <ENTER>.
 
-    Usage: ./testclient [data_file]
+    Usage:             ./testclient [data_file]
+	Default Data File: testclient.data
 
     To test a client:
 	    Start testclient (it will give instructions and send a 200 line)
@@ -34,9 +41,6 @@ testclient.data:
                       (there are 7 CID lines)
 	    Press <ENTER> to send 1 CIDINFO RING line
 	    Press <ENTER> to end testclient
-
-	    Usage: testclient [datafile]
-	    Default Data File: testclient.data
 
 	    NOTE: testclient and testclient.data must be in the same directory
 

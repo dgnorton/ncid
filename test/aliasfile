@@ -1,8 +1,11 @@
 # test file for cidalias
+# normally this file is called from ncidd-noerrors.conf
 
 alias NMBR 4071231234 = 4075551212
 alias NAME * = "John on cell" if 4075551212
 alias NAME "John B Good" = Ogre
 alias NMBR * = 4071112222 if John
+alias NMBR 4075551212 = ----------
+
 alias out-of-area = anonymous
 alias 14075551592 = 14075550711
