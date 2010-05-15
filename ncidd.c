@@ -39,7 +39,7 @@ int port = PORT;
 int debug, conferr, setcid, locked, sendlog, sendinfo;
 int ttyfd, pollpos, pollevents;
 int ring, ringwait, ringcount, clocal, nomodem, noserial;
-int verbose = 1;
+int cidsent, verbose = 1;
 unsigned long cidlogmax = LOGMAX;
 pid_t pid;
 
@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
                     {
                         if (ringcount == ring)
                         {
-                            ring = ringcount = ringwait = 0;
+                            ring = ringcount = ringwait = cidsent = 0;
                             sendInfo(mainsock);
                         }
                         else
@@ -1223,11 +1223,11 @@ void formatCID(int mainsock, char *buf)
             *sptr = '\0';
             cid.status |= (CIDDATE | CIDTIME);
         }
-        else if ((cid.status & CIDSENT) == 0 && ring == 2 )
+        else if (cidsent == 0 && ring == 2 )
         {
             /*
-             * CID information always received between RING 1 and 2
-             * but no CID information received, so create one.
+             * CID information always received between before RING 2
+             * no CID information received, so create one.
              */
             ptr = strdate(NOSEP);     /* returns: MMDDYYYY HHMM */
             for(sptr = cid.ciddate; *ptr && *ptr != ' ';) *sptr++ = *ptr++;
@@ -1263,14 +1263,15 @@ void formatCID(int mainsock, char *buf)
     if (strncmp(buf, "###", 3) == 0)
     {
         /*
-         * Found a NetCallerID box, or a CID Message Line
-         * All information on one line
-         * The CID Message LINE has a LINE field
+         * Found a NetCallerID box, or a Gateway
+         * All information received on one line
+         * The Gateway creates a CID Message Line
+         * The Gateway contains a LINE field
          * The NetCallerID box does not have a LINE field
          */
 
-        /* Make sure the status field is zero */
-        cid.status = 0;
+        /* Make sure the status field and cidsent is zero */
+        cid.status = cidsent = 0;
 
         if ((ptr = strstr(buf, "DATE")))
         {
@@ -1304,7 +1305,7 @@ void formatCID(int mainsock, char *buf)
         }
         if ((ptr = strstr(buf, "LINE")))
         {
-            /* this field is only in a CID Message Line */
+            /* this field is only from a Gateway */
             if (*(ptr + 5) == '.') strncpy(cid.cidline, lineid, CIDSIZE - 1);
             else
             {
@@ -1346,19 +1347,22 @@ void formatCID(int mainsock, char *buf)
         *(ptr + 24) = 0;
         strncat(cid.ciddate, ptr + 20, CIDSIZE - strlen(cid.ciddate) - 1);
         cid.status |= CIDDATE;
+        cidsent = 0;
     }
     else if (strncmp(buf, "TIME", 4) == 0)
     {
         strncpy(cid.cidtime, buf[4] == '=' ? buf + 5 : buf + 7, CIDSIZE - 1);
         cid.status |= CIDTIME;
+        cidsent = 0;
     }
     else if (strncmp(buf, "NMBR", 4) == 0)
     {
-        /* some systems send NMBR = ##########, then NMBR = O to mask it */
+        /* some telcos send NMBR = ##########, then NMBR = O to mask it */
         if (!(cid.status & CIDNMBR))
         {
             builtinAlias(cid.cidnmbr, buf[4] == '=' ? buf + 5 : buf + 7);
             cid.status |= CIDNMBR;
+            cidsent = 0;
         }
     }
     /*
@@ -1377,12 +1381,14 @@ void formatCID(int mainsock, char *buf)
 
             builtinAlias(cid.cidname, *(ptr + 4) == '=' ? ptr + 5 : ptr + 7);
             cid.status |= CIDNAME;
+            cidsent = 0;
         }
     }
     else if (strncmp(buf, "MESG", 4) == 0)
     {
         strncpy(cid.cidmesg, buf[4] == '=' ? buf + 5 : buf + 7, CIDSIZE - 1);
         cid.status |= CIDMESG;
+        cidsent = 0;
     }
 
     if ((cid.status & CIDALL4) == CIDALL4)
@@ -1405,12 +1411,13 @@ void formatCID(int mainsock, char *buf)
         writeClients(mainsock, cidbuf);
 
         /*
-         * Reset mesg, and line.
-         * Set status = CIDSENT
+         * Reset mesg, line, and status
+         * Set cidsent
          */
-        cid.status = CIDSENT;
         strncpy(cid.cidmesg, NOMESG, CIDSIZE - 1);
         strcpy(cid.cidline, lineid); /* default line */
+        cid.status = 0;
+        cidsent = 1;
     }
 }
 
