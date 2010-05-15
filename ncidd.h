@@ -166,10 +166,10 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
 #define CIDNMBR      0x04
 #define CIDNAME      0x08
 #define CIDMESG      0x10
-#define CIDSENT      0x20
-#define CIDALL3      0x07
-#define CIDALT3      0x0B
-#define CIDALL4      0x0F
+#define CIDALL3      0x07   /* Date, Time, Nmbr */
+#define CIDALT3      0x0B   /* Date, Time, Nmbr, Name */
+#define CIDALL4      0x0F   /* Date, Time, Name */
+#define CIDALT4      0x17   /* Date, Time, Nmbr, Mesg */
 
 #define MAXLEVEL     9
 enum
