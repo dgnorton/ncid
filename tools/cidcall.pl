@@ -17,6 +17,9 @@
 #    added -m option, modified raw option to print all lines, changed name
 # modified by jlc on Wed Mar 28, 2007
 #    - modified regular expressions to look for * with key word
+# modified by jlc on Sun May 16, 2010
+#    - removed <> from enclosing line label,
+#    - changed number from (xxx)xxx-xxxx to xxx-xxx-xxxx
 
 use Getopt::Std;
 
@@ -40,12 +43,11 @@ while (<CIDLOG>) {
         ($date, $time, $number, $name) = 
          /.*\*DATE.(\d+).*\*TIME.(\d+).*\*NU*MBE*R.([-\w\s]+).*\*NAME.(.*)\*+$/;
         ($line) = /.*\*LINE.([-\w\d]+).*/;
-        $line = "<$line>";
-        $line =~ s/<-*>//;
+        $line =~ s/-*//;
         $date =~ s/(\d\d)(\d\d)(\d\d\d\d)*/$1\/$2\/$3/;
         $date =~ s/\/$//;
         $time =~ s/(\d\d)(\d\d)/$1:$2/;
-        $number =~ s/\d?(\d\d\d)(\d\d\d)(\d\d\d\d)/($1)$2-$3/;
+        $number =~ s/\d?(\d\d\d)(\d\d\d)(\d\d\d\d)/$1-$2-$3/;
          write;
       }
     }
