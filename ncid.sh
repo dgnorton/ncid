@@ -189,6 +189,34 @@ proc retryConnect {} {
     connectCID $Host $Port
 }
 
+# close connection to NCID server if open, then reconnect
+proc reconnect {} {
+    global Connect
+    global Socket
+    global Once
+    global Count
+
+    if $Count {
+        # already waiting to reconnect, force a retry
+        set Count 0
+        return
+    }
+
+    if {$Socket > 0} {
+        # close connection to server
+        flush $Socket
+        fileevent $Socket readable ""
+        close $Socket
+        set Socket 0
+    }
+
+    # delay for 0.1 seconds
+    after [expr 100] waitOnce
+    vwait Once
+
+    retryConnect
+}
+
 # This catches a lot of errors!
 proc bgerror {mess} {
     global errorInfo
@@ -244,7 +272,8 @@ proc getCID {} {
                 } else { displayCID "$VersionInfo\n$dataBlock" 1 }
             }
         }
-        if {[set type [checkCID $dataBlock]]} {
+
+        if {[set type [checkType $dataBlock]]} {
             if {$type == 5} {
                 # CIDINFO (5) line
                 if {$CallOnRing} {
@@ -263,7 +292,7 @@ proc getCID {} {
                 displayLog "$msg" 1
                 if !$NoGUI {doPopup}
                 if {$MsgFlag} {sendMSG $msg}
-            } else {
+            } elseif {$type < 4} {
                 # CID (1), EXTRA (2), or CIDLOG (3) line
                 set cid [formatCID $dataBlock]
                 array set call "$lineLabel [list $cid]"
@@ -312,17 +341,19 @@ proc doPopup {} {
     }
 }
 
-proc checkCID {dataBlock} {
-    # ignore all but the CID or EXTRA information line
+proc checkType {dataBlock} {
+    # Determine line type
     if [string match CID:* $dataBlock] {return 1}
     if [string match *EXTRA:* $dataBlock] {return 2}
     if [string match CIDLOG:* $dataBlock] {return 3}
     if [string match MSG:* $dataBlock] {return 4}
     if [string match CIDINFO:* $dataBlock] {return 5}
+    if [string match MSGLOG:* $dataBlock] {return 6}
+    if [string match LOG:* $dataBlock] {return 7}
     return 0
 }
 
-# must be sure the line passed checkCID
+# must be sure the line passed checkType
 proc formatCID {dataBlock} {
     global Country
     global NoOne
@@ -383,10 +414,8 @@ proc formatCID {dataBlock} {
     } else {set cidline -}
     # create call line label
     set lineLabel $cidline
-    # put line label inside <>
-    regsub {(.*)} $cidline {<\1>} cidline
     # make default line indicator a blank
-    regsub {<->} $cidline {} cidline
+    regsub {[-]} $cidline {} cidline
 
     return [list $ciddate $cidtime $cidnumber $cidname $cidline]
 }
@@ -675,33 +704,6 @@ proc clearLog {} {
     .vh delete 1.0 end
     .vh yview moveto 0.0
     .vh configure -state disabled
-}
-
-# close connection to NCID server if open, then reconnect
-proc reconnect {} {
-    global Connect
-    global Socket
-    global Once
-    global Count
-    global Host
-    global Port
-
-    if $Count {
-        # already waiting to reconnect, force a retry
-        set Count 0
-        return
-    }
-
-    # close connection to server
-    flush $Socket
-    fileevent $Socket readable ""
-    close $Socket
-
-    # delay for 0.1 seconds
-    after [expr 100] waitOnce
-    vwait Once
-
-    retryConnect
 }
 
 # Handle MSG from GUI
