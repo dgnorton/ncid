@@ -69,6 +69,10 @@ to a pager or cell phone on a specific ring count.  If the ring count
 is not reached, it is assumed the phone was answered and there is no
 need to send a page or cell phone notification.
 
+If ncidd is using a modem that indicates ring but not Caller ID, ncidd
+will generate call data on ring number 2 and send it to the connect
+clients.  The number will be "RING" and the name will be "No Caller ID".
+
 If the Caller ID is obtained from a SIP Gateway the CIDINFO line is
 only sent at the begining and end of a call.  At the end of a call, RING
 indicates either \fIHangup Without Answer\fB or \fIHangup after Answer\fR

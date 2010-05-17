@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.77
+Version:    0.78
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -294,6 +294,10 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+
+* Fri May 14 2010 John Chmielewski <jlc@users.sourceforge.net> 0.78-1
+- New release
+
 * Fri Apr 9 2010 John Chmielewski <jlc@users.sourceforge.net> 0.77-1
 - removed line: %_initrddir/ncid-kpopup
 - removed section: %post kpopup

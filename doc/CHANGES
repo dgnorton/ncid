@@ -1,5 +1,45 @@
 ncid - Network CallerID
 
+Version 0.78
+    - ncid.sh: fixed 4 comments
+               changed checkCID {} to checkType {}
+               added check for MSGLOG: and LOG: in checkType {}
+               moved reconnect {} to just after retryConnect {}
+               reconnect {}: removed lines: global Host and global Port
+                             added: if {$Socket != 0} { ... }
+               getCID {}: changed "else {" to "elseif {$type <= 3} {"
+               formatCID {}: line label is not displayed inside <> anymore
+    - ncidd.c:formatCID(): replaced cid.sent with cidsent, it is set to 0
+                           when processing NAME, NUMBER, DATE, and TIME
+                           and when ring is set to 0; it is set to 1 after
+                           the CID is sent to clients
+    - ncidd.h: removed CIDSENT define, added CIDALT4 define
+    - debian/README.Debian: updated
+    - doc/Country Codes: corrected grammer
+    - doc/NCID-DataFormats: replaced by NCID-SDK.odt
+    - doc/NCID-PROTOCOL: replaced by NCID-SDK.odt
+    - doc/INSTALL-andLinux: updated
+    - doc/INSTALL-Fedora: updated
+    - doc/INSTALL-Ubuntu: updated
+    - Fedora/ncid.spec: updated
+    - man/ncidd.8: updated for no Caller ID use
+    - man/ncidmodules.1: correct usage for ncid-initmodem, ncid-samba, and
+                         ncid-speak
+    - modules/ncid-page.sh: modified to properly support messages
+    - modules/ncid-tivo.sh: modified to properly support messages
+    - test/TestGWcalls.data: added a CALL line and a CALLINFO line at
+                             the top
+    - test/TestMdmcalls.data: added a line at the top that starts with
+                              Caller ID lines before ring 1
+    - test/aliasfile: updated
+    - test aliasfile.errors: added
+    - test/ncidd-errors.conf: updated
+    - test/ncidd-noerrors.conf: fixed and updated
+    - test/README.test: updated
+    - tools/cidcall.pl: removed <> from enclosing line label
+                        changed number from (xxx)xxx-xxxx to xxx-xxx-xxxx
+    - Win/ncid.nsi: updated
+
 Version 0.77
     - Makefile: removed cd into specific subdirs in clean: and clobber:
                 added "subdirs =" line

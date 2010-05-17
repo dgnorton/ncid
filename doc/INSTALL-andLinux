@@ -1,6 +1,6 @@
 andLinux Install
 
-Last edited: Thu Apr 8, 2010
+Last edited: Fri May 14, 2010
 
 If NCID does not work, see INSTALL for some simple tests.
 If using sip2ncid, see Setup-ncidsip
@@ -37,10 +37,10 @@ INSTALL NCID:
     - Download the latest NCID deb packages from sourceforge
       * You can use the andLinux version of Netscape
       * You can use wget in a andLinux terminal window
-        (downloading the server package using version 0.77 as an example)
-        wget  http://downloads.sourceforge.net/ncid/ncid_0.77-0ubuntu1_i386.deb
-      Example server package: ncid_0.77-0ubuntu1_i386.deb
-      Example client package: ncid-client_0.77-0ubuntu1_all.deb
+        (downloading the server package using version 0.78 as an example)
+        wget  http://downloads.sourceforge.net/ncid/ncid_0.78-0ubuntu1_i386.deb
+      Example server package: ncid_0.78-0ubuntu1_i386.deb
+      Example client package: ncid-client_0.78-0ubuntu1_all.deb
       The server package must be installed, the client package does
       not need to be installed if you want to run a Windows client.
     - Use Synaptic to locate and install gdebi

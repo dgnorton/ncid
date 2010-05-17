@@ -1,3 +1,9 @@
+ncid (0.78-0ubuntu1) 10.04; urgency=low
+
+  * See NCID CHANGES file
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri,  14 May 2010 13:16:00:00 -0400
+
 ncid (0.77-0ubuntu1) Karmic Koala; urgency=low
 
   * removed postrm-kpopup and prerm-kpopup

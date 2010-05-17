@@ -1,29 +1,30 @@
 NCID distributions:
 
     sourceforge:
-        NCID Source package:           ncid-0.77-src.tar.gz
+        NCID Source package:           ncid-0.78-src.tar.gz
 
-        Cygwin 32 bit Windows package: ncid-0.77-1-cygwin.tgz
+        Cygwin 32 bit Windows package: ncid-0.78-1-cygwin.tgz
 
-        TiVo Series1 package:          ncid-0.77-1-ppc-tivo.tgz
-        TiVo Series 2 and 3 package:   ncid-0.77-1-mips-tivo.tgz
+        TiVo Series1 package:          ncid-0.78-1-ppc-tivo.tgz
+        TiVo Series 2 and 3 package:   ncid-0.78-1-mips-tivo.tgz
 
-        Ubuntu 32 bit packages:        ncid_0.77-0ubuntu1_i386.deb
-                                       ncid-client_0.77-0ubuntu1_all.deb
-                                       ncid-kpopup_0.77-0ubuntu1_all.deb
-                                       ncid-mythtv_0.77-0ubuntu1_all.deb
-                                       ncid-samba_0.77-0ubuntu1_all.deb
-                                       ncid-speak_0.77-0ubuntu1_all.deb
+        Ubuntu 32 bit packages:        ncid_0.78-0ubuntu1_i386.deb
+                                       ncid-client_0.78-0ubuntu1_all.deb
+                                       ncid-kpopup_0.78-0ubuntu1_all.deb
+                                       ncid-mythtv_0.78-0ubuntu1_all.deb
+                                       ncid-samba_0.78-0ubuntu1_all.deb
+                                       ncid-speak_0.78-0ubuntu1_all.deb
 
-        Windows client installer:      ncid-0.77-1-client_setup.exe
+        Windows client installer:      ncid-0.78-1-client_setup.exe
 
     Fedora packages:
         # available at the Fedora repository
+        # new release first appear in the rawhide repository
         # there is a server, client, and optional output module packages
         # normally you only need to install the ncid & ncid-client rpm packages
         # The yum list command will show you the packages available
             yum list ncid\*
-        # if the above does not show version 0.77
+        # if the above does not show version 0.78
             yum --enablerepo=rawhide list ncid\*
 
     Macintosh OS X package:
@@ -37,77 +38,41 @@ NCID distributions:
 Specific distribution Changes:
 
     Fedora and Redhat:
-        added missing ncid-hangup files: ncid.blacklist and ncid.minicom
-        removed ncid-kpopup.init: module requires Gnome or KDE desktop
-        added ncid-initmodem.init
 
         NOTES:
             If you need to build packages for your specific OS release:
-                rpmbuild -tb ncid-0.77-src.tar.gz
+                rpmbuild -tb ncid-0.78-src.tar.gz
 
     FreeBSD:
-        added missing ncid-hangup files: ncid.blacklist and ncid.minicom
-        removed ncid-kpopup.rc: module requires Gnome or KDE desktop
-        added ncid-initmodem.rc
 
     Mac OS-X:
-        added missing ncid-hangup files: ncid.blacklist and ncid.minicom
-        modified ncid-hangup so it does not hang
-        fixed broken mac-fat target in Makefile
 
     Ubuntu:
-        removed ncid-kpopup.init: module requires Gnome or KDE desktop
-        added ncid-initmodem.init
 
         NOTES:
             If you need to build a package for your specific OS release, the
             build-essential, fakeroot, & libpcap packages must be installed:
                 sudo apt-get build-essential fakeroot libpcap0.8-dev
-                tar -xzf ncid-0.77-src.tar.gz
-                mv ncid ncid-0.77
-                cd ncid-0.77
+                tar -xzf ncid-0.78-src.tar.gz
+                mv ncid ncid-0.78
+                cd ncid-0.78
                 fakeroot debian/rules build
                 fakeroot debian/rules binary
                 fakeroot debian/rules clean
 
     TiVo:
-        Modified startncid to start programs only if not already running.
-        Removed ncid-page from startncid script
-        Added ncid-initmodem to startncid script
-        Added initmodem.sh script
-        The correct modem port is selected for PPC or MIPS in ncidd.conf
 
     Windows:
 
 NCID Server Changes:
 
     ncidd:
-        Added check to make sure lockfile is active, if not it is removed.
-
-        Added a new feature to indicate a call when there no Caller ID is
-        sent from a modem.  If the server does not receive the Caller ID
-        from the modem by ring number 2, it will generate "RING" for the
-        number and "No Caller ID" for the name.  This permits NCID to work
-        with modems that indicate RING but not Caller ID.  It also permits
-        ncidd to detect the modem dropping out of the Caller ID mode.
-
-        The "initstr" and "initcid" variables in ncid.conf can be set
-        to "" for the new "No Caller ID" feature.
-
-        Fixed invalid verbose level indication when verbose is set in
-        ncidd.conf.
-
-        Changed verbose level 9 to invalid in ncidd.conf.  Level 9 can
-        only be entered from the command line because it causes the
-        logfile to grow at a fast rate and is not normally required.
+        improved the nocallerid feature to work correctly with
+        telco systems that send the Caller ID before ring 1
 
 NCID Gateway Changes:
 
     sip2ncid:
-        Added logic to print "No SIP packets received" at start of
-        problem and "SIP packets returned" at end 
-
-        Changed wait interval to determine no SIP packets from 90 to 120
 
     ncidsip:
 
@@ -116,33 +81,23 @@ NCID Gateway Changes:
 NCID Client Changes:
 
     ncid:
-        Eliminated the defunct process problem by not calling client
-        modules in the background.
-
-        Removed the "--nocid| -N" option because this feature is now
-        handled by the server.
+        Line label is not enclosed in <> anymore
 
 NCID Client Module Changes:
 
-    ncid-hangup:
-        removed the "-o" option to minicom so it works on OSX
-        changed the delay method in the ncid.minicom file
-        added more comments to the ncid.blacklist file
+    ncid-page:
+        modified to handle messages
 
-    ncid-initmodem:
-        added (see ncidmodules man page for details)
-
-    ncid-yac:
+    ncid-tivo:
         modified to handle messages
 
 Documentation Changes:
 
-    ncid.1: updated
-    ncidd.8: updated
-    ncidmodules.1: updated for initmodem
-    ncidmodules.conf.5: updated
     INSTALL-andLinux: updated
-    INSTALL-TiVo: updated
-    INSTALL-Ubuntu: corrected 2 words
-    Verbose-ncidd: updated
-    Verbose-sip2ncid: updated
+    INSTALL-Fedora: updated
+    INSTALL-Ubuntu: updated
+
+    ncidmodules.1: updated
+
+    replaced the NCID-DataFormats, NCID-PROTOCOL, and
+     the CountryCodes files with the NCID-SDK.odt file

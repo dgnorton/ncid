@@ -1,6 +1,6 @@
 Ubuntu Install
 
-Last edited: Thu Apr 0, 2010
+Last edited: Mon May 17, 2010
 
 If NCID does not work, see INSTALL for some simple tests.
 If using sip2ncid, see Setup-ncidsip
@@ -8,7 +8,11 @@ If using ncidsip, see Setup-ncidsip
 
 COMPILE:
 
-    See INSTALL
+    The following packages are required:
+    - sudo apt-get install build-essential
+    - sudo apt-get install libpcap0.8-dev
+    
+    See INSTALL for compile instructions
 
 INSTALL or UPGRADE:
 
