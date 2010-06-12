@@ -408,10 +408,12 @@ proc formatCID {dataBlock} {
     }
     set cidtime [getField TIME $dataBlock]
     regsub {([0-9][0-9])([0-9][0-9])} $cidtime {\1:\2} cidtime
+    set cidline ""
     if [string match {*\*LINE\**} $dataBlock] {
         set cidline [getField LINE $dataBlock]
-    # set default line indicator
-    } else {set cidline -}
+    }
+    # set default line indicator, if needed
+    if {$cidline == ""} {set cidline -}
     # create call line label
     set lineLabel $cidline
     # make default line indicator a blank
