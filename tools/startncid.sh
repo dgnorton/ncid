@@ -1,7 +1,14 @@
 #!/bin/sh
 # script to start NCID
 # Requires the "ps" command
-# Last modified  by jlc: Thu Apr 15, 2010
+# Last modified  by jlc: Mon Jul 19, 2010
+
+### This script requires pgrep.  If /var/hack/bin/pgrep is not
+### present, you can use pgrep from the tivotools distribution:
+### http://www.dealdatabase.com/forum/showthread.php?t=37602
+### You can either add the directory of tivotools to PATH in
+### the PATH section of you can copy pgrep to /var/hack/bin/
+### if you do not need tivotools installed.
 
 ### This script can be run from:
 ### rc.sysinit.author:   /var/hack/bin/startncid rmpid
@@ -10,10 +17,12 @@
 ### This script can start ncidd, sip2ncid, yac2ncid, tivocid, tivoncid,
 ### ncid-initmodem, and ncid-yac.  It can also set the local timezone.
 ### 
-### The default is to start ncidd and tivocid.
-### Uncomment or comment out lines to start the NCID programs required.
+### The default script starts ncidd and tivocid.
 ###
-### The NCID programs will not start if already running.
+### Uncomment or comment out indicated lines in the
+### customize section to start selected NCID programs.
+###
+### A program will not start if it is already running.
 ### Kill programs manually to stop them
 ###
 ### If you are using sip2ncid or yac2ncid, you need to uncomment
@@ -33,12 +42,26 @@
 export PATH TZ
 PATH=/bin:/sbin:/tvbin:/devbin:/var/hack:/var/hack/bin:/var/hack/sbin:/hack/bin
 
-################################################
-### The TiVo Timezone is UTC                 ###
-###                                          ###
-### If you are using sip2ncid or yac2ncid,   ###
-### you should set TZ to the local timezone. ###
-################################################
+##################################
+##################################
+### Start of Customize Section ###
+##################################
+##################################
+
+############
+### PATH ###
+############
+### If you need to search an additional directory to run pgrep
+### For example, the pgrep version in tivotools, add the directory path
+### of tovotools to the following line and uncomment it (remove the #):
+#PATH=$PATH:
+
+#################################################
+### The TiVo Timezone is UTC                  ###
+###                                           ###
+### If you are using sip2ncid or yac2ncid,    ###
+### set TZ to your local timezone.            ###
+#################################################
 ### Here are example TZ lines for EST:
 ### TZ=EST5EDT,M3.2.0,M11.1.0 # Gives daylight savings start and end dates
 ### TZ=TIMEZONE.Mmonth.week.day/time,month.week.day/time
@@ -55,11 +78,13 @@ PATH=/bin:/sbin:/tvbin:/devbin:/var/hack:/var/hack/bin:/var/hack/sbin:/hack/bin
 #TZ=AKST9AKDT,M3.2.0,M11.1.0  # ALASKAN TIME
 #TZ=HST10,M3.2.0,M11.1.0      # HAWAII-ALEUTIAN STANDARD TIME
 
-###########################
-### Start Programs Used ###
-###########################
-### remove '#' from beginning of line to enable program
-### add '#' to beginning of line disable program
+###############################
+### Start Required Programs ###
+###############################
+### Remove '#' from beginning of line to enable program.
+### Add '#' to beginning of line to disable program.
+### Startncid will not try to start a running program.
+### The distribution default only starts ncidd and tivoncid
 
 # Enable Server if using it on this TiVo
 SERVER=ncidd
@@ -88,21 +113,27 @@ OSDCLIENT=tivoncid
 #YACMOD=ncid-yac
 
 ################################
-### End of all Modifications ###
+################################
+### End of Customize Section ###
+################################
 ################################
 
 ### Server
 [ -n "$SERVER" ] &&
-ps auxw | grep $SERVER | grep -v grep > /dev/null || $SERVER
+{
+    pgrep -fl $SERVER > /dev/null || $SERVER
+}
 
 ### SIP Gayteway
 [ -n "$SIPGW" ] &&
-ps auxw | grep $SIPGW | grep -v grep > /dev/null || $SIPGW 
+{
+    pgrep -fl $SIPGW > /dev/null || $SIPGW
+} 
 
 ### YAC Gateway
 [ -n "$YACGW" ] &&
 {
-    if ! ps auxw | grep $YACGW | grep -v grep > /dev/null
+    if ! pgrep -fl $YACGW > /dev/null
     then
         $YACGW&
     fi
@@ -111,7 +142,7 @@ ps auxw | grep $SIPGW | grep -v grep > /dev/null || $SIPGW
 ### Client
 [ -n "$OSDCLIENT" ] &&
 {
-    if !  ps auxw | grep -E "out2osd|ncid-tivo" | grep -v grep > /dev/null
+    if !  pgrep -fl "out2osd|ncid-tivo" > /dev/null
     then
         $OSDCLIENT&
     fi
@@ -120,7 +151,7 @@ ps auxw | grep $SIPGW | grep -v grep > /dev/null || $SIPGW
 ### Initmodem Client Module
 [ -n "$INITMOD" ] &&
 {
-    if ! ps auxw | grep $INITMOD | grep -v grep > /dev/null
+    if ! pgrep -fl $INITMOD > /dev/null
     then
         ncid --no-gui --call-prog --program $INITMOD&
     fi
@@ -129,8 +160,8 @@ ps auxw | grep $SIPGW | grep -v grep > /dev/null || $SIPGW
 ### YAC Client Module
 [ -n "$YACMOD" ] &&
 {
-    if ! ps auxw | grep $YACMOD | grep -v grep > /dev/null
+    if ! pgrep -fl $YACMOD > /dev/null
     then
-        ncid --no-gui --messages --call-prog --program $YACMOD&
+        ncid --no-gui --call-prog --program $YACMOD&
     fi
 }
