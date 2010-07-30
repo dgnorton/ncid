@@ -163,20 +163,13 @@ proc errorMsg {msg} {
             } else {
                 set Txt "$msg Try $Try in $Count seconds."
             }
+            set Once 0
             set Count [expr $Count - 1]
-            after [expr 1000] waitOnce
+            after [expr 1000] set Once 1
             vwait Once
         }
         retryConnect
     }
-}
-
-# Count loop delay
-proc waitOnce {} {
-    global Once
-
-    set Once 0
-    after cancel waitOnce
 }
 
 # try to connect to CID server again
@@ -190,10 +183,10 @@ proc retryConnect {} {
 }
 
 # close connection to NCID server if open, then reconnect
-proc reconnect {} {
+proc Reconnect {} {
     global Connect
     global Socket
-    global Once
+    global waitOne
     global Count
 
     if $Count {
@@ -211,8 +204,9 @@ proc reconnect {} {
     }
 
     # delay for 0.1 seconds
-    after [expr 100] waitOnce
-    vwait Once
+    set waitOne 0
+    after [expr 100] set waitOne 1
+    vwait waitOne
 
     retryConnect
 }
@@ -676,7 +670,7 @@ proc makeWindow {} {
     # create file menu items
     menu .menubar.file.menu -tearoff 0
     .menubar.file.menu add command -label "Clear Log" -command clearLog
-    .menubar.file.menu add command -label "Reconnect" -command reconnect
+    .menubar.file.menu add command -label "Reconnect" -command Reconnect
     .menubar.file.menu add command -label Quit -command exit
 
     # create help menu
