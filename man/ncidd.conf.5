@@ -60,12 +60,17 @@ Set the Telephone Line Indicator for the modem:
 	set lineid = POTS
 .RE
 .PP
+Configure ncidd to ignore modems that do not send Caller ID:
+.RS 0
+	set gencid = 0
+.RE
+.PP
 Use a modem and possibly a Gateway to obtain the Caller ID:
 .RS 0
 	set noseriel = 0
 .RE
 .PP
-Do not use a modem, just use a Gateway to obtain the Caller ID:
+Only use Gateways to obtain the Caller ID:
 .RS 0
 	set noseriel = 1
 .RE

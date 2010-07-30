@@ -16,14 +16,15 @@
 [-D              | --debug]
 [-d <logfile>    | --datalog <logfile>]
 [-e <identifier> | --lineid <identifier>]
+[-g <0|1>        | --gencid <0|1>]
 [-h              | --help]
 [-I <modemstr>   | --initstr <modemstr>]
 [-i <cidstr>     | --initcid <cidstr>]
 [-L <logfile>    | --logfile <logfile>]
 [-l <lockfile>   | --lockfile <lockfile>]
 [-M <MaxBytes>   | --cidlogmax <MaxBytes>]
-[-N <0|1>        | --noserial <0|1]
-[-n <0|1>        | --nomodem <0|1]
+[-N <0|1>        | --noserial <0|1>]
+[-n <0|1>        | --nomodem <0|1>]
 [-P <pidfile>    | --pidfile <pidfile>]
 [-p <portnumber> | --port <portnumber>]
 [-S <0|1>        | --ttyclocal <0|1]
@@ -70,8 +71,9 @@ is not reached, it is assumed the phone was answered and there is no
 need to send a page or cell phone notification.
 
 If ncidd is using a modem that indicates ring but not Caller ID, ncidd
-will generate call data on ring number 2 and send it to the connect
-clients.  The number will be "RING" and the name will be "No Caller ID".
+can handle calls without Caller ID by generating call data on ring
+number 2 and send it to the connect clients.  The number will be "RING"
+and the name will be "No Caller ID".  This feature is on by default.
 
 If the Caller ID is obtained from a SIP Gateway the CIDINFO line is
 only sent at the begining and end of a call.  At the end of a call, RING
@@ -133,6 +135,13 @@ For example, if the telephone number is 321-555-1212 the identifier
 whould be 1212.
 .br
 Default: -
+.TP
+.B -g <0|1> | --gencid <0|1>
+Generate a generic Caller ID at ring 2 if one is not received
+from the modem either because the telco is not sending it or
+because the modem does not support it.
+.br
+Default: gencid = 0
 .TP
 .B -h | --help
 Display a help message.
