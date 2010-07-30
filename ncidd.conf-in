@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Config File
 
-# File last changed: Wed Apr 14, 2010
+# File last changed: Wed Jul 14, 2010
 
 ################################
 # Definitions and Line formats #
@@ -19,10 +19,9 @@
 #
 # SET LINE FORMAT:
 #   set ITEM = VALUE [ITEM = VALUE] ...
-#       where ITEM = cidalias, cidlog, cidlogmax, datalog, initcid,
-#                    initstr, lineid, lockfile, nomodem, noserial,
-#                    pidfile, port, ttyclocal, ttyport, ttyspeed,
-#                    verbose
+#       where ITEM = cidalias, cidlog, cidlogmax, datalog, gencid, initcid,
+#                    initstr, lineid, lockfile, nomodem, noserial, pidfile
+#                    port, send, ttyclocal, ttyport, ttyspeed, verbose
 
 ##########################
 # Log file verbose level #
@@ -44,9 +43,9 @@ send cidlog
 # The default is not to send the call info line
 send cidinfo
 
-############################
-# NCID Communications Port #
-############################
+#####################
+# NCID Network Port #
+#####################
 
 # The default TCP/IP port is 3333
 # set port = 3334
@@ -94,8 +93,8 @@ send cidinfo
 #  SERIAL AND NETWORK:    noserial = 0 (default - use a serial port)
 # set noserial = 1
 
-# NOTE: if noserial is set to 1, nothing needs to be configured beyond
-#       this point.
+## NOTE: if noserial is set to 1, nothing needs to be configured beyond
+##       this point.
 
 ############################
 # Telephone Line Indicator #
@@ -106,6 +105,19 @@ send cidinfo
 # normally you would set it to the last 4 digits of your number.
 # lineid default: -
 # set lineid = 7744
+
+################################
+# Generate a generic Caller ID #
+################################
+
+# Generate a generic Caller ID at ring 2 if one is not received
+# from the modem either because the telco is not sending it or
+# because the modem does not support it.  This feature requires
+# the modem to indicate each time the modem rings.
+
+# gencid = 0 never generate a generic Caller ID)
+# gencid = 1 (default: generate a generic Caller ID when needed)
+#set gencid = 0
 
 #####################
 # TTY Configuration #
@@ -151,9 +163,12 @@ send cidinfo
 #
 # Alternate modem initialization string
 # set initstr = "AT&FE1V1Q0+VIP"
-#
-# Alternate modem initialization string for the Mac Motorola UbiSoft modem
+
+# Modem initialization string for the Mac Motorola UbiSoft modem
 # set initstr = "AT+FCLASS=8;+VCID=1" # Macintosh OS X
+
+# Modem initialization string for the US Robotics 5637, v.92 56k USB modem
+# set initstr = "ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0"
 
 # The U.S.Robotics USR5631 56K Faxmodem has a +GCI command to set the
 # country code to adjust parameters for a particular telephone network
