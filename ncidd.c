@@ -38,7 +38,7 @@ int ttyspeed = TTYSPEED;
 int port = PORT;
 int debug, conferr, setcid, locked, sendlog, sendinfo;
 int ttyfd, pollpos, pollevents;
-int ring, ringwait, ringcount, clocal, nomodem, noserial;
+int ring, ringwait, ringcount, clocal, nomodem, noserial, gencid = 1;
 int cidsent, verbose = 1;
 unsigned long cidlogmax = LOGMAX;
 pid_t pid;
@@ -261,13 +261,25 @@ int main(int argc, char *argv[])
 
         if (nomodem)
         {
-            sprintf(msgbuf, "CallerID from serial device and maybe Gateway\n");
+            sprintf(msgbuf,
+                "CallerID from serial device and possible maybe Gateway\n");
             logMsg(LEVEL1, msgbuf);
         }
         else
         {
-            sprintf(msgbuf, "CallerID from AT Modem and maybe Gateway\n");
+            sprintf(msgbuf, "CallerID from AT Modem and possible Gateway\n");
             logMsg(LEVEL1, msgbuf);
+
+            if (gencid)
+            {
+            sprintf(msgbuf, "Handles modem calls without Caller ID\n");
+            logMsg(LEVEL1, msgbuf);
+            }
+            else
+            {
+            sprintf(msgbuf, "Does not handle modem calls without Caller ID\n");
+            logMsg(LEVEL1, msgbuf);
+            }
         }
 
         /* Save tty port settings */
@@ -409,6 +421,7 @@ int getOptions(int argc, char *argv[])
         {"cidlogmax", 1, 0, 'M'},
         {"datalog", 1, 0, 'd'},
         {"debug", 0, 0, 'D'},
+        {"gencid", 1, 0, 'g'},
         {"help", 0, 0, 'h'},
         {"initcid", 1, 0, 'i'},
         {"initstr", 1, 0, 'I'},
@@ -428,7 +441,7 @@ int getOptions(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "c:d:e:hi:l:n:p:s:t:v:A:C:DI:L:M:N:P:S:T:V",
+    while ((c = getopt_long (argc, argv, "c:d:e:g:hi:l:n:p:s:t:v:A:C:DI:L:M:N:P:S:T:V",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -503,6 +516,13 @@ int getOptions(int argc, char *argv[])
                 if (strlen(lineid) > CIDSIZE -1)
                     errorExit(-113, "string too long", optarg);
                 if ((num = findWord("lineid")) >= 0) setword[num].type = 0;
+                break;
+            case 'g':
+                gencid = atoi(optarg);
+                if (strlen(optarg) != 1 ||
+                    (!(gencid == 0 && *optarg == '0') && gencid != 1))
+                    errorExit(-107, "Invalid number", optarg);
+                if ((num = findWord("gencid")) >= 0) setword[num].type = 0;
                 break;
             case 'h': /* help message */
                 fprintf(stderr, DESC, name);
@@ -1023,7 +1043,7 @@ void doPoll(int events, int mainsock)
             if (strlen(buf) != 0)
             {
 
-              /* Look for CALL, CALLDATA, or MSG lines */
+              /* Look for CALL, CALLINFO, or MSG lines */
               if (strncmp(buf, CALL, strlen(CALL)) == 0)
               {
                 /*
@@ -1223,9 +1243,12 @@ void formatCID(int mainsock, char *buf)
             *sptr = '\0';
             cid.status |= (CIDDATE | CIDTIME);
         }
-        else if (cidsent == 0 && ring == 2 )
+        else if (gencid && cidsent == 0 && ring == 2 )
         {
             /*
+             * gencid = 1: generate a Caller ID if non received
+             * gencid = 0: do not generate a Caller ID if non received
+             *
              * CID information always received between before RING 2
              * no CID information received, so create one.
              */
@@ -1626,7 +1649,8 @@ void sendInfo(int mainsock)
     char buf[BUFSIZ], *ptr;
 
     userAlias("", "", ringline);
-    sprintf(buf, "%s%s%s%s%d%s",CIDINFO, LINE, ringline, RING, ring, STAR);
+    sprintf(buf, "%s%s%s%s%d%s%s%s",CIDINFO, LINE, ringline, \
+            RING, ring, TIME, strdate(ONLYTIME), STAR);
     writeClients(mainsock, buf);
 
     strcat(buf, NL);
@@ -1635,9 +1659,9 @@ void sendInfo(int mainsock)
 
 /*
  * Returns the current date and time as a string in the format:
- *      WITHSEP: MM/DD/YYYY HH:MM:SS
- *      NOSEP:   MMDDYYYY HHMM
- *      NODATE:  HH:MM:SS
+ *      WITHSEP:  MM/DD/YYYY HH:MM:SS
+ *      NOSEP:    MMDDYYYY HHMM
+ *      ONLYTIME: HH:MM:SS
  */
 char *strdate(int separator)
 {
@@ -1654,7 +1678,7 @@ char *strdate(int separator)
     else if (separator & NOSEP)
         sprintf(buf, "%.2d%.2d%.4d %.2d%.2d", tm->tm_mon + 1, tm->tm_mday,
             tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
-    else
+    else /* ONLYTIME */
         sprintf(buf, "%.2d:%.2d:%.2d",  tm->tm_hour, tm->tm_min, tm->tm_sec);
     return buf;
 }

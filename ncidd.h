@@ -66,6 +66,7 @@ Usage: %s [-A aliasfile  | --alias aliasfile]\n\
              [-D            | --debug]\n\
              [-d logfile    | --datalog logfile]\n\
              [-e lineid     | --lineid identifier]\n\
+             [-g 0/1        | --gencid 0/1]\n\
              [-h            | --help]\n\
              [-I modemstr   | --initstr modemstr]\n\
              [-i cidstr     | --initcid cidstr]\n\
@@ -190,7 +191,7 @@ extern char *initstr, *initcid;
 extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile;
 extern int setcid, port, clocal, ttyspeed;
 extern int sendlog, sendinfo;
-extern int nomodem, noserial, verbose;
+extern int nomodem, noserial, gencid, verbose;
 extern unsigned long cidlogmax;
 extern void logMsg();
 extern int errorExit();
