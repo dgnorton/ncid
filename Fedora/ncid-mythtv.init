@@ -28,7 +28,7 @@ MythMsg=-M
 lockfile=/var/lock/subsys/$module
 
 [ -f $config ] && . $config
-args="--no-gui --pidfile $pidfile $MythMsg -C -P $module"
+args="--no-gui --pidfile $pidfile $MythMsg -P $module"
 
 start() {
     [ -x $exec ] || exit 5

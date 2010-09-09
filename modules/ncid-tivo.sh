@@ -3,7 +3,7 @@
 # TiVo Display
 # Requires a TiVo
 
-# Last changed by jlc: Sat Apr 24, 2010
+# Last changed by jlc: Sun Aug 29, 2010
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -11,11 +11,8 @@
 # input is 5 lines if a message was sent
 # input: \n\n\nMESSAGE\n\n
 #
-# ncid calls a external program with the "--call-prog" option
-# default program: /usr/share/ncid/ncid-speak
-#
 # ncid usage:
-#   ncid --no-gui --message --call-prog --program ncid-tivo
+#   ncid --no-gui [--message] --program ncid-tivo
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf

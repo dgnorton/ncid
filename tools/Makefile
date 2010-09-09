@@ -1,5 +1,5 @@
 PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl
-SHSOURCE	= startncid.sh initmodem.sh
+SHSOURCE	= 
 ETCFILE     =
 FILES		= Makefile $(PLSOURCE) $(SHSOURCE) $(MANSRC)
 DIST        =
@@ -48,13 +48,15 @@ distclean: clobber
 
 files:	$(FILES)
 
-% : %.pl
+.SUFFIXES: .pl .sh -in
+
+.pl : *.pl
 	sed 's,/etc/ncid/ncidd.alias,$(ALIAS),; s,/etc/ncid/ncidd.conf,$(CONF),; s,/var/log/cidcall.log,$(CALLLOG),' $< > $@
 	chmod +x $@
 
-% : %.sh
+.sh : *.sh
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod 755 $@
 
-% : %-in
+-in : *-in
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@

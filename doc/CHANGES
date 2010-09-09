@@ -1,5 +1,103 @@
 ncid - Network CallerID
 
+Version 0.79
+    - Makefile: fixed FreeBSD problems by adding: MAKE = gmake
+                CFLAGS changed -O to -O2
+                MFLAGS changed to: MFLAGS  = -W -Wmissing-declarations
+    - ncid.sh: Patched to work with the Vodafone ARC_ncidd 0.01 server
+               Changed "after" logic
+               Renamed reconnect {} to Reconnect {}
+               Removed waitOnce {}
+               getArg {}: -P sets Callprog to 1 like the -C option
+               Removed "--call-prog | -C" from Usage
+    - ncidd.c: sendInfo(): added TIME fields
+               - added the "-n | --gencid" options to turn on or off the
+                 feature to generate a CID if a CID is not received from
+                 a modem by ring 2
+               main() if modem, log if ncidd can/can't handle calls without CID
+               strdate(): changed NODATE to ONLYTIME
+               doPoll(): allow CID: and CIDINFO: input from another NCID server
+                         changed logMsg() wording for invalid request
+                         changed LEVEL3 to LEVEL8 for receiving empty line
+               logMsg(): write to stdout instead of stderr in debug mode
+               main(): added check for any arguments and to abort if any
+                       moved check for logfile
+               formatCID: changed strncmp() for NMBR to strstr() for NMBR
+    - ncidd.h: added the "-n|--gencid" option to usage
+               added extern int gencid
+    - nciddconf.c: added "gencid" keyword to setword[]
+                   max verbose level set to 7
+    - ncidd.conf-in: added new config variable "gencid" and information on it
+                     added new initstring for a US Robotics 5637 USB modem
+                     updated for new verbose range
+    - getopt_long.c: not used anymore
+    - getopt_long.h: not used anymore
+    - poll.c: not used anymore
+    - poll.h: not used anymore
+    - README: updated
+    - cidgate/sip2ncid.c: processPackets() changed 'ONLYTIME' to 'WITHYEAR'
+                                           accept alpha for called number
+                                           test for REQCAN with REQTERM
+                          doPCAP() changed 'ONLYTIME' to 'WITHYEAR'
+                          logMsg(): write to stdout instead of stderr in debug
+                          socketConnect(): changed warning to LEVEL2
+                          socketRead(): changed LEVEL5 to LEVEL9
+                          main(): added check for any arguments and to abort
+                                  moved check for logfile
+                          max verbose level set to 7
+                          fixed coredump of the -W | --warn options
+    - cidgate/sip2ncid.conf: updated
+    - cidgate/sip2ncid.h: renamed REQUEST to REQTERM and added REQCAN
+    - cidgate/ncid2ncid.c: new
+    - cidgate/ncid2ncid.conf: new
+    - cidgate/ncid2ncid.h: new
+    - cidgate/yac2ncid.sh: modified to forward YAC messages
+    - debian/Makefile: updated
+    - debian/README.debian: updated
+    - debian/rules: updated
+    - debian/ncid-<module>.init: removed the -C option
+    - debian/ncid2ncid.init: new
+    - doc/NCID-SDK.odt: updated CIDINFO section to include TIME fields
+    - doc/INSTALL: updated for 'gencid'
+    - doc/INSTALL-TiVo: updated
+    - doc/Verbose-ncidd: updated
+    - doc/Verbose-sip2ncid: updated
+    - doc/Verbose-ncid2ncid: new
+    - Fedora/Makefile: removed ifdef and updated it
+    - Fedora/README,Fedora: updated
+    - Fedora/ncid-<module>.init: removed the -C option
+    - Fedora/ncidsip.init: corrected Start/Stop comment
+    - Fedora/ncid2ncid.init: new
+    - FreeBsd/Makefile: updated
+    - FreeBsd/README.FreeBSD: updated
+    - FreeBSD/ncid-<module>.rc: removed the -C option
+    - FreeBsd/ncid2ncid.rc: new
+    - man/Makefile: added line: MAKE = gmake
+    - man/ncid.1: updated
+    - man/ncidd.8: updated
+    - man/ncidd.conf.5: updated for "gencid" usage
+    - man/ncidmodules.1: removed [--messages] from ncid-yac usage
+    - man/sip2ncid.8: updated
+    - man/yac2ncid.1: corrected a line
+    - man/ncid2ncid.1: new
+    - man/ncid2ncid.conf.5: new
+    - man/ncidsip.8: updated
+    - modules/ncid-<module>.sh: removed --call-prog option comments
+    - scripts/testclient.log: - added 2 MSG lines, 1 CID line, and 1
+                                CIDINFO line
+                              - updated the CIDINFO lines
+    - scripts/testlog-display: updated to show currect client log display
+    - TiVo/Makefile: new
+    - TiVo/README.TiVo: new
+    - TiVo/initmodem.sh: moved from tools/initmodem.sh
+    - TiVo/startncid.sh: moved from tools/startncid.sh
+    - tools/Makefileh: added line: MAKE = gmake
+    - tools/README.tools: updated and removed Makefile comments
+    - tools/startncid.sh: changed using 'ps' to using 'pgrep;
+                        removed --messages from ncid-yac startup
+    - tools/initmodem.sh: moved to to TiVo/initmodem.sh
+    - tools/startmcid.sh: moved to to TiVo/startmcid.sh
+
 Version 0.78
     - ncid.sh: fixed 4 comments
                changed checkCID {} to checkType {}

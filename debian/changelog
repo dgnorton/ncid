@@ -1,3 +1,10 @@
+ncid (0.79-0ubuntu1) 10.04; urgency=low
+
+  * See NCID CHANGES file
+  * added ncid2ncid.init file and ncid2ncid.init to rules
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Thu,  1 Jul 2010 20:26:00:00 -0400
+
 ncid (0.78-0ubuntu1) 10.04; urgency=low
 
   * See NCID CHANGES file
@@ -6,6 +13,7 @@ ncid (0.78-0ubuntu1) 10.04; urgency=low
 
 ncid (0.77-0ubuntu1) Karmic Koala; urgency=low
 
+  * See NCID CHANGES file
   * removed postrm-kpopup and prerm-kpopup
   * removed ncid-kpopup.init file, and ncid-kpopup.init from rules
   * removed prerm-ncid-kpopup file, and postrm-ncid-kpopup from rules

@@ -1,0 +1,89 @@
+#!/bin/sh
+#
+# ncid2ncid          Start/Stop Network Caller ID NCID to NCID Gateway
+#
+# chkconfig: - 95 05
+# description: The NCID to NCID Gateway inputs Caller ID information
+#              and messages from a sending server to a receiving server
+
+### BEGIN INIT INFO
+# Short-Description: NCID to NCID Gateway
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 1
+
+RETVAL=0
+prog="ncid2ncid"
+exec="/usr/local/bin/$prog"
+config="/usr/local/etc/ncid/$prog.conf"
+args="--pidfile /var/run/$prog.pid"
+lockfile=/var/lock/subsys/$prog
+
+start() {
+    [ -x $exec ] || exit 5
+    [ -f $config ] || exit 6
+    echo -n $"Starting $prog: "
+    daemon $prog $args
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch $lockfile
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Shutting down $prog: "
+    killproc $prog
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f $lockfile
+    return $RETVAL
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    echo -n $"Reloading $prog alias files: "
+    killproc $prog -HUP
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    reload)
+        # reload
+        restart
+        ;;
+    restart)
+        restart
+        ;;
+    condrestart)
+        [ -f $lockfile ] && restart
+        ;;
+    status)
+        status $prog
+        RETVAL=$?
+        ;;
+    *)
+        echo $"Usage: $prog {start|stop|reload|restart|condrestart|status}"
+        exit 2
+esac
+
+exit $RETVAL

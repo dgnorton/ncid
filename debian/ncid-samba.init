@@ -26,7 +26,7 @@ sambaopt="-M"
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf
 
-DAEMON_ARGS="--no-gui -p $PIDFILE -C -P $MODULE $sambaopt"
+DAEMON_ARGS="--no-gui -p $PIDFILE -P $MODULE $sambaopt"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0

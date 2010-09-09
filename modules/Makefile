@@ -45,9 +45,11 @@ distclean: clobber
 
 files:	$(FILES)
 
-% : %.sh
+.SUFFIXES: .sh -in
+
+.sh : *.sh
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod 755 $@
 
-% : %-in
+-in : *-in
 	sed '/"$(setmod)"/s/#//;s,/usr/local,$(prefix),' $< > $@

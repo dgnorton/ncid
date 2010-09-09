@@ -103,7 +103,6 @@ set Version     "(NCID) XxXxX"
 set VersionInfo "Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
-               [--call-prog       | -C]
                [--delay seconds   | -D seconds]
                [--message         | -M]
                [--noexit          | -X]
@@ -598,6 +597,7 @@ proc getArg {} {
                     if {[regexp {^.*/} $optarg]} {
                         set Program [list $optarg]
                     } else {set Program [list $ProgDir/$optarg]}
+                    set Callprog 1
                 } else {exitMsg 6 "Missing $opt argument\n$Usage\n"}
             }
             {^-p$} -

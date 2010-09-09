@@ -1,7 +1,7 @@
 SHSCRIPT  = ncidrotate.sh
 ETCCONF   = ncidrotate.conf
 LOGCONF   = ncid.logrotate
-FILES     = README Makefile $(SHSCRIPT) $(ETCCONF) $(LOGCONF)
+FILES     = README.scripts Makefile $(SHSCRIPT) $(ETCCONF) $(LOGCONF)
 
 prefix    = /usr/local
 prefix2   = $(prefix)
@@ -44,9 +44,11 @@ distclean: clobber
 
 files:	$(FILES)
 
-% : %.sh
+.SUFFIXES: .sh .logrotate
+
+.sh : *.sh
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod 755 $@
 
-% : %.logrotate
+.logrotate : *.logrotate
 	sed '/share/s,/usr/local,$(prefix),' $< > $@

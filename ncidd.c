@@ -70,11 +70,12 @@ void exit(), finish(), free(), reload(), ignore(), doPoll(), formatCID(),
      openTTY(), sendInfo(), logMsg(), cleanup();
 
 int getOptions(), doConf(), errorExit(), doAlias(), doTTY(), CheckForLockfile(),
-    addPoll(), tcpOpen(), doModem(), initModem(), gettimeofday(), doPID();
+    addPoll(), tcpOpen(), doModem(), initModem(), gettimeofday(), doPID(),
+    tcpAccept();
 
 int main(int argc, char *argv[])
 {
-    int events, mainsock, argind, i, fd;
+    int events, mainsock, argind, i, fd, errnum;
     char *ptr;
     struct stat statbuf;
     char msgbuf[BUFSIZ];
@@ -96,20 +97,33 @@ int main(int argc, char *argv[])
     /* process options from the command line */
     argind = getOptions(argc, argv);
 
-    /* open or create logfile */
-    if ((logptr = fopen(logfile, "a")) == NULL)
+    /* should not be any arguments */
+    if (argc - argind != 0)
     {
-        sprintf(msgbuf, "%s: %s\n", logfile, strerror(errno));
-        logMsg(LEVEL1, msgbuf);
+        fprintf(stderr, NOOPT, name, argv[argind]);
+        fprintf(stderr, USAGE, name);
+        exit(0);
     }
+
+    /* open or create logfile */
+    logptr = fopen(logfile, "a");
+    errnum = errno;
 
     sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(WITHSEP),
             name, VERSION);
     logMsg(LEVEL1, msgbuf);
 
-    if (stat(logfile, &statbuf) == 0)
+    /* check status of logfile */
+    if (logptr)
     {
-        sprintf(msgbuf, "ncidd logfile: %s\n", logfile);
+        /* logfile opened */
+        sprintf(msgbuf, "logfile: %s\n", logfile);
+        logMsg(LEVEL1, msgbuf);
+    }
+    else
+    {
+        /* logfile open failed */
+        sprintf(msgbuf, "%s: %s\n", logfile, strerror(errnum));
         logMsg(LEVEL1, msgbuf);
     }
 
@@ -142,7 +156,7 @@ int main(int argc, char *argv[])
     {
         sprintf(msgbuf,
             "Printing alias structure: ELEMENT TYPE [FROM] [TO] [DEPEND]\n");
-        logMsg(LEVEL5, msgbuf);
+        logMsg(LEVEL8, msgbuf);
     }
     for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
     {
@@ -151,7 +165,7 @@ int main(int argc, char *argv[])
             alias[i].from,
             alias[i].to,
             alias[i].depend ? alias[i].depend : " ");
-        logMsg(LEVEL5, msgbuf);
+        logMsg(LEVEL8, msgbuf);
     }
 
     if (stat(cidlog, &statbuf) == 0)
@@ -403,7 +417,7 @@ int main(int argc, char *argv[])
                     }
                 }
                 break;
-            default:    /* 1 or more events reported */
+            default:    /* 1 or more events */
                 doPoll(events, mainsock);
                 break;
         }
@@ -467,8 +481,8 @@ int getOptions(int argc, char *argv[])
                 cidlogmax = atoi(optarg);
                 if ((num = findWord("cidlogmax")) >= 0)
                 {
-                    if (cidlogmax < setword[num].min ||
-                        cidlogmax > setword[num].max)
+                    if (cidlogmax < (unsigned) setword[num].min ||
+                        cidlogmax > (unsigned) setword[num].max)
                         errorExit(-107, "Invalid number", optarg);
                     setword[num].type = 0;
                 }
@@ -874,7 +888,7 @@ void doPoll(int events, int mainsock)
 
     if (polld[pos].revents & POLLNVAL) /* Invalid Request */
     {
-      sprintf(msgbuf, "Removed client %d, file descriptor.\n",
+      sprintf(msgbuf, "Removed client %d, invalid request.\n",
         polld[pos].fd);
       logMsg(LEVEL1, msgbuf);
       polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
@@ -1100,6 +1114,35 @@ void doPoll(int events, int mainsock)
                 }
                 /* Nothing to do for other CALLINFO lines */
               }
+              else if (strncmp(buf, CIDLINE, strlen(CIDLINE)) == 0)
+              {
+                /*
+                 * Found a CID: line from another NCID server
+                 *
+                 * record the CID: line in the cidcall file
+                 * send line out to clients
+                 */
+
+                 sprintf(msgbuf, "Gateway (sd %d) sent CID:\n",
+                         polld[pos].fd);
+                 logMsg(LEVEL3, msgbuf);
+                 writeLog(cidlog, buf);
+                 writeClients(mainsock, buf);
+              }
+              else if (strncmp(buf, CIDINFO, strlen(CIDINFO)) == 0)
+              {
+                /*
+                 * Found a CIDINFO: line from another NCID server
+                 *
+                 * record the CIDINFO: line in the ciddata file
+                 * send line out to clients
+                 */
+                 sprintf(msgbuf, "Gateway (sd %d) sent CIDINFO:\n",
+                         polld[pos].fd);
+                 logMsg(LEVEL3, msgbuf);
+                 writeLog(datalog, buf);
+                 writeClients(mainsock, buf);
+              }
               else if (strncmp(buf, MSGLINE, strlen(MSGLINE)) == 0)
               {
                 /*
@@ -1132,7 +1175,7 @@ void doPoll(int events, int mainsock)
 
                 sprintf(msgbuf, "Client %d sent empty line.\n",
                         polld[pos].fd);
-                logMsg(LEVEL3, msgbuf);
+                logMsg(LEVEL8, msgbuf);
             }
           }
         }
@@ -1378,12 +1421,16 @@ void formatCID(int mainsock, char *buf)
         cid.status |= CIDTIME;
         cidsent = 0;
     }
-    else if (strncmp(buf, "NMBR", 4) == 0)
+    /*
+     * Using strstr() instead of strncmp() becuse some modems send
+     * DDN_NMBR instead of just NMBR.  This will catch both cases.
+     */
+    else if ((ptr = strstr(buf, "NMBR")))
     {
         /* some telcos send NMBR = ##########, then NMBR = O to mask it */
         if (!(cid.status & CIDNMBR))
         {
-            builtinAlias(cid.cidnmbr, buf[4] == '=' ? buf + 5 : buf + 7);
+            builtinAlias(cid.cidnmbr, *(ptr + 4) == '=' ? ptr + 5 : ptr + 7);
             cid.status |= CIDNMBR;
             cidsent = 0;
         }
@@ -1530,7 +1577,7 @@ void sendLog(int sd, char *logbuf)
 
     if (stat(cidlog, &statbuf) == 0)
     {
-        if (statbuf.st_size > cidlogmax)
+        if ((unsigned) statbuf.st_size > cidlogmax)
         {
             sprintf(logbuf, LOGMSG, statbuf.st_size, cidlogmax, CRLF);
             ret = write(sd, logbuf, strlen(logbuf));
@@ -1574,7 +1621,7 @@ void sendLog(int sd, char *logbuf)
         while ((ret != -1 && ret != len) ||
                (ret == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)))
         {
-            /* short write or resource busy, need to attempt subsequent write*/
+            /* short write or resource busy, need to attempt subsequent write */
 
             if (ret != -1 && ret != len)
             {
@@ -1948,8 +1995,8 @@ int errorExit(int error, char *msg, char *arg)
  */
 void logMsg(int level, char *message)
 {
-    /* write to stderr in debug mode */
-    if (debug && verbose >= level) fputs(message, stderr);
+    /* write to stdout in debug mode */
+    if (debug && verbose >= level) fputs(message, stdout);
 
     /* write to logfile */
     if (logptr && verbose >= level)

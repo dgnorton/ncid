@@ -2,7 +2,7 @@ NCID - Network CallerID
 
 Web Site: http://ncid.sourceforge.net
 
-File last changed: Tue Feb 17, 2009
+File last changed: Sat Aug 14, 2010
 
 Directories:
     cidgate:     gateway programs
@@ -97,7 +97,13 @@ The NCID package has the following features:
     - can have multiple ncidsip clients, each monitoring VoIP hardware
     - Documented protocol
 
-    CID Gateway Features (yac2ncid)
+    NCID Gateway Features (ncid2ncid)
+    - Forwards Caller ID information and messages from selected NCID
+      (sending) servers to a selected NCID (receiving) server
+    - Handles up to 3 sending NCID servers
+    - Documented protocol
+
+    YAC Gateway Features (yac2ncid)
     - Receives Caller ID information from a YAC server
     - Creates a CID Message and sends it to the NCID server
     - telephone line identifier can be set in yac2ncid.conf
@@ -117,17 +123,25 @@ man pages:
 Instructions for using ncidd are in the man page: ncidd.8
 Instructions for configuring ncidd are in the man page: ncidd.conf.5
 Instructions for configuring ncidd aliases are in the man page: ncidd.alias.5
+
 Instructions for using ncid are in the man page: ncid.1
 Instructions for configuring ncid are in the man page: ncid.conf.5
-Instructions for using ncidsip are in the man page: ncidsip.8
-Instructions for using ncidtools are in the man page: ncidtools.1
+
 Instructions for using ncidmodules are in the man page: ncidmodules.1
 Instructions for configuring ncidmodules are in the man page: ncidmodules.conf.5
-Instructions for using ncidrotate are in the man page: ncidrotate.1
+
+Instructions for using ncid2ncid are in the man page: ncid2ncid.1
+Instructions for configuring ncid2ncid are in the man page: ncid2ncid.conf.5
+
 Instructions for using sip2ncid are in the man page: sip2ncid.8
 Instructions for configuring sip2ncid are in the man page: sip2ncid.conf.5
+
 Instructions for using yac2ncid are in the man page: yac2ncid.1
 Instructions for configuring yac2ncid are in the man page: yac2ncid.conf.5
+
+Instructions for using ncidrotate are in the man page: ncidrotate.1
+
+Instructions for using ncidtools are in the man page: ncidtools.1
 
 Formatted man pages are text files and html files. They are created in the
 man directory after a "make mandir" in the top level directory, or a "make"
@@ -140,6 +154,7 @@ The distributed configuration files are:
     ncidsip.conf
     ncidrotate.conf
     ncidmodules.conf
+    ncid2ncid.conf
     sip2ncid.conf
     yac2ncid.conf
 

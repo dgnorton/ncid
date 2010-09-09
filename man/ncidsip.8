@@ -33,7 +33,7 @@ The configuration file for \fIncidsip\fR is /etc/ncid/ncidsip.conf.
 .SH "OPTIONS"
 .TP
 .B -s <[host][:port]> | --sip=<[host][:port]>
-Specifies the hostname of the SIP devie to snoop.  You may also specify
+Specifies the hostname of the SIP device to snoop.  You may also specify
 the UDP port by suffixing the hostname with :<port>, or if no hostname
 is wanted, just :<port>.  If you do not specify a host, it defaults to
 the network interface.  If you do not specify a port, it defaults to
@@ -48,11 +48,11 @@ port 3333 on "localhost".
 .B -i <interface> | --interface=<interface>
 Specifies the network interface to snoop on.  If this is not specified
 then libpcap will pick a network interface.  This will generally be
-the first ethernet interface found.
+the first Ethernet interface found.
 .TP
 .B -p <filename> | --pidfile=<filename>
 Specifies the pidfile name to write.
-Set to \fI/var/run/ncidsip.pid\fB in a rc or init script when used as a service.
+Set to \fI/var/run/ncidsip.pid\fR in a rc or init script when used as a service.
 The program will still run if it does not have permission to write a pidfile.
 There is no default, if pidfile is not set, no pid file will be used.
 .TP

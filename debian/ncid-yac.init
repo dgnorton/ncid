@@ -25,7 +25,7 @@ SCRIPTNAME=/etc/init.d/$MODULE
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf
 
-DAEMON_ARGS="--no-gui -p $PIDFILE -C -P $MODULE"
+DAEMON_ARGS="--no-gui -p $PIDFILE -P $MODULE"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0

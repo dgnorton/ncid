@@ -26,7 +26,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 [ -f $ConfigFile ] && . $ConfigFile
 
 command=/usr/local/bin/$name
-command_args="--no-gui -p $pidfile -C -P $module &"
+command_args="--no-gui -p $pidfile -P $module &"
 procname=/usr/local/bin/tclsh8.4
 
 load_rc_config $name

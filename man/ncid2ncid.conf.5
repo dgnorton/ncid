@@ -1,0 +1,46 @@
+.\" %W% %G%
+.TH SIP2NCID.CONF 5
+.SH NAME
+.B ncid2ncid.conf
+- ncid2ncid configuration file
+.SH DESCRIPTION
+The \fIncid2ncid.conf\fR file contains the configuration information for
+\fIncid2ncid\fR, the NCID to NCID gateway.
+.PP
+The \fIncid2ncid.conf\fR file is used to set options.
+Options are set on a command line.
+A line is broken up into words.
+A word is either a string of non-blank characters, everything
+between double quotes, or an equal sign.
+.PP
+The \fIncid2ncid.conf\fR file understands 5 types of lines:
+.TP
+.B blank line
+skip it
+.TP
+.B comment line, beginning with '#'
+skip it
+.TP
+.B command lines, beginning with 'set'
+set ITEM = VALUE [ITEM = VALUE] [...]
+.RS 11
+where ITEM = pidfile, verbose, tohost, toport, fromhost?, fromport?
+(? is a digit sequence number)
+.RE
+.SH EXAMPLES
+Set the verbose level to 2
+.RS 0
+	set verbose = 2
+.RE
+.PP
+Set the first sending host to 192.168.5.10 using the default port
+.RS 0
+	set fromhost1 = 192.168.5.10
+.RE
+.PP
+Set the second sending host to ncidhost.home using the default port
+.RS 0
+	set fromhost2 = ncidhost.home:3334
+.RE
+.SH SEE ALSO
+ncid2ncid.1, ncidd.8, ncidd.conf.5

@@ -22,16 +22,16 @@ int conferr;
 char *config = CONFIG;
 
 struct setword setword[] = {
-   /* char *word; int type; char **buf;    int *value;    int min;   int max */
-   {"interface",  WORDSTR,  &device,       0,             0,         0},
-   {"ncidhost",   WORDSTR,  &ncidhost,     0,             0,         0},
-   {"ncidport",   WORDNUM,  0,             &ncidport,     0,         0},
-   {"pidfile",    WORDSTR,  &pidfile,      0,             0,         0},
-   {"siphost",    WORDSTR,  &siphost,      0,             0,         0},
-   {"sipport",    WORDNUM,  0,             &sipport,      0,         0},
-   {"verbose",    WORDNUM,  0,             &verbose,      1,         MAXLEVEL},
-   {"warn",       WORDNUM,  0,             &warn,         OFF,       ON},
-   {0,            0,        0,             0,             0,         0}
+   /* char *word; int type; char **buf; int *value; int min; int max */
+   {"interface",  WORDSTR,  &device,    0,          0,       0},
+   {"ncidhost",   WORDSTR,  &ncidhost,  0,          0,       0},
+   {"ncidport",   WORDNUM,  0,          &ncidport,  0,       0},
+   {"pidfile",    WORDSTR,  &pidfile,   0,          0,       0},
+   {"siphost",    WORDSTR,  &siphost,   0,          0,       0},
+   {"sipport",    WORDNUM,  0,          &sipport,   0,       0},
+   {"verbose",    WORDNUM,  0,          &verbose,   1,       MAXLEVEL - 1},
+   {"warn",       WORDNUM,  0,          &warn,      OFF,     ON},
+   {0,            0,        0,          0,          0,       0}
 };
 
 /*

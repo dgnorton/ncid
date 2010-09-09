@@ -28,7 +28,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 [ -f $ConfigFile ] && . $ConfigFile
 
 command=/usr/local/bin/$name
-command_args="--no-gui -p $pidfile -C -P $module $ringopt $pageopt &"
+command_args="--no-gui -p $pidfile -P $module $ringopt $pageopt &"
 procname=/usr/local/bin/tclsh8.4
 
 load_rc_config $name

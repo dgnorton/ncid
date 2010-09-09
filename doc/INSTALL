@@ -1,6 +1,6 @@
 NCID - Network Caller ID Install
 
-Last edited: Wed Feb 10, 2010
+Last edited: Mon Jul 13, 2010
 
 If using sip2ncid, see Setup-ncidsip
 If using ncidsip, see Setup-ncidsip
@@ -90,9 +90,15 @@ TEST USING A MODEM:
     Uncomment the following line in ncidd.conf:
         # set sttyclocal = 1
 
-    If you only see RING for each ring, the modem does not support
-    Caller ID.  You should see the Caller ID lines between the
-    first and second RING.
+    You should see the Caller ID lines between the first and second RING.
+
+    If Caller ID is net received from the modem, and if 'gencid' is not set
+    you will only see 'RING' for each ring.  If 'gencid' is set (the default)
+    you will get a CID at RING number 2: 07/13/2010 15:21  RING No Caller ID
+    This indicates one of three problems:
+        - The modem is not set for Caller ID
+        - The modem does not support Caller ID
+        - The Telco is not providing Caller ID
 
 	Once you solve the problems, restart ncidd normally
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2006, 2008, 2009
+ * Copyright (c) 2005, 2006, 2008, 2009, 2010
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddalias.c is free software; you can redistribute it and/or modify
@@ -20,14 +20,15 @@
 #include "ncidd.h"
 
 char *cidalias = CIDALIAS;
-char *cpy2mem();
 
 struct alias alias[ALIASSIZE];
 
 extern int errorStatus, configError();
 extern char *getWord();
-int nextAlias();
-void getAlias(), setAlias();
+
+int doAlias(), nextAlias();
+char *cpy2mem();
+void getAlias(), setAlias(), rmaliases();
 
 /*
  * Process the alias file.

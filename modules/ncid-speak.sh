@@ -3,7 +3,7 @@
 # Announce the Caller ID
 # Requires festival
 
-# Last changed by jlc: Wed Sep 19, 2007
+# Last changed by jlc: Sun Aug 29, 2010
 
 # most of this program is taken from nciduser by Mace Moneta
 # requires festival: http://www.cstr.ed.ac.uk/projects/festival
@@ -14,14 +14,8 @@
 # input is 5 lines if a message was sent
 # input: \n\n\nMESSAGE\n\n
 #
-# ncid calls a external program with the "--call-prog" option
-# default program: /usr/share/ncid/ncid-speak
-#
-# ncid usage examples:
-#   ncid --call-prog
-#   ncid --no-gui --call-prog
-#   ncid --call-prog --program ncid-speak
-#   ncid --no-gui --call-prog --program ncid-speak
+# ncid usage:
+#   ncid --no-gui [--message] --program ncid-speak
 
 read CIDDATE
 read CIDTIME

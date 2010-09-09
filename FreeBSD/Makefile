@@ -1,5 +1,5 @@
-RCF     = ncidd.rc ncidsip.rc sip2ncid.rc yac2ncid.rc \
-          ncid-mythtv.rc ncid-page.rc ncid-samba.rc \
+RCF     = ncidd.rc ncidsip.rc ncid2ncid.rc sip2ncid.rc \
+          yac2ncid.rc ncid-mythtv.rc ncid-page.rc ncid-samba.rc \
           ncid-speak.rc ncid-yac.rc ncid-hangup.rc ncid-initmodem.rc
 FILES   = README.FreeBSD Makefile $(RCF)
 
@@ -30,6 +30,8 @@ distclean: clobber
 
 files: $(FILES)
 
-% : %.rc
+.SUFFIXES: .rc
+
+.rc : *.rc
 	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod +x $@

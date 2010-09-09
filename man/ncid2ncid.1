@@ -1,0 +1,145 @@
+.\" %W% %G%
+.TH NCID2NCID 8
+.SH NAME
+.B ncid2ncid
+- Multiple NCID servers to a single NCID server gateway
+.SH SYNOPSIS
+.B ncid2ncid
+[options]
+.PP
+.I Options:
+.PP
+.nf
+[-C <filename>      | --config <filename>]
+[-D                 | --debug]
+[-f <[host][:port]> | --fromhost <[host][:port>]
+[-h                 | --help]
+[-L <filename>      | --logfile <filename>]
+[-t <[host][:port]> | --tohost <[host][:port>]
+[-P <filename>      | --pidfile <filename>]
+[-u                 | --usage]
+[-V                 | --version]
+[-v <1-9>           | --verbose <1-9>]
+[-W <1/0>           | --warn <1/0>]
+.fi
+.SH DESCRIPTION
+This gateway obtains the current Caller ID or message from  one or more
+NCID servers, called sending servers, and inputs them into another
+NCID server called a receiving server.
+Line labels are used to distinguish the different phone calls.
+.PP
+There can be up to 4 sending servers, but the first sending server
+must be configured by either the command line or the configuration
+file.  The receiving server has a default and may not need to be
+configured.
+.PP
+If a sending server disconnects, the gateway will keep trying to
+reconnect until it either succeeds or is terminated.
+The gateway will send a disconnect message to the receiving server
+if a sending server disconnects,  and it will send a reconnect
+message to the receiving server if it reconnects.
+.PP
+The log file is /var/log/ncid2ncid.log.
+.PP
+If a pid file is given, usually \fI/var/run/ncid2ncid.pid\fR, then
+a pid file used to store the process ID.
+.PP
+The configuration file for \fIncid2ncid\fR is /etc/ncid/ncid2ncid.conf.
+.SH "OPTIONS"
+.TP
+.B -C <filename> | --config <filename>
+Configuration file.
+.br
+Default: /etc/ncid/ncid2ncid.conf
+.TP
+.B -D | --debug
+Debug mode, \fIncid2ncid\fR stays attached to the terminal and displays
+all messages that go into the log file.
+.TP
+.B -f <fromhost[:fromport]>
+Specifies the first sending NCID server.
+It sends the Caller ID and messages to another NCID server.
+Port may be specified by suffixing the hostname with :<port>.
+Input must be <host> or <host:port>.
+.br
+Default: :3333
+.TP
+.B -h | --help
+Prints this help
+.TP
+.B -L <filename> | --logfile=<filename>
+Specifies the logfile name to use.  The logfile must exist before it is used.
+.br
+Default: /var/log/ncid2ncid.log
+.TP
+.B -t <[host][:port]> | --ncid=<[host][:port]>
+Specifies the receiving NCID server.  It receives Caller ID and messages
+from another NCID server.  Port may be specified by suffixing the
+hostname with :<port>.  Input can be <host> or <:port> or <host:port>
+.br
+Default: localhost:3333
+.TP
+.B -P <filename> | --pidfile=<filename>
+Specifies the pidfile name to write.
+Set to \fI/var/run/ncidd.pid\fR in a rc or init script when used as a service.
+The program will still run if it does not have permission to write a pidfile.
+There is no default.  If pidfile is not set, no pid file will be used.
+Prints this help
+.TP
+.B -V | --version
+Displays the version
+.TP
+.B -v <1-9> | --verbose <1-9>
+Verbose mode. Send information into the logfile and display information
+for the -D  option.  Set a higher number for more information.
+LEVEL2 will give a warning every time it fails to connect with a NCID server.
+LEVEL8 will print the logfiles from every server, and
+LEVEL9 will add the socket of the received logfile.
+.br
+To debug, try: verbose = 2
+.br
+Default: verbose = 1
+.TP
+.B -W <0/1> | --warn <0/1>
+Send server disconnected or server reconnected messages to clients.
+.br
+Default: warn = 0
+.SH EXAMPLES
+Forward Caller ID information or message from localhost:3334 to localhost:3333
+.RS 0
+    ncid2ncid --fromhost localhost:3334
+.RE
+.PP
+Forward Caller ID information or message from localhost:3334 to localhost:3333
+in debug mode using verbose level 1.
+.RS 0
+    ncid2ncid -D -f localhost:3334
+.RE
+.PP
+Forward Caller ID information or message from localhost:3334 to localhost:3333
+in debug mode and display all logfiles.
+.RS 0
+    ncid2ncid -Dv8 -f localhost:3334
+.RE
+.SH FILES
+/etc/ncid/ncid2ncid.conf
+.br
+/var/run/ncid2ncid.pid
+.br
+/var/log/ncid2ncid.log
+.fi
+.SH DIAGNOSTICS
+.nf
+    Return Code    Meaning
+    -----------    -------
+         0         Successful
+      -100         Usage
+      -101         Invalid port number
+      -104         Configuration file error
+      -107         Invalid number
+      -108         Missing sending host 1
+      -110         PID file already exists
+        -?         System error
+.fi
+.SH SEE ALSO
+ncid2ncid.conf.5 ncidd.8, ncidd.conf.5 ncidd.alias.5

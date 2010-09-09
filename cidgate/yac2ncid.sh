@@ -11,6 +11,8 @@
 ## Version: 1.0a (6/26/2007)
 ##
 ## Version: 1.0.[123] (5/29/2008) by John L. Chmielewski
+## Copyright (c) 2010
+## Last changed on Sun Aug 15, 2010 by jlc
 ##
 VERSION="(NCID) XxXxX"
 
@@ -139,7 +141,8 @@ procMSG(){
 		ncidname=$(echo ${NCIDMSG} | cut -c6- | cut -d'~' -f1);
 		ncidnumber=$(echo ${NCIDMSG} | cut -s -d'~' -f2-);
 		NCIDMSG="$(printf 'CALL: ###DATE%s...LINE%s...NMBR%s...NAME%s+++' "${nciddate:-01010000}" "${LINE:--}" "${ncidnumber:-unlisted}" "${ncidname:-noname}")"
-
+    elif ! isblank "${*}"
+        NCIDMSG="MSG: ${NCIDMSG}"
 	fi	
   	echo ${NCIDMSG} | send2ncid
 }

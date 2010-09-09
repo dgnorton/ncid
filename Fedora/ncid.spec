@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.78
+Version:    0.79
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -29,12 +29,12 @@ BuildArch:  noarch
 Requires:   tcl, tk, mailx, nc, minicom
 
 %description client
-The ncid-client obtains the Caller ID from the ncid-server and normally
+The NCID client obtains the Caller ID from the NCID server and normally
 displays it in a GUI window.  It can also display the Called ID in a
 terminal window or, using a output module, format the output and send it
 to another program.
 
-This package contains the NCID client with the initmodem hangup, page,
+This package contains the NCID client with initmodem, hangup, page,
 skel, tivo, and yac output modules.
 
 %package mythtv
@@ -102,10 +102,11 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %defattr(-,root,root)
 %doc README VERSION doc
 %doc cidgate/README.Gateways Fedora/README.Fedora
-%doc scripts/README.logfile tools/README.tools
+%doc scripts/README.scripts tools/README.tools
 /usr/bin/cidcall
 /usr/bin/cidalias
 /usr/bin/cidupdate
+/usr/bin/ncid2ncid
 /usr/bin/yac2ncid
 /usr/sbin/ncidd
 /usr/sbin/ncidsip
@@ -117,17 +118,21 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %config(noreplace) /etc/ncid/ncidd.alias
 %config(noreplace) /etc/ncid/ncidrotate.conf
 %config(noreplace) /etc/ncid/ncidsip.conf
+%config(noreplace) /etc/ncid/ncid2ncid.conf
 %config(noreplace) /etc/ncid/sip2ncid.conf
 %config(noreplace) /etc/ncid/yac2ncid.conf
 %config(noreplace) /etc/logrotate.d/ncid
 %_initrddir/ncidd
 %_initrddir/ncidsip
+%_initrddir/ncid2ncid
 %_initrddir/sip2ncid
 %_initrddir/yac2ncid
 %{_mandir}/man1/ncidrotate.1*
 %{_mandir}/man1/ncidtools.1*
+%{_mandir}/man1/ncid2ncid.1*
 %{_mandir}/man1/yac2ncid.1*
 %{_mandir}/man5/ncidd.conf.5*
+%{_mandir}/man5/ncid2ncid.conf.5*
 %{_mandir}/man5/sip2ncid.conf.5*
 %{_mandir}/man5/yac2ncid.conf.5*
 %{_mandir}/man5/ncidd.alias.5*
@@ -294,6 +299,13 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+
+* Thu Aug 26 2010 John Chmielewski <jlc@users.sourceforge.net> 0.79-1
+- added line: /usr/bin/ncid2ncid
+- added line: %config(noreplace) /etc/ncid/ncid2ncid.conf
+- added line: %_initrddir/ncid2ncid
+- added line: %{_mandir}/man1/ncid2ncid.1*
+- added line: %{_mandir}/man5/ncid2ncid.conf.5*
 
 * Fri May 14 2010 John Chmielewski <jlc@users.sourceforge.net> 0.78-1
 - New release

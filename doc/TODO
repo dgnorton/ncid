@@ -1,6 +1,6 @@
 The current TODO list (in no particular order)
 
-Last modified: Sun Sep 13, 2009
+Last modified: Thu Sep 9, 2010
 
     - Add graphics to view image of who is calling.
     - Add ncid.exe to the Windows tray.
@@ -9,7 +9,6 @@ Last modified: Sun Sep 13, 2009
     - Add a iax2 gateway
     - Add a GUI configuration program for the server, client, modules,
       and gateways.
-    - Add a Gnome applet client
 
 The MAYBE TODO list (in no particular order)
 

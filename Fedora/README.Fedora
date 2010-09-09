@@ -12,7 +12,9 @@ Fedora service files:
   ncid-speak.init     - service file for ncid with ncid-speak output module
   ncid-yac.init       - service file for ncid with ncid-yac output module
   ncidd.init          - service file for ncidd
-  sip2ncid.init       - service file for yac2ncid
+  ncidsip.init        - service file for ncidsip
+  ncid2ncid.init      - service file for ncid2ncid
+  sip2ncid.init       - service file for sip2ncid
   yac2ncid.init       - service file for yac2ncid
 
 See Doc/INSTALL-Fedora for install instructions

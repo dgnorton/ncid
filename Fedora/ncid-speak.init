@@ -28,7 +28,7 @@ lockfile=/var/lock/subsys/$module
 speakopt="-M"
 
 [ -f $config ] && . $config
-args="--no-gui --pidfile $pidfile -C -P $module $speakopt"
+args="--no-gui --pidfile $pidfile -P $module $speakopt"
 
 start() {
     [ -x $exec ] || exit 5

@@ -66,11 +66,12 @@ binary-arch:    checkroot build
 	cp -a debian/changelog debian/tmp-ncid/$(docdir)/changelog.Debian
 	cp -a README VERSION doc debian/README.Debian debian/tmp-ncid/$(docdir)
 	cp -a cidgate/README.Gateways debian/tmp/$(docdir)
-	cp -a scripts/README.logfile tools/README.tools \
+	cp -a scripts/README.scripts tools/README.tools \
               debian/tmp-ncid/$(docdir)
 	rm -f debian/tmp-ncid/$(docdir)/doc/CHANGES
 	dpkg-shlibdeps debian/tmp-ncid/usr/sbin/ncidd \
-                       debian/tmp-ncid/usr/sbin/sip2ncid
+                   debian/tmp-ncid/usr/sbin/ncid2ncid \
+                   debian/tmp-ncid/usr/sbin/sip2ncid
 
         # NCID client and base output modules
 	install -m 755 debian/postinst debian/tmp-client/DEBIAN

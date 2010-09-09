@@ -34,7 +34,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 # source config file
 [ -f $ConfigFile ] && . $ConfigFile
 
-DAEMON_ARGS="--no-gui -p $PIDFILE -C -P $MODULE"
+DAEMON_ARGS="--no-gui -p $PIDFILE -P $MODULE"
 
 # Load the VERBOSE setting and other rcS variables
 [ -f /etc/default/rcS ] && . /etc/default/rcS

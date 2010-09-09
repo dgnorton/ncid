@@ -15,7 +15,7 @@ information to the  NCID clients.
 It is important to understand that to run YAC server with NCID
 clients you must run YAC2NCID gateway as well as NCID server.
 .PP
-The configuration file for \fIncid\fR is \fI/etc/ncid/ncid.conf\fR.
+The configuration file for \fIyac2ncid\fR is \fI/etc/ncid/yac2ncid.conf\fR.
 It may be located in same directory as the script, or in the
 \fIetc\fR directory, or in NCID default configuration directory.
 Read the comments in the config file for more details.
@@ -30,10 +30,10 @@ Configure the YAC server with IP address of the box running
 .PP
 .B YAC2NCID
 relies on netcat binary (nc). As there are multiple implementations of
-this binary in existence, the script will try to autodetect the options
+this binary in existence, the script will try to auto detect the options
 to use. If script is unable to properly detect the version of nc, set
-NETCAT_TYPE to CUSTOM in the config file and set custom params to match
-your version.
+NETCAT_TYPE to CUSTOM in the config file and set custom parameters to
+match your version.
 .PP
 There is also a client output module called \fIncid-yac\fR.  It sends
 the NCID CID information to YAC clients.

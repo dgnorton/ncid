@@ -27,7 +27,7 @@ pidfile=/var/run/$module.pid
 lockfile=/var/lock/subsys/$module
 
 [ -f $config ] && . $config
-args="--no-gui --pidfile $pidfile -C -P $module"
+args="--no-gui --pidfile $pidfile -P $module"
 
 start() {
     [ -x $exec ] || exit 5

@@ -104,6 +104,8 @@ Default: display CID using a GUI, except if called tivocid
 .TP
 .B --call-prog | -C
 Output the Caller ID information to a external program or output module.
+Not needed when the "--program | -P" option is used.  This option is
+depreciated and should not be used anymore.
 .br
 Default: does not call a external program unless name is tivocid or tivoncid
 .TP
@@ -121,18 +123,17 @@ Configure ncid to to ignore the close window button.
 .TP
 .B --pidfile | -p
 Name of PID file to create.
-Set to \fI/var/run/ncid.pid\fB in a rc or init script when used as a service.
-Set to \fI/var/run/OUTPUTMODULE.pid\fB in a rc or init script when used as
+Set to \fI/var/run/ncid.pid\fR in a rc or init script when used as a service.
+Set to \fI/var/run/OUTPUTMODULE.pid\fR in a rc or init script when used as
 a service and when using a output module.
 There is no default.  If pidfile is not set, no pid file will be used.
 .TP
 .B --program PROGRAM | -P PROGRAM
-Name of the output module (program) to use.  Some output modules are
-ncid-kpopup, ncid-page, and ncid-speak.
+Name of the output module (program) to use.  The selected module is sent
+the Caller ID information.  A message is also sent, if the message option
+is enabled.
 .br
 Default PATH: /usr/share/ncid
-.br
-Default PROGRAM: ncid-speak
 .TP
 .B --raw | -R
 display data received from the CID Server
@@ -146,9 +147,9 @@ For modems that indicate RING, count can be: 0 2 3 4 5 6 7 8 9
 .br
 For VoIP, using a SIP gateway, count can be: -2 -1
 .br
-A count of -1 incdicates a hangup before answer.
+A count of -1 indicates a hangup before answer.
 .br
-A count of -2 incdicates a hangup after answer.
+A count of -2 indicates a hangup after answer.
 .br
 Default: output module called as soon as CID received
 .TP
@@ -193,19 +194,16 @@ Default: 3333
 ncid --no-gui tardis.drwho.home
 
 # only speak Caller ID
-ncid --no-gui --call-prog --program ncid-speak
+ncid --no-gui --program ncid-speak
 
 # send CID output to GUI and speak it
-ncid --call-prog --program /usr/local/bin/ncid-speak
+ncid --program /usr/local/bin/ncid-speak
 
 # send CID output to a cell phone after third ring
-ncid --no-gui --call-prog --program ncid-page --ring 3
+ncid --no-gui --program ncid-page --ring 3
 
 # send CID output to a cell phone on hangup before answer
-ncid --no-gui --call-prog --program ncid-page --ring -1
-
-# indicate ring on a popup module as a message
-ncid --no-gui --nocid --message --call-prog --program ncid-kpopup
+ncid --no-gui --program ncid-page --ring -1
 
 # run ncid on a TiVo using out2osd, server on remote host
 tivocid 192.168.0.1

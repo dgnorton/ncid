@@ -1,6 +1,7 @@
-MANSRC1 = ncid.1 ncidmodules.1 ncidrotate.1 ncidtools.1 yac2ncid.1
+MANSRC1 = ncid.1 ncidmodules.1 ncidrotate.1 ncidtools.1 ncid2ncid.1 yac2ncid.1
 MANSRC5 = ncid.conf.5 ncidd.conf.5 ncidd.alias.5 ncidmodules.conf.5 \
-          ncidrotate.conf.5 ncidsip.conf.5 sip2ncid.conf.5 yac2ncid.conf.5
+          ncidrotate.conf.5 ncidsip.conf.5 ncid2ncid.conf.5 sip2ncid.conf.5 \
+          yac2ncid.conf.5
 MANSRC8 = ncidd.8 ncidsip.8 sip2ncid.8
 MANSRC  = $(MANSRC1) $(MANSRC5) $(MANSRC8)
 FILES   = Makefile $(MANSRC)
@@ -50,20 +51,22 @@ distclean: clobber
 
 files: $(FILES)
 
-%.1.txt : %.1
+.SUFFIXES: .1 .5 .8 .1.txt .5.txt .8.txt .1.html .5.html .8.html
+
+.1.1.txt : *.1
 	nroff -man $< | col -bx > $@
 
-%.5.txt : %.5
+.5.5.txt : *.5
 	nroff -man $< | col -bx > $@
 
-%.8.txt : %.8
+.8.8.txt : *.8
 	nroff -man $< | col -bx > $@
 
-%.1.html : %.1
+.1.1.html : *.1
 	man2html $< > $@
 
-%.5.html : %.5
+.5.5.html : *.5
 	man2html $< > $@
 
-%.8.html : %.8
+.8.8.html : *.8
 	man2html $< > $@

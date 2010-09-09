@@ -2,18 +2,25 @@
 NCIDD server verbose levels.  Higher levels include lower levels.
 ----------------------------------------------------------------
 
-Last edited by jlc on Thu Oct 22, 2009
+Last edited by jlc on Fri Aug 13, 2010
 
 LEVEL9:
         (can only be set by the command line)
         show poll() revents flag
 
-LEVEL8: not used
-LEVEL7: not used
-LEVEL6: not used
+LEVEL8:
+        (can only be set by the command line)
+        print alias table
+        indicate client sent empty line
+
+LEVEL7:
+        not used
+
+LEVEL6:
+        not used
 
 LEVEL5:
-        print alias table
+        not used
 
 LEVEL4:
         show optional files failed to open
@@ -27,7 +34,6 @@ LEVEL3:
         incidate Gateway sent CALLINFO data
         indicate Client sent text message
         indicate client sent unknown data
-        indicate client sent empty line
         show call data input
         show CID info line
         show CID line
@@ -60,7 +66,9 @@ LEVEL1:
         show name and location of TTY lockfile
         indicate TTY port control signals enabled or disabled
         indicate CallerID from serial device and maybe Gateway
-        indicate CallerID from AT Modem and maybe Gateway
+        indicate CallerID from AT Modem and possible Gateway
+            indicate Handles modem calls without Caller ID
+            indicate Does not handle modem calls without Caller ID
         indicate CallerID from Gateway
         show network port
         indicate not using PID file if no '-P' option
@@ -78,7 +86,8 @@ LEVEL1:
         indicate serial device hung up and terminated with date and time
         indicate device error and terminated with date and time
         indicate poll error
-        indicate Invalid Request for file descriptor
+        indicate Invalid Request, removed client
+        indicate Write event not configured, removed client
         indecate device or modem read error
         indicate Device returns no data, Terminated with date and time
         indicate network connect error

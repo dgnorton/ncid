@@ -2,7 +2,7 @@
 
 # hangup a call based on a number or name
 
-# last changed by jlc on Sat Apr 3, 2010
+# last changed by jlc on Sun Aug 29, 2010
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -11,12 +11,9 @@
 # input: \n\n\nMESSAGE\n\n
 # Message will be in $CIDNAME
 #
-# ncid calls a external program with the "--call-prog" option
-# default program: /usr/share/ncid/ncid-speak
-#
 # ncid usage:
 # do not give option for a message, this module is only for calls
-#   ncid --no-gui --call-prog --program ncid-hangup
+#   ncid --no-gui --program ncid-hangup
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf

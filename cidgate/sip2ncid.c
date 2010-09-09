@@ -36,9 +36,10 @@ pcap_t *descr;
 pcap_dumper_t *dumpfile;
 struct sigaction sigact;
 
-int doPID(), getOptions(), pcapListDevs(), parseLine(), getCallID(), rmCallID();
-void cleanup(), doPCAP(), exitExit(), sigdetect();
-void errorExit(), socketConnect();
+int doPID(), getOptions(), pcapListDevs(), parseLine(), getCallID(),
+    rmCallID(), socketRead();
+void cleanup(), doPCAP(), sigdetect(), errorExit(), socketConnect(),
+     processPackets();
 char *strdate(), *inet_ntoa(), *strmatch();
 #ifndef __CYGWIN__
     extern char *strsignal();
@@ -46,7 +47,7 @@ char *strdate(), *inet_ntoa(), *strmatch();
 
 int main(int argc, char *argv[])
 {
-    int argind;
+    int argind, errnum = 0;
     char msgbuf[BUFSIZ];
     struct stat statbuf;
 
@@ -57,40 +58,64 @@ int main(int argc, char *argv[])
     /* process options from the command line */
     argind = getOptions(argc, argv);
 
+    /* should not be any arguments */
+    if (argc - argind != 0)
+    {
+        fprintf(stderr, NOOPT, name, argv[argind]);
+        fprintf(stderr, USAGE, name);
+        exit(0);
+    }
+
     if (listdevs)
     {
         pcapListDevs();
         exit(0);
     }
 
-    /* if not in test mode */
     if (!test){
-        /* create or open existing logfile */
-        if ((logptr = fopen(logfile, "a")) == NULL)
-        {
-            sprintf(msgbuf, "%s: %s\n", logfile, strerror(errno));
-            logMsg(LEVEL1, msgbuf);
-        }
+        /*
+         * not in test mode, create or open existing logfile
+         */
+        logptr = fopen(logfile, "a");
+        errnum = errno;
     }
 
-    sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(WITHYEAR),
+    sprintf(msgbuf, "Started: %s\nGateway: %s %s\n",strdate(WITHYEAR),
             name, VERSION);
     logMsg(LEVEL1, msgbuf);
 
-    /* if in test mode */
-    if (test)
+    if (!test)
     {
-        /* test mode is also debug mode */
+        /* not in test mode, check status of logfile */
+        if (logptr)
+        {
+            /* logfile opened */
+            sprintf(msgbuf, "logfile: %s\n", logfile);
+            logMsg(LEVEL1, msgbuf);
+        }
+        else
+        {
+            /* logfile open failed */
+            sprintf(msgbuf, "%s: %s\n", logfile, strerror(errnum));
+            logMsg(LEVEL1, msgbuf);
+        }
+
+        if (debug)
+        {
+            /* debug mode */
+            sprintf(msgbuf, "Debug mode\n");
+            logMsg(LEVEL1, msgbuf);
+        }
+    }
+    else
+    {
+        /*
+         * in test mode, test mode is also debug mode
+         */
         debug = 1;
 
         sprintf(msgbuf, "%s mode\nServer: %s %s\n",
                 readfile ? "Dump read" : "Test", name, VERSION);
-        logMsg(LEVEL1, msgbuf);
-    }
-    /* if in debug mode */
-    else if (debug)
-    {
-        sprintf(msgbuf, "Debug mode\n");
         logMsg(LEVEL1, msgbuf);
     }
 
@@ -114,7 +139,8 @@ int main(int argc, char *argv[])
     sprintf(msgbuf, "Verbose level: %d\n", verbose);
     logMsg(LEVEL1, msgbuf);
 
-    sprintf(msgbuf, "Send clients warning meaaages for No SIP packets? %s\n",
+    sprintf(msgbuf,
+        "Warn clients: 'No SIP packets' & 'SIP packets returned' messages? %s\n",
             warn ? "YES" : "NO");
     logMsg(LEVEL1, msgbuf);
 
@@ -194,7 +220,7 @@ int getOptions(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "hi:ln:r:s:tv:w:C:DL:P:TVW",
+    while ((c = getopt_long (argc, argv, "hi:ln:r:s:tv:w:C:DL:P:TVW:",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -287,7 +313,7 @@ int getOptions(int argc, char *argv[])
             case 'V': /* version */
                 fprintf(stderr, SHOWVER, name, VERSION);
                 exit(0);
-            case 'W':
+            case 'W': /* warn users */
                 warn = atoi(optarg);
                 if (strlen(optarg) != 1 ||
                     (!(warn == 0 && *optarg == '0') && warn != 1))
@@ -423,7 +449,7 @@ void socketConnect(int fatal)
     {
         if (fatal) errorExit(-1, "NCID server", 0);
         sprintf(msgbuf, "Warning: could not connect to the NCID server\n");
-        logMsg(LEVEL1, msgbuf);
+        logMsg(LEVEL2, msgbuf);
         /* if connect fails, close socket */
         close(sd);
         sd = 0;
@@ -440,7 +466,7 @@ int socketRead()
     if ((num = read(sd, msgbuf, BUFSIZ-1)) > 0)
     {
         msgbuf[num] = '\0';
-        logMsg(LEVEL5, msgbuf);
+        logMsg(LEVEL9, msgbuf);
     }
     return(num);
 }
@@ -494,7 +520,8 @@ void processPackets(u_char *args,
     const struct udphdr *udp;               /* UDP Header */
     const char   *pdata;                    /* Packet Data */
 
-    int size_ip, size_udp, size_pdata, cnt, outcall, pos, retval;
+    int size_ip, size_udp, size_pdata, cnt, pos, retval;
+    int outcall = 0;
 
     char sipbuf[SIPSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ], warnmsg[BUFSIZ],
          tonumber[NUMSIZ], fromnumber[NUMSIZ], callid[CIDSIZ];
@@ -508,7 +535,7 @@ void processPackets(u_char *args,
     {
         /* log only one SIP packets returned message */
         sprintf(msgbuf, "SIP packets returned: port %d %s\n",
-                sipport, strdate(ONLYTIME));
+                sipport, strdate(WITHYEAR));
         logMsg(LEVEL1, msgbuf);
 
         if (warn && sd)
@@ -661,8 +688,12 @@ void processPackets(u_char *args,
                 /* Get the unique Call-ID */
                 getCallID(sipbuf, callid, sizeof(callid), INVITE);
 
-                /* Ignore a Request Terminated packet */
-                if (strmatch(sipbuf, SIPVER, REQUEST))
+                /*
+                 * Ignore a Request Terminated packet
+                 * Ignore a Request Cancelled packet
+                 */
+                if (strmatch(sipbuf, SIPVER, REQTERM) ||
+                    strmatch(sipbuf, SIPVER, REQCAN))
                 {
                     /*
                      * Call-ID should already have been cleared,
@@ -706,9 +737,7 @@ void processPackets(u_char *args,
                 if (parseLine(sipbuf, INVITE, TO,
                     (char *) 0, (char *) &number) == 0)
                 {
-                    if (isdigit(*number))
-                        strcpy(tonumber, number);
-                    else strcpy(tonumber, "????");
+                    strcpy(tonumber, number);
                 }
 
                /*
@@ -902,11 +931,16 @@ void processPackets(u_char *args,
             else if (strmatch(sipbuf, CSEQ, REGISTER))
             {
                 /*
-                 * Get the telephone line number from FROM line
+                 * Get the telephone line number from CONTACT line
                  *
-                 * From: [["]NAME["]] <sip:NMBR@IP_ADDR:PORT>;expires=TIME
+                 * Contact: ["]NAME["]] <sip:NMBR@IP_ADDR:PORT>;expires=TIME
+                 *
+                 * Normally the contact line is the same as the from line
+                 * but on a PBX the from line is the extension and the
+                 * contact line is the number called.  Extensions need to
+                 * be handled properly.
                  */
-                if (parseLine(sipbuf, REGISTER, FROM, (char *) 0,
+                if (parseLine(sipbuf, REGISTER, CONTACT, (char *) 0,
                     (char *) &number) == 0)
                 {
                     /* add phone number if not seen before */
@@ -1234,7 +1268,7 @@ void doPCAP()
                     /* log only one SIP packet timeout message */
                     sprintf(msgbuf,
                             "No SIP packets in %d seconds: port %d %s\n",
-                            PKTWAIT, sipport, strdate(ONLYTIME));
+                            PKTWAIT, sipport, strdate(WITHYEAR));
                     logMsg(LEVEL1, msgbuf);
                     msgsent |= 0x1;
                     if (warn && sd)
@@ -1267,8 +1301,8 @@ void doPCAP()
  */
 void logMsg(int level, char *message)
 {
-    /* write to stderr in debug mode */
-    if (debug && verbose >= level) fputs(message, stderr);
+    /* write to stdout in debug mode */
+    if (debug && verbose >= level) fputs(message, stdout);
 
     /* write to logfile */
     if (logptr && verbose >= level)

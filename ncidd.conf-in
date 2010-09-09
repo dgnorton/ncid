@@ -28,7 +28,8 @@
 ##########################
 
 # Set the verbose level
-# The default value is 1, the range is 1-8
+# The default value is 1, the range is 1-7
+# verbose levels 8 and 9 are only for the command line
 # set verbose = 3
 
 ############################

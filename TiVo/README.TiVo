@@ -1,0 +1,15 @@
+README.TiVo
+
+startncid      - used to start ncid on a TiVo that does not have services
+
+initmodem      - used to signal ncidd to re-initialize the modem
+                 will also start ncidd if it is not running
+
+The following scripts are not useful on the TiVo and may be removed:
+    ncidsip
+    ncidrotate
+    ncidtools
+    ncid-kpopup
+    ncid-mythtv
+    ncid-samba
+    ncid-speak

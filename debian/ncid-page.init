@@ -36,7 +36,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 # source config file
 [ -f $ConfigFile ] && . $ConfigFile
 
-DAEMON_ARGS="--no-gui -p $PIDFILE -C -P $MODULE $ringopt $pageopt"
+DAEMON_ARGS="--no-gui -p $PIDFILE -P $MODULE $ringopt $pageopt"
 
 # Load the VERBOSE setting and other rcS variables
 [ -f /etc/default/rcS ] && . /etc/default/rcS

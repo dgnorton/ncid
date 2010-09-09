@@ -21,28 +21,13 @@
 #include "nciddconf.h"
 #include "nciddalias.h"
 
-#if (defined(__MACH__) || \
-     defined(__USLC__) || \
-     defined(__svr4)   || \
-     defined(_M_XENIX) || \
-     defined(__FreeBSD__))
-# include "getopt_long.h"
-#else
-# include <getopt.h>
-#endif
-
+#include <getopt.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-
-#if (defined(__MACH__))
-# include "poll.h"
-#else
-# include <sys/poll.h>
-#endif
-
+#include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
@@ -59,30 +44,32 @@
 
 #define SHOWVER     "%s %s\n"
 #define DESC        "%s - Network CallerID Server\n"
+#define NOOPT       "%s: not a option: %s\n"
 #define USAGE       "\
-Usage: %s [-A aliasfile  | --alias aliasfile]\n\
-             [-C configfile | --config configfile]\n\
-             [-c calllog    | --cidlog calllog]\n\
-             [-D            | --debug]\n\
-             [-d logfile    | --datalog logfile]\n\
-             [-e lineid     | --lineid identifier]\n\
-             [-g 0/1        | --gencid 0/1]\n\
-             [-h            | --help]\n\
-             [-I modemstr   | --initstr modemstr]\n\
-             [-i cidstr     | --initcid cidstr]\n\
-             [-L logfile    | --logfile logfile]\n\
-             [-l lockfile   | --lockfile lockfile]\n\
-             [-M MaxBytes   | --cidlogmax MaxBytes]\n\
-             [-N 0/1        | --noserial 0/1]\n\
-             [-n 0/1        | --nomodem 0/1]\n\
-             [-P pidfile    | --pidfile pidfile]\n\
-             [-p portnumber | --port portnumber]\n\
-             [-S ttyspeed   | --ttyspeed ttyspeed]\n\
-             [-s datatype   | --send cidlog|cidinfo]\n\
-             [-T 0/1        | --sttyclocal 0/1]\n\
-             [-t ttyport    | --ttyport ttyport]\n\
-             [-V            | --version]\n\
-             [-v 1-9        | --verbose 1-9]\n\
+Usage:   %s [options]\n\
+Options: [-A aliasfile  | --alias aliasfile]\n\
+         [-C configfile | --config configfile]\n\
+         [-c calllog    | --cidlog calllog]\n\
+         [-D            | --debug]\n\
+         [-d logfile    | --datalog logfile]\n\
+         [-e lineid     | --lineid identifier]\n\
+         [-g 0/1        | --gencid 0/1]\n\
+         [-h            | --help]\n\
+         [-I modemstr   | --initstr modemstr]\n\
+         [-i cidstr     | --initcid cidstr]\n\
+         [-L logfile    | --logfile logfile]\n\
+         [-l lockfile   | --lockfile lockfile]\n\
+         [-M MaxBytes   | --cidlogmax MaxBytes]\n\
+         [-N 0/1        | --noserial 0/1]\n\
+         [-n 0/1        | --nomodem 0/1]\n\
+         [-P pidfile    | --pidfile pidfile]\n\
+         [-p portnumber | --port portnumber]\n\
+         [-S ttyspeed   | --ttyspeed ttyspeed]\n\
+         [-s datatype   | --send cidlog|cidinfo]\n\
+         [-T 0/1        | --sttyclocal 0/1]\n\
+         [-t ttyport    | --ttyport ttyport]\n\
+         [-V            | --version]\n\
+         [-v 1-9        | --verbose 1-9]\n\
 "
 
 #ifndef TTYPORT

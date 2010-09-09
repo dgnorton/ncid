@@ -1,7 +1,7 @@
 #!/bin/sh
 # script to start NCID
-# Requires the "ps" command
-# Last modified  by jlc: Mon Jul 19, 2010
+# Requires the "pgrep" command
+# Last modified  by jlc: Mon Aug 30, 2010
 
 ### This script requires pgrep.  If /var/hack/bin/pgrep is not
 ### present, you can use pgrep from the tivotools distribution:
@@ -38,15 +38,16 @@
 # if argument is rmpid, remove all NCID pid files in /var/run
 [ "$1" = "rmpid" ] && rm -f /var/run/*ncid*.pid
 
-# Set the Path to include the NCID bin and sbin directories
-export PATH TZ
+export PATH TZ LD_LIBRARY_PATH
+# default PATH and LD_LIBRARY_PATH
 PATH=/bin:/sbin:/tvbin:/devbin:/var/hack:/var/hack/bin:/var/hack/sbin:/hack/bin
+LD_LIBRARY_PATH=/lib:/var/hack/lib:/hack/bin
 
-##################################
-##################################
-### Start of Customize Section ###
-##################################
-##################################
+###############################
+###############################
+### Customize Section Start ###
+###############################
+###############################
 
 ############
 ### PATH ###
@@ -55,6 +56,13 @@ PATH=/bin:/sbin:/tvbin:/devbin:/var/hack:/var/hack/bin:/var/hack/sbin:/hack/bin
 ### For example, the pgrep version in tivotools, add the directory path
 ### of tovotools to the following line and uncomment it (remove the #):
 #PATH=$PATH:
+
+#######################
+### LD_LIBRARY_PATH ###
+#######################
+### If you need to search an library directory, add it to
+### the following line and uncomment it (remove the #):
+#LD_LIBRARY_PATH=$LD_LIBRARY_PATH:
 
 #################################################
 ### The TiVo Timezone is UTC                  ###
@@ -78,9 +86,9 @@ PATH=/bin:/sbin:/tvbin:/devbin:/var/hack:/var/hack/bin:/var/hack/sbin:/hack/bin
 #TZ=AKST9AKDT,M3.2.0,M11.1.0  # ALASKAN TIME
 #TZ=HST10,M3.2.0,M11.1.0      # HAWAII-ALEUTIAN STANDARD TIME
 
-###############################
-### Start Required Programs ###
-###############################
+################################
+### Enable Programs to Start ###
+################################
 ### Remove '#' from beginning of line to enable program.
 ### Add '#' to beginning of line to disable program.
 ### Startncid will not try to start a running program.
@@ -95,15 +103,23 @@ SERVER=ncidd
 # Enable YAC Gateway if using yac to get Caller ID
 #YACGW=yac2ncid
 
-# Clients, enable only one client
-# if out2osd works on your system use tivocid
-# test2osd should work on all systems, but is not as good
+### Enable only one of the three clients
+###   if out2osd works on your system use tivocid
+###   if ncid-fly is installed try it
+###   test2osd should work on all systems, but is not as good
 #
 # Enable tivoncid client if using text2osd, disable tivocid client
 OSDCLIENT=tivoncid
 #
 # Enable tivocid client if using out2osd, disable tivoncid client
 #OSDCLIENT=tivocid
+#
+# Enable Fly Client Module if using ncid-fly to display on the TiVo
+# OSDCLIENT must not be enabled to use this output module.
+# Requires installation of ncid-fly, fly and needed libraries.
+# This is experimental.  For more information see
+# http://www.dealdatabase.com/forum/showpost.php?p=308346&postcount=75
+#FLYMOD=ncid-fly
 
 # Enable Initmodem Client Module if need to re-initialize modem
 #INITMOD=ncid-initmodem
@@ -112,11 +128,11 @@ OSDCLIENT=tivoncid
 # Must configure "YACLIST" in ncidmodules.conf
 #YACMOD=ncid-yac
 
-################################
-################################
-### End of Customize Section ###
-################################
-################################
+#############################
+#############################
+### Customize Section END ###
+#############################
+#############################
 
 ### Server
 [ -n "$SERVER" ] &&
@@ -153,7 +169,7 @@ OSDCLIENT=tivoncid
 {
     if ! pgrep -fl $INITMOD > /dev/null
     then
-        ncid --no-gui --call-prog --program $INITMOD&
+        ncid --no-gui --program $INITMOD&
     fi
 }
 
@@ -162,6 +178,15 @@ OSDCLIENT=tivoncid
 {
     if ! pgrep -fl $YACMOD > /dev/null
     then
-        ncid --no-gui --call-prog --program $YACMOD&
+        ncid --no-gui --message --program $YACMOD&
+    fi
+}
+
+### FLY Client Module
+[ -n "$FLYMOD" ] &&
+{
+    if ! pgrep -fl $FLYMOD > /dev/null
+    then
+        ncid --no-gui --message --program $FLYMOD&
     fi
 }

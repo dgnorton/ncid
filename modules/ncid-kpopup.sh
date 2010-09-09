@@ -6,7 +6,7 @@
 #
 # Created by Randy L. Rasmussen
 # Created on Thu Dec 20, 2007
-# Last modified: Sun Feb 17, 2008 by jlc
+# Last modified: Sun Aug 29, 2010 by jlc
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -14,13 +14,8 @@
 # input is 5 lines if a message was sent
 # input: \n\n\nMESSAGE\n\n
 #
-# ncid calls a external program with the "--call-prog" option
-# default program: /usr/share/ncid/ncid-speak
-#
-# ncid usage examples:
-#   ncid --call-prog --program ncid-kpopup
-#   ncid --no-gui --call-prog --program ncid-kpopup
-#   ncid --no-gui --message --call-prog --program ncid-kpopup
+# ncid usage:
+#   ncid --no-gui [--message] --program ncid-kpopup
 #
 # The following variables get set from $ConfigDir/$ConfigFile
 # These are the default values if there is no $ConfigDir/$ConfigFile

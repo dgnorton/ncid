@@ -1,0 +1,58 @@
+--------------------------------------------------------------------
+ncid2ncid server verbose levels.  Higher levels include lower levels.
+--------------------------------------------------------------------
+
+Last edited by jlc on Fir Aun 13, 2010
+LEVEL9:
+        (can only be set by the command line)
+        Indicate reading socket
+
+LEVEL8:
+        (can only be set by the command line)
+        Show all data received from all servers
+
+LEVEL7:
+        not used
+
+LEVEL6:
+        not used
+
+LEVEL5:
+        not used
+
+LEVEL4:
+        notused
+
+LEVEL3:
+        not used
+
+LEVEL2:
+        not used
+
+LEVEL1:
+        indicate cannot create or open existing logfile
+        show start date and time
+        show server version
+        indicate Debug mode
+        indicate no config file
+        indicate config file processed
+        indicate set command skipped in config file
+        show error line in config file
+        show verbose level
+        indicate not using PID file, there was no '-P' option
+        indicate found stale pidfile
+        indicate wrote pid in pidfile
+        show Receiving Host host:port
+        show server greeting line
+        show configured Sending Hosts host:port
+        show configured servers greeting line
+        indicate client disconnected
+        indicate client reconnected
+        indicate Hung Up
+        indicate Poll Error
+        indicate Removed client, invalid request
+        indicate Removed client, write event not configured
+        indicate line cannot be sent to receiving NCID server
+        indicate line sent to receiving NCID server
+        indicate removed pidfile
+        show terminated with date and time

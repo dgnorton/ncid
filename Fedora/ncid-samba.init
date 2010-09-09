@@ -28,7 +28,7 @@ lockfile=/var/lock/subsys/$module
 sambaopt="-M"
 
 [ -f $config ] && . $config
-args="--no-gui --pidfile $pidfile -C -P $module $sambaopt"
+args="--no-gui --pidfile $pidfile -P $module $sambaopt"
 
 start() {
     [ -x $exec ] || exit 5

@@ -21,8 +21,9 @@
 
 int errorStatus;
 char *cidconf = CIDCONF;
+
 char *getWord();
-int doset();
+int doConf(), findWord(), findSend();
 void doSend(), configError(), doSet();
 
 struct setword setword[] = {
@@ -43,7 +44,7 @@ struct setword setword[] = {
     {"ttyclocal",  WORDNUM,            0,         &clocal,   OFF, ON},
     {"ttyport",    WORDSTR,            &ttyport,  0,         0,    0},
     {"ttyspeed",   WORDSTR,            &TTYspeed, 0,         0,    0},
-    {"verbose",    WORDNUM,            0,         &verbose,  1,    MAXLEVEL - 1},
+    {"verbose",    WORDNUM,            0,         &verbose,  1,    MAXLEVEL - 2},
     {0,            0,                  0,         0,         0,    0}
 };
 

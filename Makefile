@@ -1,4 +1,4 @@
-# This Makefile requires GNU make
+# This Makefile requires either GNU make or BSD make
 
 ###########################################################################
 # make local             - builds for /usr/local and /var                 #
@@ -30,8 +30,8 @@
 #                          usr.local.mips-tivo.tar.bz2                    #
 #                          (x86 cross compiler for Series2)               #
 #                                                                         #
-# make freebsd           - builds for FreeBSD in /usr/local using gmake   #
-# make freebsd-install   - installs in /usr/local using gmake             #
+# make freebsd           - builds for FreeBSD in /usr/local               #
+# make freebsd-install   - installs in /usr/local                         #
 #                                                                         #
 # make mac               - builds for Macintosh OS X in /usr/local        #
 # make mac-fat           - builds universal OS X binaries in /usr/local   #
@@ -43,10 +43,10 @@
 ###########################################################################
 
 PROG         = ncidd
-SOURCE       = $(PROG).c nciddconf.c nciddalias.c getopt_long.c poll.c
+SOURCE       = $(PROG).c nciddconf.c nciddalias.c
 CLIENT       = ncid
 LOGO         = ncid.gif
-HEADER       = ncidd.h nciddconf.h nciddalias.h getopt_long.h poll.h
+HEADER       = ncidd.h nciddconf.h nciddalias.h
 ETCFILE      = ncid.conf ncidd.conf ncidd.alias
 DOCFILE      = doc/CHANGES doc/COPYING README doc/README-FreeBSD \
                doc/NCID-FORMAT doc/PROTOCOL VERSION
@@ -54,7 +54,8 @@ DIST         = ncidd.conf-in ncid.conf-in
 FILES        = Makefile $(CLIENT).sh $(DIST) $(HEADER) $(SOURCE) \
                $(DOCFILE) $(ETCFILE)
 
-subdirs      = cidgate modules scripts tools man debian Fedora FreeBSD test
+subdirs      = cidgate modules scripts tools man debian Fedora FreeBSD test \
+               TiVo
 
 Version := $(shell sed 's/.* //; 1q' VERSION)
 
@@ -67,8 +68,6 @@ PPCXCOMPILE  = /usr/local/tivo/bin/
 prefix       = /usr/local
 prefix2      = $(prefix)
 prefix3      =
-
-OS           = host
 
 settag       = NONE
 setlock      = NONE
@@ -102,7 +101,7 @@ WISH         = wish
 TCLSH        = tclsh
 
 # local additions to CFLAGS
-MFLAGS  =
+MFLAGS  = -W -Wmissing-declarations \
 
 DEFINES = -DCIDCONF=\"$(CONF)\" \
           -DCIDALIAS=\"$(ALIAS)\" \
@@ -112,11 +111,11 @@ DEFINES = -DCIDCONF=\"$(CONF)\" \
           -DLOGFILE=\"$(LOGFILE)\" \
           -DPIDFILE=\"$(PIDFILE)\"
 
-CFLAGS  = -O $(DEFINES) $(MFLAGS) $(EXTRA_CFLAGS)
+CFLAGS  = -O2 $(DEFINES) $(MFLAGS) $(EXTRA_CFLAGS)
 
 STRIP   = -s
 
-LDFLAGS = $(STRIP) $(MFLAGS)
+LDFLAGS = $(STRIP)
 
 OBJECTS = $(SOURCE:.c=.o)
 
@@ -131,7 +130,7 @@ default:
 	@echo "    make fedora-install     # installs in /usr, /etc, and /var"
 	@echo "    make ubuntu             # builds for Ubuntu, includes init.d/"
 	@echo "    make ubuntu-install     # installs in /usr, /etc, and /var"
-	@echo "    make tivo-mips          # builds for Tivo in /usr/local, /var"
+	@echo "    make tivo-mips          # builds for TiVo in /usr/local, /var"
 	@echo "    make tivo-install       # installs in /usr/local, /var"
 	@echo "    make tivo-s1            # builds for a series1 in /var/hack"
 	@echo "    make tivo-s2            # builds for a series[23] in /var/hack"
@@ -144,12 +143,12 @@ default:
 	@echo "    make cygwin             # builds for windows using Cygwin"
 	@echo "    make cygwin-install     # installs in /usr/local"
 
-local: $(PROG) $(CLIENT) site moduledir cidgatedir tooldir scriptdir
+local: $(PROG) $(CLIENT) site moduledir cidgatedir tooldir scriptsdir
 
 site: $(SITE)
 
 $(PROG): version.h $(OBJECTS)
-	$(CC) $(EXTRA_CFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(OBJECTS) $(LDFLAGS) -o $@
 
 $(OBJECTS): $(HEADER)
 
@@ -161,12 +160,15 @@ fedoradir:
                       prefix3=$(prefix3)
 
 freebsddir:
-	cd FreeBSD; gmake rcd prefix=$(prefix) prefix2=$(prefix2) \
+	cd FreeBSD; $(MAKE) rcd prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3)
 
 ubuntudir:
 	cd debian; $(MAKE) init prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3)
+
+tivodir:
+	cd TiVo; $(MAKE) prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
 
 moduledir:
 	cd modules; $(MAKE) modules prefix=$(prefix) prefix2=$(prefix2) \
@@ -174,14 +176,14 @@ moduledir:
 
 cidgatedir:
 	cd cidgate; $(MAKE) cidgate prefix=$(prefix) prefix2=$(prefix2) \
-                      prefix3=$(prefix3) BIN=$(BIN) SBIN=$(SBIN) OS=$(OS) \
+                      prefix3=$(prefix3) BIN=$(BIN) SBIN=$(SBIN) \
                       MFLAGS="$(MFLAGS)" STRIP=$(STRIP)
 
 tooldir:
 	cd tools; $(MAKE) tools prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3) BIN=$(BIN)
 
-scriptdir:
+scriptsdir:
 	cd scripts; $(MAKE) scripts prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3)
 
@@ -207,12 +209,12 @@ ubuntu-install:
 	$(MAKE) install install-ubuntu prefix=/usr prefix2=
 
 tivo-s1:
-	$(MAKE) tivo-ppc prefix=/var/hack
+	$(MAKE) tivo-ppc mandir prefix=/var/hack
 
 tivo-ppc:
-	$(MAKE) local mandir OS=tivo-ppc \
+	$(MAKE) local tivodir \
 			CC=$(PPCXCOMPILE)gcc \
-			MFLAGS=-D__need_timeval \
+			MFLAGS="-DTIVO_S1 -D__need_timeval" \
 			LD=$(PPCXCOMPILE)ld \
 			RANLIB=$(PPCXCOMPILE)ranlib \
 			setname="TiVo requires CLOCAL" \
@@ -230,13 +232,14 @@ tivo-hack-install:
 	$(MAKE) tivo-install-hack prefix=/var/hack prefix2=$(prefix) prefix3=
 
 tivo-install-hack: dirs install-prog install-etc \
-                   install-modules install-cidgate
+                   install-modules install-cidgate install-tivo
 	install -m 644 $(LOGO) $(IMAGEDIR)/.
 	cp -a tivocid tivoncid $(BIN)
 
 tivo-mips:
-	$(MAKE) local fedoradir OS=tivo-mips \
+	$(MAKE) local fedoradir tivodir \
 			CC=$(MIPSXCOMPILE)gcc \
+			MFLAGS="-std=gnu99" \
 			LD=$(MIPSXCOMPILE)ld \
 			RANLIB=$(MIPSXCOMPILE)ranlib \
 			setname="TiVo requires CLOCAL" \
@@ -259,9 +262,9 @@ freebsd:
             BASH=/usr/local/bin/bash
 
 freebsd-install:
-	gmake install MAN=$(prefix)/man
+	$(MAKE) install MAN=$(prefix)/man
 	cd FreeBSD; \
-	gmake install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
             MAN=$(prefix)/man
 
 mac-fat:
@@ -269,14 +272,18 @@ mac-fat:
             MFLAGS="-mmacosx-version-min=10.3.9 -arch ppc" STRIP=
 	mv ncidd ncidd.ppc-mac
 	mv cidgate/sip2ncid cidgate/sip2ncid.ppc-mac
-	make clean
+	mv cidgate/ncid2ncid cidgate/ncid2ncid.ppc-mac
+	$(MAKE) clean
 	$(MAKE) local settag="Macintosh OS X" \
             MFLAGS="-mmacosx-version-min=10.4 -arch i386" STRIP=
 	mv ncidd ncidd.i386-mac
 	mv cidgate/sip2ncid cidgate/sip2ncid.i386-mac
+	mv cidgate/ncid2ncid cidgate/ncid2ncid.i386-mac
 	lipo -create ncidd.ppc-mac ncidd.i386-mac -output ncidd
 	lipo -create cidgate/sip2ncid.ppc-mac cidgate/sip2ncid.i386-mac \
          -output cidgate/sip2ncid
+	lipo -create cidgate/ncid2ncid.ppc-mac cidgate/ncid2ncid.i386-mac \
+         -output cidgate/ncid2ncid
 
 mac:
 	$(MAKE) local settag="Macintosh OS X" \
@@ -286,7 +293,9 @@ mac-install:
 	$(MAKE) install MAN=$(prefix)/man
 
 cygwin:
-	$(MAKE) local OS=cygwin \
+	$(MAKE) local \
+            MFLAGS=-IC:/WpdPack/Include \
+            LDLIBS="-s -LC:/WpdPack/Lib -lwpcap" \
             SBIN=$(prefix)/bin \
             settag="set noserial" \
             MODEMDEV=$(DEV)/com1
@@ -329,10 +338,14 @@ install-etc: $(ETCFILE)
 
 install-fedora:
 	cd Fedora; \
-	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) prefix4=$(prefix4)
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
 
 install-ubuntu:
 	cd debian; \
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
+
+install-tivo:
+	cd TiVo; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
 
 install-cidgate:
@@ -371,11 +384,13 @@ distclean: clobber
 files: $(FILES)
 
 .PHONY: local ppc-tivo mips-tivo install install-proc install-etc \
-        install-logrotate install-man install-var clean clobber files
+        install-scripts install-man install-var clean clobber files
 
-% : %.sh
+.SUFFIXES: .sh -in
+
+.sh : *.sh
 	sed 's,/usr/local/share/ncid,$(MODULEDIR),;s,/usr/local/etc/ncid,$(CONFDIR),;s,/usr/local/share/pixmaps/ncid,$(IMAGEDIR),;s,WISH=wish,WISH=$(WISH),;s,TCLSH=tclsh,TCLSH=$(TCLSH),;s,/usr/local/bin,$(BIN),;s,XxXxX,$(Version),' $< > $@
 	chmod 755 $@
 
-% : %-in
+-in : *-in
 	sed '/share/s,/usr/local,$(prefix),;/$(settag)/s/# set/set/;/$(setname)/s/# set/set/;/$(setlock)/s/# set/set/' $< > $@

@@ -3,7 +3,7 @@
 # reinitialize a modem to handle Caller ID if CIDNMBR=RING
 # which indicates modem is not in Caller ID mode
 
-# Last changed by jlc: Thu Mar 25, 2010
+# Last changed by jlc: Sun Aug 29, 2010
 
 # modem must send "RING" each time it sees the ringing signal
 # must be run as root
@@ -15,11 +15,8 @@
 # input: \n\n\nMESSAGE\n\n
 # Message will be in $CIDNAME
 #
-# ncid calls a external program with the "--call-prog" option
-# default program: /usr/share/ncid/ncid-speak
-#
 # ncid usage:
-#   ncid --no-gui --call-prog --program ncid-initmodem
+#   ncid --no-gui --program ncid-initmodem
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf

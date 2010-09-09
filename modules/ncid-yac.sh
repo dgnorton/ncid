@@ -3,7 +3,7 @@
 # NCID to YAC Clients
 # Requires YAC
 
-# Last changed by jlc: Wed Apr 14, 2008
+# Last changed by jlc: Sun AUg 29, 2010
 
 # input is 5 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
@@ -11,11 +11,8 @@
 # input is 5 lines if a message was sent
 # input: \n\n\nMESSAGE\n\n
 #
-# ncid calls a external program with the "--call-prog" option
-# default program: /usr/share/ncid/ncid-speak
-#
 # ncid usage:
-#   ncid --no-gui --message --call-prog --program ncid-yac
+#   ncid --no-gui [--message] --program ncid-yac
 
 YACPORT=10629
 YACLIST=127.0.0.1

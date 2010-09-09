@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# ncidsip:     Start/Stop NCID SIP Invite client
+# ncidsip:     Start/Stop NCID SIP Invite gateway
 #
 # chkconfig:   - 95 05
 # description: Inject CID info by snooping SIP invites

@@ -10,6 +10,10 @@ aliasfile:
 aliasfile.errors:
     Various alias file errors: ncidd -DA aliasfile.errors:
 
+largelog:
+    Logfile contains 3006 simular lines.  It is used to detect
+    any dropping of characters by the client or server.
+
 ncidd-errors.conf:
     Server configuration file with errors: ncidd -DC ncidd-errors.conf
 

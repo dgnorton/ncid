@@ -35,13 +35,13 @@
 #include <netinet/udp.h>
 #include <time.h>
 #include "config.h"
-#include "../version.h"
+#include "version.h"
 
 #define SHOWVER     "%s %s\n"
 #define DESC        "%s - Inject CID info by snooping SIP invites\n"
+#define NOOPT       "%s: not a option: %s\n"
 #define USAGE       "\
 Usage:   %s [options]\n\
-\n\
 Options: [-C configfile      | --config configfile]\n\
          [-D                 | --DEBUG]\n\
          [-h                 | --help]\n\
@@ -66,7 +66,7 @@ Options: [-C configfile      | --config configfile]\n\
 #define SIPPORT     10000
 #define LOCALHOST   "127.0.0.1"
 
-#define MAXLEVEL    9
+#define MAXLEVEL    8
 #define MAXLINE     10
 #define FATAL       1
 #define NONFATAL    0
@@ -108,7 +108,8 @@ Options: [-C configfile      | --config configfile]\n\
 #define OK          "OK"
 #define TRYING      "Trying"
 #define RINGING     "Ringing"
-#define REQUEST     "Request Terminated"
+#define REQTERM     "Request Terminated"
+#define REQCAN      "Request Cancelled"
 #define CSEQ        "CSeq:"
 #define SIPNUM      "<sip:"
 #define SIPAT       '@'

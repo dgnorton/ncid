@@ -3,17 +3,3 @@ The ncidtools are mostly perl scripts that run under Linux and UNIX.
 cidalias	   - list alias definitions in the ncidd alias file
 cidcall		   - list calls in the CID call file
 cidupdate	   - update aliases in the CID alias file
-
-startncid      - used to start ncid on a TiVo that does not have services
-                 consider this as a example script
-
-initmodem      - used to signal ncidd to re-initialize the modem
-                 will also start ncidd if it is not running
-
-The Makefile is used to create the runable scripts.
-
-	prefix2 controls where to look for the config file,
-	$prefix2/etc/ncidd.conf		(the default is /usr/local)
-
-	prefix3 controls where tro look for the log file,
-	$prefix3/var/log/cidcall.log	(the default is NULL)

@@ -3,7 +3,7 @@
 # Samba Interface to create a popup
 # Requires smbclient
 
-# Last changed by jlc: Wed Sep 19, 2007
+# Last changed by jlc: Sun Aug 29, 2010
 
 # send the CID information to a windows machine via popup
 # This will not work if the messenger service is disabled.
@@ -14,12 +14,8 @@
 # input is 5 lines if a message was sent
 # input: \n\n\nMESSAGE\n\n
 #
-# ncid calls a external program with the "--call-prog" option
-# default program: /usr/share/ncid/ncid-speak
-#
-# ncid usage examples:
-#       ncid --call-prog --message --program ncid-samba
-#       ncid --no-gui --message --call-prog --program ncid-samba
+# ncid usage:
+#       ncid --no-gui [--message] --program ncid-samba
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf
