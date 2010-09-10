@@ -193,7 +193,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 
 %post
 # make services known
-for SCRIPT in ncidd ncidsip ncidsip
+for SCRIPT in ncidd ncidsip sip2ncid yac2ncid ncid2ncid
 do
     /sbin/chkconfig --add $SCRIPT
 done
@@ -217,7 +217,7 @@ done
 %preun
 if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
-    for SCRIPT in ncidd ncidsip ncidsip
+    for SCRIPT in ncidd ncidsip sip2ncid yac2ncid ncid2ncid
     do
         /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
         /sbin/chkconfig --del $SCRIPT
@@ -264,7 +264,7 @@ fi
 %postun
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart services that are running
-    for SCRIPT in ncidd ncidsip ncidsip
+    for SCRIPT in ncidd ncidsip sip2ncid yac2ncid ncid2ncid
     do
         /sbin/service $SCRIPT condrestart >/dev/null 2>&1 || :
     done
