@@ -38,14 +38,20 @@ case $0 in *tivocid) exec tivosh $BINDIR/ncid $OPTSTIVO "$@"; esac
 OPTSTIVO="--no-gui --message --call-prog --program ncid-tivo"
 # if name is tivoncid, exec tivosh \
 case $0 in *tivoncid) exec tivosh $BINDIR/ncid $OPTSTIVO "$@"; esac
-# look for the --no-gui option \
-GUI=""; for i in $*; do if [ "$i" = "--no-gui" ]; then  GUI="$i"; fi; done
-# if $DISPLAY is not in the environment, set GUI="--no-display" \
-[ -z "$DISPLAY" ] && GUI="--no-display"
-# if --no-gui is not specified, look for wish and exec it \
-[ -z "$GUI" ] && type $WISH > /dev/null 2>&1 && exec $WISH -f "$0" "$@"
-# if --no-gui is specified, look for tclsh and exec it \
-[ "$GUI" = "--no-gui" ] && type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" "$@"
+# set location of configuration file (it is also set later on for tcl/tk) \
+CF=/usr/local/etc/ncid/ncid.conf
+# if config file does not exist, set GUI=1 \
+[ -f $CF ] || GUI=1
+# if $GUI set, set GUI based on configuration file \
+[ -z "$GUI" ] && if grep NoGUI $CF | grep 0 > /dev/null 2>&1; then GUI=1; fi
+# if GUI set, look for the --no-gui option, if found set GUI="" \
+[ -n "$GUI" ] && for i in $*; do if [ "$i" = "--no-gui" ]; then  GUI=""; fi; done
+# if $DISPLAY is not in the environment, set GUI="" \
+[ -z "$DISPLAY" ] && GUI=""
+# if $GUI is set, look for wish and exec it \
+[ -n "$GUI" ] && type $WISH > /dev/null 2>&1 && exec $WISH -f "$0" "$@"
+# if $GUI is not set, look for tclsh and exec it \
+[ -z "$GUI" ] && type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" "$@"
 # wish not found, look for tclsh and exec it \
 type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" --no-gui "$@"
 # tclsh not found, look for tivosh and exec it \
@@ -356,17 +362,18 @@ proc formatCID {dataBlock} {
     set cidnumber [getField NU*MBE*R $dataBlock]
     if {$Country  == "US"} {
         if {![regsub \
-            {(^1)([0-9]+)([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
+            {(^1)([0-9]+)([0-9]{3})([0-9]{4})} \
             $cidnumber {\1-\2-\3-\4} cidnumber]} {
-            if {![regsub {([0-9]+)([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
+            if {![regsub {([0-9]+)([0-9]{3})([0-9]{4})} \
                 $cidnumber {\1-\2-\3} cidnumber]} {
-                regsub {([0-9][0-9][0-9])([0-9][0-9][0-9][0-9])} \
+                regsub {([0-9]{3})([0-9]{4})} \
                 $cidnumber {\1-\2} cidnumber
             }
         } elseif {$NoOne} {
             regsub {^1-?(.*)} $cidnumber {\1} cidnumber
         }
     } elseif {$Country == "SE"} {
+      # http://en.wikipedia.org/wiki/Telephone_numbers_in_Sweden#Area_codes
       if {![regsub {^(07[0-9])([0-9]+)} \
           $cidnumber {\1-\2} cidnumber]} {
        if {![regsub {^(08)([0-9]+)} \
@@ -383,7 +390,7 @@ proc formatCID {dataBlock} {
                 $cidnumber {\1-\2} cidnumber]} {
              if {![regsub {^(090)([0-9]+)} \
                  $cidnumber {\1-\2} cidnumber]} {
-              regsub {^([0-9][0-9][0-9][0-9])([0-9]+)} \
+              regsub {^([0-9]{4})([0-9]+)} \
                       $cidnumber {\1-\2} cidnumber
              }
             }
@@ -393,7 +400,54 @@ proc formatCID {dataBlock} {
         }
        }
       }
+    } elseif {$Country == "UK"} {
+      # http://en.wikipedia.org/wiki/United_Kingdom_area_codes
+      if {![regsub {^(011[0-9])([0-9]{3})([0-9]+)} \
+        $cidnumber {\1-\2-\3} cidnumber]} {
+        if {![regsub {^(01[0-9]1)([0-9]{3})([0-9]+)} \
+          $cidnumber {\1-\2-\3} cidnumber]} {
+          if {![regsub {^(13873|15242|19467)([0-9]{4,5})} \
+            $cidnumber {\1-\2} cidnumber]} {
+            if {![regsub {^(153)(94|95|96)([0-9]{4,5})} \
+              $cidnumber {\1\2-\3} cidnumber]} {
+              if {![regsub {^(169)(73|74|77)([0-9]{4,5})} \
+                $cidnumber {\1\2-\3} cidnumber]} {
+                if {![regsub {^(176)(83|84|87)([0-9]{4,5})} \
+                  $cidnumber {\1\2-\3} cidnumber]} {
+                  if {![regsub {^(01[0-9]{3})([0-9]+)} \
+                    $cidnumber {\1-\2} cidnumber]} {
+                    if {![regsub {^(02[0-9])([0-9]{4})([0-9]+)} \
+                      $cidnumber {\1-\2-\3} cidnumber]} {
+                      if {![regsub {^(0[389][0-9]{2})([0-9]{3})([0-9]+)} \
+                        $cidnumber {\1-\2-\3} cidnumber]} {
+                        if {![regsub {^(07[0-9]{3})([0-9]+)} \
+                          $cidnumber {\1-\2} cidnumber]} {
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } elseif {$Country == "DE"} {
+      # http://en.wikipedia.org/wiki/Area_codes_in_Germany
+      if {![regsub {^(0[1-2][0-9])([0-9]+)} \
+        $cidnumber {\1-\2} cidnumber]} {
+        if {![regsub {^(03[01247]|040)([0-9]+)} \
+          $cidnumber {\1-\2} cidnumber]} {
+          if {![regsub {^(03[35689][0-9])([0-9]+)} \
+            $cidnumber {\1-\2} cidnumber]} {
+            if {![regsub {^(0[456789][0-9])([0-9]+)} \
+              $cidnumber {\1-\2} cidnumber]} {
+            }
+          }
+        }
+      }
     }
+
     set ciddate [getField DATE $dataBlock]
     if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
         $ciddate {\1/\2/\3} ciddate]} {
@@ -769,8 +823,9 @@ if {!$NoGUI} {
     if {$NoExit} {set ExitOn do_nothing}
     makeWindow
 }
-if {$Country != "US" && $Country != "SE"} {
-    exitMsg 7 "Country is set to \"$Country\"\nIt must be \"US\" or \"SE\""
+if {$Country != "US" && $Country != "SE" && $Country != "NONE" && \
+    $Country != "UK" && $Country != "DE"} {
+    exitMsg 7 "Country Code \"$Country\"is not supported.  Please change it."
 }
 if $Callprog {
     if {[file exists $Program]} {

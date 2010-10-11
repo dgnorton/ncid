@@ -28,6 +28,8 @@ PLSCRIPT    = $(PLSOURCE:.pl=)
 SHSCRIPT    = $(SHSOURCE:.sh=)
 SITE        = $(DIST:-in=)
 
+OSDCLIENT   = tivoncid
+
 tivo: $(SHSCRIPT) $(SITE)
 
 install: install-script
@@ -45,15 +47,8 @@ distclean: clobber
 
 files:	$(FILES)
 
-.SUFFIXES: .pl .sh -in
-
-.pl : *.pl
-	sed 's,/etc/ncid/ncidd.alias,$(ALIAS),; s,/etc/ncid/ncidd.conf,$(CONF),; s,/var/log/cidcall.log,$(CALLLOG),' $< > $@
-	chmod +x $@
+.SUFFIXES: .sh
 
 .sh : *.sh
-	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
+	sed '/OSDCLIENT/s,^OSDCLIENT=tivo,\#OSDCLIENT=tivo,;s,^\#OSDCLIENT=$(OSDCLIENT),OSDCLIENT=$(OSDCLIENT),' $< > $@
 	chmod 755 $@
-
--in : *-in
-	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@

@@ -168,7 +168,8 @@ ubuntudir:
                       prefix3=$(prefix3)
 
 tivodir:
-	cd TiVo; $(MAKE) prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
+	cd TiVo; $(MAKE) prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
+                     OSDCLIENT=$(OSDCLIENT)
 
 moduledir:
 	cd modules; $(MAKE) modules prefix=$(prefix) prefix2=$(prefix2) \
@@ -220,7 +221,7 @@ tivo-ppc:
 			setname="TiVo requires CLOCAL" \
 			settag="TiVo PPC Modem Port" \
 			setlock="TiVo Modem Lockfile" \
-			setmod="out2osd"
+			setmod="out2osd" OSDCLIENT=tivocid
 	ln -s ncid tivocid
 	ln -s ncid tivoncid
 	touch tivo-ppc
@@ -245,7 +246,7 @@ tivo-mips:
 			setname="TiVo requires CLOCAL" \
 			settag="TiVo MIPS Modem Port" \
 			setlock="TiVo Modem Lockfile" \
-			setmod="ncid-tivo"
+			setmod="ncid-tivo" OSDCLIENT=tivoncid
 	ln -s ncid tivocid
 	ln -s ncid tivoncid
 	touch tivo-mips

@@ -69,9 +69,11 @@ set CallOnRing  0
 set MsgFlag     0
 
 # Country is used to display the number for a particular country format
-# Country must be either "US" of "SE"
+# or no format at all if set to "NONE"
+# Country must be either "US", "UK", "SE", "DE" or "NONE"
+# http://www.iso.org/iso/english_country_names_and_code_elements
 # The default format for the US is xxx-xxx-xxxx
-# The default format for 
+# Default: "US"
 set Country     "US"
 
 # if Country = "US" then NoOne is used for the number display format
