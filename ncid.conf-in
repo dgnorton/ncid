@@ -1,6 +1,6 @@
 # ncid configuration file
 
-# File last changed: Fri Jan 22, 2010
+# File last changed: Fri Dec 9, 2010
 
 # This configuration file takes effect every time ncid is started.
 # It is for global changes.  For changes to a particular instance
@@ -10,29 +10,38 @@
 
 # set PIDfile to /var/run/ncid.pid in rc and init scripts
 # set PIDfile to "" to not use a PID file.
+# it is best to leave the default
+# Default: ""
 set PIDfile     ""
 
 # Directory NCID uses to find the output modules
 set ProgDir     /usr/local/share/ncid
 
-# default helper script
-set EXTPROG     ncid-speak
+# output module to be used instead of GUI
+# can be a script located in $ProgDir
+#    set ProgName ncid-speak
+# or a program like /var/hack/out2osd
+#    set ProgName /var/hack/out2osd
+# but it is best left as the default
+# Default: ""
+set ProgName     ""
 
 # Set Host to the NCID server address
-# Host defaults to 127.0.0.1
+# Default 127.0.0.1
 set Host        127.0.0.1
 
-# The NCID port default is 3333
+# Set the NCID port
+# Default: 3333
 set Port        3333
 
 # Set the popup time interval of the client (time to remain the top window)
 # The range is 1 second to 99 seconds
-# The default is 5 seconds
+# Default: 5
 set PopupTime   5
 
 # If the connection to the server is lost,
 # try every Delay seconds to reconnect
-# The Default: 60
+# Default: 60
 set Delay       60
 
 # If set to 1, display raw data received from the NCID server
@@ -64,6 +73,10 @@ set Callprog    0
 # Default: 0
 set CallOnRing  0
 
+# display outgoing call
+# Default: 0
+set CallOut 0
+
 # Message Flag: send messages to output modules
 # Default: 0
 set MsgFlag     0
@@ -87,7 +100,3 @@ set NoOne       1
 # set NoExit to 1 to disable
 # Default: 0
 set NoExit      0
-
-# This variable must be at the end of the file for tivosh
-# external called program
-set Program     [list $ProgDir/$EXTPROG]

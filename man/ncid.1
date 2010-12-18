@@ -17,7 +17,7 @@
 .PP
 .nf
 [--no-gui]
-[--call-prog         | -C]
+[--call-out          | -C]
 [--delay seconds     | -D seconds]
 [--message           | -M]
 [--noexit            | -X]
@@ -102,12 +102,10 @@ Do not display CID information using a GUI
 .br
 Default: display CID using a GUI, except if called tivocid
 .TP
-.B --call-prog | -C
-Output the Caller ID information to a external program or output module.
-Not needed when the "--program | -P" option is used.  This option is
-depreciated and should not be used anymore.
+.B --call-out | -C
+Display outgoing call information, if the server supports it.
 .br
-Default: does not call a external program unless name is tivocid or tivoncid
+Default: Do not display outgoing calls.
 .TP
 .B --delay SECONDS | -D SECONDS
 Delay SECONDS between server connection attempts if SECONDS > 0.
@@ -129,11 +127,13 @@ a service and when using a output module.
 There is no default.  If pidfile is not set, no pid file will be used.
 .TP
 .B --program PROGRAM | -P PROGRAM
-Name of the output module (program) to use.  The selected module is sent
-the Caller ID information.  A message is also sent, if the message option
-is enabled.
+Output the Caller ID information to the external program or output module.
+PROGRAM is the name of the output module (program) to use.
+The selected module is sent the Caller ID information.
+Outgoing call information is also sent if the call-out option is enabled.
+A message is also sent, if the message option is enabled.
 .br
-Default PATH: /usr/share/ncid
+Default module PATH: /usr/share/ncid
 .TP
 .B --raw | -R
 display data received from the CID Server

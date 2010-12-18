@@ -129,11 +129,12 @@ Options: [-C configfile      | --config configfile]\n\
 #define BADNAME     "BAD NAME"
 #define NONUMBER    "NO NUMBER"
 #define BADNUMBER   "BAD NUMBER"
+#define CALLOUT     "OUT"
+#define CALLIN      "IN" 
 
-#define CIDCAN      "CALLINFO: ###CANCEL...DATE%s...LINE%s...NMBR%s+++\r\n"
-#define CIDBYE      "CALLINFO: ###BYE...DATE%s...LINE%s...NMBR%s+++\r\n"
-#define CIDCALL     "CALLINFO: ###CALLED...DATE%s...LINE%s...NMBR%s+++\r\n"
-#define CIDLINE     "CALL: ###DATE%s...LINE%s...NMBR%s...NAME%s+++\r\n"
+#define CIDCAN      "CALLINFO: ###CANCEL...DATE%s...CALL%s...LINE%s...NMBR%s+++\r\n"
+#define CIDBYE      "CALLINFO: ###BYE...DATE%s...CALL%s...LINE%s...NMBR%s+++\r\n"
+#define CIDLINE     "CALL: ###DATE%s...CALL%s...LINE%s...NMBR%s...NAME%s+++\r\n"
 #define REGLINE     "Registered Line Number"
 
 enum

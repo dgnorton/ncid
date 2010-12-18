@@ -1,5 +1,41 @@
 ncid - Network CallerID
 
+Version 0.80
+    - README: updated for new features
+    - Makefile: added OSDCLIENT to tivo-mips: and tivo-s1:
+    - ncidd.c: added global "int sendout", changed some comments in formatCID()
+    - ncidd.h: added "sendout" to "extern int"
+    - nciddconf.c: added "cidout" to sendclient[]
+    - ncid.sh: added country codes: "NONE" for no number format,
+               DE (Germany), and UK (Ubited Kingdom)
+               added shell code to check NoGUI in ncid.conf at startup
+               modified the ithe beginning shell code that used GUI
+               added CIDOUT: CIDOUTLOG: to checkType {}
+               added variable "CallOut" to display outgoing calls
+               added $cidtype to the cid list in formatCID {}
+               changed option -C and replaced --call-prog with --call-out
+               added $cidtype to displayLog {} and displayCID {}
+               added CIDOUT and CIDOUTLOG to getCID {}
+               removed --call-prog from $OPTSTIVO
+               removed variable "CallProg" or replaced it with Program
+               changed 'set Program [list $ProgDir/$ProgName' to: set Program ""
+    - ncid.conf-in: updated country code comments
+               removed "set Program line and comments
+               changed EXTPROG name to ProgName
+    - cidgate/sip2ncid.c: added type to the CALL: and CALLINFO lines
+                          type is either CALLOUT or CALLIN
+    - cidgate/sip2ncid.h: removed CIDCALL and added CALLOUT, CALLIN
+                          added CALL field to CIDCAN, CIDBYE, and CIDLINE
+    - debian/changelog: updated
+    - debian/control: changed Requires and added Recommends for ncid-client
+    - doc/NCID-SDK.odt: Updated for new features
+    - Fedora/ncid.spec: updated
+    - man/ncidd.8: updated for new features
+    - man/ncidd.conf.8: updated for new features
+    - test/TestGWcalls.data: updated to include CALLIN and CALLOUT
+    - TiVo/Makefile: added OSDCLIENT
+    - Win/ncid.nsi: updated
+
 Version 0.79
     - Makefile: fixed FreeBSD problems by adding: MAKE = gmake
                 CFLAGS changed -O to -O2

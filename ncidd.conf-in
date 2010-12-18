@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Config File
 
-# File last changed: Wed Jul 14, 2010
+# File last changed: Wed Dec 1, 2010
 
 ################################
 # Definitions and Line formats #
@@ -43,6 +43,10 @@ send cidlog
 # Send call info (LINE and RING) to a client at each ring
 # The default is not to send the call info line
 send cidinfo
+
+# Send outgoing calls to the clients.
+# The default is not to send outgoing calls to the clients
+#send cidout
 
 #####################
 # NCID Network Port #

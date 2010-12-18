@@ -1,41 +1,51 @@
 NCID distributions:
 
     sourceforge:
-        NCID Source package:           ncid-0.79-src.tar.gz
+        NCID Source package:           ncid-0.80-src.tar.gz
 
-        Cygwin 32 bit Windows package: ncid-0.79-1-cygwin.tgz
+        Cygwin 32 bit Windows package: ncid-0.80-1-cygwin.tgz
 
-        TiVo Series1 package:          ncid-0.79-1-ppc-tivo.tgz
-        TiVo Series 2 and 3 package:   ncid-0.79-1-mips-tivo.tgz
+        TiVo Series1 package:          ncid-0.80-1-ppc-tivo.tgz
+        TiVo Series 2-3 package:       ncid-0.80-1-mips-tivo.tgz
 
-        Ubuntu 32 bit packages:        ncid_0.79-0ubuntu1_i386.deb
-                                       ncid-client_0.79-0ubuntu1_all.deb
-                                       ncid-kpopup_0.79-0ubuntu1_all.deb
-                                       ncid-mythtv_0.79-0ubuntu1_all.deb
-                                       ncid-samba_0.79-0ubuntu1_all.deb
-                                       ncid-speak_0.79-0ubuntu1_all.deb
+        Ubuntu 32 bit packages:        ncid_0.80-0ubuntu1_i386.deb
+                                       ncid-client_0.80-0ubuntu1_all.deb
+                                       ncid-kpopup_0.80-0ubuntu1_all.deb
+                                       ncid-mythtv_0.80-0ubuntu1_all.deb
+                                       ncid-samba_0.80-0ubuntu1_all.deb
+                                       ncid-speak_0.80-0ubuntu1_all.deb
 
-        Windows client installer:      ncid-0.79-1-client_setup.exe
+        Windows client installer:      ncid-0.80-1-client_setup.exe
+
+      These may also be distributed:
+
+        Fedora 64 bit packages:        ncid-0.80-1.fc14.x86_64.rpm
+                                       ncid-client-0.80-1.fc14.noarch.rpm
+                                       ncid-kpopup-0.80-1.fc14.noarch.rpm
+                                       ncid-mythtv-0.80-1.fc14.noarch.rpm
+                                       ncid-samba-0.80-1.fc14.noarch.rpm
+                                       ncid-speak-0.80-1.fc14.noarch.rpm
+
+        Macintosh 32 bit OS X package: ncid-0.74-mac-osx.tgz
+
+        FreeBSD 32 bit package:        ncid-0.73-freebsd.tgz
 
     Fedora packages:
-        # available at the Fedora repository
+        # available at the Fedora repository (sometimes sourceforge)
         # new release first appear in the rawhide repository
         # there is a server, client, and optional output module packages
         # normally you only need to install the ncid & ncid-client rpm packages
         # The yum list command will show you the packages available
             yum list ncid\*
-        # if the above does not show version 0.79
+        # if the above does not show version 0.80
             yum --enablerepo=rawhide list ncid\*
 
     Macintosh OS X package:
-        # available at MacPorts
+        # available at MacPorts (sometimes sourceforge)
         http://trac.macports.org/browser/trunk/dports/net/ncid/Portfile
 
-        The getopt_long.c and poll.c files were removed.  If your release
-        is old enough to require them, they are in the source in attic/
-
     FreeBSD package:
-        # available at FreshPorts
+        # available at FreshPorts (sometimes sourceforge)
         http://www.freshports.org/comms/ncid/
 
         gmake is no longer required
@@ -47,130 +57,81 @@ Specific distribution Changes:
 
     Fedora and Redhat:
 
-        ncidsip.init: corrected Start/Stop comment
-        ncid2ncid.init: new
-
         NOTES:
             If you need to build packages for your specific OS release:
-                rpmbuild -tb ncid-0.79-src.tar.gz
+                rpmbuild -tb ncid-0.80-src.tar.gz
 
     FreeBSD:
-        ncid2ncid.rc: new
 
     Mac OS-X:
 
     Ubuntu:
-        ncid2ncid.init: new
+        changed ncid-client Requires: and added Recommends:
 
         NOTES:
             If you need to build a package for your specific OS release, the
             build-essential, fakeroot, & libpcap packages must be installed:
                 sudo apt-get build-essential fakeroot libpcap0.8-dev
-                tar -xzf ncid-0.79-src.tar.gz
-                mv ncid ncid-0.79
-                cd ncid-0.79
+                tar -xzf ncid-0.80-src.tar.gz
+                mv ncid ncid-0.80
+                cd ncid-0.80
                 fakeroot debian/rules build
                 fakeroot debian/rules binary
                 fakeroot debian/rules clean
 
     TiVo:
-        startncid.sh:
-            replaced 'ps' with 'pgrep'
-            corrected the startup for the ncid-yac module
-            pgrep mips binary distributed this release
-
-        removed all Perl scripts and corresponding man pages
-        removed all ncidrotate scripts and corresponding man pages
 
     Windows:
 
 NCID Server Changes:
 
     ncidd:
-        Added TIME fields to CIDINFO
+        Sends outgoing calls to the clients if ncidd is configured for
+        it, and if the gateway supports it.  The ncid client must also
+        be configured to display outgoing calls.
 
-        Added a new option "-n | --gencid" and configuration variable
-        to turn on or off the feature to handle a call without Caller
-        ID at ring 2.  The feature is normally enabled.
-
-        Allows CID, CIDINFO, and MSG  data lines as input so a NCID
-        gateway can input the lines directly from another NCID server
-
-        Changed debug mode to output to stdout instead of stderr
-
-        Giving a non-option command line argument is now rejected
-
-        The modem code was modified to work with the Caller ID
-        phone number line from telcos in Canada.
-
-        The server will accept '\n' if the clients need to determine
-        if it is still available.  This is not normally needed and
-        if needed, it should be restricted to 15 minutes, or longer,
-        of no activity.
+        Outgoing calls are always logged in the call file if the SIP
+        gateway supports them.
 
     ncidd.conf:
-        Added the "genkey" configuration keyword and comments on how
-        to use it.
-
-        Added comments for the Modem initialization string for the
-        US Robotics 5637, v.92 56k USB modem
+        Updated for the new outgoing call send option.
 
 NCID Gateway Changes:
 
     ncid2ncid:
-        New
-
-        Inputs Caller ID information and messages from one or
-        more NCID servers, called sending servers,  to another
-        NCID server, called a receiving server,  whose clients
-        will display information from all servers.  The line
-        tag will indicate the phone number called.
 
     sip2ncid:
-        Changed SIP warning messages from displaying the time to
-        displaying the date and time
+        Outgoing calls are handled better than before.
 
-        Changed debug mode to output to stdout instead of stderr
-
-        Giving a non-option command line argument is now rejected
-
-        Fixed duplicate call indication with a PBX
-
-        Removed test for number to be numeric.  One PBX uses names
-
-        Fixed core dump of the -W | --warn option
+        End of calls now indicate if it is a outgoing or incomming call.
 
     yac2ncid:
-        Modified to send YAC user messages to NCID
 
 NCID Client Changes:
 
     ncid:
-        Patched to work with the Vodafone ARC_ncidd 0.01 server
+        Added new country codes: NONE, DE (Germany), and UK (United Kingdom)
 
-        Improved reconnect logic
+        Added ability to enable the display outgoing calls.  The outgoing
+        call display has a new field that displays callin or callout.  The
+        ncidd server must support and be configured for outgoing calls.
 
-        The -C option is depreciated should not be used anymore.
-        The option and no longer needed with the -P option.
+        Fixed startup to use NoGUI in ncid.conf.
+
+        Replaced the --call-prog|-C option with --call-out|-C option
+
+    ncid.conf
+        Added new country codes: NONE, DE (Germany), and UK (United Kingdom)
+
+        Added new variable "CallOut" to determine if outgoing calls are
+        to be displayed.
 
 NCID Client Module Changes:
-        removed the --call-prog option comments from all modules
 
 Documentation Changes:
-
-    doc/INSTALL: updated
-    doc/Install-TiVo: updated
-
-    doc/Verbose-ncidd: updated
-    doc/Verbose-sip2ncid: updated
-    doc/Verbose-ncid2ncid: new
-
-    man/ncid.1: updated
-    man/ncidd.8: updated and added the "-g | --gencid" option
-    man/ncidd.conf.5: added the "gencid" keyword
-    man/ncidmodules.1: corrected the ncid-yac module usage
-    man/ncidsip.8: updated
-    man/sip2ncid.8: updated
-    man/yac2ncid.1: updated
-    man/ncid2ncid.1: new
-    man/ncid2ncid.conf.5: new
+    README: updated for new features
+    NCID-SDK.odt: updated for new features
+    ncidd.8: updated for new features
+    ncidd.conf.5: updated for new features
+    ncid.1: updated for option changes
+    ncid.conf.5: updated

@@ -21,7 +21,8 @@ Description: NCID (Network Caller ID) server, client, and gateways
 
 Package: ncid-client
 Architecture: all
-Depends: tcl8.4, tk8.4, mailutils, minicom
+Depends: tcl8.4, tk8.4
+Recommends: mailx, minicom
 Description: NCID (Network Caller ID) client and base output modules
  The ncid-client obtains the Caller ID from the ncid-server and normally
  displays it in a GUI window.  It can also display the Called ID in a

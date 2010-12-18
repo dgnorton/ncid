@@ -1,3 +1,10 @@
+ncid (0.80-0ubuntu1) 10.04; urgency=low
+
+  * See NCID CHANGES file
+  * changed Requires: and added Recommends: for ncid-client in control
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Sun,  10 Oct 2010 23:18:00:00 -0400
+
 ncid (0.79-0ubuntu1) 10.04; urgency=low
 
   * See NCID CHANGES file

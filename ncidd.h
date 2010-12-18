@@ -65,7 +65,7 @@ Options: [-A aliasfile  | --alias aliasfile]\n\
          [-P pidfile    | --pidfile pidfile]\n\
          [-p portnumber | --port portnumber]\n\
          [-S ttyspeed   | --ttyspeed ttyspeed]\n\
-         [-s datatype   | --send cidlog|cidinfo]\n\
+         [-s datatype   | --send cidlog|cidinfo|cidout]\n\
          [-T 0/1        | --sttyclocal 0/1]\n\
          [-t ttyport    | --ttyport ttyport]\n\
          [-V            | --version]\n\
@@ -124,8 +124,11 @@ Options: [-A aliasfile  | --alias aliasfile]\n\
 #define CIDLINE     "CID: "
 #define MSGLINE     "MSG: "
 #define LOGLINE     "LOG: "
+#define OUTLINE     "CIDOUT: "
 #define LINETYPE    25
 #define ONELINE     "-"
+#define CALLOUT     "CALLOUT"
+#define CALLIN      "CALLIN"
 
 #define DATE        "*DATE*"
 #define TIME        "*TIME*"
@@ -140,7 +143,6 @@ Options: [-A aliasfile  | --alias aliasfile]\n\
 
 #define CALL        "CALL: "
 #define CALLINFO    "CALLINFO: "
-#define CALLED      "CALLED"
 #define CANCEL      "CANCEL"
 #define BYE         "BYE"
 
@@ -177,7 +179,7 @@ extern char *ttyport, *TTYspeed;
 extern char *initstr, *initcid;
 extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile;
 extern int setcid, port, clocal, ttyspeed;
-extern int sendlog, sendinfo;
+extern int sendlog, sendinfo, sendout;
 extern int nomodem, noserial, gencid, verbose;
 extern unsigned long cidlogmax;
 extern void logMsg();

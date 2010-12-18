@@ -31,11 +31,11 @@ BINDIR=/usr/local/bin
 # set nice value on TiVo, if "setpri" found \
 type setpri > /dev/null 2>&1 && setpri rr 1 $$
 # set up TiVo options to use out2osd \
-OPTSTIVO="--no-gui --tivo --message --call-prog --program /usr/local/bin/out2osd"
+OPTSTIVO="--no-gui --tivo --message --program /usr/local/bin/out2osd"
 # if name is tivocid, exec tivosh (for backward compatibility) \
 case $0 in *tivocid) exec tivosh $BINDIR/ncid $OPTSTIVO "$@"; esac
 # set up TiVo options to use ncid-tivo \
-OPTSTIVO="--no-gui --message --call-prog --program ncid-tivo"
+OPTSTIVO="--no-gui --message --program ncid-tivo"
 # if name is tivoncid, exec tivosh \
 case $0 in *tivoncid) exec tivosh $BINDIR/ncid $OPTSTIVO "$@"; esac
 # set location of configuration file (it is also set later on for tcl/tk) \
@@ -67,8 +67,6 @@ set ConfigFile  [list $ConfigDir/ncid.conf]
 
 ### Constants
 set Logo        /usr/local/share/pixmaps/ncid/ncid.gif
-set ProgDir     /usr/local/share/ncid
-set ProgName    ncid-speak
 set CygwinBat   /cygwin.bat
 
 ### global variables that can be changed by command line options
@@ -77,28 +75,31 @@ set Host        127.0.0.1
 set Port        3333
 set Delay       60
 set Raw         0
-# set PIDfile to /var/run/ncid.pid in rc and init scripts
-# set PIDfile to "" to not use a pidfile
 set PIDfile     ""
 set PopupTime   5
-set Program     [list $ProgDir/$ProgName]
 set Verbose     0
 set NoGUI       0
-set Callprog    0
 set CallOnRing  0
+set CallOut     0
 set TivoFlag    0
 set MsgFlag     0
 set Ring        999
 set NoExit      0
 set ExitOn      exit
 
-###  global variables that can be changed by the configuration file
+###  global variables that only can be changed by the configuration file
+set ProgDir     /usr/local/share/ncid
+set ProgName    ""
 set Country     "US"
 set NoOne       1
 
 if {[file exists $ConfigFile]} {
     catch {source $ConfigFile}
 }
+
+if {$ProgName != ""} {
+    set Program [list $ProgDir/$ProgName]
+} else {set Program ""}
 
 ### global variables that are fixed
 set Count       0
@@ -109,6 +110,7 @@ set Version     "(NCID) XxXxX"
 set VersionInfo "Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
+               [--call-out        | -C]
                [--delay seconds   | -D seconds]
                [--message         | -M]
                [--noexit          | -X]
@@ -226,7 +228,7 @@ proc bgerror {mess} {
 # Get data from CID server
 proc getCID {} {
     global CallOnRing
-    global Callprog
+    global Program
     global cid
     global Connect
     global Host
@@ -241,6 +243,7 @@ proc getCID {} {
     global VersionInfo
     global lineLabel
     global call
+    global type
 
     set msg {CID connection closed}
     set cnt 0
@@ -279,7 +282,7 @@ proc getCID {} {
                     set ringinfo [getField RING $dataBlock]
                     set lineinfo [getField LINE $dataBlock]
                     # must use $call($lineinfo) instead of $cid
-                    if {$Callprog && $Ring == $ringinfo} {
+                    if {$Program != "" && $Ring == $ringinfo} {
                         catch {sendCID $call($lineinfo)} oops
                         if $Verbose {puts "$oops"}
                     }
@@ -290,23 +293,23 @@ proc getCID {} {
                 displayCID "$msg\n" 1
                 displayLog "$msg" 1
                 if !$NoGUI {doPopup}
-                if {$MsgFlag} {sendMSG $msg}
-            } elseif {$type < 4} {
-                # CID (1), EXTRA (2), or CIDLOG (3) line
+                if {$Program != "" && $MsgFlag} {sendMSG $msg}
+            } elseif {$type < 4 || $type > 7} {
+                # CID (1), EXTRA (2), CIDLOG (3), CIDOUT (8), CIDOUTLOG (9)
                 set cid [formatCID $dataBlock]
                 array set call "$lineLabel [list $cid]"
                 # display log - $cid set above, no need for $call($lineLabel)
                 if {!$Raw} {displayLog $cid 0}
                 # display CID
-                if {$type < 3} {
-                    # CID (1) or EXTRA (2) line
+                if {$type < 3 || $type == 8} {
+                    # CID (1), EXTRA (2), CIDOUT (8) line
                     if {!$NoGUI} {
                         # $cid set above, no need for $call($lineLabel)
                         displayCID $cid 0
                         doPopup
                     }
                     # $cid set above, no need for $call($lineLabel)
-                    if {!$CallOnRing && $Callprog} {sendCID $cid}
+                    if {!$CallOnRing && $Program != ""} {sendCID $cid}
                 }
             }
         }
@@ -349,6 +352,8 @@ proc checkType {dataBlock} {
     if [string match CIDINFO:* $dataBlock] {return 5}
     if [string match MSGLOG:* $dataBlock] {return 6}
     if [string match LOG:* $dataBlock] {return 7}
+    if [string match CIDOUT:* $dataBlock] {return 8}
+    if [string match CIDOUTLOG:* $dataBlock] {return 9}
     return 0
 }
 
@@ -357,6 +362,7 @@ proc formatCID {dataBlock} {
     global Country
     global NoOne
     global lineLabel
+    global type
 
     set cidname [getField NAME $dataBlock]
     set cidnumber [getField NU*MBE*R $dataBlock]
@@ -465,8 +471,10 @@ proc formatCID {dataBlock} {
     set lineLabel $cidline
     # make default line indicator a blank
     regsub {[-]} $cidline {} cidline
+    # set type of call
+    if {$type == 8} {set cidtype "callout"} else {set cidtype "callin "}
 
-    return [list $ciddate $cidtime $cidnumber $cidname $cidline]
+    return [list $ciddate $cidtime $cidnumber $cidname $cidline $cidtype]
 }
 
 # get a field from the CID data
@@ -534,17 +542,22 @@ proc displayCID {cid ismsg} {
 }
 
 # display Call Log
-# Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
+# Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype\n"
 # Input: "message"
 proc displayLog {cid ismsg} {
-    global Callprog
+    global Program
+    global CallOut
     global NoGUI
     if $NoGUI {
-        if !$Callprog {
+        if {$Program == ""} {
             if $ismsg {
                 puts $cid
             } else {
-                puts "[lindex $cid 0] [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
+                if $CallOut {
+                    puts "[lindex $cid 0] [lindex $cid 1]  [lindex $cid 5] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
+                } else {
+                    puts "[lindex $cid 0] [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
+                }
             }
         }
     } else {
@@ -561,9 +574,11 @@ proc displayLog {cid ismsg} {
             set cidnmbr [lindex $cid 2]
             set cidname [lindex $cid 3]
             set cidline [lindex $cid 4]
+            set cidtype [lindex $cid 5]
 
             .vh insert end "$ciddate " blue
             .vh insert end "$cidtime " red
+            if $CallOut {.vh insert end "$cidtype " purple}
             .vh insert end "$cidline " purple
             .vh insert end "$cidnmbr " blue
             .vh insert end "$cidname\n" red
@@ -607,11 +622,10 @@ proc getArg {} {
     global NoGUI
     global Verbose
     global Program
-    global Callprog
+    global CallOut
     global Ring
     global CallOnRing
     global ProgDir
-    global ProgName
     global TivoFlag
     global MsgFlag
     global PIDfile
@@ -633,7 +647,7 @@ proc getArg {} {
             }
             {^--no-gui$} {set NoGUI 1}
             {^-C$} -
-            {^--call-prog$} {set Callprog 1}
+            {^--call-out$} {set CallOut 1}
             {^-D$} -
             {^--delay$} {
                 incr cnt
@@ -651,7 +665,6 @@ proc getArg {} {
                     if {[regexp {^.*/} $optarg]} {
                         set Program [list $optarg]
                     } else {set Program [list $ProgDir/$optarg]}
-                    set Callprog 1
                 } else {exitMsg 6 "Missing $opt argument\n$Usage\n"}
             }
             {^-p$} -
@@ -827,7 +840,7 @@ if {$Country != "US" && $Country != "SE" && $Country != "NONE" && \
     $Country != "UK" && $Country != "DE"} {
     exitMsg 7 "Country Code \"$Country\"is not supported.  Please change it."
 }
-if $Callprog {
+if {$Program != ""} {
     if {[file exists $Program]} {
         if {![file executable $Program]} {
             # Simple test to see if running under Cygwin

@@ -525,7 +525,7 @@ void processPackets(u_char *args,
 
     char sipbuf[SIPSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ], warnmsg[BUFSIZ],
          tonumber[NUMSIZ], fromnumber[NUMSIZ], callid[CIDSIZ];
-    char *line, *number, *name;
+    char *line, *number, *name, *type;
 
     struct tm *tm;
     struct timeval tv;
@@ -764,16 +764,20 @@ void processPackets(u_char *args,
                 {
                     /* Outgoing Call */
                     line = fromnumber + strlen(fromnumber) - 4;
-                    sprintf(cidmsg, CIDCALL, strdate(NOYEAR), line, tonumber);
+                    number = tonumber;
+                    name = NONAME;
+                    type = CALLOUT;
                 }
                 else
                 {
                     /* Incoming Call */
                     line = tonumber + strlen(tonumber) - 4;
-                    sprintf(cidmsg, CIDLINE, strdate(NOYEAR),
-                            line, fromnumber, name);
+                    number = fromnumber;
+                    type = CALLIN;
                 }
 
+                sprintf(cidmsg, CIDLINE, strdate(NOYEAR), type, line,
+                        number, name);
                 if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
             }
@@ -836,6 +840,7 @@ void processPackets(u_char *args,
                     line = fromnumber + strlen(fromnumber) - 4;
                     /* get the called number from the TO line */
                     number = tonumber;
+                    type = CALLOUT;
                 }
                 else
                 {
@@ -843,9 +848,10 @@ void processPackets(u_char *args,
                     line = tonumber + strlen(tonumber) - 4;
                     /* get the calling number from the From line */
                     number = fromnumber;
+                    type = CALLIN;
                 }
 
-                sprintf(cidmsg, CIDCAN, strdate(NOYEAR), line, number);
+                sprintf(cidmsg, CIDCAN, strdate(NOYEAR), type, line, number);
                 if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
             }
@@ -907,15 +913,17 @@ void processPackets(u_char *args,
                     /* Outgoing Call */
                     line = fromnumber + strlen(fromnumber) - 4;
                     number = tonumber;
+                    type = CALLOUT;
                 }
                 else
                 {
                     /* Incoming Call */
                     line = tonumber + strlen(tonumber) - 4;
                     number = fromnumber;
+                    type = CALLIN;
                 }
 
-                sprintf(cidmsg, CIDBYE, strdate(NOYEAR), line, number);
+                sprintf(cidmsg, CIDBYE, strdate(NOYEAR), type, line, number);
                 if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                 logMsg(LEVEL1, cidmsg);
             }

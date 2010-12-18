@@ -13,7 +13,7 @@
 ;Application
 
 	!define NAME            ncid
-	!define VERSION         0.79
+	!define VERSION         0.80
 	!define PROG            "${NAME}.exe"
 	!define LICENSE_FILE    "LICENSE.txt"
 	!define WEB_PAGE        "http://ncid.sourceforge.net"

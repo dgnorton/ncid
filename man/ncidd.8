@@ -80,6 +80,11 @@ only sent at the beginning and end of a call.  At the end of a call, RING
 indicates either \fIHangup Without Answer\fR or \fIHangup after Answer\fR
 This allows a cell phone or pager to receive a message only if the phone
 was not answered.
+
+If the Caller ID is obtained from a SIP Gateway that supports outgoing
+calls, ncidd can be configured to send outgoing calls to the clients.
+Outgoing calls generate outgoing call lines so old clients will continue
+working without problems.
 .PP
 .B NCIDD
 will accept a text message for a client, and then send it to all
@@ -222,6 +227,10 @@ If the CID call log gets too big, it will not be sent.
 sent on each ring, to all clients,
 gives the current ring count.
 .br
+.IR cidout :
+sent on each call, to all clients,
+gives the outgoing call information.
+.br
 Default: Optional CID DATA is not sent
 .TP
 .B -T <ttyspeed> | --ttyspeed <ttyspeed>
@@ -289,9 +298,10 @@ and \fIMSGLOG:\fR lines are identical,
 .nf
 CID: *DATE*mmddyyyy*TIME*hhmm*NMBR*number*MESG*NONE*NAME*name*
 CIDLOG: *DATE*mmddyyyy*TIME*hhmm*NMBR*number*MESG*NONE*NAME*name*
-CIDINFO: *LINE*line indicator*RING*ringcount*
+CIDINFO: *LINE*line indicator*RING*ringcount*TIME*hh:mm:ss*
 MSG: Too many clients connected: 15
 MSGLOG: Too many clients connected: 15
+CIDOUT: *DATE*mmddyyyy*TIME*hhmm*NMBR*number*MESG*NONE*NAME*NONAME*
 .fi
 .SH FILES
 .TP

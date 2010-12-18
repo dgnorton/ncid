@@ -2,7 +2,7 @@ NCID - Network CallerID
 
 Web Site: http://ncid.sourceforge.net
 
-File last changed: Sat Aug 14, 2010
+File last changed: Sat Dec 11, 2010
 
 Directories:
     cidgate:     gateway programs
@@ -44,10 +44,13 @@ the NUMBER, NAME, NUMBER and NAME, and LINE identifier received before it
 is sent to its clients.
 
 The telco always sends the CID between RING 1 and RING 2.  If ncidd does
-not receive the CID by RING 2, ncidd will indicate a call by sending RING
-as the number and "No CID From Modem" as the name.  This permits NCID
-to display a visual indication of a call along with the date and time.
-This requires of a modem that indicates RING.
+not receive the CID by RING 2, ncidd can be configured to indicate a call
+by sending RING as the number and "No CID From Modem" as the name.  This
+permits NCID to display a visual indication of a call along with the date
+and time.  This requires of a modem that indicates RING.
+
+The ncidd server can also be configured to send outgoing calls to its clients.
+This only works with SIP gateways that indicate outgoing calls.
 
 The NCID package has the following features:
 
@@ -56,6 +59,8 @@ The NCID package has the following features:
     - Indicates a call from modems that indicate ring but not Caller ID.
     - Shares the modem for outgoing calls.
     - Supports CID devices like NetCallerID
+    - Supports VoIP using SIP
+    - Supports outgoing calls if the SIP gateway supports it
     - Allows multiple clients and gateways.
     - Does Name/Number/Line aliases, so the display can be customized.
       For example: "Wireless Caller" becomes "John on Cell".
@@ -73,11 +78,14 @@ The NCID package has the following features:
     - Reloads the alias file when it receives a SIGHUP signal.
     - Sends ring count or -1 for hangup before answer or -2 for hangup after
       answer if input device supports it.
+    - supports sending outgoing calls to clients if received from a gateway
     - Documented protocol
 
     Client Features (ncid):
-    - Can display the number in a specific country format for US and Sweden.
+    - Can display the number in a specific country format for US, Sweden,
+      United kingdom, Germany, and no country.
     - Displays the current Caller ID Log when a call is received.
+    - Can display outgoing calls if they are supported by the server
     - Displays messages received from the server.
     - Supports Distinctive Ring and multiple telephone lines.
     - Supports output modules to customize its output and to send the CID

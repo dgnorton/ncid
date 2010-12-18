@@ -36,7 +36,7 @@ char *lockfile, *name;
 char *TTYspeed;
 int ttyspeed = TTYSPEED;
 int port = PORT;
-int debug, conferr, setcid, locked, sendlog, sendinfo;
+int debug, conferr, setcid, locked, sendlog, sendinfo, sendout, callout;
 int ttyfd, pollpos, pollevents;
 int ring, ringwait, ringcount, clocal, nomodem, noserial, gencid = 1;
 int cidsent, verbose = 1;
@@ -1078,9 +1078,10 @@ void doPoll(int events, int mainsock)
                  * Found a CALLINFO Line
                  *
                  * CALLINFO Line Format:
-                 *    CALLINFO: ###CALLED...DATE%s...LINE%s...NMBR%s+++
-                 *    CALLINFO: ###CANCEL...DATE%s...LINE%s...NMBR%s+++
-                 *    CALLINFO: ###BYE...DATE%s...LINE%s...NMBR%s+++
+                 *  CALLINFO: ###CANCEL...DATE%s...CALLIN...LINE%s...NMBR%s+++
+                 *  CALLINFO: ###CANCEL...DATE%s...CALLOUT...LINE%s...NMBR%s+++
+                 *  CALLINFO: ###BYE...DATE%s...CALLIN...LINE%s...NMBR%s+++
+                 *  CALLINFO: ###BYE...DATE%s...CALLOUT...LINE%s...NMBR%s+++
                  */
 
                 sprintf(msgbuf, "Gateway (sd %d) sent CALLINFO:\n",
@@ -1100,19 +1101,22 @@ void doPoll(int events, int mainsock)
                     *eptr = '.';
                 }
 
-                if (strstr(buf, CANCEL))
+                if (!strstr(buf, CALLOUT) || sendout)
                 {
-                  ring = -1;
-                  sendInfo(mainsock);
-                  ring = 0;
+                    /* either CALLIN or (CALLOUT && sendout) */
+                    if (strstr(buf, CANCEL))
+                    {
+                    ring = -1;
+                    sendInfo(mainsock);
+                    ring = 0;
+                    }
+                    else if (strstr(buf, BYE))
+                    {
+                    ring = -2;
+                    sendInfo(mainsock);
+                    ring = 0;
+                    }
                 }
-                else if (strstr(buf, BYE))
-                {
-                  ring = -2;
-                  sendInfo(mainsock);
-                  ring = 0;
-                }
-                /* Nothing to do for other CALLINFO lines */
               }
               else if (strncmp(buf, CIDLINE, strlen(CIDLINE)) == 0)
               {
@@ -1120,7 +1124,7 @@ void doPoll(int events, int mainsock)
                  * Found a CID: line from another NCID server
                  *
                  * record the CID: line in the cidcall file
-                 * send line out to clients
+                 * write line to cidlog and send line to clients
                  */
 
                  sprintf(msgbuf, "Gateway (sd %d) sent CID:\n",
@@ -1135,7 +1139,7 @@ void doPoll(int events, int mainsock)
                  * Found a CIDINFO: line from another NCID server
                  *
                  * record the CIDINFO: line in the ciddata file
-                 * send line out to clients
+                 * write line to datalog and send line to clients
                  */
                  sprintf(msgbuf, "Gateway (sd %d) sent CIDINFO:\n",
                          polld[pos].fd);
@@ -1146,7 +1150,7 @@ void doPoll(int events, int mainsock)
               else if (strncmp(buf, MSGLINE, strlen(MSGLINE)) == 0)
               {
                 /*
-                 * Found a user message Line
+                 * Found a MSG: line
                  * Write message to cidlog and all clients
                  */
 
@@ -1212,9 +1216,9 @@ void doPoll(int events, int mainsock)
  * ###DATE03301423..NMBR...NAME+++\r
  * ###DATE...NMBR...NAME   -MSG OFF-+++\r
  *
- * CID Message Line Format:
+ * Gateway CALL Line Format:
  *
- * ###DATEmmddhhss...LINEidentifier...NMBRnumber...NAMEwords+++\r
+ * ###DATEmmddhhss...CALL<IN|OUT>...LINEidentifier...NMBRnumber...NAMEwords+++\r
  */
 
 void formatCID(int mainsock, char *buf)
@@ -1332,8 +1336,8 @@ void formatCID(int mainsock, char *buf)
          * Found a NetCallerID box, or a Gateway
          * All information received on one line
          * The Gateway creates a CID Message Line
-         * The Gateway contains a LINE field
-         * The NetCallerID box does not have a LINE field
+         * The Gateway contains a LINE and a CALL field
+         * The NetCallerID box does not have a LINE or CALL field
          */
 
         /* Make sure the status field and cidsent is zero */
@@ -1341,33 +1345,44 @@ void formatCID(int mainsock, char *buf)
 
         if ((ptr = strstr(buf, "DATE")))
         {
-            /*
-             * Found a message line, format it, log it, and send it:
-             *    MSG: message
-             */
             if (*(ptr + 4) == '.')
             {
-                if ((ptr = strstr(buf, "NAME")))
-                {
-                    strncat(strcpy(cidbuf, MSGLINE), ptr + 4, BUFSIZ -1);
-                    if ((ptr = strchr(cidbuf, '+'))) *ptr = 0;
-                    writeLog(cidlog, cidbuf);
-                    writeClients(mainsock, cidbuf);
-                    cid.status = 0;
-                    return;
-                }
+                /* no date and time, create both */
+                ptr = strdate(NOSEP);
+                strncpy(cid.ciddate, ptr, 8);
+                cid.ciddate[8] = 0;
+                cid.status |= CIDDATE;
+                strncpy(cid.cidtime, ptr + 9, 4);
+                cid.cidtime[4] = 0;
+                cid.status |= CIDTIME;
             }
+            else
+            {
+                strncpy(cid.cidtime, ptr + 8, 4);
+                cid.cidtime[4] = 0;
+                cid.status |= CIDTIME;
 
-            strncpy(cid.cidtime, ptr + 8, 4);
-            cid.cidtime[4] = 0;
-            cid.status |= CIDTIME;
-            strncpy(cid.ciddate, ptr + 4, 4);
-            cid.ciddate[4] = 0;
-            t = time(NULL);
-            ptr = ctime(&t);
-            *(ptr + 24) = 0;
-            strncat(cid.ciddate, ptr + 20, CIDSIZE - strlen(cid.ciddate) - 1);
-            cid.status |= CIDDATE;
+                strncpy(cid.ciddate, ptr + 4, 4);
+                cid.ciddate[4] = 0;
+
+                /* need to generate year */
+                t = time(NULL);
+                ptr = ctime(&t);
+                *(ptr + 24) = 0;
+                strncat(cid.ciddate, ptr + 20,
+                        CIDSIZE - strlen(cid.ciddate) - 1);
+                cid.status |= CIDDATE;
+            }
+        }
+        if ((ptr = strstr(buf, "CALLOUT")))
+        {
+            /*
+             * this field is only from a Gateway
+             * will be either CALLIN or CALLOUT
+             * only interested in CALLOUT
+             */
+             ++callout; /* this is a outgiing call */
+            
         }
         if ((ptr = strstr(buf, "LINE")))
         {
@@ -1465,11 +1480,19 @@ void formatCID(int mainsock, char *buf)
     {
         /*
          * All Caller ID information received.
-         * Send Caller ID Information to clients.
+         * Create the CID (Caller ID) or CIDOUT text line
+         * Log the CID or CIDOUT text line
+         *
+         * Send the CID or CIDOUT text line to the clients
+         * The CIDOUT text line is only sent if configured
+         *
+         * For CIDOUT text lines (outgoing calls)
+         * the MESG field is not used
+         * the NAME field will normally be generic if no number alias
          */
         userAlias(cid.cidnmbr, cid.cidname, cid.cidline);
         sprintf(cidbuf, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-            CIDLINE,
+            callout ? OUTLINE : CIDLINE,
             DATE, cid.ciddate,
             TIME, cid.cidtime,
             LINE, cid.cidline,
@@ -1478,16 +1501,18 @@ void formatCID(int mainsock, char *buf)
             NAME, cid.cidname,
             STAR);
         writeLog(cidlog, cidbuf);
-        writeClients(mainsock, cidbuf);
+        if (!callout || sendout) writeClients(mainsock, cidbuf);
 
         /*
          * Reset mesg, line, and status
-         * Set cidsent
+         * Set sent indicator
+         * Reset call out indicator if it was set
          */
-        strncpy(cid.cidmesg, NOMESG, CIDSIZE - 1);
-        strcpy(cid.cidline, lineid); /* default line */
+        strncpy(cid.cidmesg, NOMESG, CIDSIZE - 1); /* default message */
+        strcpy(cid.cidline, lineid); /* default line indicator */
         cid.status = 0;
         cidsent = 1;
+        if (callout) callout = 0;
     }
 }
 
