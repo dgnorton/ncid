@@ -1,6 +1,6 @@
 RCF     = ncidd.rc ncidsip.rc ncid2ncid.rc sip2ncid.rc \
           yac2ncid.rc ncid-mythtv.rc ncid-page.rc ncid-samba.rc \
-          ncid-speak.rc ncid-yac.rc ncid-hangup.rc ncid-initmodem.rc
+          ncid-speak.rc ncid-yac.rc ncid-initmodem.rc
 FILES   = README.FreeBSD Makefile $(RCF)
 
 prefix  = /usr/local

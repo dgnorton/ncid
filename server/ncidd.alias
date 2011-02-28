@@ -40,7 +40,7 @@
 # alias NMBR 4075551212 = "----------"
 #
 # The default line indicator for a POTS line is "-".  The ncid client
-# will not display the "-" indifator.
+# will not display the "-" indicator.
 #
 # To display 'POTS' for a POTS line:
 # alias LINE - = POTS

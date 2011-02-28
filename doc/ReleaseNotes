@@ -1,43 +1,43 @@
 NCID distributions:
 
     sourceforge:
-        NCID Source package:           ncid-0.80-src.tar.gz
+        NCID Source package:           ncid-0.81-src.tar.gz
 
-        Cygwin 32 bit Windows package: ncid-0.80-1-cygwin.tgz
+        Cygwin 32 bit Windows package: ncid-0.81-1-cygwin.tgz
 
-        TiVo Series1 package:          ncid-0.80-1-ppc-tivo.tgz
-        TiVo Series 2-3 package:       ncid-0.80-1-mips-tivo.tgz
+        TiVo Series1 package:          ncid-0.81-1-ppc-tivo.tgz
+        TiVo Series 2-3 package:       ncid-0.81-1-mips-tivo.tgz
 
-        Ubuntu 32 bit packages:        ncid_0.80-0ubuntu1_i386.deb
-                                       ncid-client_0.80-0ubuntu1_all.deb
-                                       ncid-kpopup_0.80-0ubuntu1_all.deb
-                                       ncid-mythtv_0.80-0ubuntu1_all.deb
-                                       ncid-samba_0.80-0ubuntu1_all.deb
-                                       ncid-speak_0.80-0ubuntu1_all.deb
+        Ubuntu 32 bit packages:        ncid_0.81-0ubuntu1_i386.deb
+                                       ncid-client_0.81-0ubuntu1_all.deb
+                                       ncid-kpopup_0.81-0ubuntu1_all.deb
+                                       ncid-mythtv_0.81-0ubuntu1_all.deb
+                                       ncid-samba_0.81-0ubuntu1_all.deb
+                                       ncid-speak_0.81-0ubuntu1_all.deb
 
-        Windows client installer:      ncid-0.80-1-client_setup.exe
+        Windows client installer:      ncid-0.81-1-client_setup.exe
 
       These may also be distributed:
 
-        Fedora 64 bit packages:        ncid-0.80-1.fc14.x86_64.rpm
-                                       ncid-client-0.80-1.fc14.noarch.rpm
-                                       ncid-kpopup-0.80-1.fc14.noarch.rpm
-                                       ncid-mythtv-0.80-1.fc14.noarch.rpm
-                                       ncid-samba-0.80-1.fc14.noarch.rpm
-                                       ncid-speak-0.80-1.fc14.noarch.rpm
+        Fedora 64 bit packages:        ncid-0.81-1.fc14.x86_64.rpm
+                                       ncid-client-0.81-1.fc14.noarch.rpm
+                                       ncid-kpopup-0.81-1.fc14.noarch.rpm
+                                       ncid-mythtv-0.81-1.fc14.noarch.rpm
+                                       ncid-samba-0.81-1.fc14.noarch.rpm
+                                       ncid-speak-0.81-1.fc14.noarch.rpm
 
-        Macintosh 32 bit OS X package: ncid-0.74-mac-osx.tgz
+        Macintosh 32 bit OS X package: ncid-0.81-mac-osx.tgz
 
-        FreeBSD 32 bit package:        ncid-0.73-freebsd.tgz
+        FreeBSD 32 bit package:        ncid-0.81-freebsd.tgz
 
     Fedora packages:
         # available at the Fedora repository (sometimes sourceforge)
-        # new release first appear in the rawhide repository
-        # there is a server, client, and optional output module packages
+        # new release first appears in the rawhide repository
+        # there are server, client, and optional output module packages
         # normally you only need to install the ncid & ncid-client rpm packages
         # The yum list command will show you the packages available
             yum list ncid\*
-        # if the above does not show version 0.80
+        # if the above does not show version 0.81
             yum --enablerepo=rawhide list ncid\*
 
     Macintosh OS X package:
@@ -50,31 +50,30 @@ NCID distributions:
 
         gmake is no longer required
 
-        The getopt_long.c and poll.c files were removed.  If your release
-        is old enough to require them, they are in the source in attic/
-
 Specific distribution Changes:
 
     Fedora and Redhat:
+        removed: ncid-hangup.init
 
         NOTES:
             If you need to build packages for your specific OS release:
-                rpmbuild -tb ncid-0.80-src.tar.gz
+                rpmbuild -tb ncid-0.81-src.tar.gz
 
     FreeBSD:
+        removed: ncid-hangup.rc
 
     Mac OS-X:
 
     Ubuntu:
-        changed ncid-client Requires: and added Recommends:
+        removed: ncid-hangup.init
 
         NOTES:
             If you need to build a package for your specific OS release, the
             build-essential, fakeroot, & libpcap packages must be installed:
                 sudo apt-get build-essential fakeroot libpcap0.8-dev
-                tar -xzf ncid-0.80-src.tar.gz
-                mv ncid ncid-0.80
-                cd ncid-0.80
+                tar -xzf ncid-0.81-src.tar.gz
+                mv ncid ncid-0.81
+                cd ncid-0.81
                 fakeroot debian/rules build
                 fakeroot debian/rules binary
                 fakeroot debian/rules clean
@@ -86,52 +85,52 @@ Specific distribution Changes:
 NCID Server Changes:
 
     ncidd:
-        Sends outgoing calls to the clients if ncidd is configured for
-        it, and if the gateway supports it.  The ncid client must also
-        be configured to display outgoing calls.
+        Increased ring delay to prevent server from indicating no
+        "Caller ID" on a ring count of 8 or 9 rings.
 
-        Outgoing calls are always logged in the call file if the SIP
-        gateway supports them.
+        Added "hangup" configuration and command option to terminate a
+        telephone call if the name or number is in the blacklist file.
+        The blacklist file is /etc/ncid/ncidd.blacklist.
+
+        Added "ignore1" configuration to not include a leading 1 in an
+        alias definition.
 
     ncidd.conf:
-        Updated for the new outgoing call send option.
+        updated comments
+        added hangup configuration
+        Added comment about /dev/ttyACM0 (USB modem port)
 
 NCID Gateway Changes:
 
     ncid2ncid:
 
     sip2ncid:
-        Outgoing calls are handled better than before.
-
-        End of calls now indicate if it is a outgoing or incomming call.
+        Added code to exit on a system error while waiting for SIP
+        packets.  This happens when the computer goes into sleep mode
+        using Cygwin to run ncidd.
 
     yac2ncid:
 
-NCID Client Changes:
+NCID Clients Changes:
 
     ncid:
-        Added new country codes: NONE, DE (Germany), and UK (United Kingdom)
-
-        Added ability to enable the display outgoing calls.  The outgoing
-        call display has a new field that displays callin or callout.  The
-        ncidd server must support and be configured for outgoing calls.
-
-        Fixed startup to use NoGUI in ncid.conf.
-
-        Replaced the --call-prog|-C option with --call-out|-C option
+        Updated to detect outgoing calls using the NCID server line
+        labels.
 
     ncid.conf
-        Added new country codes: NONE, DE (Germany), and UK (United Kingdom)
-
-        Added new variable "CallOut" to determine if outgoing calls are
-        to be displayed.
 
 NCID Client Module Changes:
 
+    ncid-hangup: removed along with ncid.minicom and ncid.blacklist
+
+    updated ncidmodules.conf
+
 Documentation Changes:
-    README: updated for new features
-    NCID-SDK.odt: updated for new features
-    ncidd.8: updated for new features
-    ncidd.conf.5: updated for new features
-    ncid.1: updated for option changes
-    ncid.conf.5: updated
+    Updated all the man pages
+
+    Added man pages: ncidd.blacklist.5 cidalias.1 cidcall.1 cidupdate.1
+                     ncid-initmodem.1 ncid-kpopup.1 ncid-mythtv.1
+                     ncid-page.1 ncid-samba.1 ncid-skel.1 ncid-speak.1
+                     ncid-tivo.1 ncid-yac.1
+
+    Updated all README.* files

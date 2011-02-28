@@ -1,0 +1,14 @@
+NCID client:
+
+ncid            - NCID universal client that supports output modules.
+ncid.conf       - configuration file for ncid
+ncid.gif        - icon
+
+The Makefile is used to create the runable scripts.
+
+    prefix  - default: /usr/local:            $(prefix)/bin and $(prefix)/sbin
+    prefix2 - default: prefix2 = $(prefix1):  $(prefix2)/etc
+    prefix3 - default: "":                    $(prefix)/var
+
+	prefix2 controls where to look for the config file,
+	(the default is /usr/local)

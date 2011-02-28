@@ -2,7 +2,7 @@
 NCIDD server verbose levels.  Higher levels include lower levels.
 ----------------------------------------------------------------
 
-Last edited by jlc on Fri Aug 13, 2010
+Last edited by jlc on Sat Feb 12, 2011
 
 LEVEL9:
         (can only be set by the command line)
@@ -10,7 +10,8 @@ LEVEL9:
 
 LEVEL8:
         (can only be set by the command line)
-        print alias table
+        show alias table
+        show blacklist array
         indicate client sent empty line
 
 LEVEL7:
@@ -24,6 +25,7 @@ LEVEL5:
 
 LEVEL4:
         show optional files failed to open
+        show lastring and ring count if ring detected
 
 LEVEL3:
         show number of tries to init modem
@@ -39,7 +41,6 @@ LEVEL3:
         show CID line
 
 LEVEL2:
-        indicate cannot write pidfile
         indicate network client hung up
         indicate device or modem returned no data
 
@@ -55,9 +56,11 @@ LEVEL1:
         indicate error in opening ncidd log file
         indicate what is configured to send to the clients
         show verbose level
-        indicate if created cid logfile
-        indicate if could not create cid logfile
-        indicate name and location of cid logfile
+        indicate data type sent to clients
+        indicate alias file messages
+        indicate if leading 1 needed for aliases
+        indicate blacklist file messages
+        indicate cid logfile messages
         indicate if no data logfile
         indicate name and location of data logfile
         show Telephone Line Identifier
@@ -65,15 +68,17 @@ LEVEL1:
         show TTY port speed
         show name and location of TTY lockfile
         indicate TTY port control signals enabled or disabled
-        indicate CallerID from serial device and maybe Gateway
-        indicate CallerID from AT Modem and possible Gateway
-            indicate Handles modem calls without Caller ID
-            indicate Does not handle modem calls without Caller ID
+        indicate CallerID from serial device and optional gateways
+        indicate CallerID from AT Modem and optional gateways
+        indicate Handles modem calls without Caller ID
+        indicate Does not handle modem calls without Caller ID
         indicate CallerID from Gateway
+        indicate hangup option
         show network port
         indicate not using PID file if no '-P' option
         indicate pid file already exists
         indicate found stale pidfile
+        indicate cannot write pidfile
         indicate wrote pid in pidfile
         indicate TTY in use with date and time
         indicate TTY free with date and time

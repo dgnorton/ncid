@@ -1,7 +1,7 @@
 /*
  * ncidd - Network Caller ID Daemon
  *
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+ * Copyright (c) 2002-2011
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * This file is part of ncidd, a caller-id program for your TiVo.
@@ -38,15 +38,15 @@ int ttyspeed = TTYSPEED;
 int port = PORT;
 int debug, conferr, setcid, locked, sendlog, sendinfo, sendout, callout;
 int ttyfd, pollpos, pollevents;
-int ring, ringwait, ringcount, clocal, nomodem, noserial, gencid = 1;
-int cidsent, verbose = 1;
+int ring, ringwait, lastring, clocal, nomodem, noserial, gencid = 1;
+int cidsent, verbose = 1, hangup, ignore1;
 unsigned long cidlogmax = LOGMAX;
 pid_t pid;
 
 char ringline[CIDSIZE] = "-";
 
 struct pollfd polld[CONNECTIONS + 2];
-static struct termios otty, ntty;
+struct termios otty, ntty;
 FILE *logptr;
 
 struct cid
@@ -136,6 +136,13 @@ int main(int argc, char *argv[])
     sprintf(msgbuf, "Verbose level: %d\n", verbose);
     logMsg(LEVEL1, msgbuf);
 
+    if (nomodem && hangup)
+    {
+    sprintf(msgbuf,
+        "The nomodem option cannot be used with the hangup option.");
+        errorExit(-110, "Fatal", msgbuf);
+    }
+
     /*
      * indicate what is configured to send to the clients
      */
@@ -151,21 +158,15 @@ int main(int argc, char *argv[])
      * read alias file, if present, exit on any errors
      */
     if (doAlias()) errorExit(-109, 0, 0);
+    sprintf(msgbuf, "%s\n", ignore1 ? IGNORE1 : INCLUDE1);
+    logMsg(LEVEL1, msgbuf);
 
-    if (alias[0].type)
+    /* read blacklist file, if hangup option given, exit on any errors */
+    if (hangup)
     {
-        sprintf(msgbuf,
-            "Printing alias structure: ELEMENT TYPE [FROM] [TO] [DEPEND]\n");
-        logMsg(LEVEL8, msgbuf);
-    }
-    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
-    {
-        sprintf(msgbuf, " %.2d %.2d [%-21s] [%-21s] [%-21s]\n", i,
-            alias[i].type,
-            alias[i].from,
-            alias[i].to,
-            alias[i].depend ? alias[i].depend : " ");
-        logMsg(LEVEL8, msgbuf);
+        sprintf(msgbuf, "%s\n", HANGUPMSG);
+        logMsg(LEVEL1, msgbuf);
+        if (doBlacklist()) errorExit(-114, 0, 0);
     }
 
     if (stat(cidlog, &statbuf) == 0)
@@ -212,7 +213,7 @@ int main(int argc, char *argv[])
      * noserial = 0: serial port used for Caller ID
      */
 
-    if (!noserial)
+    if (!noserial || hangup)
     {
         /*
         * If the tty port speed was set, map it to the correct integer.
@@ -241,8 +242,7 @@ int main(int argc, char *argv[])
 
         /* check TTY port lock file */
         if (CheckForLockfile())
-            errorExit(-102, "Exiting - TTY lockfile exists",
-                  lockfile);
+            errorExit(-102, "Exiting - TTY lockfile exists", lockfile);
 
         /* Open tty port; exit program if it fails */
         openTTY();
@@ -273,15 +273,21 @@ int main(int argc, char *argv[])
             clocal ? "disabled" : "enabled");
         logMsg(LEVEL1, msgbuf);
 
-        if (nomodem)
+        if (noserial)
         {
             sprintf(msgbuf,
-                "CallerID from serial device and possible maybe Gateway\n");
+                "CallerID from gateways\n");
+            logMsg(LEVEL1, msgbuf);
+        }
+        else if (nomodem)
+        {
+            sprintf(msgbuf,
+                "CallerID from serial device and optional gateways\n");
             logMsg(LEVEL1, msgbuf);
         }
         else
         {
-            sprintf(msgbuf, "CallerID from AT Modem and possible Gateway\n");
+            sprintf(msgbuf, "CallerID from AT Modem and optional gateways]\n");
             logMsg(LEVEL1, msgbuf);
 
             if (gencid)
@@ -302,13 +308,27 @@ int main(int argc, char *argv[])
         /* initialize tty port */
         if (doTTY() < 0) errorExit(-1, ttyport, 0);
     }
-    else
+    else if (noserial)
     {
         sprintf(msgbuf, "CallerID from Gateway\n");
         logMsg(LEVEL1, msgbuf);
     }
-        sprintf(msgbuf, "Network Port: %d\n", port);
+
+    if (hangup)
+    {
+        if (noserial)
+        {
+            (void) close(ttyfd);
+            ttyfd = 0;
+            sprintf(msgbuf,
+                "Modem port closed, modem only used to terminate calls\n");
+        }
+        else sprintf(msgbuf, "Modem used to terminate calls on blacklist\n");
         logMsg(LEVEL1, msgbuf);
+    }
+
+    sprintf(msgbuf, "Network Port: %d\n", port);
+    logMsg(LEVEL1, msgbuf);
 
     if (!debug)
     {
@@ -353,21 +373,26 @@ int main(int argc, char *argv[])
                     errorExit(-1, "poll", 0);
                 break;
             case 0:        /* time out, without an event */
-                /* end of ringing */
                 if (ring > 0)
                 {
+                    /* ringing detected  */
                     if (ringwait < RINGWAIT) ++ringwait;
                     else
                     {
-                        if (ringcount == ring)
+                            sprintf(msgbuf, "lastring: %d ring: %d time: %s\n",
+                                lastring, ring, strdate(ONLYTIME));
+                            logMsg(LEVEL4, msgbuf);
+                        if (lastring == ring)
                         {
-                            ring = ringcount = ringwait = cidsent = 0;
+                            /* ringing stopped */
+                            ring = lastring = ringwait = cidsent = 0;
                             sendInfo(mainsock);
                         }
                         else
                         {
+                            /* ringing */
                             ringwait = 0;
-                            ringcount = ring;
+                            lastring = ring;
                         }
                     }
                 }
@@ -430,6 +455,7 @@ int getOptions(int argc, char *argv[])
     int option_index = 0;
     static struct option long_options[] = {
         {"alias", 1, 0, 'A'},
+        {"blacklist", 1, 0, 'B'},
         {"config", 1, 0, 'C'},
         {"cidlog", 1, 0, 'c'},
         {"cidlogmax", 1, 0, 'M'},
@@ -437,6 +463,7 @@ int getOptions(int argc, char *argv[])
         {"debug", 0, 0, 'D'},
         {"gencid", 1, 0, 'g'},
         {"help", 0, 0, 'h'},
+        {"hangup", 1, 0, 'H'},
         {"initcid", 1, 0, 'i'},
         {"initstr", 1, 0, 'I'},
         {"lineid", 1, 0, 'e'},
@@ -455,7 +482,7 @@ int getOptions(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "c:d:e:g:hi:l:n:p:s:t:v:A:C:DI:L:M:N:P:S:T:V",
+    while ((c = getopt_long (argc, argv, "c:d:e:g:hi:l:n:p:s:t:v:A:B:C:DH:I:L:M:N:P:S:T:V",
         long_options, &option_index)) != -1)
     {
         switch (c)
@@ -464,11 +491,22 @@ int getOptions(int argc, char *argv[])
                 if (!(cidalias = strdup(optarg))) errorExit(-1, name, 0);
                 if ((num = findWord("cidalias")) >= 0) setword[num].type = 0;
                 break;
+            case 'B':
+                if (!(blacklist = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("blacklist")) >= 0) setword[num].type = 0;
+                break;
             case 'C':
                 if (!(cidconf = strdup(optarg))) errorExit(-1, name, 0);
                 break;
             case 'D':
                 debug = 1;
+                break;
+            case 'H':
+                hangup = atoi(optarg);
+                if (strlen(optarg) != 1 ||
+                    (!(hangup == 0 && *optarg == '0') && hangup != 1))
+                    errorExit(-107, "Invalid number", optarg);
+                if ((num = findWord("hangup")) >= 0) setword[num].type = 0;
                 break;
             case 'I':
                 if (!(initstr = strdup(optarg))) errorExit(-1, name, 0);
@@ -684,7 +722,7 @@ int doModem()
         logMsg(LEVEL1, msgbuf);
     }
 
-    if (*initcid)
+    if (!noserial && *initcid)
     {
         /* try to initialize modem for CID */
         if ((ret = initModem(initcid)) < 0) return -1;
@@ -709,7 +747,7 @@ int doModem()
             logMsg(LEVEL1, msgbuf);
         }
     }
-    else
+    else if (*initcid == '\0')
     {
         /* initcid is null */
         sprintf(msgbuf, "CallerID initialization string for modem is null.\n");
@@ -752,6 +790,18 @@ int initModem(char *ptr)
         size += num;
         if ((num = read(ttyfd, buf + size, BUFSIZ - size - 1)) < 0) return -1;
     }
+    if (!strncmp(ptr, "ATH", 3))
+    {
+        /* more delay is needed for ATH0 and ATH1 */
+        usleep(INITWAIT * 3);
+        do
+        {
+            size += num;
+            if ((num = read(ttyfd, buf + size, BUFSIZ - size - 1)) < 0)
+                return -1;
+        }
+    while (num);
+    }
     buf[size] = 0;
 
     /* Remove CRLF at end of string */
@@ -770,10 +820,8 @@ int initModem(char *ptr)
     }
 
     /* check response */
-    if ((bufp = strrchr(buf, 'O')) != 0)
-        if (!strncmp(bufp, "OK", 2)) return 0;
-    if ((bufp = strrchr(buf, 'E')) != 0)
-        if (!strncmp(bufp, "ERROR", 5)) return 1;
+    if (strstr(buf, "OK")) return 0;
+    if (strstr(buf, "ERROR")) return 1;
 
     /* no response, or other response */
     return 2;
@@ -1223,7 +1271,8 @@ void doPoll(int events, int mainsock)
 
 void formatCID(int mainsock, char *buf)
 {
-    char cidbuf[BUFSIZ], *ptr, *sptr;
+    int hup = 0;
+    char cidbuf[BUFSIZ], *ptr, *sptr, *linelabel;
     time_t t;
 
     /*
@@ -1480,19 +1529,25 @@ void formatCID(int mainsock, char *buf)
     {
         /*
          * All Caller ID information received.
-         * Create the CID (Caller ID) or CIDOUT text line
-         * Log the CID or CIDOUT text line
+         * Create the CID (Caller ID) or OUT text line
          *
-         * Send the CID or CIDOUT text line to the clients
-         * The CIDOUT text line is only sent if configured
-         *
-         * For CIDOUT text lines (outgoing calls)
-         * the MESG field is not used
-         * the NAME field will normally be generic if no number alias
+         * For OUT text lines (outgoing calls):
+         *     the MESG field is not used
+         *     the NAME field will be generic if no alias
          */
+
         userAlias(cid.cidnmbr, cid.cidname, cid.cidline);
+
+        linelabel = CIDLINE;
+        if (callout) linelabel = OUTLINE;
+        else if (hangup)
+        {
+            /* hangup phone if on blacklist */
+            if (hup = doHangup(cid.cidname, cid.cidnmbr)) linelabel = HUPLINE;
+        }
+
         sprintf(cidbuf, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-            callout ? OUTLINE : CIDLINE,
+            linelabel,
             DATE, cid.ciddate,
             TIME, cid.cidtime,
             LINE, cid.cidline,
@@ -1500,8 +1555,15 @@ void formatCID(int mainsock, char *buf)
             MESG, cid.cidmesg,
             NAME, cid.cidname,
             STAR);
+
+        /* Log the CID or OUT text line */
         writeLog(cidlog, cidbuf);
-        if (!callout || sendout) writeClients(mainsock, cidbuf);
+
+        /*
+         * Send the CID or OUT text line to the clients
+         * The OUT text line is only sent if configured
+         */
+        if ((sendout || !callout) && !hup) writeClients(mainsock, cidbuf);
 
         /*
          * Reset mesg, line, and status
@@ -1535,6 +1597,9 @@ void builtinAlias(char *to, char *from)
 void userAlias(char *nmbr, char *name, char *line)
 {
     int i;
+
+    /* we may want to skip the leading 1, if present */
+    if (ignore1 && *nmbr == '1') ++nmbr;
 
     for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
     {
@@ -1811,7 +1876,7 @@ int doPID()
 /*
  * Check if lockfile present and has an active process number in it
  * ret == 0 if lockfile is not present or lockfile has stale process number
- * ret == 1 if lockfile present and preocess number active, or error
+ * ret == 1 if lockfile present and process number active, or error
  */
 
 int CheckForLockfile()
@@ -1933,8 +1998,9 @@ void reload(int sig)
 {
     char msgbuf[BUFSIZ];
 
-    sprintf(msgbuf, "Received Signal %d: %s\nReloading the alias file: %s\n",
-            sig, strsignal(sig), strdate(WITHSEP));
+    sprintf(msgbuf,
+        "Received Signal %d: %s\nReloading alias iand blacklist files: %s\n",
+        sig, strsignal(sig), strdate(WITHSEP));
     logMsg(LEVEL1, msgbuf);
 
     /*
@@ -1948,8 +2014,14 @@ void reload(int sig)
     /* remove existing aliases to free memory used */
     rmaliases();
 
+    /* remove existing blacklist entries to free memory used */
+    rmbl();
+
     /* reload alias file, but quit on error */
     if (doAlias()) errorExit(-109, 0, 0);
+
+    /* reload blacklist file, but quit on error */
+    if (doBlacklist()) errorExit(-109, 0, 0);
 }
 
 /* ignored signals */

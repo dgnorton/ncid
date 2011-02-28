@@ -1,0 +1,13 @@
+
+NCID Server:
+
+    This is the NCID server, it receives input from a modem, CID device,
+    or gateway and sends the Caller ID information to its clients.
+
+ncidd           - NCID server
+ncidd.conf      - ncidd configuration file
+ncidd.alias     - NCID server alias file
+ncidd.blacklist - NCID server blacklist file
+
+	prefix2 controls where to look for the config file,
+	(the default is /usr/local)

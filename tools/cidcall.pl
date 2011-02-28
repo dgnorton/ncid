@@ -20,36 +20,44 @@
 # modified by jlc on Sun May 16, 2010
 #    - removed <> from enclosing line label,
 #    - changed number from (xxx)xxx-xxxx to xxx-xxx-xxxx
+# modified by jlc on Sun Feb 13, 2011
+#    - added -cho options
+#    - the -chmo options can be combined
+#    - formats and prints the entire call log file by default
+#    - prints the line labels when formatted
 
 use Getopt::Std;
 
-getopts('mr') || die "Usage: cidcall [-r | -m] [cidlog]\n";
+getopts('chmor') || die "Usage: cidcall [-r | -chom] [cidlog]\n";
 
 ($cidlog = shift) || ($cidlog = "/var/log/cidcall.log");
 
 format STDOUT =
-@<<<<<<<<<<<<<<< @<<<<<<<<<<<<< @<<<<<<<<<< @<<<<< @<<<<<<<<<
-$name,           $number,       $date,      $time, $line
+@<<< @<<<<<<<<<<<<<<< @<<<<<<<<<<<<< @<<<<<<<<<< @<<<<< @<<<<<<<<<
+$label, $name,           $number,       $date,      $time, $line
 .
 
 open(CIDLOG, $cidlog) || die "Could not open $cidlog\n";
 
 while (<CIDLOG>) {
-  if ($opt_r) {print;}
+  if (!$opt_r && !$opt_c && !$opt_h && !$opt_m && !$opt_o) {&parseLine;}
+  elsif ($opt_r) {print;}
   else {
+    if ($opt_c) { if (/CID:/) {&parseLine;} }
+    if ($opt_h) { if (/HUP:/) {&parseLine;} }
     if ($opt_m) { if (/MSG:/) {print;} }
-    else {
-      if (/CID|EXTRA/) {
-        ($date, $time, $number, $name) = 
-         /.*\*DATE.(\d+).*\*TIME.(\d+).*\*NU*MBE*R.([-\w\s]+).*\*NAME.(.*)\*+$/;
-        ($line) = /.*\*LINE.([-\w\d]+).*/;
-        $line =~ s/-*//;
-        $date =~ s/(\d\d)(\d\d)(\d\d\d\d)*/$1\/$2\/$3/;
-        $date =~ s/\/$//;
-        $time =~ s/(\d\d)(\d\d)/$1:$2/;
-        $number =~ s/\d?(\d\d\d)(\d\d\d)(\d\d\d\d)/$1-$2-$3/;
-         write;
-      }
-    }
+    if ($opt_o) { if (/OUT:/) {&parseLine;} }
   }
+}
+
+sub parseLine {
+    ($label, $date, $time, $number, $name) = 
+     /(\w+:).*\*DATE.(\d+).*\*TIME.(\d+).*\*NU*MBE*R.([-\w\s]+).*\*NAME.(.*)\*+$/;
+    ($line) = /.*\*LINE.([-\w\d]+).*/;
+    $line =~ s/-*//;
+    $date =~ s/(\d\d)(\d\d)(\d\d\d\d)*/$1\/$2\/$3/;
+    $date =~ s/\/$//;
+    $time =~ s/(\d\d)(\d\d)/$1:$2/;
+    $number =~ s/\d?(\d\d\d)(\d\d\d)(\d\d\d\d)/$1-$2-$3/;
+     write;
 }

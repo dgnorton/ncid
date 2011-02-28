@@ -4,7 +4,6 @@ NCID for Debian
 
 Ubuntu service files:
 
-  ncid-hangup.init    - service file for ncid with ncid-hangup output module
   ncid-initmodem.init - service file for ncid with ncid-initmodem output module
   ncid-mythtv.init    - service file for ncid with ncid-mythtv output module
   ncid-page.init      - service file for ncid with ncid-page module
@@ -41,18 +40,18 @@ Steps required to build a Ubuntu or Debian package:
 The steps use ncid-0.80-src.tar.gz as an example:
 ---------------------------------------------------
 
-    mkdir ncid (and put ncid-0.80-src.tar.gz in it)
+    mkdir ncid (and put ncid-0.81-src.tar.gz in it)
     cd ncid
-    tar -xzvf ncid-0.80-src.tar.gz
-    mv ncid ncid-0.80
-    cd ncid-0.80
+    tar -xzvf ncid-0.81-src.tar.gz
+    mv ncid ncid-0.81
+    cd ncid-0.81
     fakeroot debian/rules build
     fakeroot debian/rules binary
     fakeroot debian/rules clean
 
 Binary package built:
 
-    ncid_0.80-0ubuntu1_i386.deb
+    ncid_0.81-0ubuntu1_i386.deb
 
 Build the source package (not needed)
 
@@ -60,14 +59,14 @@ Build the source package (not needed)
 
 Source file built:
 
-    ncid_0.80-0ubuntu1.tar.gz
+    ncid_0.81-0ubuntu1.tar.gz
 
 The ncid directory may contain:
 
-    ncid-0.80/
-    ncid-0.80.tar.gz
-    ncid_0.80-0ubuntu1_i386.deb
-    ncid_0.80-0ubuntu1.tar.gz
+    ncid-0.81/
+    ncid-0.81.tar.gz
+    ncid_0.81-0ubuntu1_i386.deb
+    ncid_0.81-0ubuntu1.tar.gz
 
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Sun, 10 Oct 2010 23:16:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Mon, 29 Jan 2011 23:23:00 -0400

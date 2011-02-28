@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.80
+Version:    0.81
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -26,7 +26,7 @@ ncid-client package.
 Summary:    NCID (Network Caller ID) client
 Group:      Applications/Communications
 BuildArch:  noarch
-Requires:   tcl, tk, mailx, nc, minicom
+Requires:   tcl, tk, mailx, nc
 
 %description client
 The NCID client obtains the Caller ID from the NCID server and normally
@@ -114,6 +114,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %dir /usr/share/ncid
 /usr/share/ncid/ncidrotate
 %dir /etc/ncid
+%config(noreplace) /etc/ncid/ncidd.blacklist
 %config(noreplace) /etc/ncid/ncidd.conf
 %config(noreplace) /etc/ncid/ncidd.alias
 %config(noreplace) /etc/ncid/ncidrotate.conf
@@ -129,8 +130,12 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %_initrddir/yac2ncid
 %{_mandir}/man1/ncidrotate.1*
 %{_mandir}/man1/ncidtools.1*
+%{_mandir}/man1/cidalias.1*
+%{_mandir}/man1/cidcall.1*
+%{_mandir}/man1/cidupdate.1*
 %{_mandir}/man1/ncid2ncid.1*
 %{_mandir}/man1/yac2ncid.1*
+%{_mandir}/man5/ncidd.blacklist.5*
 %{_mandir}/man5/ncidd.conf.5*
 %{_mandir}/man5/ncid2ncid.conf.5*
 %{_mandir}/man5/sip2ncid.conf.5*
@@ -144,52 +149,57 @@ rm -fr $RPM_BUILD_DIR/%{name}
 
 %files client
 %defattr(-,root,root)
-%doc modules/README.modules
+%doc README VERSION modules/README.modules
 /usr/bin/ncid
 %dir /usr/share/ncid
 /usr/share/ncid/ncid-initmodem
-/usr/share/ncid/ncid-hangup
 /usr/share/ncid/ncid-page
 /usr/share/ncid/ncid-skel
 /usr/share/ncid/ncid-tivo
 /usr/share/ncid/ncid-yac
 /usr/share/pixmaps/ncid/ncid.gif
 %dir /etc/ncid
-/etc/ncid/ncid.minicom
-%config(noreplace) /etc/ncid/ncid.blacklist
 %config(noreplace) /etc/ncid/ncid.conf
 %config(noreplace) /etc/ncid/ncidmodules.conf
 %_initrddir/ncid-initmodem
-%_initrddir/ncid-hangup
 %_initrddir/ncid-page
 %_initrddir/ncid-yac
 %{_mandir}/man1/ncid.1*
 %{_mandir}/man1/ncidmodules.1*
+%{_mandir}/man1/ncid-initmodem.1*
+%{_mandir}/man1/ncid-page.1*
+%{_mandir}/man1/ncid-skel.1*
+%{_mandir}/man1/ncid-tivo.1*
+%{_mandir}/man1/ncid-yac.1*
 %{_mandir}/man5/ncid.conf.5*
 %{_mandir}/man5/ncidmodules.conf.5*
 
 %files mythtv
 %defattr(-,root,root)
-%doc modules/README.modules
+%doc VERSION modules/README.modules
 /usr/share/ncid/ncid-mythtv
 %_initrddir/ncid-mythtv
+%{_mandir}/man1/ncid-mythtv.1*
 
 %files kpopup
 %defattr(-,root,root)
-%doc modules/README.modules
+%doc VERSION modules/README.modules
 /usr/share/ncid/ncid-kpopup
+%{_mandir}/man1/ncid-kpopup.1*
 
 %files samba
 %defattr(-,root,root)
-%doc modules/README.modules
+%doc VERSION modules/README.modules
 /usr/share/ncid/ncid-samba
 %_initrddir/ncid-samba
+%{_mandir}/man1/ncid-samba.1*
 
 %files speak
 %defattr(-,root,root)
-%doc modules/README.modules
+%doc VERSION modules/README.modules
 /usr/share/ncid/ncid-speak
 %_initrddir/ncid-speak
+%{_mandir}/man1/ncid-speak.1*
 
 %post
 # make services known
@@ -200,7 +210,7 @@ done
 
 %post client
 # make services known
-for SCRIPT in ncid-initmodem ncid-hangup ncid-page ncid-yac
+for SCRIPT in ncid-initmodem ncid-page ncid-yac
 do
     /sbin/chkconfig --add $SCRIPT
 done
@@ -227,7 +237,7 @@ fi
 %preun client
 if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
-    for SCRIPT in ncid-initmodem ncid-hangup ncid-page ncid-yac
+    for SCRIPT in ncid-initmodem ncid-page ncid-yac
     do
         /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
         /sbin/chkconfig --del $SCRIPT
@@ -299,6 +309,17 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+
+* Sat Feb 26 2011 John Chmielewski <jlc@users.sourceforge.net> 0.81-1
+- removed: /usr/share/ncid/ncid-hangup
+- removed: %_initrddir/ncid-hangup
+- removed: /etc/ncid/ncid.minicom
+- added:   %{_mandir}/man5/ncidd.blacklist.5*
+- removed line: %config(noreplace) /etc/ncid/ncid.blacklist
+- added line: %config(noreplace) /etc/ncid/ncidd.blacklist
+- added man pages: cidalias.1 cidcall.1 cidupdate.1 ncid-initmodem.1
+- added man pages ncid-kpopup.1 ncid-page.1 ncid-samba.1 ncid-speak.1
+- added man pages: ncid-mythtv.1 ncid-skel.1 ncid-tivo.1 ncid-yac.1
 
 * Sun Oct 10 2010 John Chmielewski <jlc@users.sourceforge.net> 0.80-1
 - New release

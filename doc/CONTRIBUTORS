@@ -83,6 +83,16 @@ Chris Lenderman <chris@lenderman.com>
 Todd Andrews <taa@pobox.com>
     - Corrected problems in the INSTALL document
 
+Charlie Heitzig <mail@heitzig.org>
+    - Spent time debugging sip2ncid and WinPacp.
+    - Contributed fix for sip2ncid to it exits instead of failing
+      while running when it receives a system error.
+
+Jeff Rabin <jeff@jrgator.com>
+    - Helped with the ncidd hangup option by testing, reviewing
+      documentation, suggesting improvements, and providing patches.
+    - created the ncidd configuration option "ignore1" patches.
+
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Adam 'Starblazer' Romberg
     Andy Nunez

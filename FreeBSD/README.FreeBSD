@@ -4,7 +4,6 @@ NCID for FreeBSD
 
 FreeBSD rc scripts:
 
-    ncid-hangup.rc    - rc file for ncid with ncid-hangup output module
     ncid-initmodem.rc - rc file for ncid with ncid-initmodem output module
     ncid-mythtv.rc    - rc file for ncid with ncid-mythtv output module
     ncid-page.rc      - rc file for ncid with ncid-page output module

@@ -651,7 +651,7 @@ int socketConnect(int fatal, int pos)
     else
     {
         /* connected */
-        sprintf(msgbuf, "%s: %s:%d\n",
+        sprintf(msgbuf, "Connected %s %s:%d\n",
                 ns[pos].name, ns[pos].host, ns[pos].port);
         logMsg(LEVEL1, msgbuf);
 

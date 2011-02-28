@@ -1,7 +1,7 @@
 /*
  * sip2ncid - Inject CID info by snooping SIP invites
  *
- * Copyright 2007, 2008, 2009, 2010
+ * Copyright 2007, 2008, 2009, 2010, 2011
  *  by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * sip2ncid is free software; you can redistribute it and/or modify
@@ -1292,13 +1292,9 @@ void doPCAP()
             }
             else if (pcapret == -1)
             {
-                if ((msgsent & 0x2) == 0)
-                {
-                    /* log only one error message */
-                    sprintf(msgbuf, "pcap_loop error\n");
-                    logMsg(LEVEL1, msgbuf);
-                    msgsent |= 0x2;
-                }
+                /* It appears that errors from pcap_loop aren't recoverable */
+                 errorExit(-1, "pcap_loop: error %d %s",
+                           errno, strerror(errno));
             }
         }
     }
@@ -1379,6 +1375,9 @@ void sigdetect(int sig)
 {
     char msgbuf[BUFSIZ];
 
+    sprintf(msgbuf, "Received Signal: %s\n", strsignal(sig));
+    logMsg(LEVEL1, msgbuf);
+
     if (sig == SIGALRM)
     {
         /*
@@ -1389,9 +1388,6 @@ void sigdetect(int sig)
     }
     else
     {
-        sprintf(msgbuf, "Received Signal: %s\n", strsignal(sig));
-        logMsg(LEVEL1, msgbuf);
-
         /* termination signals */
         cleanup(0);
 

@@ -10,18 +10,20 @@
 .I Options:
 .PP
 .nf
-[-A <aliasfile>  | --alias <aliasfile>]
-[-C <configfile> | --config <configfile>]
-[-c <logfile>    | --cidlog <logfile>]
+[-A <file>       | --alias <aliasfile>]
+[-B <file>       | --blacklist <file>]
+[-C <file>       | --config <configfile>]
+[-c <file>       | --cidlog <logfile>]
 [-D              | --debug]
-[-d <logfile>    | --datalog <logfile>]
+[-d <file>       | --datalog <logfile>]
 [-e <identifier> | --lineid <identifier>]
 [-g <0|1>        | --gencid <0|1>]
+[-H <0|1>        | --hangup <0|1>]
 [-h              | --help]
 [-I <modemstr>   | --initstr <modemstr>]
 [-i <cidstr>     | --initcid <cidstr>]
-[-L <logfile>    | --logfile <logfile>]
-[-l <lockfile>   | --lockfile <lockfile>]
+[-L <file>       | --logfile <logfile>]
+[-l <file>       | --lockfile <lockfile>]
 [-M <MaxBytes>   | --cidlogmax <MaxBytes>]
 [-N <0|1>        | --noserial <0|1>]
 [-n <0|1>        | --nomodem <0|1>]
@@ -57,11 +59,13 @@ so by using the alias function, you can display the name as you
 would like to view it, or correct a name that was truncated.
 You can even change or mask a telephone number.
 .PP
-.B NCIDD
-can be configured to send a CIDINFO line to clients at each ring and
-when ringing stops.  It contains a LINE (called telephone line) indicator
-and a RING indicator.
-
+The leading 1 from a telephone call is not included in an alias definition
+if the \fBignore1\fR option is set in the configuration file.
+.PP
+The \fBsend cidinfo\fR option configures \FBncidd\fR
+to send a CIDINFO line to clients at each ring and when ringing stops.
+It contains a telephone LINE label and a RING indicator.
+.PP
 If the Caller ID is obtained from a modem, and the modem supports it,
 the server will include a ring count in each CIDINFO line.
 When ringing stops, the ring count will be zero.
@@ -119,6 +123,11 @@ Alias file.
 .br
 Default: /etc/ncid/ncidd.alias
 .TP
+.B -B <file> | --blacklist <file>
+Blacklist file.
+.br
+Default: /etc/ncid/ncidd.blacklist
+.TP
 .B -C <file> | --config <file>
 Config file.
 .br
@@ -156,6 +165,12 @@ from the modem either because the telco is not sending it or
 because the modem does not support it.
 .br
 Default: gencid = 0
+.TP
+.B -H <0|1> | --hangup <0|1>
+Automatically hangup up a telephone if the caller name or number is in
+the ncidd.blacklist file.
+.br
+Default: hangup = 0
 .TP
 .B -h | --help
 Display a help message.
@@ -227,7 +242,7 @@ If the CID call log gets too big, it will not be sent.
 sent on each ring, to all clients,
 gives the current ring count.
 .br
-.IR cidout :
+.IR callout :
 sent on each call, to all clients,
 gives the outgoing call information.
 .br
@@ -305,7 +320,10 @@ CIDOUT: *DATE*mmddyyyy*TIME*hhmm*NMBR*number*MESG*NONE*NAME*NONAME*
 .fi
 .SH FILES
 .TP
-.B /etc/ncid/sip2ncid.conf
+.B /etc/ncid/ncidd.blacklist
+Blacklist file
+.TP
+.B /etc/ncid/ncidd.conf
 Configuration file
 .TP
 .B /var/run/ncidd.pid
@@ -338,8 +356,10 @@ Server log file.  Contents controlled by verbose.
       -111         Cannot init TTY
       -112         Serial device error
       -113         string too long
+      -114         Blacklist file error
         -?         System error
 .fi
 .SH SEE ALSO
-ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.conf.5, ncidd.alias.5,
-ncid.conf.5
+sip2ncid.8, ncidsip.8, ncid2ncid.1, ncidrotate.1, yac2ncid.1
+ncid.1, ncidmodules.1 ncidtools.1, lcdncid.1,
+ncidd.conf.5, ncidd.alias.5, ncidd.blacklist.5

@@ -1,7 +1,7 @@
-INIT        = ncidd.init ncidsip.init ncid2ncid.init sip2ncid.init \
-              yac2ncid.init ncid-mythtv.init ncid-page.init \
+INIT        = ncidd.init ncidsip.init ncid2ncid.init \
+              sip2ncid.init yac2ncid.init ncid-mythtv.init ncid-page.init \
               ncid-samba.init ncid-speak.init ncid-yac.init \
-              ncid-hangup.init ncid-initmodem.init
+              ncid-initmodem.init
 SPEC        = ncid.spec
 FILES		= README.Fedora Makefile $(INIT) $(SPEC)
 

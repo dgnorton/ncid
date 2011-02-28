@@ -2,7 +2,7 @@
 
 # ncid - Network Caller-ID client
 
-# Copyright (c) 2001-2010
+# Copyright (c) 2001-2011
 # by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # ncid is free software; you can redistribute it and/or modify it
@@ -127,7 +127,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
 set About \
 "
 $VersionInfo
-Copyright (C) 2001-2010
+Copyright (C) 2001-2011
 John L. Chmielewski
 http://ncid.sourceforge.net
 "
@@ -244,6 +244,7 @@ proc getCID {} {
     global lineLabel
     global call
     global type
+    global CallOut
 
     set msg {CID connection closed}
     set cnt 0
@@ -295,14 +296,14 @@ proc getCID {} {
                 if !$NoGUI {doPopup}
                 if {$Program != "" && $MsgFlag} {sendMSG $msg}
             } elseif {$type < 4 || $type > 7} {
-                # CID (1), EXTRA (2), CIDLOG (3), CIDOUT (8), CIDOUTLOG (9)
+                # CID (1), EXTRA (2), CIDLOG (3), OUT (8), OUTLOG (9)
                 set cid [formatCID $dataBlock]
                 array set call "$lineLabel [list $cid]"
                 # display log - $cid set above, no need for $call($lineLabel)
                 if {!$Raw} {displayLog $cid 0}
                 # display CID
-                if {$type < 3 || $type == 8} {
-                    # CID (1), EXTRA (2), CIDOUT (8) line
+                if {($type < 3) || ($type == 8 && $CallOut)} {
+                    # CID (1), EXTRA (2), OUT (8) line
                     if {!$NoGUI} {
                         # $cid set above, no need for $call($lineLabel)
                         displayCID $cid 0
@@ -352,8 +353,8 @@ proc checkType {dataBlock} {
     if [string match CIDINFO:* $dataBlock] {return 5}
     if [string match MSGLOG:* $dataBlock] {return 6}
     if [string match LOG:* $dataBlock] {return 7}
-    if [string match CIDOUT:* $dataBlock] {return 8}
-    if [string match CIDOUTLOG:* $dataBlock] {return 9}
+    if [string match OUT:* $dataBlock] {return 8}
+    if [string match OUTLOG:* $dataBlock] {return 9}
     return 0
 }
 

@@ -25,6 +25,7 @@ config="/usr/local/etc/ncid/$prog.conf"
 lockfile=/var/lock/subsys/$prog
 opts=""
 
+# source config file
 [ -f $config ] && . $config
 args="--pidfile /var/run/$prog.pid $opts"
 

@@ -21,7 +21,6 @@ case "$1" in
     remove|deconfigure)
         [ -h /usr/doc/ncid-client ] && rm -f /usr/doc/ncid-client
         [ -x /etc/init.d/ncid-initmodem ] && invoke-rc.d ncid-initmodem stop
-        [ -x /etc/init.d/ncid-hangup ] && invoke-rc.d ncid-hangup stop
         [ -x /etc/init.d/ncid-page ] && invoke-rc.d ncid-page stop
         [ -x /etc/init.d/ncid-yac ] && invoke-rc.d ncid-yac stop
     ;;

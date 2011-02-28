@@ -143,9 +143,9 @@ install-etc: $(CONF)
 	fi
 
 dirs:
+	@if ! test -d $(BIN); then mkdir -p $(BIN); fi
 	@if ! test -d $(SBIN); then mkdir -p $(SBIN); fi
 	@if ! test -d $(CONFDIR); then mkdir -p $(CONFDIR); fi
-	@if ! test -d $(MAN8); then mkdir -p $(MAN8); fi
 
 clean:
 	rm -f *.o *.a

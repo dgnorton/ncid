@@ -13,17 +13,20 @@
 # Modified by John L. Chmielewski on Sat Aug 12, 2006
 #   - Fixed "-c cidlog" option, Fixed alias expression line to handle
 #     '*' for a name or number, fixed alias checking in if statements
+# Modified by John L. Chmielewski on Sun Feb 13, 2011
+#   - changed the -a option to -A and the -c option to -C
+#   - removed unused -l option
 
 use Getopt::Std;
 
 $ALIAS = "/etc/ncid/ncidd.alias";
 $CIDLOG = "/var/log/cidcall.log";
 
-getopts('a:c:l:') ||
-    die "Usage: cidupdate [-a aliasfile] [-c cidlog] [newcidlog]\n";
+getopts('A:C:') ||
+    die "Usage: cidupdate [-A aliasfile] [-C cidlog] [newcidlog]\n";
 
-($alias = $opt_a) || ($alias = $ALIAS);
-($cidlog = $opt_c) || ($cidlog = $CIDLOG);
+($alias = $opt_A) || ($alias = $ALIAS);
+($cidlog = $opt_C) || ($cidlog = $CIDLOG);
 ($newcidlog = shift) || ($newcidlog = sprintf("%s.new", $cidlog));
 
 open(ALIASFILE, $alias) || die "Could not open $alias\n";

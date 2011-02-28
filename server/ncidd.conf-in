@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Config File
 
-# File last changed: Wed Dec 1, 2010
+# File last changed: Sun Feb 27, 2011
 
 ################################
 # Definitions and Line formats #
@@ -15,13 +15,13 @@
 #
 # SEND LINE FORMAT:
 #   send DATATYPE [DATATYPE] ...
-#        where DATATYPE = cidlog, cidinfo
+#        where DATATYPE = cidlog, cidinfo, callout
 #
 # SET LINE FORMAT:
 #   set ITEM = VALUE [ITEM = VALUE] ...
-#       where ITEM = cidalias, cidlog, cidlogmax, datalog, gencid, initcid,
-#                    initstr, lineid, lockfile, nomodem, noserial, pidfile
-#                    port, send, ttyclocal, ttyport, ttyspeed, verbose
+#       where ITEM = cidalias, cidlog, cidlogmax, datalog, gencid, ignore1,
+#                    initcid, initstr, lineid, lockfile, nomodem, noserial,
+#                    pidfile, port, send, ttyclocal, ttyport, ttyspeed, verbose
 
 ##########################
 # Log file verbose level #
@@ -46,7 +46,7 @@ send cidinfo
 
 # Send outgoing calls to the clients.
 # The default is not to send outgoing calls to the clients
-#send cidout
+send callout
 
 #####################
 # NCID Network Port #
@@ -66,8 +66,17 @@ send cidinfo
 # The default CID alias file: /etc/ncid/ncidd.alias
 # set cidalias = /etc/ncid/ncidd.alias
 
+# An alias that includes a telephone number depends on the number
+# received from a call.  In the US, a leading 1 is not always part
+# of the telephone number.  For instance, Vonage always includes
+# the 1 on incoming calls but on outgoing calls the 1 is optional.
+# If the ignore1 option is set, a leading 1 is not included in an
+# alias definition.
+# ignore1 = 0 default: the leading 1 may or may not be in a call
+# ignore1 = 1          ignore the leading 1 if it is in a call
+# set ignore1 = 1
+
 # The default CID call log file: /var/log/cidcall.log
-# the log file must exist, ncidd will not create it
 # (also make the change in /etc/logrotate.d/ncidd
 #  and also /etc/ncid/ncidrotate.conf)
 # set cidlog = /var/log/cidcall.log
@@ -83,23 +92,70 @@ send cidinfo
 #   and also /etc/ncid/ncidrotate.conf)
 # set datalog = /var/log/ciddata.log
 
+#########################
+# Automatic Call Hangup #
+#########################
+
+# The automatic call hangup requires a modem to hangup the call,
+# but works if ncidd is using either a modem or gateway to obtain
+# the Caller ID information.
+
+# Set hangup to a 1 if you would like ncidd to terminate a
+# call that has its name or number on a blacklist
+# hangup = 0 Default: do not terminate a call
+# hangup = 1          terminate a call based on the blacklist file
+# set hangup = 1
+
+# The default blacklist file: /etc/ncid/ncidd.blacklist
+# set blacklist = /etc/ncid/ncidd.blacklist
+
 #######################
 # Serial or No Serial #
 #######################
 
-# Normally a seriel device is required to capture CID information.
-# If you are using one or more network based clients and do not have
-# a serial device, set noserial to 1.
+# Normally a serial device is required to capture CID information.
+# If you are using one or more gateways and do not have a serial
+# device, set noserial to 1.
 
-# If noserial is set to 1, the TTY Configuration, Modem, and Modem
-# Initialization set commands are not used.
+# If noserial is set to 1 and hangup is set to 0, the TTY Configuration,
+# Modem, and Modem Initialization set commands are not used.
 
 #  NETWORK AND NO SERIAL: noserial = 1 (do not use a serial port)
 #  SERIAL AND NETWORK:    noserial = 0 (default - use a serial port)
 # set noserial = 1
 
-## NOTE: if noserial is set to 1, nothing needs to be configured beyond
-##       this point.
+## NOTE: if noserial is set to 1 and hangup is set to 0, nothing needs
+## to be configured beyond this point.
+
+#####################
+# TTY Configuration #
+#####################
+
+## Required if noserial is set to 0 or hangup is set to 1
+
+# The default tty port: /dev/modem
+# set ttyport = /dev/cu.modem # Macintosh OS X
+# set ttyport = /dev/ttyS0
+# set ttyport = /dev/ttyACM0  # USB modem
+
+# The default tty port speed: 19200
+# The tty speed can be one of: 38400, 19200, 9600, 4800
+# set ttyspeed = 4800 # NetCallerID port speed
+
+# Ignore tty control signals for internal modems and 3 wire serial cables
+#   Disable tty control signals: ttyclocal = 1
+#   Enable tty control signals: ttyclocal = 0 (default)
+# set ttyclocal = 1
+
+# The lockfile name is generated automatically
+# If tty port is /dev/modem, lockfile is: /var/lock/LCK..modem
+# set lockfile = /var/lock/LCK..ttyS0
+#
+
+###################################################################
+## NOTE: if noserial is set to 1 and hangup is set to 0, nothing ##
+##       needs to be configured beyond this point.               ##
+###################################################################
 
 ############################
 # Telephone Line Indicator #
@@ -120,30 +176,9 @@ send cidinfo
 # because the modem does not support it.  This feature requires
 # the modem to indicate each time the modem rings.
 
-# gencid = 0 never generate a generic Caller ID)
-# gencid = 1 (default: generate a generic Caller ID when needed)
-#set gencid = 0
-
-#####################
-# TTY Configuration #
-#####################
-
-# The default tty port: /dev/modem
-# set ttyport = /dev/cu.modem # Macintosh OS X
-# set ttyport = /dev/ttyS0
-
-# The default tty port speed: 19200
-# The tty speed can be one of: 38400, 19200, 9600, 4800
-# set ttyspeed = 4800 # NetCallerID port speed
-
-# Ignore tty control signals for internal modems and 3 wire serial cables
-#   Disable tty control signals: ttyclocal = 1
-#   Enable tty control signals: ttyclocal = 0 (default)
-# set ttyclocal = 1
-
-# The lockfile name is generated automatically
-# If tty port is /dev/modem, lockfile is: /var/lock/LCK..modem
-# set lockfile = /var/lock/LCK..ttyS0
+# gencid = 0          never generate a generic Caller ID
+# gencid = 1 default: generate a generic Caller ID when needed 
+# set gencid = 0
 
 #####################
 # Modem or No Modem #
@@ -158,6 +193,9 @@ send cidinfo
 ########################
 # Modem Initialization #
 ########################
+
+# initstr is required if noserial is set to 0 and nomodem is set to 0
+# or hangup is set to 1
 
 # The default modem initialization is: "AT Z S0=0 E1 V1 Q0"
 # set initstr = "ATE1V1Q0"
@@ -193,6 +231,8 @@ send cidinfo
 #
 # Example adds 3Com DR to the default modem initialization
 # set initstr = "ATE1V1Q0S41=1"
+
+# initcid is not required if noserial is set to 0 and hangup is set to 1
 
 # The default for ncidd is to try two CID strings to setup
 # CallerID: "AT+VCID=1" and if that fails: "AT#CID=1".

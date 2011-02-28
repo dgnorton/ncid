@@ -1,9 +1,6 @@
 .\" %W% %G%
 .TH NCIDMODULES 1
 .SH NAME
-.B ncid-hangup
-- hangup calls based on Caller ID using minicom
-.PP
 .B ncid-initmodem
 - use ncidd to reinitialize modem to Caller ID mode
 .PP
@@ -31,34 +28,31 @@
 .B ncid-yac
 - Send Caller ID to YAC listeners
 .SH SYNOPSIS
-ncid --no-gui --call-prog --program
-.B ncid-hangup
-.PP
-ncid --no-gui --call-prog --program
+ncid --no-gui --program
 .B ncid-initmodem
 .PP
-ncid --no-gui --call-prog --program
+ncid --no-gui --program
 .B ncid-kpopup
 .PP
-ncid --no-gui [--message] [--ring #] --call-prog --program
+ncid --no-gui [--message] [--ring #] --program
 .B ncid-page
 .PP
-ncid --no-gui [--message] --call-prog --program
+ncid --no-gui [--message] --program
 .B ncid-samba
 .PP
-ncid --no-gui --call-prog --program
+ncid --no-gui --program
 .B ncid-speak
 .PP
-ncid --no-gui [--message] --call-prog --program
+ncid --no-gui [--message] --program
 .B ncid-mythtv
 .PP
-ncid --no-gui [--message] --call-prog --program
+ncid --no-gui [--message] --program
 .B ncid-skel
 .PP
-ncid --no-gui [--message] --call-prog --program
+ncid --no-gui [--message] --program
 .B ncid-tivo
 .PP
-ncid --no-gui --call-prog --program
+ncid --no-gui [--message] --program
 .B ncid-yac
 .SH DESCRIPTION
 These are ncid output modules and are normally located in the
@@ -71,15 +65,8 @@ can be configured to call any one module.  It cannot call multiple modules,
 but multiple clients can be used, each calling a different output module.
 .PP
 The
-.B ncid-hangup
-module uses a modem to hang up on a phone call.
-It works with either a modem or gateway providing the Caller ID
-information.  The module uses minicom and runscript to talk to
-the modem.
-.PP
-The
 .B ncid-initmodem
-module reinitializes the modem obtaining the Caller ID
+output module re-initializes the modem obtaining the Caller ID
 for the server.  It can only be used if the modem supports Caller ID and
 sends "RING" at each ringing signal.  If the server indicates a non-CID
 call, ncid-initmodem will cause ncidd to re-initialize the modem for CID.
@@ -87,8 +74,19 @@ Never use this module with a modem that does not support Caller ID.  The
 module can be used with TiVo modems that drop out of Caller ID mode.
 .PP
 The
-.B ncid-page module
-is used to send a call message to a cell phone, pager,
+.B ncid-kpopup
+output module is a KDE GUI application.  When a telephone call is
+received, it pops up a window.  It can be configured to also speak
+the Caller ID using kmix and festival.
+.PP
+The
+.B ncid-mythtv
+output module is a MythTV display program.  It displays the Caller ID and
+can be configured to display messages.
+.PP
+The
+.B ncid-page
+output module is used to send a call message to a cell phone, pager,
 or email address.  It normally sends the message as soon as the Caller ID
 is received.  It can be configured to wait until a specific number of rings
 before sending the message when using a modem that indicates RING, or it
@@ -98,10 +96,28 @@ in \fIncidmodules.conf\fR to be set to the SMS gateway for your cell phone
 carrier.
 .PP
 The
+.B ncid-samba
+output module is used to send the Caller ID to Windows.  It can also
+be configured to send messages.
+.PP
+The
 .B ncid-skel
 output module is used as a template for writing
 a shell script output module.  All it does is send the Caller ID
 data to standard output.  This makes it useful for troubleshooting.
+.PP
+The
+.B ncid-speak
+output module is used speak the Caller ID using festival.
+.PP
+The
+.B ncid-tivo
+output module is used to display the Called ID on a TiVo.  It can also
+be configured to display messages.
+.PP
+The
+.B ncid-yac
+output module is used to send the Called ID and messages to YAC listeners.
 .PP
 Each output module can be independently configured using the module
 configuration file:
@@ -114,12 +130,12 @@ modules requires the \fIPageTo\fR variable to be set.
 .PP
 ncid command line options to call ncid-page at ring number 4
 .RS 0
-    ncid --no-gui --call-prog --program ncid-page --ring 4
+    ncid --no-gui --program ncid-page --ring 4
 .RE
 .PP
 Messages are normally excluded, to include messages:
 .RS 0
-    ncid --no-gui --message --call-prog --program ncid-page --ring 4
+    ncid --no-gui --message --program ncid-page --ring 4
 .RE
 .SH FILES
 /etc/ncid/ncidmodules.conf
@@ -128,7 +144,4 @@ http://en.wikipedia.org/wiki/List_of_carriers_providing_SMS_transit
 .SH SEE ALSO
 ncid.1,
 ncidmodules.conf.5,
-ncidd.8,
-.br
-minicom.1,
-runscript.1
+ncidd.8

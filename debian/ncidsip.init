@@ -33,7 +33,7 @@ ConfigFile=$ConfigDir/ncidsip.conf
 
 # source config file
 [ -f $ConfigFile ] && . $ConfigFile
-[ -n "$args" ] && DAEMON_ARGS="$args"
+[ -n "$opts" ] && DAEMON_ARGS="$opts"
 
 # Load the VERBOSE setting and other rcS variables
 [ -f /etc/default/rcS ] && . /etc/default/rcS

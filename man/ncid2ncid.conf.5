@@ -13,19 +13,20 @@ A line is broken up into words.
 A word is either a string of non-blank characters, everything
 between double quotes, or an equal sign.
 .PP
-The \fIncid2ncid.conf\fR file understands 5 types of lines:
+The \fIncid2ncid.conf\fR file understands 3 types of lines:
 .TP
 .B blank line
-skip it
+ignored
 .TP
 .B comment line, beginning with '#'
-skip it
+ignored
 .TP
 .B command lines, beginning with 'set'
-set ITEM = VALUE [ITEM = VALUE] [...]
-.RS 11
-where ITEM = pidfile, verbose, tohost, toport, fromhost?, fromport?
-(? is a digit sequence number)
+.RS 0
+    set ITEM = VALUE [ITEM = VALUE] [...]
+        where ITEM = pidfile, verbose, tohost,
+                     toport, fromhost?, fromport?
+              (? is a digit sequence number)
 .RE
 .SH EXAMPLES
 Set the verbose level to 2

@@ -22,15 +22,15 @@ Description: NCID (Network Caller ID) server, client, and gateways
 Package: ncid-client
 Architecture: all
 Depends: tcl8.4, tk8.4
-Recommends: mailx, minicom
+Recommends: mailx
 Description: NCID (Network Caller ID) client and base output modules
  The ncid-client obtains the Caller ID from the ncid-server and normally
  displays it in a GUI window.  It can also display the Called ID in a
  terminal window or, using a output module, format the output and send it
  to another program.
  .
- This package contains the NCID client with the hangup, page, yac, and
- skel output modules.
+ This package contains the NCID client with the page, yac, and skel
+ output modules.
 
 Package: ncid-kpopup
 Architecture: all

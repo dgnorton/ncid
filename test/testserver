@@ -15,16 +15,18 @@
 NCID="$1"
 shift
 
-touch T-data.log T-ncidd.conf T-ncidd.alias
+touch T-data.log T-config T-alias T-blacklist
 $NCID -Dv3 \
       -c T-call.log \
       -d T-data.log \
-      -L T-server.log \
-      -A T-ncidd.alias \
-      -C T-ncidd.conf \
-      -P T-ncidd.pid \
+      -L T-logfile \
+      -A T-alias \
+      -B T-blacklist \
+      -C T-config \
+      -P T-pid \
       -p 3334 \
       -s cidlog \
       -s cidinfo \
+      -s callout \
       -t ./vmodem0 \
       $*

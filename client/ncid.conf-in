@@ -1,6 +1,6 @@
 # ncid configuration file
 
-# File last changed: Fri Dec 9, 2010
+# File last changed: Sat Feb 12, 2011
 
 # This configuration file takes effect every time ncid is started.
 # It is for global changes.  For changes to a particular instance
@@ -56,11 +56,11 @@ set Raw         0
 set TivoFlag    0
 
 # If set to 1, display formatted CID, and CID log file on connect
-# If set to 0, ddo not isplay formatted CID, and CID log file on connect
+# If set to 0, do not display formatted CID, and CID log file on connect
 # Default: 0
 set Verbose     0
 
-# If set to 1, display information in terminal progran or external program
+# If set to 1, display information in terminal program or external program
 # If set to 0, display information using a GUI
 # Default: 0
 set NoGUI       0
@@ -73,9 +73,9 @@ set Callprog    0
 # Default: 0
 set CallOnRing  0
 
-# display outgoing call
+# display outgoing calls
 # Default: 0
-set CallOut 0
+set CallOut     0
 
 # Message Flag: send messages to output modules
 # Default: 0

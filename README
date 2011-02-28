@@ -2,19 +2,29 @@ NCID - Network CallerID
 
 Web Site: http://ncid.sourceforge.net
 
-File last changed: Sat Dec 11, 2010
+NCID Features: http://ncid.sourceforge.net/ncid/ncid.html
+
+Man Pages: http://ncid.sourceforge.net/man/man.html
+
+Software Development Kit: http://ncid.sourceforge.net/NCID-SDK.odt
+
+File last changed: Sun Jan 30, 2011
 
 Directories:
     cidgate:     gateway programs
-    doc:         most of the documentation
+    client:      client program
     Debian:      files specific to Debian.
+    doc:         most of the documentation
     Fedora:      files specific to Fedora.
     FreeBSD:     files specific to FreeBSD.
     man:         man pages
     modules:     client modules
+    server:      server program
     screenshots: screenshots for ncid and tivocid
     scripts:     logrotate scripts
+    server:      server program
     test:        test scripts for the server and client
+    TiVo:        files specific to the TiVo
     tools:       log file scripts
     Win:         files specific to windows
 
@@ -24,12 +34,14 @@ The NCID package contains:
     - a Network CallerID client: ncid
       ncid runs on Linux/TiVo/UNIX/Windows/Mac OSX/Cygwin (requires tcl/tk)
     - client output modules and a configuration script for them
+    - a Network CallerID hangup client: ncidhangup
+    - A NCID to NCID gateway: ncid2ncid
     - A SIP Invite Gateway: sip2ncid
       sip2ncid runs on Linux/UNIX/Windows/Mac OSX/Cygwin
     - Original SIP Invite Gateway: ncidsip
       ncidsip runs on Linux/UNIX/Windows/Mac OSX/Cygwin
       (requires Perl and Perl modules)
-    - YAC to NCID gateway client: yac2ncid (requires a yac server to input CID)
+    - A YAC to NCID gateway: yac2ncid (requires a yac server to input CID)
       yac2ncid Linux/UNIX/Cygwin/Mac
     - tools to work with the CID log and alias files: ncidtools
       ncidtools runs on Linux/UNIX/Mac OSX/Cygwin/TiVo (requires Perl)
@@ -79,13 +91,16 @@ The NCID package has the following features:
     - Sends ring count or -1 for hangup before answer or -2 for hangup after
       answer if input device supports it.
     - supports sending outgoing calls to clients if received from a gateway
+    - Automatically terminates a telephone call using a modem if name or
+      number is in the blacklist file.
+    - Reloads the alias and blacklist files when it receives a SIGHUP signal.
     - Documented protocol
 
     Client Features (ncid):
-    - Can display the number in a specific country format for US, Sweden,
-      United kingdom, Germany, and no country.
+    - Displays the number in a specific country format for US, Sweden,
+      United kingdom, Germany, and no format.
     - Displays the current Caller ID Log when a call is received.
-    - Can display outgoing calls if they are supported by the server
+    - Displays outgoing calls if they are supported by the server
     - Displays messages received from the server.
     - Supports Distinctive Ring and multiple telephone lines.
     - Supports output modules to customize its output and to send the CID
@@ -131,6 +146,7 @@ man pages:
 Instructions for using ncidd are in the man page: ncidd.8
 Instructions for configuring ncidd are in the man page: ncidd.conf.5
 Instructions for configuring ncidd aliases are in the man page: ncidd.alias.5
+Instructions for ncid.blacklist are in the man page: ncidd.blacklist.conf.5
 
 Instructions for using ncid are in the man page: ncid.1
 Instructions for configuring ncid are in the man page: ncid.conf.5
@@ -159,6 +175,7 @@ The distributed configuration files are:
     ncid.conf
     ncidd.conf
     ncidd.alias
+    ncidd.blacklist
     ncidsip.conf
     ncidrotate.conf
     ncidmodules.conf

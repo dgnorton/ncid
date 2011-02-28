@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
+ * Copyright (c) 2002-2011
  * by  John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddconf.c is free software; you can redistribute it and/or modify
@@ -24,34 +24,37 @@ char *cidconf = CIDCONF;
 
 char *getWord();
 int doConf(), findWord(), findSend();
-void doSend(), configError(), doSet();
+void doSend(), doSet();
 
 struct setword setword[] = {
     /* char *word; int type; char **buf; int *value; int min; int max */
-    {"cidalias",   WORDSTR,            &cidalias, 0,         0,    0},
-    {"cidlog",     WORDSTR,            &cidlog,   0,         0,    0},
-    {"cidlogmax",  WORDNUM,            0,         (int *) &cidlogmax,1,    LOGMAXNUM},
-    {"datalog",    WORDSTR,            &datalog,  0,         0,    0},
-    {"gencid",     WORDNUM,            0,         &gencid,   OFF, ON},
-    {"initcid",    WORDSTR | WORDFLAG, &initcid,  &setcid,   0,    0},
-    {"initstr",    WORDSTR,            &initstr,  0,         0,    0},
-    {"lineid",     WORDSTR,            &lineid,   0,         0,    0},
-    {"lockfile",   WORDSTR,            &lockfile, 0,         0,    0},
-    {"nomodem",    WORDNUM,            0,         &nomodem,  OFF, ON},
-    {"noserial",   WORDNUM,            0,         &noserial, OFF, ON},
-    {"pidfile",    WORDSTR,            &pidfile,  0,         0,    0},
-    {"port",       WORDNUM,            0,         &port,     0,    0},
-    {"ttyclocal",  WORDNUM,            0,         &clocal,   OFF, ON},
-    {"ttyport",    WORDSTR,            &ttyport,  0,         0,    0},
-    {"ttyspeed",   WORDSTR,            &TTYspeed, 0,         0,    0},
-    {"verbose",    WORDNUM,            0,         &verbose,  1,    MAXLEVEL - 2},
-    {0,            0,                  0,         0,         0,    0}
+    {"blacklist",  WORDSTR,            &blacklist, 0,         0,    0},
+    {"cidalias",   WORDSTR,            &cidalias,  0,         0,    0},
+    {"cidlog",     WORDSTR,            &cidlog,    0,         0,    0},
+    {"cidlogmax",  WORDNUM,            0,          (int *) &cidlogmax,1,    LOGMAXNUM},
+    {"datalog",    WORDSTR,            &datalog,   0,         0,    0},
+    {"gencid",     WORDNUM,            0,          &gencid,   OFF, ON},
+    {"hangup",     WORDNUM,            0,          &hangup,   OFF, ON},
+    {"ignore1",    WORDNUM,            0,          &ignore1,  OFF, ON},
+    {"initcid",    WORDSTR | WORDFLAG, &initcid,   &setcid,   0,    0},
+    {"initstr",    WORDSTR,            &initstr,   0,         0,    0},
+    {"lineid",     WORDSTR,            &lineid,    0,         0,    0},
+    {"lockfile",   WORDSTR,            &lockfile,  0,         0,    0},
+    {"nomodem",    WORDNUM,            0,          &nomodem,  OFF, ON},
+    {"noserial",   WORDNUM,            0,          &noserial, OFF, ON},
+    {"pidfile",    WORDSTR,            &pidfile,   0,         0,    0},
+    {"port",       WORDNUM,            0,          &port,     0,    0},
+    {"ttyclocal",  WORDNUM,            0,          &clocal,   OFF, ON},
+    {"ttyport",    WORDSTR,            &ttyport,   0,         0,    0},
+    {"ttyspeed",   WORDSTR,            &TTYspeed,  0,         0,    0},
+    {"verbose",    WORDNUM,            0,          &verbose,  1,    MAXLEVEL - 2},
+    {0,            0,                  0,          0,         0,    0}
 };
 
 struct sendclient sendclient[] = {
     {"cidlog",   &sendlog},
     {"cidinfo",  &sendinfo},
-    {"cidout",  &sendout},
+    {"callout",  &sendout},
     {0,           0}
 };
 

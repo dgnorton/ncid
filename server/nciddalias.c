@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2006, 2008, 2009, 2010
+ * Copyright (c) 2005-2011
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddalias.c is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@ char *cidalias = CIDALIAS;
 
 struct alias alias[ALIASSIZE];
 
-extern int errorStatus, configError();
+extern int errorStatus;
 extern char *getWord();
 
 int doAlias(), nextAlias();
@@ -36,14 +36,14 @@ void getAlias(), setAlias(), rmaliases();
 
 int doAlias()
 {
-    char input[BUFSIZ], word[BUFSIZ], buf[BUFSIZ], *inptr;
-    int lc;
+    char input[BUFSIZ], word[BUFSIZ], msgbuf[BUFSIZ], *inptr;
+    int lc, i;
     FILE *fp;
 
     if ((fp = fopen(cidalias, "r")) == NULL)
     {
-        sprintf(buf, "No alias file: %s\n", cidalias);
-        logMsg(LEVEL1, buf);
+        sprintf(msgbuf, "No alias file: %s\n", cidalias);
+        logMsg(LEVEL1, msgbuf);
         return 0;
     }
 
@@ -60,8 +60,25 @@ int doAlias()
         else configError(cidalias, lc, word, ERRCMD);
     }
     (void) fclose(fp);
-    sprintf(buf, "Processed alias file: %s\n", cidalias);
-    logMsg(LEVEL1, buf);
+    sprintf(msgbuf, "Processed alias file: %s\n", cidalias);
+    logMsg(LEVEL1, msgbuf);
+
+    if (!errorStatus && alias[0].type)
+    {
+        sprintf(msgbuf,
+            "Alias Entries: ELEMENT TYPE [FROM] [TO] [DEPEND]\n");
+        logMsg(LEVEL8, msgbuf);
+
+        for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+        {
+            sprintf(msgbuf, " %.2d %.2d [%-21s] [%-21s] [%-21s]\n", i,
+                alias[i].type,
+                alias[i].from,
+                alias[i].to,
+                alias[i].depend ? alias[i].depend : " ");
+            logMsg(LEVEL8, msgbuf);
+        }
+    }
 
     return errorStatus;
 }

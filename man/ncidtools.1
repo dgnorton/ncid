@@ -1,27 +1,27 @@
 .\" %W% %G%
 .TH NCIDTOOLS 1
 .SH NAME
-.B cidlog
-- view Caller ID log file
+.B cidcall
+- view calls, hangups, and messages the NCID call file
 .PP
 .B cidalias
-- view Caller ID alias definitions
+- view alias definitions in the NCID alias file
 .PP
 .B cidupdate
-- update Caller ID aliases in log file
+- update aliases in the NCID call file
 .SH SYNOPSIS
 .B cidcall
-[-r | -m] [cidlog]
+[-r | -chmo] [callfile]
 .PP
 .B cidalias
 [-r] [aliasfile]
 .PP
 .B cidupdate
-[-a aliasfile] [-l cidlog] [newcidlog]
+[-A aliasfile] [-C callfile] [newcallfile]
 .SH DESCRIPTION
 The script,
 .BR cidcall ,
-displays the current CID call file.
+displays the cidcall.log file.
 .PP
 The script,
 .BR cidalias ,
@@ -29,45 +29,54 @@ displays the aliases in the ncidd.alias file.
 .PP
 The Script,
 .BR cidupdate ,
-updates the CID log file using the aliases found in the ncidd.alias file.
+updates the cidcall.log file using the aliases found in the ncidd.alias file.
 .SH "OPTIONS"
 .PD 0
 .TP 14
 .B -r
-Display the raw log file or alias definition.
+Display the raw call file or alias definition.
 .br
-Default: format the log file or alias definition.
+Default: format the call file or alias definition.
+.TP
+.B -c
+Display CID lines (incoming calls) in the call file.
+.TP
+.B -h
+Display HUP lines (terminated calls) in the call file.
 .TP
 .B -m
-Display messages sent.
+Display MSG lines (messages) in the call file.
 .TP
-.B -a aliasfile
+.B -o
+Display OUT lines (outgoing calls) in the call file.
+.TP
+.B -A aliasfile
 Set the alias file to \fIaliasfile\fR
 .br
 Default: /etc/ncid/ncidd.alias
 .TP
-.B -c cidlog
-Set the CID call file to \fIcidlog\fR
+.B -C callfile
+Set the call file to \fIcallfile\fR
 .br
 Default: /var/log/cidcall.log
 .PD
 .SS "Arguments"
 .PD 0
 .TP 14
-.B cidlog
-The CID call file.
+.B callfile
+The NCID call file.
 .br
 Default: /var/log/cidcall.log
 .TP
-.B configfile
-The ncidd configuration file.
+.B aliasfile
+The ncidd alias file.
 .br
-Default: /etc/ncid/ncidd.conf
+Default: /etc/ncid/ncidd.alias
 .TP
-.B newcidlog
-The updated CID log file.
+.B newcallfile
+The updated call file.
 .br
 Default: cidcall.log.new
 .PD
 .SH SEE ALSO
-ncidd.conf.5, ncidd.alias.5
+ncidd.conf.5, ncidd.alias.5, ncidd.blacklist.5

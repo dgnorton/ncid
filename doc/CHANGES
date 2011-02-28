@@ -1,5 +1,94 @@
 ncid - Network CallerID
 
+Version 0.81
+    - Makefile: updated
+    - README: updated
+    - ncidd.h: changed RINGWAIT from 25 to 29
+               changed "CIDOUT: " to "OUT: ", added "HUP: "
+                   added ttyfd and hangup to extern int
+                   added extern struct termios ntty;
+               added ignore1 as a extern
+               added the IGNORE1 and INCLUDE1 defines
+               moved to server/
+    - ncidd.c: changed ringcount variable to ringwait
+               changed gencid to initialize to 0 instead of 1
+               added LogMsg() to display lastring and ring at level 4
+               main(): removed code to print aliases
+               userAlias(): added if (ignore1 && *nmbr == '1') ++nmbr;
+               added hangup option
+               moved to server/
+    - ncidd.alias: moved to server/
+    - nciddalias.c: doAlias(): changed buf[] to msgbuf[]
+                               added LEVEL8 printout of alias[]
+                    moved to server/
+    - nciddalias.h: updated
+                    moved to server/
+    - nciddconf.c: added hangup to setword[] structure
+                   added ignore1 to setword[] structure
+                   moved to server/
+    - nciddconf.h: added extern int errorStatus;
+                   moved to server/
+    - nciddhangup.c: added
+                     moved to server/
+    - nciddhangup.h: added
+                     moved to server/
+    - ncidd.conf-in: added hangup configuration and comments
+                     added ignore1 configuration and comments
+                     moved to server/
+    - ncid.sh: changed CIDOUT to OUT and changed CIDOUTLOG to OUTLOG
+               getCID{}: - changed if {$type < 3 || $type == 8}
+                           to if {($type < 3) || ($type == 8 && $CallOut)}
+                         - added: global CallOut
+    -          moved to client/
+    - ncid.conf-in: moved to client/
+    - ncid.gif: moved to client/
+    - nciddalias.c: doAlias(): added code to print aliases
+                               renamed buf to msgbuf
+    - ncidd.conf-in: updated for new gencid initialization
+                     added ttyACM0 comment
+    - moved server files to server/
+    - moved client files to client/
+    - cidgate/Makefile: updated
+    - cidgate/ncid2ncid.c: socketConnect(): changed connect message
+                           added strerror() to error messgage line 1298
+                           sigdetect(): signals logged for all signals
+    - debian/Makefile: updated
+    - debian/README.Debian: updated
+    - debian/control: updated
+    - debian/ncid-hangup.init: removed
+    - debian/postrm-client: updated
+    - debian/prerm-client: updated
+    - debian/rules: updated
+    - doc/TODO: updated
+    - doc/NCID-SDK.odt: updated
+    - doc/Verbose-ncidd: updated
+    - Fedora/Makefile: updated
+    - Fedora/README.Fedora: updated
+    - Fedora/ncid.spec: updated
+    - Fedora/ncidsip.init: added comment
+    - Fedora/ncid-hangup.init: removed
+    - FreeBSD/Makefile: updated
+    - FreeBSD/README.FreeBSD: updated
+    - FreeBSD/ncidsip.rc: added $opts to args=... line
+    - FreeBSD/ncid-hangup.rc: removed
+    - man/Makefile: updated
+    - man/*: updated all man pages and added man pages
+    - modules/Makefile: updated
+    - modules/README.modules: updated
+    - modules/ncidmodules.conf-in: updated
+    - modules/ncid-hangup.sh: removed
+    - modules/ncid.blacklist: removed
+    - modules/ncid.minicom: removed
+    - server/*: added
+    - test/README.test: updated
+    - test/testserver: added the -B blacklist option
+    - test/TestGWcalls.data: updated
+    - test/testclient.data: updated
+    - TiVo/Makefile: updated
+    - TiVo/README.TiVo: updated
+    - tools/cidcall.pl: updated and improved output
+    - tools/cidupdate.pl: changed the -a and -c options to -A and -C, removed -l
+
 Version 0.80
     - README: updated for new features
     - Makefile: added OSDCLIENT to tivo-mips: and tivo-s1:
@@ -22,6 +111,7 @@ Version 0.80
     - ncid.conf-in: updated country code comments
                removed "set Program line and comments
                changed EXTPROG name to ProgName
+    - ncidd.conf-in: corrected comment about the cid logfile
     - cidgate/sip2ncid.c: added type to the CALL: and CALLINFO lines
                           type is either CALLOUT or CALLIN
     - cidgate/sip2ncid.h: removed CIDCALL and added CALLOUT, CALLIN

@@ -1,6 +1,6 @@
 The current TODO list (in no particular order)
 
-Last modified: Thu Sep 9, 2010
+Last modified: Mon Feb 21, 2011
 
     - Add graphics to view image of who is calling.
     - Add ncid.exe to the Windows tray.
@@ -12,10 +12,10 @@ Last modified: Thu Sep 9, 2010
 
 The MAYBE TODO list (in no particular order)
 
-    - Add ringtone support.
+    - Add ringtone support. (NCIDpop and ncid-applet have ringtone support)
     - Add a firefox module.
     - Add SSL between server and client for secure use over Internet.
     - Use separate ports for clients and gateways
-    - Rewrite the ncid client and split it into two:
-        a GUI client using GTK+
-        a command line client that uses output plugins
+    - add SIP blocking and recording capibility
+    - add a Modem On Hold feature or at least display the Caller ID
+      during a modem data call.

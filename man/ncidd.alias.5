@@ -2,51 +2,44 @@
 .TH NCIDD.ALIAS 5
 .SH NAME
 .B ncidd.alias
-- ncidd alias file
+- NCID Server Alias File
 .SH DESCRIPTION
 The \fIncidd.alias\fR file contains the alias information for
-\fIncidd\fR, the Network Caller ID Server.
-.PP
-The \fIncidd.alias\fR file is used to create aliases.
-A alias is set on a alias line.  A line is broken up into words.
-A word is either a string of non-blank characters, everything
-between double quotes, or an equal sign.
+\fIncidd\fR, the NCID Server.  It contains the aliases for
+Caller ID names and numbers.  It also contains the aliases
+for telephone line identifiers.
 .PP
 The \fIncidd.alias\fR file understands 3 types of lines:
+.TP 15
+\fBblank line\fR: ignored
 .TP
-.B blank line
-skip it
+\fBcomment line, beginning with '#'\fR: ignored
 .TP
-.B comment line, beginning with '#'
-skip it
-.TP
-.B alias line, beginning with 'alias'
-alias [NMBR|NAME] "FROM" = "TO" [if "VALUE"]
-.RS 11
-where NMBR or NAME is a KEYWORD
-.br
-where FROM is a string or "*" when using "if"
-.br
-where TO is the "alias"
-.br
-where VALUE is a NAME if KEYWORD = NMBR
-.br
-where VALUE is a NMBR if KEYWORD = NAME
+\fBalias line: processed
+.RS 0
+    alias [NMBR|NAME] ["]FROM["] = ["]TO["] [if ["]VALUE["]]
+    alias [LINE] ["]FROM["] = ["]TO["
+         where  NMBR, NAME or LINE is a KEYWORD
+                FROM is a CID string, can be '*' when using 'if'
+                TO is the alias for the FROM string
+                VALUE is a NAME if KEYWORD = NMBR
+                VALUE is a NMBR if KEYWORD = NAME
+                VALUE is a LINE if KEYWORD = LINE
 .RE
 .SH EXAMPLES
-Change OUT-OF-AREA to UNAVAILABLE:
+Change OUT-OF-AREA to UNAVAILABLE in both name and number fields:
 .RS 0
 	alias OUT-OF-AREA = UNAVAILABLE
 .RE
 .PP
-Change OUT-OF-AREA to UNAVAILABLE for a NAME:
+Change OUT-OF-AREA to UNAVAILABLE in the name field only:
 .RS 0
 	alias NAME OUT-OF-AREA = UNAVAILABLE
 .RE
 .PP
-Change generic name to specific name for a phone number:
+Change any name to a specific name for a phone number:
 .RS 0
-	alias NAME * = "John on CELL" if 4075551212
+	alias NAME * = "John on cell" if 4075551212
 .RE
 .PP
 Mask a phone number:
@@ -54,19 +47,22 @@ Mask a phone number:
 	alias NMBR 4075551212 = "----------"
 .RE
 .PP
-Change the line indicator, from no display,  to \fIPOTS\fR:
+The default line indicator for a POTS line is "-".  The ncid client
+will not display the "-" indicator.  To display 'POTS' for a POTS line:
 .RS 0
 	alias LINE - = POTS
 .RE
 .PP
-Change the ncidsip line indicator, from 1122, to no display:
+To not display a gateway line indicator, change it from the one
+received a '-'.  If the line indicator is '1122':
 .RS 0
 	alias LINE 1122 = -
 .RE
 .PP
-Change the ncidsip line indicator display, for any line, to \fIVOIP\fR:
+Change any line indicator to VOIP.  Be careful to place this after
+a POTS line indicator if a POTS line is also present:
 .RS 0
 	alias LINE * = VOIP
 .RE
 .SH SEE ALSO
-ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.conf.5
+ncidd.8, ncidd.conf.5

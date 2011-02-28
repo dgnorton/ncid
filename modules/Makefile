@@ -1,9 +1,8 @@
-SHMODULES = ncid-hangup ncid-page.sh ncid-samba.sh ncid-speak.sh \
+SHMODULES = ncid-page.sh ncid-samba.sh ncid-speak.sh \
             ncid-mythtv.sh ncid-kpopup.sh ncid-skel.sh ncid-tivo.sh \
             ncid-yac.sh ncid-initmodem.sh
-ETCFILES  = ncid.blacklist ncid.minicom
 DIST      = ncidmodules.conf-in
-FILES     = README.modules Makefile $(SHMODULES) $(ETCFILES) $(DIST)
+FILES     = README.modules Makefile $(SHMODULES) $(DIST)
 
 prefix    = /usr/local
 prefix2   = $(prefix)
@@ -29,7 +28,6 @@ install-modules: $(MODULES)
 	install -m 755 $(MODULES) $(MODULEDIR)
 
 install-etc: $(CONFFILE)
-	install -m 644 $(ETCFILES) $(CONFDIR)
 	@if test -f $(CONFDIR)/$(CONFFILE); \
 		then install -m 644 $(CONFFILE) $(CONFDIR)/$(CONFFILE).new; \
 		else install -m 644 $(CONFFILE) $(CONFDIR); \

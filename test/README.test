@@ -1,7 +1,7 @@
-=================================================================
-This directory contains test programs and test files for the NCID
-server and clients, and client output modules.
-=================================================================
+===============================================================
+These are the test programs and test files for the NCID server,
+clients, and client output modules.
+===============================================================
 
 aliasfile:
     Used to view the cidalias array in the server.  Called
@@ -23,11 +23,11 @@ ncidd-noerrors.conf:
 
 testclient:
 testclient.data:
-    The program is a NCID server emulator used lines to test a client.
-    The test server uses port 3334.  It sends one or more lines from
-    the testclient.data file with each press of <ENTER>.  The last
-    <ENTER> will terminate the server.  Blank lines are used to
-    terminate a send initiated by <ENTER>.
+    The program is a NCID server emulator.  It is used  to test a client.
+    The test server uses port 3334.  It sends one or more lines from the
+    testclient.data file with each press of <ENTER>.  The last <ENTER>
+    will terminate the server.  Blank lines are used to terminate a send
+    initiated by <ENTER>.
 
     Usage:             ./testclient [data_file]
 	Default Data File: testclient.data

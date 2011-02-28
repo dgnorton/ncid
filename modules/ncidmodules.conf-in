@@ -16,17 +16,6 @@
 ######################################@#
 # no configuration needed
 
-#########################
-# Hang up on the caller #
-#      ncid-hangup      #
-#########################
-# IMPORTANT: minicom is required and must be configured using: minicom -s
-#            If ncidd is using a modem, minicom must use the same ttyport
-#            configured in ncidd.conf
-# 
-# the log file containing calls that were terminated
-HangupLog=/var/log/ncid-hangup.log
-
 #################################################
 # Send a KDE popup message to local ncid client #
 #                  ncid-kpopup                  #

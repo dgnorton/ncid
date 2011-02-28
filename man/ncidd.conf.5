@@ -13,25 +13,26 @@ A line is broken up into words.
 A word is either a string of non-blank characters, everything
 between double quotes, or an equal sign.
 .PP
-The \fIncidd.conf\fR file understands 5 types of lines:
+The \fIncidd.conf\fR file understands 4 types of lines:
 .TP
 .B blank line
-skip it
+ignored
 .TP
 .B comment line, beginning with '#'
-skip it
+ignored
 .TP
 .B command lines, beginning with 'send'
 send DATATYPE
 .RS 11
-where DATATYPE = cidlog, cidinfo
+where DATATYPE = cidlog, cidinfo, callout
 .RE
 .TP
 .B command lines, beginning with 'set'
 set ITEM = VALUE [ITEM = VALUE] [...]
 .RS 11
-where ITEM = cidlog, cidlogmax, datalog, initcid, initstr,
-lockfile, noserial, port, ttyclocal, ttyport, ttyspeed, nomodem,
+where ITEM = cidalias, cidlog, cidlogmax, datalog, genid,
+ignore1, initcid, initstr, lineid, lockfile,
+nomodem, noserial, pidfile, port, send, ttyclocal, ttyport, ttyspeed,
 verbose
 .RE
 .SH EXAMPLES
@@ -48,6 +49,11 @@ Send the ring count, at each ring, to each client
 Send outgoing calls to each client
 .RS 0
     send cidout
+.RE
+.PP
+Set alias definitions to not include a leading 1
+.RS 0
+	set ignore1 = 1
 .RE
 .PP
 Set the modem for Caller ID:
@@ -80,4 +86,4 @@ Only use Gateways to obtain the Caller ID:
 	set noseriel = 1
 .RE
 .SH SEE ALSO
-ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.alias.5
+ncidd.8 ncidd.alias.5 ncidd.blacklist.5

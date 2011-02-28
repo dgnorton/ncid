@@ -1,9 +1,15 @@
-MANSRC1 = ncid.1 ncidmodules.1 ncidrotate.1 ncidtools.1 ncid2ncid.1 yac2ncid.1
-MANSRC5 = ncid.conf.5 ncidd.conf.5 ncidd.alias.5 ncidmodules.conf.5 \
-          ncidrotate.conf.5 ncidsip.conf.5 ncid2ncid.conf.5 sip2ncid.conf.5 \
-          yac2ncid.conf.5
+MANSRC1 = ncid.1 ncidmodules.1 ncidrotate.1 \
+          ncidtools.1 ncid2ncid.1 yac2ncid.1
+MANSRCI = cidalias.1 cidcall.1 cidupdate.1 \
+          ncid-initmodem.1 ncid-kpopup.1 ncid-page.1 \
+          ncid-samba.1 ncid-speak.1 ncid-mythtv.1 \
+          ncid-skel.1 ncid-tivo.1 ncid-yac.1
+MANSRC5 = ncidd.blacklist.5 ncid.conf.5 \
+          ncidd.conf.5 ncidd.alias.5 ncidmodules.conf.5 \
+          ncidrotate.conf.5 ncidsip.conf.5 ncid2ncid.conf.5 \
+          sip2ncid.conf.5 yac2ncid.conf.5
 MANSRC8 = ncidd.8 ncidsip.8 sip2ncid.8
-MANSRC  = $(MANSRC1) $(MANSRC5) $(MANSRC8)
+MANSRC  = $(MANSRC1) $(MANSRCI) $(MANSRC5) $(MANSRC8)
 FILES   = Makefile $(MANSRC)
 
 prefix  = /usr/local
@@ -29,10 +35,10 @@ html: $(MANSRC1:.1=.1.html) $(MANSRC5:.5=.5.html) $(MANSRC8:.8=.8.html)
 install: install-man
 
 install-man: $(MANSRC) dirs
-	cd $(MAN1); rm -f $(MANSRC1)
+	cd $(MAN1); rm -f $(MANSRC1) $(MANSRCI)
 	cd $(MAN5); rm -f $(MANSRC5)
 	cd $(MAN8); rm -f $(MANSRC8)
-	install -m 644 $(MANSRC1) $(MAN1)
+	install -m 644 $(MANSRC1) $(MANSRCI) $(MAN1)
 	install -m 644 $(MANSRC5) $(MAN5)
 	install -m 644 $(MANSRC8) $(MAN8)
 

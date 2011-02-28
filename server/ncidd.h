@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+ * Copyright (c) 2002-2011
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd.h is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include "nciddconf.h"
 #include "nciddalias.h"
+#include "nciddhangup.h"
 
 #include <getopt.h>
 #include <fcntl.h>
@@ -47,27 +48,29 @@
 #define NOOPT       "%s: not a option: %s\n"
 #define USAGE       "\
 Usage:   %s [options]\n\
-Options: [-A aliasfile  | --alias aliasfile]\n\
-         [-C configfile | --config configfile]\n\
-         [-c calllog    | --cidlog calllog]\n\
+Options: [-A aliasfile  | --alias <file>]\n\
+         [-B blacklist  | --blacklist <file>]\n\
+         [-C configfile | --config <file>]\n\
+         [-c calllog    | --cidlog <file>]\n\
          [-D            | --debug]\n\
-         [-d logfile    | --datalog logfile]\n\
-         [-e lineid     | --lineid identifier]\n\
+         [-d logfile    | --datalog <file>]\n\
+         [-e lineid     | --lineid <identifier>]\n\
          [-g 0/1        | --gencid 0/1]\n\
          [-h            | --help]\n\
-         [-I modemstr   | --initstr modemstr]\n\
-         [-i cidstr     | --initcid cidstr]\n\
-         [-L logfile    | --logfile logfile]\n\
-         [-l lockfile   | --lockfile lockfile]\n\
-         [-M MaxBytes   | --cidlogmax MaxBytes]\n\
+         [-H 0/1        | --hangup 0/1]\n\
+         [-I modemstr   | --initstr <initstring>]\n\
+         [-i cidstr     | --initcid <cidstring>]\n\
+         [-L logfile    | --logfile <file>]\n\
+         [-l lockfile   | --lockfile <file>]\n\
+         [-M MaxBytes   | --cidlogmax <MaxBytes>]\n\
          [-N 0/1        | --noserial 0/1]\n\
          [-n 0/1        | --nomodem 0/1]\n\
-         [-P pidfile    | --pidfile pidfile]\n\
-         [-p portnumber | --port portnumber]\n\
-         [-S ttyspeed   | --ttyspeed ttyspeed]\n\
+         [-P pidfile    | --pidfile <file>]\n\
+         [-p portnumber | --port <portnumber>]\n\
+         [-S ttyspeed   | --ttyspeed <ttyspeed>]\n\
          [-s datatype   | --send cidlog|cidinfo|cidout]\n\
          [-T 0/1        | --sttyclocal 0/1]\n\
-         [-t ttyport    | --ttyport ttyport]\n\
+         [-t ttyport    | --ttyport <ttyport>]\n\
          [-V            | --version]\n\
          [-v 1-9        | --verbose 1-9]\n\
 "
@@ -104,7 +107,7 @@ Options: [-A aliasfile  | --alias aliasfile]\n\
 #define PORT        3333
 #define CONNECTIONS 25
 #define TIMEOUT     200     /* poll() timeout in milliseconds */
-#define RINGWAIT    25      /* number of poll() timeouts to wait for RING */
+#define RINGWAIT    29      /* number of poll() timeouts to wait for RING */
 #define CRLF        "\r\n"
 #define NL          "\n"
 #define CR          "\r"
@@ -116,17 +119,25 @@ Options: [-A aliasfile  | --alias aliasfile]\n\
 #define NONUMB      "NO NUMBER"
 #define NOCID       "No Caller ID"
 #define NOMESG      "NONE"
+
 #define LOGMAX      110000
 #define LOGMAXNUM   100000000
 #define LOGMSG      "MSG: Caller ID Logfile too big: (%lu > %lu) bytes%s"
 #define TOOMSG      "MSG: Too many clients connected"
 
+#define HANGUPMSG   "Calls in the blacklist file will be terminated"
+#define IGNORE1     "Leading 1 from a call must not be in an alias definition"
+#define INCLUDE1    "Leading 1 from a call required in an alias definition"
+
 #define CIDLINE     "CID: "
 #define MSGLINE     "MSG: "
 #define LOGLINE     "LOG: "
-#define OUTLINE     "CIDOUT: "
+#define OUTLINE     "OUT: "
+#define HUPLINE     "HUP: "
+
 #define LINETYPE    25
 #define ONELINE     "-"
+
 #define CALLOUT     "CALLOUT"
 #define CALLIN      "CALLIN"
 
@@ -178,9 +189,10 @@ enum
 extern char *ttyport, *TTYspeed;
 extern char *initstr, *initcid;
 extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile;
-extern int setcid, port, clocal, ttyspeed;
-extern int sendlog, sendinfo, sendout;
+extern int setcid, port, clocal, ttyspeed, ttyfd, hangup;
+extern int sendlog, sendinfo, sendout, ignore1;
 extern int nomodem, noserial, gencid, verbose;
 extern unsigned long cidlogmax;
 extern void logMsg();
-extern int errorExit();
+extern int errorExit(), CheckForLockfile(), doTTY(), initModem();
+extern struct termios ntty;
