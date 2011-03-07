@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            sprintf(msgbuf, "CallerID from AT Modem and optional gateways]\n");
+            sprintf(msgbuf, "CallerID from AT Modem and optional gateways\n");
             logMsg(LEVEL1, msgbuf);
 
             if (gencid)
