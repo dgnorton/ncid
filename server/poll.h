@@ -1,13 +1,13 @@
 /*
- * Copyright 2011
- * by  John L. Chmielewski <jlc@cfl.rr.com>
+ * Copyright 2004, 2006
+ * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
- * nciddhangup.h is free software; you can redistribute it and/or modify
+ * poll.h is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  * 
- * nciddhangup.h is distributed in the hope that it will be useful,
+ * poll.h is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -17,18 +17,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-#ifndef BLACKLIST
-#define BLACKLIST   "/etc/ncid/ncidd.blacklist"
-#endif
+#include <sys/types.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <stdio.h>
 
-#define PICKUP      "AT H1"
-#define HANGUP      "AT H0"
-#define HANGUPTRY   6
-#define HANGUPDELAY 400000  /* 400000 microseconds = 0.4 seconds */
+#define POLLIN   0x01
+#define POLLPRI  0x02
+#define POLLOUT  0x04
+#define POLLERR  0x08
+#define POLLHUP  0x10
+#define POLLNVAL 0x20
 
-#define LISTSIZE    200
-#define ERRLIST     "blacklist array too large"
+struct pollfd
+{
+    int fd, events, revents;
+};
 
-extern char *blacklist;
-extern int doBlacklist(), doHangup();
-extern void rmbl();
+int poll(struct pollfd * pfds, int npfds, int ptimeout);

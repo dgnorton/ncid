@@ -142,6 +142,7 @@ procMSG(){
 		ncidnumber=$(echo ${NCIDMSG} | cut -s -d'~' -f2-);
 		NCIDMSG="$(printf 'CALL: ###DATE%s...LINE%s...NMBR%s...NAME%s+++' "${nciddate:-01010000}" "${LINE:--}" "${ncidnumber:-unlisted}" "${ncidname:-noname}")"
     elif ! isblank "${*}"
+    then
         NCIDMSG="MSG: ${NCIDMSG}"
 	fi	
   	echo ${NCIDMSG} | send2ncid

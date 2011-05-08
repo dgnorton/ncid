@@ -90,7 +90,10 @@ LEVEL1:
         indicate CallerID TTY port initialized
         indicate serial device hung up and terminated with date and time
         indicate device error and terminated with date and time
+        indicate serial device error and terminated with date and time
         indicate poll error
+        indicate invalid request from serial device and terminated
+                 with date and time
         indicate Invalid Request, removed client
         indicate Write event not configured, removed client
         indecate device or modem read error

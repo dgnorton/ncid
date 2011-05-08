@@ -54,7 +54,6 @@ struct setword setword[] = {
 struct sendclient sendclient[] = {
     {"cidlog",   &sendlog},
     {"cidinfo",  &sendinfo},
-    {"callout",  &sendout},
     {0,           0}
 };
 

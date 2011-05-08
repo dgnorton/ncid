@@ -1,82 +1,84 @@
 NCID distributions:
 
     sourceforge:
-        NCID Source package:           ncid-0.81-src.tar.gz
+        NCID Source package:           ncid-0.82-src.tar.gz
 
-        Cygwin 32 bit Windows package: ncid-0.81-1-cygwin.tgz
+        Cygwin 32 bit Windows package: ncid-0.82-1-cygwin.tgz
 
-        TiVo Series1 package:          ncid-0.81-1-ppc-tivo.tgz
-        TiVo Series 2-3 package:       ncid-0.81-1-mips-tivo.tgz
+        TiVo Series1 package:          ncid-0.82-1-ppc-tivo.tgz
+        TiVo Series 2-3 package:       ncid-0.82-1-mips-tivo.tgz
 
-        Ubuntu 32 bit packages:        ncid_0.81-0ubuntu1_i386.deb
-                                       ncid-client_0.81-0ubuntu1_all.deb
-                                       ncid-kpopup_0.81-0ubuntu1_all.deb
-                                       ncid-mythtv_0.81-0ubuntu1_all.deb
-                                       ncid-samba_0.81-0ubuntu1_all.deb
-                                       ncid-speak_0.81-0ubuntu1_all.deb
+        Ubuntu 32 bit packages:        ncid_0.82-0ubuntu1_i386.deb
+                                       ncid-client_0.82-0ubuntu1_all.deb
+                                       ncid-kpopup_0.82-0ubuntu1_all.deb
+                                       ncid-mythtv_0.82-0ubuntu1_all.deb
+                                       ncid-samba_0.82-0ubuntu1_all.deb
+                                       ncid-speak_0.82-0ubuntu1_all.deb
 
-        Windows client installer:      ncid-0.81-1-client_setup.exe
+        Windows client installer:      ncid-0.82-1-client_setup.exe
 
       These may also be distributed:
 
-        Fedora 64 bit packages:        ncid-0.81-1.fc14.x86_64.rpm
-                                       ncid-client-0.81-1.fc14.noarch.rpm
-                                       ncid-kpopup-0.81-1.fc14.noarch.rpm
-                                       ncid-mythtv-0.81-1.fc14.noarch.rpm
-                                       ncid-samba-0.81-1.fc14.noarch.rpm
-                                       ncid-speak-0.81-1.fc14.noarch.rpm
+        Fedora 64 bit packages:        ncid-0.82-1.fc14.x86_64.rpm
+                                       ncid-client-0.82-1.fc14.noarch.rpm
+                                       ncid-kpopup-0.82-1.fc14.noarch.rpm
+                                       ncid-mythtv-0.82-1.fc14.noarch.rpm
+                                       ncid-samba-0.82-1.fc14.noarch.rpm
+                                       ncid-speak-0.82-1.fc14.noarch.rpm
 
-        Macintosh 32 bit OS X package: ncid-0.81-mac-osx.tgz
+        Macintosh 32 bit OS X package: ncid-0.82-mac-osx.tgz
 
-        FreeBSD 32 bit package:        ncid-0.81-freebsd.tgz
+        FreeBSD 32 bit package:        ncid-0.82-freebsd.tgz
 
     Fedora packages:
-        # available at the Fedora repository (sometimes sourceforge)
-        # new release first appears in the rawhide repository
-        # there are server, client, and optional output module packages
-        # normally you only need to install the ncid & ncid-client rpm packages
-        # The yum list command will show you the packages available
+        Available at the Fedora repository (sometimes sourceforge).
+        New release first appears in the rawhide repository
+        there are server, client, and optional output module packages.
+        Normally you only need to install the ncid & ncid-client rpm packages.
+        The yum list command will show you the packages available:
             yum list ncid\*
-        # if the above does not show version 0.81
+        If the above does not show version 0.82:
             yum --enablerepo=rawhide list ncid\*
+        If you need to build packages for your specific OS release:
+            rpmbuild -tb ncid-0.82-src.tar.gz
 
     Macintosh OS X package:
-        # available at MacPorts (sometimes sourceforge)
-        http://trac.macports.org/browser/trunk/dports/net/ncid/Portfile
+        available at MacPorts (sometimes sourceforge)
+            http://trac.macports.org/browser/trunk/dports/net/ncid/Portfile
 
     FreeBSD package:
-        # available at FreshPorts (sometimes sourceforge)
-        http://www.freshports.org/comms/ncid/
+        available at FreshPorts (sometimes sourceforge)
+            http://www.freshports.org/comms/ncid/
 
-        gmake is no longer required
+    Ubuntu packages:
+        If you need to build a package for your specific OS release, the
+        build-essential, fakeroot, & libpcap packages must be installed:
+            sudo apt-get build-essential fakeroot libpcap0.8-dev
+            tar -xzf ncid-0.82-src.tar.gz
+            mv ncid ncid-0.82
+            cd ncid-0.82
+            fakeroot debian/rules build
+            fakeroot debian/rules binary
+            fakeroot debian/rules clean
 
 Specific distribution Changes:
 
     Fedora and Redhat:
-        removed: ncid-hangup.init
-
-        NOTES:
-            If you need to build packages for your specific OS release:
-                rpmbuild -tb ncid-0.81-src.tar.gz
+	    ncidd.init: updated
+        The lockfile defaults to /var/spool/lock/lockdev instead of /var/lock/
 
     FreeBSD:
-        removed: ncid-hangup.rc
+        The lockfile defaults to /var/spool/lock instead of /var/lock/
 
     Mac OS-X:
+        The system poll() function is either not fully functional or it
+        fully implemented.  The replacement poll.c and poll.h source
+        files were added back so poll() functions properly with ncidd.
+
+        The lockfile defaults to /var/spool/uucp/ instead of /var/lock/
 
     Ubuntu:
-        removed: ncid-hangup.init
-
-        NOTES:
-            If you need to build a package for your specific OS release, the
-            build-essential, fakeroot, & libpcap packages must be installed:
-                sudo apt-get build-essential fakeroot libpcap0.8-dev
-                tar -xzf ncid-0.81-src.tar.gz
-                mv ncid ncid-0.81
-                cd ncid-0.81
-                fakeroot debian/rules build
-                fakeroot debian/rules binary
-                fakeroot debian/rules clean
+	    ncidd.init: updated
 
     TiVo:
 
@@ -85,52 +87,43 @@ Specific distribution Changes:
 NCID Server Changes:
 
     ncidd:
-        Increased ring delay to prevent server from indicating no
-        "Caller ID" on a ring count of 8 or 9 rings.
+        Outgoing and hungup calls are always sent to the clients
 
-        Added "hangup" configuration and command option to terminate a
-        telephone call if the name or number is in the blacklist file.
-        The blacklist file is /etc/ncid/ncidd.blacklist.
+        Clients are tracked by a file descriptor and IP address.
 
-        Added "ignore1" configuration to not include a leading 1 in an
-        alias definition.
+        Added, improved, and fixed messages in the log file.
+
+        Fixed a bug using a gateway for Caller ID and the
+        hangup option.  It initialized the modem on startup
+        without creating a lockfile and interfered with a
+        program using the modem.
+
+	    Improved modem code and hangup code.
+
+        Improved log messages for reloading alias and blacklist files.
 
     ncidd.conf:
-        updated comments
-        added hangup configuration
-        Added comment about /dev/ttyACM0 (USB modem port)
+        removed "send outcall"
 
 NCID Gateway Changes:
 
     ncid2ncid:
 
     sip2ncid:
-        Added code to exit on a system error while waiting for SIP
-        packets.  This happens when the computer goes into sleep mode
-        using Cygwin to run ncidd.
 
     yac2ncid:
+        Fixed a error that prevented the program from running.
 
-NCID Clients Changes:
+NCID Client Changes:
 
     ncid:
-        Updated to detect outgoing calls using the NCID server line
-        labels.
 
     ncid.conf
 
 NCID Client Module Changes:
 
-    ncid-hangup: removed along with ncid.minicom and ncid.blacklist
-
-    updated ncidmodules.conf
 
 Documentation Changes:
-    Updated all the man pages
 
-    Added man pages: ncidd.blacklist.5 cidalias.1 cidcall.1 cidupdate.1
-                     ncid-initmodem.1 ncid-kpopup.1 ncid-mythtv.1
-                     ncid-page.1 ncid-samba.1 ncid-skel.1 ncid-speak.1
-                     ncid-tivo.1 ncid-yac.1
-
-    Updated all README.* files
+    ncidd.8: updated
+    nciddconf.5 updated

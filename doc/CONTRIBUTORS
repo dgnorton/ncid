@@ -82,6 +82,9 @@ Chris Lenderman <chris@lenderman.com>
 
 Todd Andrews <taa@pobox.com>
     - Corrected problems in the INSTALL document
+    - Helped with server testing and fixing various OSX problems
+    - Provided a server fix for the hangup configuration/option
+      problem on OSX
 
 Charlie Heitzig <mail@heitzig.org>
     - Spent time debugging sip2ncid and WinPacp.
@@ -116,3 +119,6 @@ New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Jonathan Wolf
     Marko Koski-Vähälä
     George Johnson
+
+Feedback on working modems:
+    Derek Huxley

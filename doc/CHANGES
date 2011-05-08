@@ -1,5 +1,87 @@
 ncid - Network CallerID
 
+Version 0.82
+    - Makefile: added LOCKFILE=/var/spool/uucp/LCK.. in mac and fat-mac targets
+                added LOCKFILE=/var/spool/lock/LCK.. in freebsd target
+                added LOCKFILE=/var/lock/lockdev/LCK.. in Fedora target
+                added LOCKFILE=/var/lock/LCK.. in Ubuntu target
+    - cidgate/yac2ncid.sh: fixed broken if statement on line 144
+                           by adding line 145
+    - client/ncid.sh: replaced --call-out|-A option with --all-calls|-A
+                      replaced $CallOut with $AllCalls
+                      replaced callin/callout with line label in history window
+                      line label added in history window for $AllCalls = 1
+                      increased length of history window by 5 for $AllCalls = 1
+                      messages are displayed in the history window
+                      checkType {} codes rearranged and new types added
+                                   removed check for *EXTRA*
+                      getCID {} updated for revised checkType {}
+    - client/ncid.conf-in: updated
+    - debian/README.Debian: updated
+    - debian/changelog: updated
+    - debian/ncidd.init: updated
+    - doc/CONTRIBUTORS: updated
+    - doc/Modem-CallerID-test: renamed from doc/Modem-CID-test
+    - doc/Modem-info: added
+    - doc/NCID-SDK.odt: updated
+    - Fedora/ncidd.init: updated
+    - man/ncid.1: updated
+    - man/ncidd.8: updated
+    - man/nciddconf.5: updated
+    - server/Makefile: added poll.c to $(SRC) and poll.h to $(HEARDE)
+                       added -DLOCKFILE=\"$(LOCKFILE)\" to DEFINES
+    - server/ncidd.c: added ipaddr[CONNECTIONS][25];
+                      removed global int sendout
+                      main() removed ]
+                             from: CallerID from AT Modem and optional gateways]
+                             added LEVEL3 Modem or Caller ID Device message
+                             added if (!hangup) { ... }
+                             checks return code for openTTY() to exit
+                      doPoll(): check for modem in POLLNVAL and exit
+                                added client IP address to connect messages
+                                added *ipaddr[sd] = '\0'; to "End Connections"
+                                "Poll device" -> "Serial Device" in messages
+                      tcpAccept() changed sockaddr to sockaddr_in
+                                  changed bind_addr to sa & socksize to sa_len
+                                  added inet_ntoa() to add client ip address
+                                        to ipaddr[sd]
+                      doModem() changed if (!(initcid = strdup(INITCID2)...
+                                to initcid = INITCID2;
+                      initModem() changed " delay until response" logic
+                                  removed "get rest of response" logic
+                                  removed extra delay of ATH? commands
+                                  log size and try with response
+                                  changed INITWAIT to READWAIT
+                      formatCID() removed checks for sendout
+                                  removed if statement from writeClients()
+                      sendLog() changes INITWAIT to READWAIT
+                      strdate() added LOGFILETIME /* HH:MM:SS.ssss */
+                      openTTY() returns error or success, was exit on error
+                      reload() added in check for hangup, changed log message
+                      getOptions() chnaged "tty" to "ttyport" in "case 't':"
+                                   changed "debug = 1" to "++debug" to indicate
+                                           how many times -D was gived.
+    - server/ncidd.h: added #include <arpa/inet.h>
+                      removed #include <netinet/in.h>
+                      added #if (defined(__MACH__))
+                      added #ifndef LOCKFILE ...
+                      added #define LOGFILETIME 8       /* HH:MM:SS.ssss */
+                      changed INITWAIT to READWAIT
+                      changed INITTRY to READTRY
+                      removed export in callout
+    - server/nciddhangup.c: hangupCall(): changed to act on return codes
+                                          changed usleep delay to HANGUPDELAY
+                                          added HANGUPTRY to initModem() call
+                                          Changed logic for if (!ret) ...
+                                          changed 200000 to HANGUPDELAY
+    - server/nciddhangup.h: removed the CR define
+                            changed PICKUP and HANGUP defines
+                            added the HANGUPTRY and HANGUPDELAY defines
+    - server/poll.c: added for OSX
+    - server/poll.h: added for OSX
+    - test/testclient: updated
+    - test/testclient.data: updated
+
 Version 0.81
     - Makefile: updated
     - README: updated

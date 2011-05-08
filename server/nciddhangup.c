@@ -121,6 +121,7 @@ void rmbl()
         }    
     }
 }
+
 /*
  * Check if call is in blacklist file
  * Hangup phone if in blacklist file
@@ -193,21 +194,30 @@ int hangupCall()
     if (!ret)
     {
         /* put tty port in raw mode */
-        ntty.c_lflag = ~(ICANON | ECHO | ECHOE | ISIG);
-        if (!(ret = tcsetattr(ttyfd, TCSANOW, &ntty) < 0))
+        if (!(ret = tcsetattr(ttyfd, TCSANOW, &rtty) < 0))
         {
-            ret = initModem(PICKUP);
-            if (!ret || ret == 2)
-            {
-                /* delay 0.2 seconds in microseconds */
-                usleep(200000);
+            /* Send AT to get modem OK after switch to raw mode */
+            (void) initModem("AT", HANGUPTRY);
 
-                ret = initModem(HANGUP);
+            /* Pick up the call */
+            ret = initModem(PICKUP, HANGUPTRY);
+            if (ret == 0)
+            {
+                /*
+                 * HANGUP only if PICKUP was successful
+                 *
+                 * delay while off-hook to make sure to hangup call
+                 */
+                usleep(HANGUPDELAY);
+                sprintf(msgbuf, "off-hook for %d microseconds\n", HANGUPDELAY);
+                logMsg(LEVEL3, msgbuf);
+
+                /* Hangup up the call */
+                ret = initModem(HANGUP, HANGUPTRY);
             }
 
             /* take tty port out of raw mode */
-            ntty.c_lflag = (ICANON);
-            (void) tcsetattr(ttyfd, TCSANOW, &ntty);
+            (void) tcsetattr(ttyfd, TCSAFLUSH, &ntty);
         }
     }
 

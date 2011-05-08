@@ -86,9 +86,10 @@ This allows a cell phone or pager to receive a message only if the phone
 was not answered.
 
 If the Caller ID is obtained from a SIP Gateway that supports outgoing
-calls, ncidd can be configured to send outgoing calls to the clients.
-Outgoing calls generate outgoing call lines so old clients will continue
-working without problems.
+calls, ncidd will send outgoing call text lines to the clients.
+
+If the hangup option is configured, ncidd will send hangup call text lines
+to the clients.
 .PP
 .B NCIDD
 will accept a text message for a client, and then send it to all
@@ -114,7 +115,7 @@ There is no need to convert into the usual CALL and CALLINFO
 gateway formats.
 .PP
 .B NCIDD
-will reload the alias file when sent a SIGHUP signal.
+will reload the alias and blacklist files when sent a SIGHUP signal.
 .SH "OPTIONS"
 .PD 0
 .TP
@@ -168,7 +169,7 @@ Default: gencid = 0
 .TP
 .B -H <0|1> | --hangup <0|1>
 Automatically hangup up a telephone if the caller name or number is in
-the ncidd.blacklist file.
+the ncidd.blacklist file.  A hangup text line is sent to the clients.
 .br
 Default: hangup = 0
 .TP
@@ -241,10 +242,6 @@ If the CID call log gets too big, it will not be sent.
 .IR cidinfo :
 sent on each ring, to all clients,
 gives the current ring count.
-.br
-.IR callout :
-sent on each call, to all clients,
-gives the outgoing call information.
 .br
 Default: Optional CID DATA is not sent
 .TP

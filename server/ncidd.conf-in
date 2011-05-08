@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Config File
 
-# File last changed: Sun Feb 27, 2011
+# File last changed: Tue Apr 26, 2011
 
 ################################
 # Definitions and Line formats #
@@ -43,10 +43,6 @@ send cidlog
 # Send call info (LINE and RING) to a client at each ring
 # The default is not to send the call info line
 send cidinfo
-
-# Send outgoing calls to the clients.
-# The default is not to send outgoing calls to the clients
-send callout
 
 #####################
 # NCID Network Port #
@@ -135,8 +131,8 @@ send callout
 
 # The default tty port: /dev/modem
 # set ttyport = /dev/cu.modem # Macintosh OS X
-# set ttyport = /dev/ttyS0
-# set ttyport = /dev/ttyACM0  # USB modem
+# set ttyport = /dev/ttyS0    # Linux Serial Port 0
+# set ttyport = /dev/ttyACM0  # Linux USB modem 0
 
 # The default tty port speed: 19200
 # The tty speed can be one of: 38400, 19200, 9600, 4800
@@ -148,8 +144,13 @@ send callout
 # set ttyclocal = 1
 
 # The lockfile name is generated automatically
-# If tty port is /dev/modem, lockfile is: /var/lock/LCK..modem
-# set lockfile = /var/lock/LCK..ttyS0
+# If tty port is /dev/modem, the default lockfile is:
+#    Fedora : /var/lock/lockdev/LCK..modem
+#    FreeBSD: /var/spool/lock/LCK..modem
+#    Mac    : /var/spool/uucp/LCK..modem
+#    Ubuntu : /var/lock/LCK..modem
+#    Default: /var/lock/LCK..modem
+# set lockfile = /var/lock/lockdev/LCK..ttyS0
 #
 
 ###################################################################
@@ -161,11 +162,16 @@ send callout
 # Telephone Line Indicator #
 ############################
 
-# Set the line indicator if you have more than one telephone
-# line sending information to ncidd and noserial is set to 0.
-# normally you would set it to the last 4 digits of your number.
+# Set the line indicator if you want it displayed for the modem.
+# or if you have more than one telephone line.  The default value
+# for lineid is '-' and is not displayed.  Setting it to any other
+# value will display it.
+#
+# You can set lineid to 'POTS' (Plain Old Telephone Service) to
+# have it displayed or the last 4 digits of your number if you
+# have more than one telephone line.
 # lineid default: -
-# set lineid = 7744
+# set lineid = POTS
 
 ################################
 # Generate a generic Caller ID #
@@ -260,7 +266,7 @@ send callout
 # To use a modem on the TiVo serial port
 #   Tivo (stereo mini jack) ->
 #   -> (stereo mini plug) TiVo serial cable (9-pin male) ->
-#   -> (9-pin Female) PC modem cable (25-pin Male ->
+#   -> (9-pin Female) PC modem cable (25-pin Male) ->
 #   -> (25-pin Female) Modem
 # if the modem has switches, disable DTR
 # Use this string to set the modem before attaching it to the TiVo:

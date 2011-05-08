@@ -4,8 +4,8 @@
 
 # this script sends CALL and CALLINFO lines to the server
 # The way to test ncid and ncidd
-# ./testserver ../ncidd OR ./testserver /usr/sbin/ncidd
-# ./TestGWcalls -N1
+# ./testserver ../ncidd OR ./testserver /usr/sbin/ncidd -N1
+# ./TestGWcalls
 # ./ncid 3334
 
 ($testfile = shift) || ($testfile = "TestGWcalls.data");

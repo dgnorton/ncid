@@ -28,11 +28,18 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+
+#if (defined(__MACH__))
+# include "poll.h"
+#else
 #include <sys/poll.h>
+#endif
+
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-#include <netinet/in.h>
+#include <netinet/in.h> /* needed for TiVo Series1 */
+#include <arpa/inet.h>
 #include <signal.h>
 #include <errno.h>
 #include <time.h>
@@ -90,30 +97,38 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #ifndef PIDFILE
 #define PIDFILE     "/var/run/ncidd.pid"
 #endif
+#ifndef LOCKFILE
+#define LOCKFILE    "/var/lock/LCK.."
+#endif
 
 #define STDOUT      1
 #define BUFSIZE     512
 #define CHARWAIT    2       /* deciseconds */
-#define INITWAIT    100000  /* microseconds */
-#define INITTRY     10      /* number of times to INITWAIT for a character */
+#define READWAIT    100000  /* microseconds */
+#define READTRY     10      /* number of times to INITWAIT for a character */
 #define MODEMTRY    6
 #define TTYSPEED    B19200
-#define LOCKFILE    "/var/lock/LCK.."
+
 #define ANNOUNCE    "200 Server:"
 #define LOGEND      "300 end of call log"
+
 #define INITSTR     "AT Z S0=0 E1 V1 Q0"
 #define INITCID1    "AT+VCID=1"
 #define INITCID2    "AT#CID=1"
+
 #define PORT        3333
 #define CONNECTIONS 25
 #define TIMEOUT     200     /* poll() timeout in milliseconds */
 #define RINGWAIT    29      /* number of poll() timeouts to wait for RING */
+
 #define CRLF        "\r\n"
 #define NL          "\n"
 #define CR          "\r"
-#define WITHSEP     1
-#define NOSEP       2
-#define ONLYTIME    4
+
+#define WITHSEP     1       /* MM/DD/YYYY HH:MM:SS */
+#define NOSEP       2       /* MMDDYYYY HHMM */
+#define ONLYTIME    4       /* HH:MM:SS */
+#define LOGFILETIME 8       /* HH:MM:SS.ssss */
 
 #define NONAME      "NO NAME"
 #define NONUMB      "NO NUMBER"
@@ -190,9 +205,9 @@ extern char *ttyport, *TTYspeed;
 extern char *initstr, *initcid;
 extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile;
 extern int setcid, port, clocal, ttyspeed, ttyfd, hangup;
-extern int sendlog, sendinfo, sendout, ignore1;
+extern int sendlog, sendinfo, ignore1;
 extern int nomodem, noserial, gencid, verbose;
 extern unsigned long cidlogmax;
 extern void logMsg();
-extern int errorExit(), CheckForLockfile(), doTTY(), initModem();
-extern struct termios ntty;
+extern int errorExit(), CheckForLockfile(), openTTY(), doTTY(), initModem();
+extern struct termios rtty, ntty;

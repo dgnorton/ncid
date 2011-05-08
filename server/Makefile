@@ -1,7 +1,7 @@
 PROG        = ncidd
-SRC         = $(PROG).c nciddconf.c nciddalias.c nciddhangup.c
+SRC         = $(PROG).c nciddconf.c nciddalias.c nciddhangup.c poll.c
 DIST        = $(PROG).conf-in
-HEADER      = $(PROG).h nciddconf.h nciddalias.h nciddhangup.h
+HEADER      = $(PROG).h nciddconf.h nciddalias.h nciddhangup.h poll.h
 ETCFILE     = ncidd.conf ncidd.alias ncidd.blacklist
 SOURCE      = $(SRC) $(DIST) $(HEADER)
 FILES       = README.server Makefile $(SOURCE) $(ETCFILE)
@@ -46,6 +46,9 @@ DATALOG      = $(LOGDIR)/ciddata.log
 RUNDIR       = $(VAR)/run
 PIDFILE      = $(RUNDIR)/$(PROG).pid
 
+LOCKDIR      = $(VAR)/lock/lockdev
+LOCKFILE     = $(LOCKDIR)/LCK..
+
 SITE         = $(DIST:-in=)
 
 OBJECT       = $(SRC:.c=.o)
@@ -57,7 +60,8 @@ DEFINES      = -DCIDCONF=\"$(CONF)\" \
                -DTTYPORT=\"$(MODEMDEV)\" \
                -DDATALOG=\"$(DATALOG)\" \
                -DLOGFILE=\"$(LOGFILE)\" \
-               -DPIDFILE=\"$(PIDFILE)\"
+               -DPIDFILE=\"$(PIDFILE)\" \
+               -DLOCKFILE=\"$(LOCKFILE)\"
 
 # local additions to CFLAGS
 MFLAGS       = -W -Wmissing-declarations

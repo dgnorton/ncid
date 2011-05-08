@@ -23,6 +23,8 @@ print "    send MSG:     lines\n";
 print "    send CIDLOG:  lines\n";
 print "    send CID:     line\n";
 print "    send CIDINFO: lines\n";
+print "    send OUT:     line\n";
+print "    send HUP:     line\n";
 print "    end  program\n\n";
 
 accept(CLIENT, SERVER);

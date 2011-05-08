@@ -17,7 +17,7 @@
 .PP
 .nf
 [--no-gui]
-[--call-out          | -C]
+[--all-calls         | -A]
 [--delay seconds     | -D seconds]
 [--message           | -M]
 [--noexit            | -X]
@@ -102,10 +102,11 @@ Do not display CID information using a GUI
 .br
 Default: display CID using a GUI, except if called tivocid
 .TP
-.B --call-out | -C
-Display outgoing call information, if the server supports it.
+.B --all-calls | -A
+Display all call types in the history window.  This includes
+incoming (CID:), outgoing (OUT:), and hungup calls (HUP:).
 .br
-Default: Do not display outgoing calls.
+Default: Do not display all call types
 .TP
 .B --delay SECONDS | -D SECONDS
 Delay SECONDS between server connection attempts if SECONDS > 0.

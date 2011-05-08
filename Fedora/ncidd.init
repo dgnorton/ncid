@@ -51,7 +51,7 @@ restart() {
 }
 
 reload() {
-    echo -n $"Reloading $prog alias files: "
+    echo -n $"Reloading  existing $prog alias and blacklist files: "
     killproc $prog -HUP
     RETVAL=$?
     echo

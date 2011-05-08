@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.81
+Version:    0.82
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -309,6 +309,9 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+
+* Tue Mar 17 2011 John Chmielewski <jlc@users.sourceforge.net> 0.82-1
+- New release
 
 * Sat Feb 26 2011 John Chmielewski <jlc@users.sourceforge.net> 0.81-1
 - removed: /usr/share/ncid/ncid-hangup

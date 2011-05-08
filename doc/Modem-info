@@ -1,0 +1,15 @@
+Modems that work with NCID:
+    Modems that work for NCID are modems that support Caller ID and
+    work with the Operating system (Linux, FreeBSD, Macintosh)
+
+Incomplete list of working modems:
+
+    Robotics USB modem, part number USR805637 using Fedora and the
+    UK British Telecom caller id system
+
+    DUALCOM Technology USB Adapter/Modem for Caller ID Display
+    http://www.dual-comm.com/USB_Caller_ID_Modem.htm using US
+    Caller ID system.
+
+    Phoebe FAX MODEM Model CMV1456VQE serial port external modem
+    using US Caller ID system.

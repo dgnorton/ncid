@@ -24,7 +24,7 @@ ignored
 .B command lines, beginning with 'send'
 send DATATYPE
 .RS 11
-where DATATYPE = cidlog, cidinfo, callout
+where DATATYPE = cidlog or cidinfo
 .RE
 .TP
 .B command lines, beginning with 'set'
@@ -44,11 +44,6 @@ Send the CID log to each client at connect:
 Send the ring count, at each ring, to each client
 .RS 0
 	send cidinfo
-.RE
-.PP
-Send outgoing calls to each client
-.RS 0
-    send cidout
 .RE
 .PP
 Set alias definitions to not include a leading 1

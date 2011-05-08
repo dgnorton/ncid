@@ -172,13 +172,15 @@ package-install:
 	$(MAKE) install prefix=/usr prefix2=
 
 fedora:
-	$(MAKE) local fedoradir prefix=/usr prefix2=
+	$(MAKE) local fedoradir prefix=/usr prefix2= \
+            LOCKFILE=/var/lock/lockdev/LCK..
 
 fedora-install:
 	$(MAKE) install install-fedora prefix=/usr prefix2=
 
 ubuntu:
-	$(MAKE) local ubuntudir prefix=/usr prefix2=
+	$(MAKE) local ubuntudir prefix=/usr prefix2= \
+            LOCKFILE=/var/lock/LCK..
 
 ubuntu-install:
 	$(MAKE) install install-ubuntu prefix=/usr prefix2=
@@ -223,6 +225,7 @@ tivo-install: \
 
 freebsd:
 	$(MAKE) local freebsddir prefix=/usr/local prefix2=$(prefix) \
+            LOCKFILE=/var/spool/lock/LCK.. \
             WISH=/usr/local/bin/wish*.* TCLSH=/usr/local/bin/tclsh*.* \
             BASH=/usr/local/bin/bash
 
@@ -234,12 +237,14 @@ freebsd-install:
 
 mac-fat:
 	$(MAKE) local settag="Macintosh OS X" \
+            LOCKFILE=/var/spool/uucp/LCK.. \
             MFLAGS="-mmacosx-version-min=10.3.9 -arch ppc" STRIP=
 	mv server/ncidd server/ncidd.ppc-mac
 	mv cidgate/sip2ncid cidgate/sip2ncid.ppc-mac
 	mv cidgate/ncid2ncid cidgate/ncid2ncid.ppc-mac
 	$(MAKE) clean
 	$(MAKE) local settag="Macintosh OS X" \
+            LOCKFILE=/var/spool/uucp/LCK.. \
             MFLAGS="-mmacosx-version-min=10.4 -arch i386" STRIP=
 	mv server/ncidd server/ncidd.i386-mac
 	mv cidgate/sip2ncid cidgate/sip2ncid.i386-mac
@@ -253,6 +258,7 @@ mac-fat:
 
 mac:
 	$(MAKE) local settag="Macintosh OS X" \
+            LOCKFILE=/var/spool/uucp/LCK.. \
             MFLAGS="-mmacosx-version-min=10.4" STRIP=
 
 mac-install:

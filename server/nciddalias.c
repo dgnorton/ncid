@@ -32,6 +32,8 @@ void getAlias(), setAlias(), rmaliases();
 
 /*
  * Process the alias file.
+ *    returns:
+ *    0
  */
 
 int doAlias()

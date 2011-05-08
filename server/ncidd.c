@@ -2,7 +2,7 @@
  * ncidd - Network Caller ID Daemon
  *
  * Copyright (c) 2002-2011
- * by John L. Chmielewski <jlc@users.sourceforge.net>
+ * by John L. Chmielewski <//jlc@users.sourceforge.net>
  *
  * This file is part of ncidd, a caller-id program for your TiVo.
  *
@@ -36,17 +36,18 @@ char *lockfile, *name;
 char *TTYspeed;
 int ttyspeed = TTYSPEED;
 int port = PORT;
-int debug, conferr, setcid, locked, sendlog, sendinfo, sendout, callout;
+int debug, conferr, setcid, locked, sendlog, sendinfo, callout;
 int ttyfd, pollpos, pollevents;
 int ring, ringwait, lastring, clocal, nomodem, noserial, gencid = 1;
 int cidsent, verbose = 1, hangup, ignore1;
 unsigned long cidlogmax = LOGMAX;
 pid_t pid;
 
+char ipaddr[CONNECTIONS][25];
 char ringline[CIDSIZE] = "-";
 
 struct pollfd polld[CONNECTIONS + 2];
-struct termios otty, ntty;
+struct termios otty, rtty, ntty;
 FILE *logptr;
 
 struct cid
@@ -67,11 +68,11 @@ char *strdate();
 
 void exit(), finish(), free(), reload(), ignore(), doPoll(), formatCID(),
      writeClients(), writeLog(), sendLog(), builtinAlias(), userAlias(),
-     openTTY(), sendInfo(), logMsg(), cleanup();
+     sendInfo(), logMsg(), cleanup();
 
 int getOptions(), doConf(), errorExit(), doAlias(), doTTY(), CheckForLockfile(),
     addPoll(), tcpOpen(), doModem(), initModem(), gettimeofday(), doPID(),
-    tcpAccept();
+    tcpAccept(), openTTY();
 
 int main(int argc, char *argv[])
 {
@@ -126,6 +127,17 @@ int main(int argc, char *argv[])
         sprintf(msgbuf, "%s: %s\n", logfile, strerror(errnum));
         logMsg(LEVEL1, msgbuf);
     }
+
+    /* log command line and any options on separate lines */
+    sprintf(msgbuf, "Command line: %s", argv[0]);
+    for (i = 1; i < argc; i++)
+    {
+        if (*argv[i] == '-')
+            strcat(strcat(msgbuf, "\n              "), argv[i]);
+        else strcat(strcat(msgbuf, " "), argv[i]);
+    }
+    strcat(msgbuf, NL);
+    logMsg(LEVEL1, msgbuf);
 
     /*
      * read config file, if present, exit on any errors
@@ -245,7 +257,7 @@ int main(int argc, char *argv[])
             errorExit(-102, "Exiting - TTY lockfile exists", lockfile);
 
         /* Open tty port; exit program if it fails */
-        openTTY();
+        if (openTTY() < 0) errorExit(-1, ttyport, 0);
 
         switch(ttyspeed)
         {
@@ -302,11 +314,14 @@ int main(int argc, char *argv[])
             }
         }
 
-        /* Save tty port settings */
-        if (tcgetattr(ttyfd, &otty) < 0) return -1;
+        if (!noserial)
+        {
+            /* Save tty port settings */
+            if (tcgetattr(ttyfd, &otty) < 0) return -1;
 
-        /* initialize tty port */
-        if (doTTY() < 0) errorExit(-1, ttyport, 0);
+            /* initialize tty port */
+            if (doTTY() < 0) errorExit(-1, ttyport, 0);
+        }
     }
     else if (noserial)
     {
@@ -330,7 +345,12 @@ int main(int argc, char *argv[])
     sprintf(msgbuf, "Network Port: %d\n", port);
     logMsg(LEVEL1, msgbuf);
 
-    if (!debug)
+    if (debug)
+    {
+        sprintf(msgbuf, "Debug Mode\n");
+        logMsg(LEVEL1, msgbuf);
+    }
+    else
     {
         /* fork and exit parent */
         if(fork() != 0) return 0;
@@ -344,8 +364,10 @@ int main(int argc, char *argv[])
 
         /* become session leader */
         setsid();
-        signal(SIGHUP, reload);
     }
+
+    /* reload alias and blacklist files on SIGHUP */
+    signal(SIGHUP, reload);
 
     /*
      * Create a pid file
@@ -356,7 +378,12 @@ int main(int argc, char *argv[])
         errorExit(-110, "Fatal", msgbuf);
     }
 
-    if (!noserial) pollpos = addPoll(ttyfd);
+    if (!noserial) {
+            pollpos = addPoll(ttyfd);
+            sprintf(msgbuf,"%s is fd %d\n",
+                    nomodem ? "Caller ID Device" : "Modem", ttyfd);
+            logMsg(LEVEL3, msgbuf);
+        }
 
     /* initialize server socket */
     if ((mainsock = tcpOpen(port)) < 0) errorExit(-1, "socket", 0);
@@ -425,7 +452,7 @@ int main(int argc, char *argv[])
                         sprintf(msgbuf, "TTY free: using modem again %s\n",
                             strdate(WITHSEP));
                         logMsg(LEVEL1, msgbuf);
-                        openTTY();
+                        if (openTTY() < 0) errorExit(-1, ttyport, 0);
                         if (doTTY() < 0)
                         {
                             sprintf(msgbuf,
@@ -499,7 +526,7 @@ int getOptions(int argc, char *argv[])
                 if (!(cidconf = strdup(optarg))) errorExit(-1, name, 0);
                 break;
             case 'D':
-                debug = 1;
+                ++debug;
                 break;
             case 'H':
                 hangup = atoi(optarg);
@@ -608,7 +635,7 @@ int getOptions(int argc, char *argv[])
                 break;
             case 't':
                 if (!(ttyport = strdup(optarg))) errorExit(-1, name, 0);
-                if ((num = findWord("tty")) >= 0) setword[num].type = 0;
+                if ((num = findWord("ttyport")) >= 0) setword[num].type = 0;
                 break;
             case 'v':
                 verbose = atoi(optarg);
@@ -633,12 +660,14 @@ int getOptions(int argc, char *argv[])
  * not hang if port in use, or not restored after use
  */
 
-void openTTY()
+int openTTY()
 {
     if ((ttyfd = open(ttyport, O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
-         errorExit(-1, ttyport, 0);
+         return -1;
     if (fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0) & ~O_NDELAY) < 0)
-        errorExit(-1, ttyport, 0);
+        return -1;
+
+    return 0;
 }
 
 int doTTY()
@@ -646,17 +675,17 @@ int doTTY()
     char msgbuf[BUFSIZ];
 
     /* Setup tty port in raw mode */
-    if (tcgetattr(ttyfd, &ntty) <0) return -1;
-    ntty.c_lflag     &= ~(ICANON | ECHO | ECHOE | ISIG);
-    ntty.c_oflag     &= ~OPOST;
-    ntty.c_iflag = (IGNBRK | IGNPAR);
-    ntty.c_cflag = (ttyspeed | CS8 | CREAD | HUPCL | CRTSCTS);
-    if (clocal) ntty.c_cflag |= CLOCAL;
-    ntty.c_cc[VEOL] = '\r';
-    ntty.c_cc[VMIN]  = 0;
-    ntty.c_cc[VTIME] = CHARWAIT;
+    if (tcgetattr(ttyfd, &rtty) < 0) return -1;
+    rtty.c_lflag     &= ~(ICANON | ECHO | ECHOE | ISIG);
+    rtty.c_oflag     &= ~OPOST;
+    rtty.c_iflag = (IGNBRK | IGNPAR);
+    rtty.c_cflag = (ttyspeed | CS8 | CREAD | HUPCL | CRTSCTS);
+    if (clocal) rtty.c_cflag |= CLOCAL;
+    rtty.c_cc[VEOL] = '\r';
+    rtty.c_cc[VMIN]  = 0;
+    rtty.c_cc[VTIME] = CHARWAIT;
     if (tcflush(ttyfd, TCIOFLUSH) < 0) return -1;
-    if (tcsetattr(ttyfd, TCSANOW, &ntty) < 0) return -1;
+    if (tcsetattr(ttyfd, TCSANOW, &rtty) < 0) return -1;
 
     if (!nomodem)
     {
@@ -665,6 +694,7 @@ int doTTY()
     }
 
     /* take tty port out of raw mode */
+    if (tcgetattr(ttyfd, &ntty) < 0) return -1;
     ntty.c_lflag = (ICANON);
     if (tcsetattr(ttyfd, TCSANOW, &ntty) < 0) return -1;
 
@@ -698,7 +728,7 @@ int doModem()
         */
         for (cnt = 0; ret == 2 && cnt < MODEMTRY; ++cnt)
         {
-            if ((ret = initModem(initstr)) < 0) return -1;
+            if ((ret = initModem(initstr, READTRY)) < 0) return -1;
             sprintf(msgbuf, "Try %d to init modem: return = %d.\n",
                     cnt + 1, ret);
             logMsg(LEVEL3, msgbuf);
@@ -725,13 +755,13 @@ int doModem()
     if (!noserial && *initcid)
     {
         /* try to initialize modem for CID */
-        if ((ret = initModem(initcid)) < 0) return -1;
+        if ((ret = initModem(initcid, READTRY)) < 0) return -1;
 
         if (ret && !setcid)
         {
             /*default init string 1 failed, try default init string 2 */
-            if (!(initcid = strdup(INITCID2))) errorExit(-1, name, 0);
-            if ((ret = initModem(initcid)) < 0) return -1;
+            initcid = INITCID2;
+            if ((ret = initModem(initcid, READTRY)) < 0) return -1;
         }
 
         if (ret)
@@ -765,53 +795,56 @@ int doModem()
  *           2 if no response, or unexpected response from modem
  *          -1 if cannot read from or write to modem
  */
-int initModem(char *ptr)
+int initModem(char *ptr, int maxtry)
 {
-    int num = 0, size = 0;
-    int try;
+    int num, size, try, ret = 2;
     char buf[BUFSIZ], *bufp;
     char msgbuf[BUFSIZ];
 
     /* send string to modem */
-    strcat(strncpy(buf, ptr, BUFSIZ - 2), CR);
-    if (write(ttyfd, buf, strlen(buf)) < 0) return -1;
+    strcat(strncpy(buf, ptr, BUFSIZ - 2), CRLF);
+    size = strlen(buf);
+    if ((num = write(ttyfd, buf, size)) < 0) return -1;
+    sprintf(msgbuf, "Sent Modem %d of %d characters: \n%s", num, size, buf);
+    logMsg(LEVEL3, msgbuf);
 
-    /* delay until response detected or number of tries exceeded */
-    for (try = 0; try < INITTRY; try++)
+    /* read until OK or ERROR response detected or number of tries exceeded */
+    for (size = try = 0; try < maxtry; try++)
     {
+        usleep(READWAIT);
         if ((num = read(ttyfd, buf + size, BUFSIZ - size - 1)) < 0) return -1;
-        if (num) break;
-        usleep(INITWAIT);
-    }
-
-    /* get rest of response */
-    while (num)
-    {
         size += num;
-        if ((num = read(ttyfd, buf + size, BUFSIZ - size - 1)) < 0) return -1;
-    }
-    if (!strncmp(ptr, "ATH", 3))
-    {
-        /* more delay is needed for ATH0 and ATH1 */
-        usleep(INITWAIT * 3);
-        do
+        if (size)
         {
-            size += num;
-            if ((num = read(ttyfd, buf + size, BUFSIZ - size - 1)) < 0)
-                return -1;
+            /* check response */
+            buf[size] = 0;
+            if (strstr(buf, "OK"))
+            {
+                ret = 0;
+                break;
+            }
+            if (strstr(buf, "ERROR"))
+            {
+                ret = 1;
+                break;
+            }
         }
-    while (num);
     }
     buf[size] = 0;
 
-    /* Remove CRLF at end of string */
-    if (buf[size - 1] == '\n' || buf[size - 1] == '\r') buf[size - 1] = '\0';
-    if (buf[size - 2] == '\r' || buf[size - 2] == '\n') buf[size - 2] = '\0';
-
     if (size)
     {
-        sprintf(msgbuf, "%s\n", buf);
+        sprintf(msgbuf,
+          "Modem response: %d characters in %d %s:\n%s",
+            size, try > maxtry ? try -1 : try + 1,
+            try == 0 ? "read" : "reads", buf);
         logMsg(LEVEL3, msgbuf);
+
+        /* Remove CRLF at end of string */
+        if (buf[size - 1] == '\n' || buf[size - 1] == '\r')
+            buf[size - 1] = '\0';
+        if (buf[size - 2] == '\r' || buf[size - 2] == '\n')
+            buf[size - 2] = '\0';
     }
     else
     {
@@ -819,12 +852,7 @@ int initModem(char *ptr)
         logMsg(LEVEL3, msgbuf);
     }
 
-    /* check response */
-    if (strstr(buf, "OK")) return 0;
-    if (strstr(buf, "ERROR")) return 1;
-
-    /* no response, or other response */
-    return 2;
+    return ret;
 }
 
 int tcpOpen(int mainsock)
@@ -861,10 +889,19 @@ int tcpOpen(int mainsock)
 
 int  tcpAccept(int sock)
 {
-    struct  sockaddr bind_addr;
-    unsigned int socksize = sizeof(bind_addr);
+    int sd;
+    char *ptr;
 
-    return accept(sock, &bind_addr, &socksize);
+    struct  sockaddr_in sa;
+    unsigned int sa_len = sizeof(sa);
+
+    if ((sd = accept(sock, (struct sockaddr *) &sa, &sa_len)) != -1)
+    {
+        ptr = ipaddr[sd];
+        strcpy(ptr, inet_ntoa(sa.sin_addr));
+    }
+
+    return sd;
 }
 
 int addPoll(int pollfd)
@@ -885,7 +922,7 @@ int addPoll(int pollfd)
 
 void doPoll(int events, int mainsock)
 {
-  int num, pos, sd, ret, cnt = 0;
+  int num, pos, sd = 0, ret, cnt = 0;
   char buf[BUFSIZ], msgbuf[BUFSIZ];
   char *sptr, *eptr;
 
@@ -923,10 +960,10 @@ void doPoll(int events, int mainsock)
     {
       if (!noserial && polld[pos].fd == ttyfd)
       {
-        sprintf(buf, "%sPoll device error, Terminated  %s",
+        sprintf(buf, "%sSerial device error, Terminated  %s",
           MSGLINE, strdate(WITHSEP));
         writeClients(mainsock, buf);
-        errorExit(-112, "Fatal", "Poll device error");
+        errorExit(-112, "Fatal", "Serial device error");
       }
         sprintf(msgbuf, "Poll Error, closed client %d.\n", polld[pos].fd);
         logMsg(LEVEL1, msgbuf);
@@ -936,6 +973,13 @@ void doPoll(int events, int mainsock)
 
     if (polld[pos].revents & POLLNVAL) /* Invalid Request */
     {
+    if (!noserial && polld[pos].fd == ttyfd)
+      {
+        sprintf(buf, "%sInvalid Request from Serial device, Terminated  %s",
+          MSGLINE, strdate(WITHSEP));
+        writeClients(mainsock, buf);
+        errorExit(-112, "Fatal", "Invalid Request from Serial device");
+      }
       sprintf(msgbuf, "Removed client %d, invalid request.\n",
         polld[pos].fd);
       logMsg(LEVEL1, msgbuf);
@@ -961,7 +1005,7 @@ void doPoll(int events, int mainsock)
           {
             sprintf(msgbuf, "Serial device %d read error: %s\n", ttyfd,
                     strerror(errno));
-            logMsg(LEVEL1, msgbuf);
+            errorExit(-112, "Fatal", msgbuf);
           }
 
           /* Modem or device returned no data */
@@ -1040,7 +1084,7 @@ void doPoll(int events, int mainsock)
             else
             {
               /* Client connected, CID log not sent */
-              sprintf(msgbuf, "Client %d connected.\n", sd);
+              sprintf(msgbuf, "Client %d from %s connected.\n", sd, ipaddr[sd]);
               logMsg(LEVEL3, msgbuf);
             }
           }
@@ -1071,6 +1115,7 @@ void doPoll(int events, int mainsock)
             sprintf(msgbuf, "Client %d disconnected.\n", polld[pos].fd);
               logMsg(LEVEL3, msgbuf);
             close(polld[pos].fd);
+            *ipaddr[sd] = '\0';
             polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
           }
           else
@@ -1149,21 +1194,17 @@ void doPoll(int events, int mainsock)
                     *eptr = '.';
                 }
 
-                if (!strstr(buf, CALLOUT) || sendout)
+                if (strstr(buf, CANCEL))
                 {
-                    /* either CALLIN or (CALLOUT && sendout) */
-                    if (strstr(buf, CANCEL))
-                    {
-                    ring = -1;
-                    sendInfo(mainsock);
-                    ring = 0;
-                    }
-                    else if (strstr(buf, BYE))
-                    {
-                    ring = -2;
-                    sendInfo(mainsock);
-                    ring = 0;
-                    }
+                ring = -1;
+                sendInfo(mainsock);
+                ring = 0;
+                }
+                else if (strstr(buf, BYE))
+                {
+                ring = -2;
+                sendInfo(mainsock);
+                ring = 0;
                 }
               }
               else if (strncmp(buf, CIDLINE, strlen(CIDLINE)) == 0)
@@ -1528,12 +1569,17 @@ void formatCID(int mainsock, char *buf)
     if ((cid.status & CIDALL4) == CIDALL4)
     {
         /*
-         * All Caller ID information received.
-         * Create the CID (Caller ID) or OUT text line
+         * All Caller ID or outgoing call information received.
+         *
+         * Create the CID (Caller ID), OUT (outgoing call),
+         * or HUP (hungup call) text line
          *
          * For OUT text lines (outgoing calls):
          *     the MESG field is not used
          *     the NAME field will be generic if no alias
+         *
+         * For HUP text lines (hungup call):
+         * The CID label is replaced by a HUP label
          */
 
         userAlias(cid.cidnmbr, cid.cidname, cid.cidline);
@@ -1556,14 +1602,13 @@ void formatCID(int mainsock, char *buf)
             NAME, cid.cidname,
             STAR);
 
-        /* Log the CID or OUT text line */
+        /* Log the CID, OUT, or HUP text line */
         writeLog(cidlog, cidbuf);
 
         /*
-         * Send the CID or OUT text line to the clients
-         * The OUT text line is only sent if configured
+         * Send the CID, OUT, or HUP text line to clients
          */
-        if ((sendout || !callout) && !hup) writeClients(mainsock, cidbuf);
+        writeClients(mainsock, cidbuf);
 
         /*
          * Reset mesg, line, and status
@@ -1721,7 +1766,7 @@ void sendLog(int sd, char *logbuf)
             }
 
             /* short delay before trying to rewrite line or rest of line */
-            usleep(INITWAIT);
+            usleep(READWAIT);
             ret = write(sd, optr, len);
         }
 
@@ -1743,7 +1788,8 @@ void sendLog(int sd, char *logbuf)
         ret = write(sd, msgbuf, strlen(msgbuf));
     }
 
-    sprintf(msgbuf, "Client %d connected, sent call log: %s\n", sd, cidlog);
+    sprintf(msgbuf, "Client %d from %s connected, sent call log: %s\n",
+            sd, ipaddr[sd], cidlog);
     logMsg(LEVEL3, msgbuf);
 }
 
@@ -1796,9 +1842,10 @@ void sendInfo(int mainsock)
 
 /*
  * Returns the current date and time as a string in the format:
- *      WITHSEP:  MM/DD/YYYY HH:MM:SS
- *      NOSEP:    MMDDYYYY HHMM
- *      ONLYTIME: HH:MM:SS
+ *      WITHSEP:     MM/DD/YYYY HH:MM:SS
+ *      NOSEP:       MMDDYYYY HHMM
+ *      ONLYTIME:    HH:MM:SS
+ *      LOGFILETIME: HH:MM:SS.ssss
  */
 char *strdate(int separator)
 {
@@ -1815,8 +1862,11 @@ char *strdate(int separator)
     else if (separator & NOSEP)
         sprintf(buf, "%.2d%.2d%.4d %.2d%.2d", tm->tm_mon + 1, tm->tm_mday,
             tm->tm_year + 1900, tm->tm_hour, tm->tm_min);
-    else /* ONLYTIME */
+    else if (separator & ONLYTIME)
         sprintf(buf, "%.2d:%.2d:%.2d",  tm->tm_hour, tm->tm_min, tm->tm_sec);
+    else /* LOGFILETIME */
+        sprintf(buf, "%.2d:%.2d:%.2d.%.4ld",  tm->tm_hour, tm->tm_min,
+                tm->tm_sec, tv.tv_usec / 100);
     return buf;
 }
 
@@ -1999,8 +2049,9 @@ void reload(int sig)
     char msgbuf[BUFSIZ];
 
     sprintf(msgbuf,
-        "Received Signal %d: %s\nReloading alias iand blacklist files: %s\n",
-        sig, strsignal(sig), strdate(WITHSEP));
+      "Received Signal %d: %s\nReloading alias %s: %s\n",
+      sig, strsignal(sig), hangup ? "and blacklist files" : "file",
+      strdate(WITHSEP));
     logMsg(LEVEL1, msgbuf);
 
     /*
@@ -2020,8 +2071,8 @@ void reload(int sig)
     /* reload alias file, but quit on error */
     if (doAlias()) errorExit(-109, 0, 0);
 
-    /* reload blacklist file, but quit on error */
-    if (doBlacklist()) errorExit(-109, 0, 0);
+    /* reload blacklist file if hangup option given, but quit on error */
+    if (hangup && doBlacklist()) errorExit(-114, 0, 0);
 }
 
 /* ignored signals */
