@@ -1,5 +1,8 @@
 ncid - Network CallerID
 
+Version 0.82.1
+    - nciddconf.c: added back 'send outcall' to give depreciated warning
+
 Version 0.82
     - Makefile: added LOCKFILE=/var/spool/uucp/LCK.. in mac and fat-mac targets
                 added LOCKFILE=/var/spool/lock/LCK.. in freebsd target

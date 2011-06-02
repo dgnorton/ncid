@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.82
+Version:    0.82.1
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 

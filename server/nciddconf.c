@@ -19,7 +19,7 @@
 
 #include "ncidd.h"
 
-int errorStatus;
+int errorStatus, obsolute;
 char *cidconf = CIDCONF;
 
 char *getWord();
@@ -54,6 +54,7 @@ struct setword setword[] = {
 struct sendclient sendclient[] = {
     {"cidlog",   &sendlog},
     {"cidinfo",  &sendinfo},
+    {"callout",  &obsolute},
     {0,           0}
 };
 
@@ -88,6 +89,13 @@ int doConf()
         else configError(cidconf, lc, word, ERRCMD);
     }
     (void) fclose(fp);
+    if (obsolute)
+    {
+        sprintf(buf,
+            "Warning, 'send outfile' is obsolute, upgrade %s file\n",
+            cidconf);
+        logMsg(LEVEL1, buf);
+    }
     sprintf(buf, "Processed config file: %s\n", cidconf);
     logMsg(LEVEL1, buf);
 
