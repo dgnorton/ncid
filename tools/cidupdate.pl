@@ -16,6 +16,9 @@
 # Modified by John L. Chmielewski on Sun Feb 13, 2011
 #   - changed the -a option to -A and the -c option to -C
 #   - removed unused -l option
+# Modified by John L. Chmielewski on Sat Jun 11, 2011
+#   - fixed regex and changed join and split character from ':' to '"'
+#   - changed regex for getting the number to include special characters
 
 use Getopt::Std;
 
@@ -35,10 +38,13 @@ open(NEWCIDLOG, ">$newcidlog") || die "Could not open $newcidlog\n";
 
 while (<ALIASFILE>) {
     if (/^alias/) {
-    chomp;
-        ($type, $from, $to, $value) = /^.*alias\s+(\w+)\s+"*([\w\s\@\*'&,_-]+)"*\s+=\s+"*([\w\s\@'&_-]+)"*\s*i*f*\s*"*([\w\s\@'&_-]*)"*$/;
-    $alias = join(":", ($type, $from, $to, $value));
-    push(@aliases, $alias);
+        chomp;
+        ($type, $from, $to, $value) = /^.*alias\s+(\w+)\s+"*([^"]+)"*\s+=\s+"*([^"]+)"*\s+if\s+"*([^"]+)"*$/;
+        if ($value == "") {
+        ($type, $from, $to) = /^.*alias\s+(\w+)\s+"*([^"]+)"*\s+=\s+"*([^"]+)"*(.*)$/;
+        }
+        $alias = join('"', ($type, $from, $to, $value));
+        push(@aliases, $alias);
     }
 }
 
@@ -47,11 +53,11 @@ while (<ALIASFILE>) {
 while (<CIDLOG>) {
     if (/CID|EXTRA/) {
         ($date, $time, $number, $mesg, $name) = 
-            /.*DATE.(\d+).*TIME.(\d+).*NU*MBE*R.([-\w\s]+).*MESG.(\w+).*NAME.(.*)\*+$/;
+            /.*DATE.(\d+).*TIME.(\d+).*NU*MBE*R.(.*)\*MESG.(\w+).*NAME.(.*)\*+$/;
         ($line) = /.*LINE.([-\w\s]+).*/;
 
     foreach $alias (@aliases) {
-        ($type, $from, $to, $value) = split(/:/, $alias);
+        ($type, $from, $to, $value) = split(/"/, $alias);
         if ($value ne "") {
             if ($type eq "NAME" && $number eq $value) {$name = $to;}
             if ($type eq "NMBR" && $name eq $value) {$number = $to;}
@@ -67,3 +73,5 @@ while (<CIDLOG>) {
         printf(NEWCIDLOG);
     }
 }
+print "diff $cidlog $newcidlog\n";
+exec('diff', $cidlog, $newcidlog);

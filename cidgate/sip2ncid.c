@@ -22,7 +22,7 @@
 #include "sip2ncid.h"
 
 /* globals */
-int debug, listdevs, msgsent, nofilter, test, sd, warn;
+int debug, listdevs, msgsent, nofilter, test, sd, warn, rmdups;
 int ncidport   = NCIDPORT;
 int sipport    = SIPPORT;
 int verbose    = 1;
@@ -142,6 +142,9 @@ int main(int argc, char *argv[])
     sprintf(msgbuf,
         "Warn clients: 'No SIP packets' & 'SIP packets returned' messages? %s\n",
             warn ? "YES" : "NO");
+    logMsg(LEVEL1, msgbuf);
+    sprintf(msgbuf,
+        "Remove duplicate INVITE Packets? %s\n", rmdups ? "YES" : "NO");
     logMsg(LEVEL1, msgbuf);
 
     sigact.sa_handler = sigdetect;
@@ -510,15 +513,17 @@ void processPackets(u_char *args,
                     const struct pcap_pkthdr* pkthdr,
                     const u_char* packet)
 {
-    static int pktcnt = 1;                  /* packet counter */
-    static unsigned int charcnt;            /* character count */
-    static char *linenum[MAXLINE];          /* telephone lines */
-    static char *calls[MAXCALL];            /* calls in progress */
+    static unsigned int pktnum = 0;        /* packet number */
+    static unsigned int invnum = 0;        /* INVITE packet number */
+    static unsigned int gotdup = 0;        /* INVITE packet duplicate */
+    static unsigned int charcnt;           /* character count */
+    static char *linenum[MAXLINE];         /* telephone lines */
+    static char *calls[MAXCALL];           /* calls in progress */
 
     /* declare pointers to packet headers */
-    const struct ip *ip;                    /* IP Header */
-    const struct udphdr *udp;               /* UDP Header */
-    const char   *pdata;                    /* Packet Data */
+    const struct ip *ip;                   /* IP Header */
+    const struct udphdr *udp;              /* UDP Header */
+    const char   *pdata;                   /* Packet Data */
 
     int size_ip, size_udp, size_pdata, cnt, pos, retval;
     int outcall = 0;
@@ -586,9 +591,8 @@ void processPackets(u_char *args,
     /* if no open socket, and not in test mode, try to connect again */
     if (!sd && !test) socketConnect(NONFATAL);
 
-    sprintf(msgbuf, "Packet number: %d\n", pktcnt);
+    sprintf(msgbuf, "Packet number: %u\n", ++pktnum);
     logMsg(LEVEL2, msgbuf);
-    pktcnt++;
 
     /* compute IP header offset */
     ip = (struct ip *)(packet + SIZE_ETHERNET);
@@ -685,6 +689,54 @@ void processPackets(u_char *args,
              */
             if (strmatch(sipbuf, CSEQ, INVITE))
             {
+                /*
+                 * Crude test for duplicate INVITE packet
+                 *
+                 * Assumes a duplicate if 2 INVITE packets in a row
+                 * or for a INVITE and all RINGING packets in a row
+                 *
+                 * invnum was previous INVITE packet number
+                 *
+                 * it's possible this could miss a call if 2 come
+                 * in at the same time
+                 */
+                if (rmdups)
+                {
+                    /* Configured to find and remove duplicate SIP packets */
+
+                    if (gotdup)
+                    {
+                        if (strstr(sipbuf, "Trying"))
+                        {
+                            sprintf(msgbuf, "Ignoring Trying Packet %u\n",
+                                    pktnum);
+                            logMsg(LEVEL2, msgbuf);
+                            return;
+                        }
+                        if (strstr(sipbuf, "Ringing"))
+                        {
+                            sprintf(msgbuf, "Ignoring Ringing Packet %u\n",
+                                    pktnum);
+                            logMsg(LEVEL2, msgbuf);
+                            return;
+                        }
+                    }
+                    if (pktnum == invnum + 1)
+                    {
+                        sprintf(msgbuf, "Duplicate INVITE Packet %u with %u\n",
+                            pktnum, invnum);
+                        logMsg(LEVEL2, msgbuf);
+                        invnum = pktnum;
+                        gotdup = 1;
+                        return;
+                    }
+                    else
+                    {
+                        invnum = pktnum;
+                        gotdup = 0;
+                    }
+                }
+
                 /* Get the unique Call-ID */
                 getCallID(sipbuf, callid, sizeof(callid), INVITE);
 

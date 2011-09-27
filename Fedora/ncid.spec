@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.82.1
+Version:    0.83
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -35,7 +35,7 @@ terminal window or, using a output module, format the output and send it
 to another program.
 
 This package contains the NCID client with initmodem, hangup, page,
-skel, tivo, and yac output modules.
+skel, and yac output modules.
 
 %package mythtv
 Summary:    NCID mythtv module sends caller ID information MythTV
@@ -155,7 +155,6 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/share/ncid/ncid-initmodem
 /usr/share/ncid/ncid-page
 /usr/share/ncid/ncid-skel
-/usr/share/ncid/ncid-tivo
 /usr/share/ncid/ncid-yac
 /usr/share/pixmaps/ncid/ncid.gif
 %dir /etc/ncid
@@ -169,7 +168,6 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %{_mandir}/man1/ncid-initmodem.1*
 %{_mandir}/man1/ncid-page.1*
 %{_mandir}/man1/ncid-skel.1*
-%{_mandir}/man1/ncid-tivo.1*
 %{_mandir}/man1/ncid-yac.1*
 %{_mandir}/man5/ncid.conf.5*
 %{_mandir}/man5/ncidmodules.conf.5*
@@ -309,6 +307,10 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+
+* Fri Sep 2 2011 John Chmielewski <jlc@users.sourceforge.net> 0.83
+- removed /usr/share/ncid/ncid-tivo
+- removed ncid-tivo.1
 
 * Tue Mar 17 2011 John Chmielewski <jlc@users.sourceforge.net> 0.82-1
 - New release

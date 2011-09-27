@@ -63,12 +63,13 @@ int doBlacklist()
 
     if (!errorStatus && list[0])
     {
-        sprintf(msgbuf, "Blacklist Entries:\n");
-        logMsg(LEVEL8, msgbuf);
+        for (i = 0; i < LISTSIZE && list[i]; ++i);
+        sprintf(msgbuf, "Blacklist Entries: %d/%d\n", i, LISTSIZE);
+        logMsg(LEVEL1, msgbuf);
 
         for (i = 0; i < LISTSIZE && list[i]; ++i)
         {
-            sprintf(msgbuf, " %.2d [%s]\n", i, list[i]);
+            sprintf(msgbuf, " %.2d \"%s\"\n", i, list[i]);
             logMsg(LEVEL8, msgbuf);
         }
     }
@@ -81,7 +82,6 @@ void addbl(char *inptr, char *wdptr, int lc)
 {
     int cnt;
     char *mem = 0;
-
 
     /* process blacklist words */
     do

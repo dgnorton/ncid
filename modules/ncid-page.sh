@@ -3,16 +3,25 @@
 # Page a cell phone, pager, or mail address
 # Requires mail
 
-# Last changed by jlc: Sun Aug 29, 2010
+# Last changed by jlc: Sun Sep 11, 2011
 
-# input is 5 lines obtained from ncid
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
+# input is always 6 lines
 #
-# input is 5 lines if a message was sent
-# input: \n\n\nMESSAGE\n\n
+# if input is from a call:
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+#
+# if input is from a message
+# the  message is in place of NAME:
+# input: \n\n\n<MESSAGE>\n\nMSG\n
 #
 # ncid usage:
 #   ncid --no-gui [--ring 4] [--message] --program ncid-page
+
+# $CIDTYPE is one of:
+#   CID: incoming call
+#   OUT: outgoing call
+#   HUP: blacklisted hangup
+#   MSG: message instead of a call
 
 ConfigDir=/usr/local/etc/ncid
 ConfigFile=$ConfigDir/ncidmodules.conf
@@ -35,14 +44,15 @@ read CIDTIME
 read CIDNMBR
 read CIDNAME
 read CIDLINE
+read CIDTYPE
 
-if [ -n "$CIDNMBR" ]
+if [ "$CIDTYPE" = "MSG" ]
 then
-    MailMsg="\nNAME: $CIDNAME\nNMBR: $CIDNMBR\nTIME: $CIDTIME\nDATE: $CIDDATE\n"
-    MailSubject="$CIDNAME $CIDNMBR"
-else
-    MailMsg="$CIDNAME"
     MailSubject="Message"
+    MailMsg="$CIDNAME"
+else
+    MailSubject="$CIDNMBR"
+    MailMsg="\nTYPE: $CIDTYPE\nNAME: $CIDNAME\nNMBR: $CIDNMBR\nTIME: $CIDTIME\nDATE: $CIDDATE\n"
 fi
 
 # if line indicator found, include it

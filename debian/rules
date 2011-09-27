@@ -8,7 +8,7 @@
 # This file may have to be extensively modified
 #
 # Modified by John L. Chmielewski to package ncid
-# Last Modified Sat Feb 26, 2011
+# Last Modified Fri Sep 2, 2011
 
 package = ncid
 prog    = ncidd
@@ -92,7 +92,7 @@ binary-arch:    checkroot build
 	cd debian; install -m 755 ncid-initmodem ncid-page ncid-yac \
                               ../debian/tmp-client/etc/init.d
 	install -m 644 man/ncid.1 man/ncidmodules.1 man/ncid-initmodem.1 \
-                   man/ncid-page.1 man/ncid-skel.1 man/ncid-tivo.1 \
+                   man/ncid-page.1 man/ncid-skel.1 \
                    man/ncid-yac.1 debian/tmp-client/usr/share/man/man1
 	install -m 644 man/ncid.conf.5 man/ncidmodules.conf.5 \
                    debian/tmp-client/usr/share/man/man5

@@ -40,7 +40,7 @@ int debug, conferr, setcid, locked, sendlog, sendinfo, callout;
 int ttyfd, pollpos, pollevents;
 int ring, ringwait, lastring, clocal, nomodem, noserial, gencid = 1;
 int cidsent, verbose = 1, hangup, ignore1;
-unsigned long cidlogmax = LOGMAX;
+long unsigned int cidlogmax = LOGMAX;
 pid_t pid;
 
 char ipaddr[CONNECTIONS][25];
@@ -216,6 +216,12 @@ int main(int argc, char *argv[])
         sprintf(msgbuf, "Data logfile not present: %s\n", datalog);
         logMsg(LEVEL1, msgbuf);
     }
+
+    /*
+     * lineid could have been changed in either ncidd.conf or ncidd.alias
+     * this sets cid.cidline to lineid after any changes to it
+     */
+    strncpy(cid.cidline, lineid, CIDSIZE - 1);
 
     sprintf(msgbuf, "Telephone Line Identifier: %s\n", lineid);
     logMsg(LEVEL1, msgbuf);
@@ -1712,11 +1718,13 @@ void sendLog(int sd, char *logbuf)
 
     if (stat(cidlog, &statbuf) == 0)
     {
-        if ((unsigned) statbuf.st_size > cidlogmax)
+        if ((long unsigned int) statbuf.st_size > cidlogmax)
         {
-            sprintf(logbuf, LOGMSG, statbuf.st_size, cidlogmax, CRLF);
+            sprintf(logbuf, LOGMSG, (long unsigned int) statbuf.st_size,
+                    cidlogmax, CRLF);
             ret = write(sd, logbuf, strlen(logbuf));
-            sprintf(msgbuf, LOGMSG, statbuf.st_size, cidlogmax, NL);
+            sprintf(msgbuf, LOGMSG, (long unsigned int) statbuf.st_size,
+                    cidlogmax, NL);
             logMsg(LEVEL1, msgbuf);
             return;
         }
@@ -1866,7 +1874,7 @@ char *strdate(int separator)
         sprintf(buf, "%.2d:%.2d:%.2d",  tm->tm_hour, tm->tm_min, tm->tm_sec);
     else /* LOGFILETIME */
         sprintf(buf, "%.2d:%.2d:%.2d.%.4ld",  tm->tm_hour, tm->tm_min,
-                tm->tm_sec, tv.tv_usec / 100);
+                tm->tm_sec, (long int) tv.tv_usec / 100);
     return buf;
 }
 

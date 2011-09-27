@@ -17,17 +17,17 @@
 .PP
 .nf
 [--no-gui]
-[--all-calls         | -A]
-[--delay seconds     | -D seconds]
-[--message           | -M]
-[--noexit            | -X]
-[--program PROGRAM   | -P PROGRAM]
-[--pidfile FILE      | -p PIDFILE]
-[--raw               | -R]
-[--ring count        | -r count]
-[--tivo              | -T]
-[--PopupTime seconds | -t seconds]
-[--verbose           | -V]
+[--classic-display        | -C]
+[--delay <seconds>        | -D <seconds>]
+[--message                | -M]
+[--noexit                 | -X]
+[--program <program name> | -P <program name>]
+[--pidfile <file name>    | -p <file name>]
+[--raw                    | -R]
+[--ring <count>           | -r <count>]
+[--tivo                   | -T]
+[--PopupTime <seconds>    | -t <seconds>]
+[--verbose                | -V]
 .fi
 .PP
 .I Arguments:\^
@@ -37,18 +37,37 @@
 [PORT_NUMBER]
 .fi
 .SH DESCRIPTION
-.B Ncid
-displays Caller ID information sent to it by the Caller ID server.
+The \fBncid\fR client
+displays Caller ID information sent to it by the NCID server.
 In the default GUI mode, if the server is configured to send the
-CID Call Log, it will load the call log in the CID log window at
-startup.  The call log is updated by \fIncid\fR whenever a call
-is received.
+Call Log, it will load the call log in the call history window at
+startup.  The history window is then updated by \fIncid\fR whenever
+a call is received.
 .PP
-.B Ncid
+The history window displays one line per call or message.  Each
+line line starts with a libe label.  There are three types of
+calls and a message that can be displayed:
+.PP
+.PD 0
+.TP
+.B CID:
+Incoming Call
+.TP
+.B OUT:
+Outgoing Call
+.TP
+.B HUP:
+Blacklisted Call Hangup
+.TP
+.B MSG:
+User or NCID message
+.PD
+.PP
+The \fBncid\fR client
 also has a message window that will send a single line message
 to the server which, in turn, will send it to all connected clients.
 .PP
-.B Ncid
+The \fBncid\fR client
 runs on Linux and Windows 98, ME, XP, 2000, NT.  In the GUI mode, it
 will pop up, and go on top whenever a call comes in.  In addition,
 it will display itself on whatever desktop is active in Linux.
@@ -81,6 +100,7 @@ If the delay between attempts is set to
 zero seconds, \fIncid\fR will not attempt a reconnect.
 .PP
 The file menu provides three menu items in the GUI mode:
+.PP
 .PD 0
 .TP 11
 .B reconnect
@@ -102,9 +122,10 @@ Do not display CID information using a GUI
 .br
 Default: display CID using a GUI, except if called tivocid
 .TP
-.B --all-calls | -A
-Display all call types in the history window.  This includes
-incoming (CID:), outgoing (OUT:), and hungup calls (HUP:).
+.B --classic-display | -C
+Ingores all call types except incoming calls (CID:).
+Displays only incoming calls and messages in the
+history window.  Ignores outgoing calls and hungup calls.
 .br
 Default: Do not display all call types
 .TP

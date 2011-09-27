@@ -35,7 +35,10 @@ LEVEL3:
 LEVEL2:
         indicate cannot write pidfile
         show packet number received
-        Warning: could not connect to the NCID server
+        show Duplicate INVITE Packet <pkt#> with <invpkt#>
+        show Ignoring Trying Packet <pkt#>
+        show Ignoring Ringing Packet <pkt#>
+        show Warning: could not connect to the NCID server
 
 LEVEL1:
         indicate cannot create or open existing logfile
@@ -50,7 +53,8 @@ LEVEL1:
         indicate Reading from dumpfile
         indicate Writing to dumpfile
         show verbose level
-        show status of sending "no SIP" warning messages
+        show status: Warn clients: 'No SIP packets' & 'SIP packets returned'
+        show status:  Remove duplicate INVITE Packets?
         show NCID server host:port
         show network interface used
         show applied filter

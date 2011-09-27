@@ -1,5 +1,5 @@
 SHMODULES = ncid-page.sh ncid-samba.sh ncid-speak.sh \
-            ncid-mythtv.sh ncid-kpopup.sh ncid-skel.sh ncid-tivo.sh \
+            ncid-mythtv.sh ncid-kpopup.sh ncid-skel.sh \
             ncid-yac.sh ncid-initmodem.sh
 DIST      = ncidmodules.conf-in
 FILES     = README.modules Makefile $(SHMODULES) $(DIST)
@@ -17,15 +17,19 @@ CONFDIR   = $(ETC)/ncid
 
 MODULES   = $(SHMODULES:.sh=)
 
+TIVOMOD   = ncid-tivo
+
 CONFFILE  = $(DIST:-in=)
 
-modules: $(MODULES) $(CONFFILE)
+modules: $(MODULES) $(TIVOMOD) $(CONFFILE)
 
 install: install-etc install-modules
 
 install-modules: $(MODULES)
 	@if test ! -d $(MODULEDIR); then mkdir -p $(MODULEDIR); fi
 	install -m 755 $(MODULES) $(MODULEDIR)
+	@if [ "$(setmod)" != "NONE" ] ; \
+		then install -m 755 $(TIVOMOD) $(MODULEDIR)/.; fi
 
 install-etc: $(CONFFILE)
 	@if test -f $(CONFDIR)/$(CONFFILE); \
@@ -36,7 +40,7 @@ install-etc: $(CONFFILE)
 clean:
 
 clobber: clean
-	rm -f $(MODULES) $(CONFFILE)
+	rm -f $(MODULES) $(TIVOMOD) $(CONFFILE)
 	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber

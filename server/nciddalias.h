@@ -24,20 +24,29 @@
 #define CIDALIAS     "/etc/ncid/ncidd.alias"
 #endif
 
-#define ALIASSIZE   200
-#define NMBRNAME    0x01
-#define NMBRONLY    0x10
-#define NMBRDEP     0x11
-#define NAMEONLY    0x20
-#define NAMEDEP     0x21
-#define LINEONLY    0x40
+#define ALIASSIZE    200
+#define NMBRNAME     0x01
+#define NMBRONLY     0x10
+#define NMBRDEP      0x11
+#define NAMEONLY     0x20
+#define NAMEDEP      0x21
+#define LINEONLY     0x40
 
-#define ERRIF       "missing 'if' before word:"
-#define ERRALIAS    "too many aliases"
+#define NMBRNAME_TXT "NMBRNAME"
+#define NMBRONLY_TXT "NMBRONLY"
+#define NMBRDEP_TXT  "NMBRDEP"
+#define NAMEONLY_TXT "NAMEONLY"
+#define NAMEDEP_TXT  "NAMEDEP"
+#define LINEONLY_TXT "LINEONLY"
+
+#define ERRIF        "missing 'if' before word:"
+#define ERRLONG      "word is too long:"
+#define ERRALIAS     "too many aliases"
 
 struct alias
 {
     int type;
+    char *type_txt;
     char *from;
     char *to;
     char *depend;

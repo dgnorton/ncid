@@ -203,10 +203,9 @@ tivo-s2:
 	$(MAKE) tivo-mips mandir prefix=/var/hack
 
 tivo-hack-install:
-	$(MAKE) tivo-install-hack prefix=/var/hack prefix2=$(prefix) prefix3=
-
-tivo-install-hack: install-server install-client \
-                   install-modules install-cidgate install-tivo
+	$(MAKE) install-server install-client \
+            install-modules install-cidgate install-tivo \
+            prefix=/var/hack prefix2=$(prefix) prefix3= setmod=tivo
 
 tivo-mips:
 	$(MAKE) local tivodir fedoradir \
@@ -219,9 +218,9 @@ tivo-mips:
 			setlock="TiVo Modem Lockfile" \
 			setmod="ncid-tivo" OSDCLIENT=tivoncid
 
-tivo-install: \
-              install-server install-client install-modules install-cidgate \
-              install-man install-scripts install-fedora
+tivo-install:
+	$(MAKE) install-server install-client install-modules install-cidgate \
+              install-man install-scripts install-fedora setmod=tivo
 
 freebsd:
 	$(MAKE) local freebsddir prefix=/usr/local prefix2=$(prefix) \

@@ -40,6 +40,7 @@ int doAlias()
 {
     char input[BUFSIZ], word[BUFSIZ], msgbuf[BUFSIZ], *inptr;
     int lc, i;
+    int max_temp = 0, max_type_txt = 0, max_from = 0, max_to = 0;
     FILE *fp;
 
     if ((fp = fopen(cidalias, "r")) == NULL)
@@ -67,17 +68,74 @@ int doAlias()
 
     if (!errorStatus && alias[0].type)
     {
+        /*
+         * Make the alias display pretty by determining maximum column
+         * widths, and create human readable 'type'.
+         */
+
+        for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+        {
+            switch (alias[i].type)
+            {
+                case NMBRNAME:
+                    alias[i].type_txt = NMBRNAME_TXT ;
+                    break;
+
+                case NMBRONLY:
+                    alias[i].type_txt = NMBRONLY_TXT ;
+                    break;
+
+                case NMBRDEP:
+                    alias[i].type_txt = NMBRDEP_TXT ;
+                    break;
+
+                case NAMEONLY:
+                    alias[i].type_txt = NAMEONLY_TXT ;
+                    break;
+
+                case NAMEDEP:
+                    alias[i].type_txt = NAMEDEP_TXT ;
+                    break;
+
+                case LINEONLY:
+                    alias[i].type_txt = LINEONLY_TXT ;
+                    break;
+
+                default:
+                    alias[i].type_txt = "UNKNOWN" ;
+            }
+
+            max_temp = strlen(alias[i].type_txt);
+            if (max_temp > max_type_txt) max_type_txt=max_temp;
+
+            max_temp = strlen(alias[i].from);
+            if (max_temp > max_from) max_from=max_temp;
+
+            max_temp = strlen(alias[i].to);
+            if (max_temp > max_to) max_to=max_temp;
+
+        }
+
         sprintf(msgbuf,
-            "Alias Entries: ELEMENT TYPE [FROM] [TO] [DEPEND]\n");
+            "Alias Entries: ELEMENT TYPE \"FROM\" \"TO\" [\"DEPEND\"]\n");
         logMsg(LEVEL8, msgbuf);
 
         for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
         {
-            sprintf(msgbuf, " %.2d %.2d [%-21s] [%-21s] [%-21s]\n", i,
+            sprintf(msgbuf, " %.3d %.2d (%s)%-*s \"%s\"%-*s \"%s\"%-*s ",
+                i,
                 alias[i].type,
+                alias[i].type_txt,
+                max_type_txt - (int) strlen(alias[i].type_txt), "",
                 alias[i].from,
+                max_from - (int) strlen(alias[i].from), "",
                 alias[i].to,
-                alias[i].depend ? alias[i].depend : " ");
+                max_to - (int) strlen(alias[i].to), "");
+
+            if (alias[i].depend)
+                strcat(strcat(strcat(msgbuf, "\""), alias[i].depend), "\"");
+            strcat(msgbuf, NL);
+
             logMsg(LEVEL8, msgbuf);
         }
     }
@@ -116,6 +174,7 @@ void setAlias(char *inptr, int lc, char *wdptr, int type)
     if (type == NMBRNAME || (inptr = getWord(inptr, wdptr, lc)))
     {
         mem = cpy2mem(wdptr, mem);
+        if (strlen(mem) > CIDSIZE) configError(cidalias, lc, wdptr, ERRLONG);
         alias[cnt].from = mem;
         if ((inptr = getWord(inptr, wdptr, lc)))
         {
@@ -124,6 +183,8 @@ void setAlias(char *inptr, int lc, char *wdptr, int type)
                 if ((inptr = getWord(inptr, wdptr, lc)))
                 {
                     mem = cpy2mem(wdptr, mem);
+                    if (strlen(mem) > CIDSIZE)
+                        configError(cidalias, lc, wdptr, ERRLONG);
                     alias[cnt].to = mem;
                     if (type == NMBRNAME) alias[cnt].type = type;
                     else
@@ -135,6 +196,8 @@ void setAlias(char *inptr, int lc, char *wdptr, int type)
                             else if ((inptr = getWord(inptr, wdptr, lc)))
                             {
                                 mem = cpy2mem(wdptr, mem);
+                                if (strlen(mem) > CIDSIZE)
+                                    configError(cidalias, lc, wdptr, ERRLONG);
                                 alias[cnt].depend = mem;
                                 alias[cnt].type = type + 1;
                             }

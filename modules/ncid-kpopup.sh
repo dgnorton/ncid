@@ -6,17 +6,23 @@
 #
 # Created by Randy L. Rasmussen
 # Created on Thu Dec 20, 2007
-# Last modified: Sun Aug 29, 2010 by jlc
+# Last modified: Sun Sep 11, 2011 by jlc
 
-# input is 5 lines obtained from ncid
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\n
+# input is 6 lines obtained from ncid
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
 #
-# input is 5 lines if a message was sent
-# input: \n\n\nMESSAGE\n\n
+# input is 6 lines if a message was sent
+# input: \n\n\n<MESSAGE>\n\nMSG\n
 #
 # ncid usage:
 #   ncid --no-gui [--message] --program ncid-kpopup
-#
+
+# $CIDTYPE is one of:
+#   CID: incoming call
+#   OUT: outgoing call
+#   HUP: blacklisted hangup
+#   MSG: message instead of a call
+
 # The following variables get set from $ConfigDir/$ConfigFile
 # These are the default values if there is no $ConfigDir/$ConfigFile
 # festival=/usr/bin/festival
@@ -27,11 +33,13 @@ timeout=10 #Displays popup for X number of seconds used by kdialog
 
 # Note these read commands have to be above the '... . $ConfigFile' line
 # since SAY="...$CIDNAME"
+
 read CIDDATE
 read CIDTIME
 read CIDNMBR
 read CIDNAME
 read CIDLINE
+read CIDTYPE
 
 # $cidtype is a CIDXXXX variable, normally $CIDNAME or $CIDNMBR
 # $cidcaller is usually an alias or a name or "".
@@ -49,7 +57,7 @@ ConfigFile=$ConfigDir/ncidmodules.conf
 [ -f $ConfigFile ] && . $ConfigFile
 
 $kdialog --geometry $geo --title "$title" --passivepopup \
-         "$CIDNAME $CIDNMBR" $timeout &
+         "$CIDTYPE $CIDNAME $CIDNMBR" $timeout &
 
 # this speaks $CIDNAME if there is a match
 if [ "$cidtype" = "$cidcaller" ] && [ "$cidtype" != "" ]

@@ -1,5 +1,5 @@
 # ncid module and service configuration file
-# Last modified: Mon Apr 12, 2010
+# Last modified: Fri Jul 29, 2011
 
 # This configuration file is called from each ncid-* init or rc files
 # to set the $ringopt, $tivoprog, and $tivoargs variables.
@@ -111,17 +111,22 @@ SambaClient=
 # Speak the Caller ID #
 #     ncid-speak      #
 #######################
+# What to say
+WHAT=$CIDNAME
+#WHAT=$CIDNMBR
+SAY="$TYPE $WHAT"
+#SAY="$WHAT"  
+#
 # If festival is being used:
 T2S='`echo $SAY | festival --tts`'
 # If using a Macintosh without festival:
 #T2S='/usr/bin/osascript -e \"say $SAY\"'
-# What to say
-SAY="Telephone call from $CIDNAME"
-#SAY="$CIDNAME"
+#
 # Number of times to speak
 SAYNUM=1
 # delay between speaking
 SpeakDelay=2
+#
 # uncomment to not send user messages
 speakopt=""
 

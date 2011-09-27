@@ -1,3 +1,11 @@
+ncid (0.83-0ubuntu1) 11.04; urgency=low
+
+  * See NCID CHANGES file
+  * removed ncid-tivo.1 from rules
+  * added ncid-skel to rules
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Tue,  2 Aug 2011 23:27:00:00 -0400
+
 ncid (0.82.1-0ubuntu1) 11.04; urgency=low
 
   * See NCID CHANGES file

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010
+ * Copyright 2007, 2008, 2009, 2010, 2011
  * by  John L. Chmielewski <jlc@cfl.rr.com>
  *
  * sip2ncid.h is free software; you can redistribute it and/or modify
@@ -150,7 +150,7 @@ enum
     LEVEL9
 };
 
-extern int ncidport, sipport, warn;
+extern int ncidport, sipport, warn, rmdups;
 extern char *device, *pidfile, *ncidhost, *siphost;
 
 extern void logMsg(int level, char *message);

@@ -80,7 +80,7 @@ set PopupTime   5
 set Verbose     0
 set NoGUI       0
 set CallOnRing  0
-set AllCalls    0
+set Classic     0
 set TivoFlag    0
 set MsgFlag     0
 set Ring        999
@@ -110,7 +110,7 @@ set Version     "(NCID) XxXxX"
 set VersionInfo "Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
-               [--all-calls       | -A]
+               [--classic-display | -C]
                [--delay seconds   | -D seconds]
                [--message         | -M]
                [--noexit          | -X]
@@ -244,7 +244,7 @@ proc getCID {} {
     global lineLabel
     global call
     global type
-    global AllCalls
+    global Classic
 
     set msg {CID connection closed}
     set cnt 0
@@ -299,7 +299,7 @@ proc getCID {} {
                 }
             } elseif {$type < 4} {
                 # CID (1), HUP (2), OUT (3)
-                if {($type == 1) || ($AllCalls && ($type > 1))} {
+                if {($type == 1) || (!$Classic && ($type > 1))} {
                     set cid [formatCID $dataBlock]
                     array set call "$lineLabel [list $cid]"
                     # display log
@@ -316,7 +316,7 @@ proc getCID {} {
                 }
             } elseif {$type > 7} {
                 # CIDLOG (8), HUPLOG (9), OUTLOG (10)
-                if {($type == 8) || ($AllCalls && ($type > 8))} {
+                if {($type == 8) || (!$Classic && ($type > 8))} {
                     set cid [formatCID $dataBlock]
                     array set call "$lineLabel [list $cid]"
                     # display log
@@ -485,8 +485,8 @@ proc formatCID {dataBlock} {
     # make default line indicator a blank
     regsub {[-]} $cidline {} cidline
     # set type of call
-    if {![regsub {(\w+)LOG:.*} $dataBlock {\1:} cidtype]} {
-        regsub {(\w+):.*} $dataBlock {\1:} cidtype
+    if {![regsub {(\w+)LOG:.*} $dataBlock {\1} cidtype]} {
+        regsub {(\w+):.*} $dataBlock {\1} cidtype
     }
 
     return [list $ciddate $cidtime $cidnumber $cidname $cidline $cidtype]
@@ -500,7 +500,7 @@ proc getField {dataString dataBlock} {
 }
 
 # pass the CID information to an external program
-# Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
+# Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype\n"
 proc sendCID {cid} {
     global Program
     global TivoFlag
@@ -509,15 +509,15 @@ proc sendCID {cid} {
       if $TivoFlag {
         # pass NAME NUMBER\nLINE\n
         catch {exec $Program << \
-          "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n"} oops
+          "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n" > @stdout} oops
       } else {
-        # pass DATE\nTIME\nNUMBER\nNAME\nLINE\n
+        # pass DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
         if $ExecSh {
           catch {exec sh -c $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n"} oops
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n > @stdout"} oops
         } else {
           catch {exec $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n"} oops
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n > @stdout"} oops
         }
       }
 }
@@ -531,21 +531,20 @@ proc sendMSG {msg} {
 
     if $TivoFlag {
       # send "$msg\n"
-      # instead of: $ciddate $cidnumber\n$cidline
       catch {exec [lindex $Program 0] << "$msg\n"} oops
     } else {
-      # send "\n\n\n$msg\n\n"
-      # in place of: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n"
+      # send "\n\n\n$msg\n\nMSG\n"
+      # not: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n$cidtype\n"
       if $ExecSh {
-        catch {exec sh -c $Program << "\n\n\n$msg\n\n"} oops
+        catch {exec sh -c $Program << "\n\n\n$msg\n\nMSG\n"} oops
       } else {
-        catch {exec $Program << "\n\n\n$msg\n\n"} oops
+        catch {exec $Program << "\n\n\n$msg\n\nMSG\n"} oops
       }
     }
 }
 
 # display CID information or message
-# Input: "$ciddate $cidtime $cidnumber $cidname $cidline\n"
+# Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype\n"
 #        "mesage line"
 # ismsg = 0 for CID and 1 for message
 proc displayCID {cid ismsg} {
@@ -561,17 +560,17 @@ proc displayCID {cid ismsg} {
 # Input: "message"
 proc displayLog {cid ismsg} {
     global Program
-    global AllCalls
+    global Classic
     global NoGUI
     if $NoGUI {
         if {$Program == ""} {
             if $ismsg {
                 puts $cid
             } else {
-                if $AllCalls {
-                    puts "[lindex $cid 0] [lindex $cid 1]  [lindex $cid 5] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
-                } else {
+                if $Classic {
                     puts "[lindex $cid 0] [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
+                } else {
+                    puts "[lindex $cid 0] [lindex $cid 1]  [lindex $cid 5] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
                 }
             }
         }
@@ -582,7 +581,7 @@ proc displayLog {cid ismsg} {
         .vh tag configure purple -foreground purple
 
         if $ismsg {
-            if $AllCalls {.vh insert end "MSG: " purple}
+            if !$Classic {.vh insert end "MSG: " purple}
             .vh insert end "$cid\n" blue
         } else {
             set ciddate [lindex $cid 0]
@@ -592,7 +591,7 @@ proc displayLog {cid ismsg} {
             set cidline [lindex $cid 4]
             set cidtype [lindex $cid 5]
 
-            if $AllCalls {.vh insert end "$cidtype " purple}
+            if !$Classic {.vh insert end "$cidtype: " purple}
             .vh insert end "$ciddate " blue
             .vh insert end "$cidtime " red
             .vh insert end "$cidline " purple
@@ -638,7 +637,7 @@ proc getArg {} {
     global NoGUI
     global Verbose
     global Program
-    global AllCalls
+    global Classic
     global Ring
     global CallOnRing
     global ProgDir
@@ -663,9 +662,9 @@ proc getArg {} {
             }
             {^--no-gui$} {set NoGUI 1}
             {^-A$} -
-            {^--all-calls$} {set AllCalls 1}
+            {^--all-calls$} {set Classic 0}
             {^-C$} -
-            {^--call-out$} {set AllCalls 1}
+            {^--classic-display$} {set Classic 1}
             {^-D$} -
             {^--delay$} {
                 incr cnt
@@ -719,7 +718,7 @@ proc do_nothing {} {
 
 proc makeWindow {} {
     global ExitOn
-    global AllCalls
+    global Classic
 
     frame .fr -borderwidth 2
     wm title . "Network Caller ID"
@@ -736,7 +735,7 @@ proc makeWindow {} {
     pack .md -side bottom
 
     # create and place: CID history scroll window
-    if ($AllCalls) {set maxline 67} else {set maxline 62}
+    if ($Classic) {set maxline 62} else {set maxline 67}
     text .vh -width $maxline -height 4 -yscrollcommand ".ys set" \
         -state disabled -font {Courier -14 bold}
     scrollbar .ys -command ".vh yview"

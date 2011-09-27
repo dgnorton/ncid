@@ -1,6 +1,6 @@
 # ncid configuration file
 
-# File last changed: Sat May 7, 2011
+# File last changed: Sun Jul 31, 2011
 
 # This configuration file takes effect every time ncid is started.
 # It is for global changes.  For changes to a particular instance
@@ -73,9 +73,10 @@ set Callprog    0
 # Default: 0
 set CallOnRing  0
 
-# display all call types in history window
+# display incoming calls and messages in history window
+# ignores outgoing and hangup calls
 # Default: 0
-set AllCalls    0
+set Classic     0
 
 # Message Flag: send messages to output modules
 # Default: 0

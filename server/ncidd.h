@@ -176,7 +176,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define A            "ANONYMOUS"
 #define P            "PRIVATE"
 
-#define CIDSIZE      25
+#define CIDSIZE      50
 #define CIDDATE      0x01
 #define CIDTIME      0x02
 #define CIDNMBR      0x04
@@ -207,7 +207,7 @@ extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile;
 extern int setcid, port, clocal, ttyspeed, ttyfd, hangup;
 extern int sendlog, sendinfo, ignore1;
 extern int nomodem, noserial, gencid, verbose;
-extern unsigned long cidlogmax;
+extern long unsigned int cidlogmax;
 extern void logMsg();
 extern int errorExit(), CheckForLockfile(), openTTY(), doTTY(), initModem();
 extern struct termios rtty, ntty;

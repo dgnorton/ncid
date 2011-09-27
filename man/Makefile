@@ -3,7 +3,8 @@ MANSRC1 = ncid.1 ncidmodules.1 ncidrotate.1 \
 MANSRCI = cidalias.1 cidcall.1 cidupdate.1 \
           ncid-initmodem.1 ncid-kpopup.1 ncid-page.1 \
           ncid-samba.1 ncid-speak.1 ncid-mythtv.1 \
-          ncid-skel.1 ncid-tivo.1 ncid-yac.1
+          ncid-skel.1 ncid-yac.1
+MANSRCT = ncid-tivo.1
 MANSRC5 = ncidd.blacklist.5 ncid.conf.5 \
           ncidd.conf.5 ncidd.alias.5 ncidmodules.conf.5 \
           ncidrotate.conf.5 ncidsip.conf.5 ncid2ncid.conf.5 \
@@ -14,6 +15,8 @@ FILES   = Makefile $(MANSRC)
 
 prefix  = /usr/local
 prefix2 = $(prefix)
+
+setmod    = NONE
 
 SHARE   = $(prefix)/share
 
@@ -35,10 +38,11 @@ html: $(MANSRC1:.1=.1.html) $(MANSRC5:.5=.5.html) $(MANSRC8:.8=.8.html)
 install: install-man
 
 install-man: $(MANSRC) dirs
-	cd $(MAN1); rm -f $(MANSRC1) $(MANSRCI)
+	cd $(MAN1); rm -f $(MANSRC1) $(MANSRCI) $(MANSRCT)
 	cd $(MAN5); rm -f $(MANSRC5)
 	cd $(MAN8); rm -f $(MANSRC8)
 	install -m 644 $(MANSRC1) $(MANSRCI) $(MAN1)
+	@if [ "$(setmod)" != "NONE" ] ; then install -m 755 $(MANSRCT) $(MAN1); fi
 	install -m 644 $(MANSRC5) $(MAN5)
 	install -m 644 $(MANSRC8) $(MAN8)
 

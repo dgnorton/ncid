@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 John L. Chmielewski <jlc@cfl.rr.com>
+ * Copyright 2007-2011 John L. Chmielewski <jlc@cfl.rr.com>
  *
  * config.c is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ struct setword setword[] = {
    {"sipport",    WORDNUM,  0,          &sipport,   0,       0},
    {"verbose",    WORDNUM,  0,          &verbose,   1,       MAXLEVEL - 1},
    {"warn",       WORDNUM,  0,          &warn,      OFF,     ON},
+   {"rmdups",     WORDNUM,  0,          &rmdups,    OFF,     ON},
    {0,            0,        0,          0,          0,       0}
 };
 

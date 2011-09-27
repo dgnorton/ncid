@@ -10,6 +10,12 @@ aliasfile:
 aliasfile.errors:
     Various alias file errors: ncidd -DA aliasfile.errors:
 
+call-log:
+    Sample log file
+
+client-display.data:
+    used with testclient for taking client screenshots
+
 largelog:
     Logfile contains 3006 simular lines.  It is used to detect
     any dropping of characters by the client or server.
