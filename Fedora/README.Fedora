@@ -2,7 +2,21 @@
 NCID for Fedora
 ---------------
 
-Fedora service files:
+Fedora systemd service files:
+
+  ncid-initmodem.service - service file for ncid using ncid-initmodem module
+  ncid-mythtv.service    - service file for ncid using ncid-mythtv module
+  ncid-page.service      - service file for ncid using ncid-page module
+  ncid-samba.service     - service file for ncid using ncid-samba module
+  ncid-speak.service     - service file for ncid using ncid-speak module
+  ncid-yac.service       - service file for ncid using ncid-yac module
+  ncidd.service          - service file for ncidd
+  ncidsip.service        - service file for ncidsip
+  ncid2ncid.service      - service file for ncid2ncid
+  sip2ncid.service       - service file for sip2ncid
+  yac2ncid.service       - service file for yac2ncid
+
+Fedora service files (obsolute):
 
   ncid-initmodem.init - service file for ncid with ncid-initmodem output module
   ncid-mythtv.init    - service file for ncid with ncid-mythtv output module
@@ -20,7 +34,10 @@ See Doc/INSTALL-Fedora for install instructions
 
 Makefile:
 
-    The Makefile is used to configure and install the services
-    into the init.d directory
+    The Makefile is used to configure and install the service
+    scripts into /usr/lib/systemd/system
 
-	prefix2 controls where to look for the service file,
+    The Makefile can configure and install the obsolute init
+    scripts into the /etc/rc.d/init.d directory
+
+	prefix2 controls where to look for the service scripts,

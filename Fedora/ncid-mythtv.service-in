@@ -1,0 +1,14 @@
+[Unit]
+Description=NCID client using the MythTV Module
+After=ncidd.service
+
+[Service]
+Type=simple
+Environment=module=ncid-mythtv MythMsg=
+EnvironmentFile=-/usr/local/etc/ncid/ncidmodules.conf
+PIDFile=/var/run/ncid-mythtv.pid
+ExecStart=/usr/bin/ncid --no-gui -p /var/run/${module}.pid -P $module $MythMsg
+ExecStop=/bin/kill $MAINPID ; /bin/rm -f /var/run/${module}.pid
+
+[Install]
+WantedBy=multi-user.target

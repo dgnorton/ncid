@@ -11,8 +11,8 @@
 ## Version: 1.0a (6/26/2007)
 ##
 ## Version: 1.0.[123] (5/29/2008) by John L. Chmielewski
-## Copyright (c) 2010
-## Last changed on Sun Aug 15, 2010 by jlc
+## Copyright (c) 2010, 2012
+## Last changed on Thu Jul 5, 2012 by jlc
 ##
 VERSION="(NCID) XxXxX"
 
@@ -201,7 +201,8 @@ then
 	then	
 		msg Detected BusyBox version of netcat 
 		NETCAT_TYPE="BUSYBOX"
-	elif ! isblank "$(${NETCAT:-nc} -h 2>&1 | grep '46DdhklnrStUuvzC')"
+	elif ! isblank "$(${NETCAT:-nc} -h 2>&1 | \
+           egrep '46CDdhklnrStUuvz|46DdhklnrStUuvzC')"
 	then
 		msg Detected \"Eric Jackson\" version of netcat
 		NETCAT_TYPE="JACKSON"

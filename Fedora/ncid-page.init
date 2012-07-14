@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# ncid-page          Start/Stop Network Caller ID client with the Page Module
+# ncid-page          Start/Stop NCID client with the Page Module
 #
 # chkconfig: - 96 04
 # description: ncid using the Page Output Module

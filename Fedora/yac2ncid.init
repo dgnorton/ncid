@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# yac2ncid:    Start/Stop YAC CID client
+# yac2ncid:    Start/Stop Network Called ID YAC client
 #
 # chkconfig:   - 95 05
 # description: The NCID YAC Gateway inputs CID from a YAC server

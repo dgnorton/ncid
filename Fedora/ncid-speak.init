@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# ncid-speak         Start/Stop Network Caller ID client with the Speak Module
+# ncid-speak         Start/Stop NCID client with the Speak Module
 #
 # chkconfig: - 96 04
 # description: ncid using the Speak Output Module

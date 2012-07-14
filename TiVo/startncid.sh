@@ -1,7 +1,7 @@
 #!/bin/sh
 # script to start NCID
 # Requires the "pgrep" command
-# Last modified  by jlc: Mon Aug 30, 2010
+# Last modified  by jlc: Fri Jul 13, 2012
 
 ### This script requires pgrep.  If /var/hack/bin/pgrep is not
 ### present, you can use pgrep from the tivotools distribution:
@@ -10,9 +10,8 @@
 ### the PATH section of you can copy pgrep to /var/hack/bin/
 ### if you do not need tivotools installed.
 
-### This script can be run from:
-### rc.sysinit.author:   /var/hack/bin/startncid rmpid
-### or manually:         /var/hack/bin/startncid
+### This script can be run manually or from rc.sysinit.author:
+### manually:         /var/hack/bin/startncid
 
 ### This script can start ncidd, sip2ncid, yac2ncid, tivocid, tivoncid,
 ### ncid-initmodem, and ncid-yac.  It can also set the local timezone.
@@ -28,15 +27,9 @@
 ### If you are using sip2ncid or yac2ncid, you need to uncomment
 ### one of the TZ lines or modify one for your timezone.
 
-# Indicate usage if a argument is given and it is not rmpid
-[ "$1" != "" -a "$1" != "rmpid" ] && \
-{
-    echo "Usage $0 [rmpid]"
-    exit 0
-}
-
-# if argument is rmpid, remove all NCID pid files in /var/run
-[ "$1" = "rmpid" ] && rm -f /var/run/*ncid*.pid
+################
+### Defaults ###
+################
 
 export PATH TZ LD_LIBRARY_PATH
 # default PATH and LD_LIBRARY_PATH
@@ -94,19 +87,22 @@ LD_LIBRARY_PATH=/lib:/var/hack/lib:/hack/bin
 ### Startncid will not try to start a running program.
 ### The distribution default only starts ncidd and tivoncid
 
+### Server and Gateways
+#
 # Enable Server if using it on this TiVo
 SERVER=ncidd
-
+#
 # Enable SIP Gateway if using SIP (VoIP) to get Caller ID
 #SIPGW=sip2ncid
-
+#
 # Enable YAC Gateway if using yac to get Caller ID
 #YACGW=yac2ncid
 
-### Enable only one of the three clients
+### Enable only one of these three clients: tivocid, tivoncid, or ncid-fly
 ###   if out2osd works on your system use tivocid
-###   if ncid-fly is installed try it
-###   test2osd should work on all systems, but is not as good
+###   tivoncid should work on all systems, but it uses text2osd
+###   which causes a reboot if the TiVo is using HME
+###   Install and enable ncid-fly if you use HME apps
 #
 # Enable tivoncid client if using text2osd, disable tivocid client
 OSDCLIENT=tivoncid
@@ -116,14 +112,19 @@ OSDCLIENT=tivoncid
 #
 # Enable Fly Client Module if using ncid-fly to display on the TiVo
 # OSDCLIENT must not be enabled to use this output module.
-# Requires installation of ncid-fly, fly and needed libraries.
-# This is experimental.  For more information see
-# http://www.dealdatabase.com/forum/showpost.php?p=308346&postcount=75
+# Requires installation of both fly2osd and rsyslog-5.8.4
+#   http://www.dealdatabase.com/forum/showthread.php?66673-fly2osd&p=315611
+#   http://www.dealdatabase.com/forum/showthread.php?66672-rsyslog-5-8-4
+#
+# For a older version of ncid-fly see
+#   http://www.dealdatabase.com/forum/showpost.php?p=308346&postcount=75
 #FLYMOD=ncid-fly
 
+### Additional clients
+#
 # Enable Initmodem Client Module if need to re-initialize modem
 #INITMOD=ncid-initmodem
-
+#
 # Enable YAC Client Module if sending Caller ID to yac clients
 # Must configure "YACLIST" in ncidmodules.conf
 #YACMOD=ncid-yac

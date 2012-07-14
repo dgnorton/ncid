@@ -1,13 +1,19 @@
 README.TiVo
 
-startncid      - used to start ncid on a TiVo that does not have services
+startncid      - used to start NCID programs
+
+stopncid       - used to stop all NCID programs
 
 initmodem      - used to signal ncidd to re-initialize the modem
                  will also start ncidd if it is not running
 
-ncid           - zero length file
+ncid           - zero length file used to create the symbolic links
 
-The following scripts are not useful on the TiVo and may be removed:
+tivocid        - symbolic link to ncid
+
+tivoncid       - symbolic link to ncid
+
+The following scripts are not useful on the TiVo and are not installed.
     ncidsip
     ncidrotate
     ncidtools

@@ -1,0 +1,12 @@
+[Unit]
+Description=SIP to NCID Gateway
+After=ncidd.service
+
+[Service]
+Type=forking
+Environment=prog=sip2ncid
+PIDFile=/var/run/sip2ncid.pid
+ExecStart=/usr/sbin/sip2ncid --pidfile /var/run/${prog}.pid
+
+[Install]
+WantedBy=network.target

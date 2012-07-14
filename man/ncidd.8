@@ -164,8 +164,10 @@ Default: -
 Generate a generic Caller ID at ring 2 if one is not received
 from the modem either because the telco is not sending it or
 because the modem does not support it.
+The generic Caller ID generated uses "RING" for the number
+and "No Caller ID" for the name.
 .br
-Default: gencid = 0
+Default: gencid = 1
 .TP
 .B -H <0|1> | --hangup <0|1>
 Automatically hangup up a telephone if the caller name or number is in

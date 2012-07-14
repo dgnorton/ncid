@@ -1,4 +1,4 @@
-SHSOURCE    = startncid.sh initmodem.sh
+SHSOURCE    = startncid.sh stopncid.sh initmodem.sh
 SYMLINKS    = tivocid tivoncid
 ETCFILE     =
 FILES       = Makefile $(SHSOURCE) $(MANSRC)
@@ -41,7 +41,7 @@ install: install-script
 
 install-script: $(SHSCRIPT)
 	install -m 755 $(SHSCRIPT) $(BIN)
-	install -m 755 $(SYMLINKS) $(BIN)
+	cp -a $(SYMLINKS) $(BIN)
 
 clean:
 

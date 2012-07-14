@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.83
+Version:    0.84
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -103,16 +103,16 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %doc README VERSION doc
 %doc cidgate/README.Gateways Fedora/README.Fedora
 %doc scripts/README.scripts tools/README.tools
-/usr/bin/cidcall
-/usr/bin/cidalias
-/usr/bin/cidupdate
-/usr/bin/ncid2ncid
-/usr/bin/yac2ncid
-/usr/sbin/ncidd
-/usr/sbin/ncidsip
-/usr/sbin/sip2ncid
-%dir /usr/share/ncid
-/usr/share/ncid/ncidrotate
+%{_bindir}/cidcall
+%{_bindir}/cidalias
+%{_bindir}/cidupdate
+%{_bindir}/ncid2ncid
+%{_bindir}/yac2ncid
+%{_sbindir}/ncidd
+%{_sbindir}/ncidsip
+%{_sbindir}/sip2ncid
+%dir %{_datadir}/ncid
+%{_datadir}/ncid/ncidrotate
 %dir /etc/ncid
 %config(noreplace) /etc/ncid/ncidd.blacklist
 %config(noreplace) /etc/ncid/ncidd.conf
@@ -123,11 +123,11 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %config(noreplace) /etc/ncid/sip2ncid.conf
 %config(noreplace) /etc/ncid/yac2ncid.conf
 %config(noreplace) /etc/logrotate.d/ncid
-%_initrddir/ncidd
-%_initrddir/ncidsip
-%_initrddir/ncid2ncid
-%_initrddir/sip2ncid
-%_initrddir/yac2ncid
+/usr/lib/systemd/system/ncidd.service
+/usr/lib/systemd/system/ncidsip.service
+/usr/lib/systemd/system/ncid2ncid.service
+/usr/lib/systemd/system/sip2ncid.service
+/usr/lib/systemd/system/yac2ncid.service
 %{_mandir}/man1/ncidrotate.1*
 %{_mandir}/man1/ncidtools.1*
 %{_mandir}/man1/cidalias.1*
@@ -150,19 +150,19 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %files client
 %defattr(-,root,root)
 %doc README VERSION modules/README.modules
-/usr/bin/ncid
-%dir /usr/share/ncid
-/usr/share/ncid/ncid-initmodem
-/usr/share/ncid/ncid-page
-/usr/share/ncid/ncid-skel
-/usr/share/ncid/ncid-yac
-/usr/share/pixmaps/ncid/ncid.gif
+%{_bindir}/ncid
+%dir %{_datadir}/ncid
+%{_datadir}/ncid/ncid-initmodem
+%{_datadir}/ncid/ncid-page
+%{_datadir}/ncid/ncid-skel
+%{_datadir}/ncid/ncid-yac
+%{_datadir}/pixmaps/ncid/ncid.gif
 %dir /etc/ncid
 %config(noreplace) /etc/ncid/ncid.conf
 %config(noreplace) /etc/ncid/ncidmodules.conf
-%_initrddir/ncid-initmodem
-%_initrddir/ncid-page
-%_initrddir/ncid-yac
+/usr/lib/systemd/system/ncid-initmodem.service
+/usr/lib/systemd/system/ncid-page.service
+/usr/lib/systemd/system/ncid-yac.service
 %{_mandir}/man1/ncid.1*
 %{_mandir}/man1/ncidmodules.1*
 %{_mandir}/man1/ncid-initmodem.1*
@@ -175,60 +175,58 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %files mythtv
 %defattr(-,root,root)
 %doc VERSION modules/README.modules
-/usr/share/ncid/ncid-mythtv
-%_initrddir/ncid-mythtv
+%{_datadir}/ncid/ncid-mythtv
+/usr/lib/systemd/system/ncid-mythtv.service
 %{_mandir}/man1/ncid-mythtv.1*
 
 %files kpopup
 %defattr(-,root,root)
 %doc VERSION modules/README.modules
-/usr/share/ncid/ncid-kpopup
+%{_datadir}/ncid/ncid-kpopup
 %{_mandir}/man1/ncid-kpopup.1*
 
 %files samba
 %defattr(-,root,root)
 %doc VERSION modules/README.modules
-/usr/share/ncid/ncid-samba
-%_initrddir/ncid-samba
+%{_datadir}/ncid/ncid-samba
+/usr/lib/systemd/system/ncid-samba.service
 %{_mandir}/man1/ncid-samba.1*
 
 %files speak
 %defattr(-,root,root)
 %doc VERSION modules/README.modules
-/usr/share/ncid/ncid-speak
-%_initrddir/ncid-speak
+%{_datadir}/ncid/ncid-speak
+/usr/lib/systemd/system/ncid-speak.service
 %{_mandir}/man1/ncid-speak.1*
 
 %post
-# make services known
-for SCRIPT in ncidd ncidsip sip2ncid yac2ncid ncid2ncid
-do
-    /sbin/chkconfig --add $SCRIPT
-done
+# reload systemd manager configuration
+/bin/systemctl --system daemon-reload
 
 %post client
-# make services known
-for SCRIPT in ncid-initmodem ncid-page ncid-yac
-do
-    /sbin/chkconfig --add $SCRIPT
-done
+# reload systemd manager configuration
+/bin/systemctl --system daemon-reload
 
 %post mythtv
-/sbin/chkconfig --add ncid-mythtv
+# reload systemd manager configuration
+/bin/systemctl --system daemon-reload
 
 %post samba
-/sbin/chkconfig --add ncid-samba
+# reload systemd manager configuration
+/bin/systemctl --system daemon-reload
 
 %post speak
-/sbin/chkconfig --add ncid-speak
+# reload systemd manager configuration
+/bin/systemctl --system daemon-reload
+
 
 %preun
 if [ $1 = 0 ] ; then ### Uninstall package ###
-    # stop services and remove autostart
+    # stop server and gateway services and remove autostart
     for SCRIPT in ncidd ncidsip sip2ncid yac2ncid ncid2ncid
     do
-        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
-        /sbin/chkconfig --del $SCRIPT
+        /bin/systemctl stop $SCRIPT.service
+        /bin/systemctl --quiet disable $SCRIPT.service
     done
 fi
 
@@ -237,76 +235,73 @@ if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
     for SCRIPT in ncid-initmodem ncid-page ncid-yac
     do
-        /sbin/service $SCRIPT stop > /dev/null 2>&1 || :
-        /sbin/chkconfig --del $SCRIPT
+        /bin/systemctl stop $SCRIPT.service
+        /bin/systemctl --quiet disable $SCRIPT.service
     done
-fi
-
-# just in case an old package with the obsolute ncid service is upgraded
-if [ "$1" -ge "1" ]; then ### upgrade package ###
-    /sbin/service ncid stop >/dev/null 2>&1 || true
-    /sbin/chkconfig ncid && /sbin/chkconfig --del ncid || true
 fi
 
 %preun mythtv
 if [ $1 = 0 ] ; then ### Uninstall package ###
-    # stop services and remove autostart
-    /sbin/service ncid-mythtv stop > /dev/null 2>&1 || :
-    /sbin/chkconfig --del ncid-mythtv
+    # stop service and remove autostart
+    /bin/systemctl stop ncid-mythtv.service
+    /bin/systemctl --quiet disable ncid-mythtv.service
 fi
 
 %preun samba
 if [ $1 = 0 ] ; then ### Uninstall package ###
-    # stop services and remove autostart
-    /sbin/service ncid-samba stop > /dev/null 2>&1 || :
-    /sbin/chkconfig --del ncid-samba
+    # stop service and remove autostart
+    /bin/systemctl stop ncid-samba.service
+    /bin/systemctl --quiet disable ncid-samba.service
 fi
 
 %preun speak
 if [ $1 = 0 ] ; then ### Uninstall package ###
-    # stop services and remove autostart
-    /sbin/service ncid-speak stop > /dev/null 2>&1 || :
-    /sbin/chkconfig --del ncid-speak
+    # stop service and remove autostart
+    /bin/systemctl stop ncid-speak.service
+    /bin/systemctl --quiet disable ncid-speak.service
 fi
 
 %postun
 if [ "$1" -ge "1" ]; then ### upgrade package ###
-    # restart services that are running
+    # restart server and gateway services that are running
     for SCRIPT in ncidd ncidsip sip2ncid yac2ncid ncid2ncid
     do
-        /sbin/service $SCRIPT condrestart >/dev/null 2>&1 || :
+        /bin/systemctl try-restart $SCRIPT.service
     done
 fi
 
 %postun client
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart services that are running
-    # service could have been installed by another package
+    # a service could have been installed by another package
     for SCRIPT in /usr/share/ncid/ncid-*
     do
-        /sbin/service `basename $SCRIPT` condrestart >/dev/null 2>&1 || :
+        /bin/systemctl try-restart `basename $SCRIPT`.service
     done
 fi
 
 %postun mythtv
 if [ "$1" -ge "1" ]; then ### upgrade package ###
-    # restart services if running
-    /sbin/service ncid-mythtv condrestart >/dev/null 2>&1 || :
+    # restart service if running
+    /bin/systemctl try-restart ncid-mythtv.service
 fi
 
 %postun samba
 if [ "$1" -ge "1" ]; then ### upgrade package ###
-    # restart services if running
-    /sbin/service ncid-samba condrestart >/dev/null 2>&1 || :
+    # restart service if running
+    /bin/systemctl try-restart ncid-samba.service
 fi
 
 %postun speak
 if [ "$1" -ge "1" ]; then ### upgrade package ###
     # restart service if running
-    /sbin/service ncid-speak condrestart >/dev/null 2>&1 || :
+    /bin/systemctl try-restart ncid-speak.service
 fi
 
 %changelog
+
+* Mon Jul 2 2012 John Chmielewski <jlc@users.sourceforge.net> 0.84
+- Changed from using service & init scripts to systemctl & service scripts
 
 * Fri Sep 2 2011 John Chmielewski <jlc@users.sourceforge.net> 0.83
 - removed /usr/share/ncid/ncid-tivo

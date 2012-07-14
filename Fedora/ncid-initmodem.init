@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# ncid-initmodem    Start/Stop Network Caller ID client with the Hangup Module
+# ncid-initmodem    Start/Stop NCID client with the InitModem Module
 #
 # chkconfig: - 96 04
 # description: ncid using the Initmodem Output Module

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# ncid-samba         Start/Stop Network Caller ID client with the Samba Module
+# ncid-samba         Start/Stop NCID client with the Samba Module
 #
 # chkconfig: - 96 04
 # description: ncid using the Samba Output Module

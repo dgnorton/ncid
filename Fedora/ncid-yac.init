@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# ncid-yac           Start/Stop Network Caller ID client with the YAC Module
+# ncid-yac           Start/Stop NCID client with the YAC Module
 #
 # chkconfig: - 96 04
 # description: ncid using the YAC Output Module

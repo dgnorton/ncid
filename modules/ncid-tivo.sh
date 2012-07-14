@@ -3,7 +3,7 @@
 # TiVo Display
 # Requires a TiVo
 
-# Last changed by jlc: Sun Sep 11, 2011
+# Last changed by jlc: Wed Jul 11, 2012
 
 # input is 6 lines obtained from ncid
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
@@ -66,6 +66,6 @@ else
 fi
 
 sleep $TivoDelay
-$TivoOSD $TivoCS
+echo | $TivoOSD $TivoCS
 
 exit 0

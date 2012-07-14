@@ -1,34 +1,34 @@
 NCID distributions:
 
     sourceforge:
-        NCID Source package:           ncid-0.83-src.tar.gz
+        NCID Source package:           ncid-0.84-src.tar.gz
 
-        Cygwin 32 bit Windows package: ncid-0.83-1-cygwin.tgz
+        Cygwin 32 bit Windows package: ncid-0.84-cygwin.tgz
 
-        TiVo Series1 package:          ncid-0.83-1-ppc-tivo.tgz
-        TiVo Series 2-3 package:       ncid-0.83-1-mips-tivo.tgz
+        TiVo Series1 package:          ncid-0.84-ppc-tivo.tgz
+        TiVo Series 2-3 package:       ncid-0.84-mips-tivo.tgz
 
-        Ubuntu 32 bit packages:        ncid_0.83-0ubuntu1_i386.deb
-                                       ncid-client_0.83-0ubuntu1_all.deb
-                                       ncid-kpopup_0.83-0ubuntu1_all.deb
-                                       ncid-mythtv_0.83-0ubuntu1_all.deb
-                                       ncid-samba_0.83-0ubuntu1_all.deb
-                                       ncid-speak_0.83-0ubuntu1_all.deb
+        Ubuntu 32 bit packages:        ncid_0.84-0ubuntu1_i386.deb
+                                       ncid-client_0.84-0ubuntu1_all.deb
+                                       ncid-kpopup_0.84-0ubuntu1_all.deb
+                                       ncid-mythtv_0.84-0ubuntu1_all.deb
+                                       ncid-samba_0.84-0ubuntu1_all.deb
+                                       ncid-speak_0.84-0ubuntu1_all.deb
 
-        Windows client installer:      ncid-0.83-1-client_setup.exe
+        Windows client installer:      ncid-0.84-client_setup.exe
 
       These may also be distributed:
 
-        Fedora 64 bit packages:        ncid-0.83-1.fc14.x86_64.rpm
-                                       ncid-client-0.83-1.fc14.noarch.rpm
-                                       ncid-kpopup-0.83-1.fc14.noarch.rpm
-                                       ncid-mythtv-0.83-1.fc14.noarch.rpm
-                                       ncid-samba-0.83-1.fc14.noarch.rpm
-                                       ncid-speak-0.83-1.fc14.noarch.rpm
+        Fedora 64 bit packages:        ncid-0.84-1.fc14.x86_64.rpm
+                                       ncid-client-0.84-1.fc15.noarch.rpm
+                                       ncid-kpopup-0.84-1.fc15.noarch.rpm
+                                       ncid-mythtv-0.84-1.fc15.noarch.rpm
+                                       ncid-samba-0.84-1.fc15.noarch.rpm
+                                       ncid-speak-0.84-1.fc15.noarch.rpm
 
-        Macintosh 32 bit OS X package: ncid-0.83-mac-osx.tgz
+        Macintosh 32 bit OS X package: ncid-0.84-mac-osx.tgz
 
-        FreeBSD 32 bit package:        ncid-0.83-freebsd.tgz
+        FreeBSD 32 bit package:        ncid-0.84-freebsd.tgz
 
     Fedora packages:
         Available at the Fedora repository (sometimes sourceforge).
@@ -37,10 +37,12 @@ NCID distributions:
         Normally you only need to install the ncid & ncid-client rpm packages.
         The yum list command will show you the packages available:
             yum list ncid\*
-        If the above does not show version 0.83:
+        If the above does not show version 0.84:
             yum --enablerepo=rawhide list ncid\*
+        If the rawhide repo is not installed:
+            yum install fedora-release-rawhide
         If you need to build packages for your specific OS release:
-            rpmbuild -tb ncid-0.83-src.tar.gz
+            rpmbuild -tb ncid-0.84-src.tar.gz
 
     Macintosh OS X package:
         available at MacPorts (sometimes sourceforge)
@@ -54,9 +56,9 @@ NCID distributions:
         If you need to build a package for your specific OS release, the
         build-essential, fakeroot, & libpcap packages must be installed:
             sudo apt-get build-essential fakeroot libpcap0.8-dev
-            tar -xzf ncid-0.83-src.tar.gz
-            mv ncid ncid-0.83
-            cd ncid-0.83
+            tar -xzf ncid-0.84-src.tar.gz
+            mv ncid ncid-0.84
+            cd ncid-0.84
             fakeroot debian/rules build
             fakeroot debian/rules binary
             fakeroot debian/rules clean
@@ -64,6 +66,9 @@ NCID distributions:
 Specific distribution Changes:
 
     Fedora and Redhat:
+        Replaced service init scripts with systemd service scripts.
+        The init scripts are still in the source but are not used
+        anymore.
 
     FreeBSD:
 
@@ -72,17 +77,23 @@ Specific distribution Changes:
     Ubuntu:
 
     TiVo:
+        - Fixed broken symbolic links for tivocid and tivoncid.
+        - Removed the "rmpid" option from startncid.
+        - Changed initmodem script to use pgred instead of ps
+        - Updated startncid comments for the ncid-fly module
+          Using ncid-fly prevents a TiVo reboot when using HME apps
+        - Added the stopncid shell script.
+        - Fix to the ncid-tivo module to eliminate @stdout being
+          displayed after the screen clears on TiVo HD's.
 
     Windows:
 
 NCID Server Changes:
 
     ncidd:
-        Fixed sending proper Line ID when ncidd first started.
-        Improved alias printout using VERBOSE LEVEL 8
-        Added more checks on alias size
-        Improved blacklist printout using VERBOSE LEVEL 8
-        Added log of number of blacklist entries/maximum
+        - Fix for systems that cause a leading space in numbers.
+        - Fix applies to the DATE, TIME, NAME, and NUMBER text
+          lines that are sent by a modem.
 
     ncidd.conf:
 
@@ -91,29 +102,25 @@ NCID Gateway Changes:
     ncid2ncid:
 
     sip2ncid:
-        Added new configure option "rmdups" to remove duplicate INVITE
-        packets generated by "Phone Power".  This option is experimental
-        and will probably be improved.
+        - Fix for PBX systems that do not send out SIP REGISTER packets.
 
     yac2ncid:
+        - Fix to detect new version of Eric Jackson's netcat.
 
 NCID Client Changes:
 
     ncid:
-        Added @stdout for OSX
-
-        An additional line is sent to the output modules.
-        It tells if it is a incoming call, outgoing call,
-        call hangup or a message.
 
     ncid.conf
 
 NCID Client Module Changes:
-        All modules were updated for the additional line passed to them.
-        Added additional options to ncid-speak
-        Modified ncidmodules.conf for additional options to ncid-speak
+
+    ncidmodules.conf:
+        Updated comments
 
 Documentation Changes:
-        Updated the NCID-SDK.odt file
-        Updated ncid.1 and ncidtools.1
-        Updated client screen shots
+    ncid2ncid.1    - minor wording change
+    NCIDD.8        - corrected gencid option default
+    sip2ncid.8     - minor wording change
+    README.Fedora  - updated for service scripts
+    INSTALL-Fedora - updated for service scripts using systemctl

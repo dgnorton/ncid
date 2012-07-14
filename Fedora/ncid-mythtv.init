@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# ncid-mythtv       Start/Stop Network Caller ID client with the MythTV Module
+# ncid-mythtv       Start/Stop NCID client with the MythTV Module
 #
 # chkconfig: - 96 04
 # description: ncid using the MythTV Output Module

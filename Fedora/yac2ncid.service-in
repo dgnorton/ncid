@@ -1,0 +1,11 @@
+[Unit]
+Description=YAC to NCID Gateway
+After=ncidd.service
+
+[Service]
+Type=simple
+PIDFile=/var/run/yac2ncid
+ExecStart=/usr/bin/yac2ncid
+
+[Install]
+WantedBy=network.target

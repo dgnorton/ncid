@@ -1,7 +1,7 @@
 /*
  * sip2ncid - Inject CID info by snooping SIP invites
  *
- * Copyright 2007, 2008, 2009, 2010, 2011
+ * Copyright 2007, 2008, 2009, 2010, 2011, 2012
  *  by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * sip2ncid is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@ pcap_dumper_t *dumpfile;
 struct sigaction sigact;
 
 int doPID(), getOptions(), pcapListDevs(), parseLine(), getCallID(),
-    rmCallID(), socketRead();
+    rmCallID(), socketRead(), callType();
 void cleanup(), doPCAP(), sigdetect(), errorExit(), socketConnect(),
      processPackets();
 char *strdate(), *inet_ntoa(), *strmatch();
@@ -525,8 +525,7 @@ void processPackets(u_char *args,
     const struct udphdr *udp;              /* UDP Header */
     const char   *pdata;                   /* Packet Data */
 
-    int size_ip, size_udp, size_pdata, cnt, pos, retval;
-    int outcall = 0;
+    int size_ip, size_udp, size_pdata, cnt, pos, retval, outcall;
 
     char sipbuf[SIPSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ], warnmsg[BUFSIZ],
          tonumber[NUMSIZ], fromnumber[NUMSIZ], callid[CIDSIZ];
@@ -800,16 +799,11 @@ void processPackets(u_char *args,
                 if (parseLine(sipbuf, INVITE, FROM,
                     (char *) &name, (char *) &number) == 0)
                 {
+                    /* assumes incoming call */
                     strcpy(fromnumber, number);
-                    /* if number is LINE NUMBER, it is a outgoing call */
-                    for (cnt = 0, outcall = 0; cnt < MAXLINE; ++cnt)
-                    {
-                        if (linenum[cnt] && !strcmp(linenum[cnt], number))
-                        {
-                            outcall = 1;
-                            break;
-                        }
-                    }
+
+                    /* Determine if call is incoming or outgoing. */
+                    outcall = callType(sipbuf, fromnumber, linenum);
                 }
 
                 if (outcall)
@@ -875,15 +869,8 @@ void processPackets(u_char *args,
                 {
                     strcpy(tonumber, number);
 
-                    /* if number is LINE NUMBER, it is a outgoing call */
-                    for (cnt = outcall = 0; cnt < MAXLINE; ++cnt)
-                    {
-                        if (linenum[cnt] && !strcmp(linenum[cnt], fromnumber))
-                        {
-                            outcall = 1;
-                            break;
-                        }
-                    }
+                    /* Determine if call is incoming or outgoing. */
+                    outcall = callType(sipbuf, fromnumber, linenum);
                 }
 
                 if (outcall)
@@ -936,7 +923,7 @@ void processPackets(u_char *args,
                  */
                 if (parseLine(sipbuf, BYE, TO, (char *) 0,
                     (char *) &number)) return;
-                strcpy(fromnumber, number);
+                strcpy(tonumber, number);
 
                 /*
                  * if number is the telephone line number,
@@ -949,15 +936,8 @@ void processPackets(u_char *args,
                 {
                     strcpy(fromnumber, number);
 
-                    /* if number is LINE NUMBER, it is a outgoing call */
-                    for (cnt = outcall = 0; cnt < MAXLINE; ++cnt)
-                    {
-                        if (linenum[cnt] && !strcmp(linenum[cnt], fromnumber))
-                        {
-                            outcall = 1;
-                            break;
-                        }
-                    }
+                    /* Determine if call is incoming or outgoing. */
+                    outcall = callType(sipbuf, fromnumber, linenum);
                 }
 
                 if (outcall)
@@ -1031,6 +1011,52 @@ void processPackets(u_char *args,
     }
 
     return;
+}
+
+/*
+ * Determine if call is incoming or outgoing
+ *  Returns 0 if incoming call
+ *  Returns 1 if outgoing call
+ */
+
+int callType(char *sipbuf, char *number, char *linenum[])
+{
+    int cnt, outcall = 0;
+
+    /*
+     * Determine if call is incoming or outgoing.
+     *
+     * At least one PBX does not send out any REGISTER
+     * packets so the linenum array is not populated
+     * with telephone numbers receiving calls.
+     */
+    if (linenum[0])
+    {
+        /*
+         * The linenum array is populated.
+         * If telephone number is in linenum,
+         * it is a outgoing call.
+         */
+        for (cnt = 0; cnt < MAXLINE; ++cnt)
+        {
+            if (linenum[cnt] && !strcmp(linenum[cnt], number))
+            {
+                outcall = 1;
+                break;
+            }
+        }
+    }
+    else
+    {
+        /*
+         * The linenum array has no entries.
+         * Look for "Call-ID: call-" at the begining
+         * of the buffer.  If there, it is a outgoing
+         * call.
+        */
+        if (!strcmp(sipbuf, "Call ID: call-")) outcall = 1;
+    }
+    return outcall;
 }
 
 /*

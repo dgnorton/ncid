@@ -1,9 +1,11 @@
 # ncid module and service configuration file
-# Last modified: Fri Jul 29, 2011
 
-# This configuration file is called from each ncid-* init or rc files
-# to set the $ringopt, $tivoprog, and $tivoargs variables.
-# these variables are only used from the rc or init files
+# Last Modified: Wed Jul 4, 2012
+
+# This configuration file is called from each ncid-*.service files
+# ncid-* init files, or ncid-* rc files. It is used to set the
+# $ringopt, $tivoprog, and $tivoargs variables.  These variables
+# are only used from the service files, init files, or rc files.
 
 # This configuration file is also called by each output module to
 # set variables needed for it.  Uncomment or give the variable a

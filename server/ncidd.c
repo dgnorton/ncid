@@ -1,7 +1,7 @@
 /*
  * ncidd - Network Caller ID Daemon
  *
- * Copyright (c) 2002-2011
+ * Copyright (c) 2002-2012
  * by John L. Chmielewski <//jlc@users.sourceforge.net>
  *
  * This file is part of ncidd, a caller-id program for your TiVo.
@@ -1518,7 +1518,10 @@ void formatCID(int mainsock, char *buf)
     }
     else if (strncmp(buf, "DATE", 4) == 0)
     {
-        strncpy(cid.ciddate, buf[4] == '=' ? buf + 5 : buf + 7, CIDSIZE - 1);
+        if (ptr = strchr(buf, '=')) ++ptr;
+        else ptr = buf + 7; /* this should never happen */
+        if (*ptr == ' ') ++ptr;
+        strncpy(cid.ciddate, ptr, CIDSIZE - 1);
         t = time(NULL);
         ptr = ctime(&t);
         *(ptr + 24) = 0;
@@ -1528,7 +1531,10 @@ void formatCID(int mainsock, char *buf)
     }
     else if (strncmp(buf, "TIME", 4) == 0)
     {
-        strncpy(cid.cidtime, buf[4] == '=' ? buf + 5 : buf + 7, CIDSIZE - 1);
+        if (ptr = strchr(buf, '=')) ++ptr;
+        else ptr = buf + 7; /* this should never happen */
+        if (*ptr == ' ') ++ptr;
+        strncpy(cid.cidtime, ptr, CIDSIZE - 1);
         cid.status |= CIDTIME;
         cidsent = 0;
     }
@@ -1541,7 +1547,10 @@ void formatCID(int mainsock, char *buf)
         /* some telcos send NMBR = ##########, then NMBR = O to mask it */
         if (!(cid.status & CIDNMBR))
         {
-            builtinAlias(cid.cidnmbr, *(ptr + 4) == '=' ? ptr + 5 : ptr + 7);
+            if (*(ptr + 4) == '=') ptr += 5;
+            else ptr += 7;
+            if (*ptr == ' ') ++ptr;
+            builtinAlias(cid.cidnmbr, ptr);
             cid.status |= CIDNMBR;
             cidsent = 0;
         }
@@ -1560,14 +1569,21 @@ void formatCID(int mainsock, char *buf)
             for (sptr = buf; *sptr; ++sptr);
             for (--sptr; *sptr && *sptr == ' '; --sptr) *sptr = 0;
 
-            builtinAlias(cid.cidname, *(ptr + 4) == '=' ? ptr + 5 : ptr + 7);
+            if (*(ptr + 4) == '=') ptr += 5;
+            else ptr += 7;
+            if (*ptr == ' ') ++ptr;
+            builtinAlias(cid.cidname, ptr);
             cid.status |= CIDNAME;
             cidsent = 0;
         }
     }
     else if (strncmp(buf, "MESG", 4) == 0)
     {
-        strncpy(cid.cidmesg, buf[4] == '=' ? buf + 5 : buf + 7, CIDSIZE - 1);
+        ptr = buf;
+        if (*(ptr + 4) == '=') ptr += 5;
+        else ptr += 7;
+        if (*ptr == ' ') ++ptr;
+        strncpy(cid.cidmesg, ptr, CIDSIZE - 1);
         cid.status |= CIDMESG;
         cidsent = 0;
     }

@@ -1,5 +1,33 @@
 ncid - Network CallerID
 
+Version 0.84
+    - Makefile - updated to call Fedora/Makefile for service scripts
+               - updated mac-fat compile for OS X 10.4.11 (Tiger)
+    - cidgate/ncidsip.conf: updated comments
+    - cidgate/sip2ncid.c:processPackets(): added if (!linenum[0]) {} statement
+    - cidgate/yac2ncid.sh: added test for new version of Eric Jackson netcat
+    - debian/README.Debian: updated
+    - doc/Install-Fedora: updated for using 'stystemctl' instead of 'service'
+    - doc/Setup-sip2ncid:
+    - Fedora/Makefile: updated for service scripts
+    - Fedora/README.Fedora: updated for service scripts
+    - Fedora/ncid-*.init: improved description line wording
+    - Fedora/ncid-*.service.in: new (replaced *.init scripta)
+    - Fedora/ncid.spec: updated to use the systemctl service scripts
+    - man/ncid2ncid.1: updated
+    - man/sip2ncid.8: updated
+    - man/sip2ncid.8: updated
+    - modules/ncidmodules.conf-in: updated comments
+    - server/ncidd.c: formatCID(): when searching for DATE, TIME, NAME, NMBR,
+                                   check for <SPACE> after the '=' and skip it.
+    - TiVo/README.TiVo: corrected some text and added text
+    - TiVo/Makefile: fixed symlinks install
+    - TiVo/initmodem.sh: changed from using "ps" to using "pgrep"
+    - TiVo/ncid-tivo.sh: added echo pipe to text2osd clear screen command
+    - TiVo/startncid.sh: removed the rmpid option
+                         added new comments about ncid-fly
+    - TiVo/stopncid.sh: new
+
 Version 0.83
     - Makefile: updated and minor improvements
     - cidgate/config.c: added rmdups to: struct setword setword[]

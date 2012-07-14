@@ -1,7 +1,25 @@
-INIT        = ncidd.init ncidsip.init ncid2ncid.init \
-              sip2ncid.init yac2ncid.init ncid-mythtv.init ncid-page.init \
-              ncid-samba.init ncid-speak.init ncid-yac.init \
+INIT        = ncidd.init \
+              ncidsip.init \
+              ncid2ncid.init \
+              sip2ncid.init \
+              yac2ncid.init \
+              ncid-mythtv.init \
+              ncid-page.init \
+              ncid-samba.init \
+              ncid-speak.init \
+              ncid-yac.init \
               ncid-initmodem.init
+SERVICE     = ncidd.service-in \
+              ncidsip.service-in \
+              ncid2ncid.service-in \
+              sip2ncid.service-in \
+              yac2ncid.service-in \
+              ncid-mythtv.service-in \
+              ncid-page.service-in \
+              ncid-samba.service-in \
+              ncid-speak.service-in \
+              ncid-yac.service-in \
+              ncid-initmodem.service-in
 SPEC        = ncid.spec
 FILES		= README.Fedora Makefile $(INIT) $(SPEC)
 
@@ -22,25 +40,34 @@ FUN         = $(prefix4)/etc/rc.d/init.d/functions
 
 RCDIR       = $(ETC)/rc.d
 INITDIR     = $(RCDIR)/init.d
+SERVICEDIR  = $(prefix)/lib/systemd/system
 CONFDIR		= $(ETC)/ncid
 LOG			= $(VAR)/log
 
 PLSCRIPT    = $(PLSOURCE:.pl=)
 SHSCRIPT    = $(SHSOURCE:.sh=)
-SITE        = $(INIT:.init=)
+INITSITE    = $(INIT:.init=)
+SITE        = $(SERVICE:-in=)
 
-init: $(SITE)
+service: $(SITE)
+init: $(INITSITE)
 
 install: $(SITE) dirs
-	install -m 755 $(SITE) $(INITDIR)
+	install -m 644 $(SITE) $(SERVICEDIR)
+
+install-init: $(INITSITE) initdirs
+	install -m 755 $(INITSITE) $(INITDIR)
 
 dirs:
+	@if ! test -d $(SERVICEDIR); then mkdir -p $(SERVICEDIR); fi
+
+initdirs:
 	@if ! test -d $(INITDIR); then mkdir -p $(INITDIR); fi
 
 clean:
 
 clobber: clean
-	rm -f $(SITE)
+	rm -f $(SITE) $(INITSITE)
 	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber
@@ -54,4 +81,4 @@ files:	$(FILES)
 	chmod +x $@
 
 -in : *-in
-	sed 's,X.XX,$(Version),' $< > $@
+	sed '/EnvironmentFile/s,/usr/local,$(prefix2),' $< > $@

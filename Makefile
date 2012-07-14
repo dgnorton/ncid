@@ -1,4 +1,5 @@
 # This Makefile requires either GNU make or BSD make
+# Last Modified by jlc on Fri Jul 13, 202
 
 ###########################################################################
 # make local             - builds for /usr/local and /var                 #
@@ -120,7 +121,7 @@ version.h: version.h-in
 	sed "s/XXX/$(Version)/" $? > $@
 
 fedoradir:
-	cd Fedora; $(MAKE) init prefix=$(prefix) prefix2=$(prefix2) \
+	cd Fedora; $(MAKE) init service prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3)
 
 freebsddir:
@@ -204,8 +205,7 @@ tivo-s2:
 
 tivo-hack-install:
 	$(MAKE) install-server install-client \
-            install-modules install-cidgate install-tivo \
-            prefix=/var/hack prefix2=$(prefix) prefix3= setmod=tivo
+            install-modules install-cidgate install-tivo
 
 tivo-mips:
 	$(MAKE) local tivodir fedoradir \
@@ -220,7 +220,7 @@ tivo-mips:
 
 tivo-install:
 	$(MAKE) install-server install-client install-modules install-cidgate \
-              install-man install-scripts install-fedora setmod=tivo
+              install-man install-scripts #install-fedora setmod=tivo
 
 freebsd:
 	$(MAKE) local freebsddir prefix=/usr/local prefix2=$(prefix) \
@@ -244,7 +244,7 @@ mac-fat:
 	$(MAKE) clean
 	$(MAKE) local settag="Macintosh OS X" \
             LOCKFILE=/var/spool/uucp/LCK.. \
-            MFLAGS="-mmacosx-version-min=10.4 -arch i386" STRIP=
+            MFLAGS="-mmacosx-version-min=10.4 -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk" STRIP=
 	mv server/ncidd server/ncidd.i386-mac
 	mv cidgate/sip2ncid cidgate/sip2ncid.i386-mac
 	mv cidgate/ncid2ncid cidgate/ncid2ncid.i386-mac
