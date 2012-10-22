@@ -10,11 +10,18 @@ aliasfile:
 aliasfile.errors:
     Various alias file errors: ncidd -DA aliasfile.errors:
 
-call-log:
-    Sample log file
-
-client-display.data:
+client-screenshot.data:
     used with testclient for taking client screenshots
+
+    Usage: ./testclient client-screenshot.data
+
+	Start testclient (it will give instructions and send a 200 line)
+	Start the NCID client on port 3334 (it will receive the 200 line)
+	Press <ENTER> to send OUT line (outgoing call)
+	Press <ENTER> to send HUP line (auto hangup call)
+	Press <ENTER> to send CID line (incoming call)
+	Press <ENTER> to send MSG line (received message)
+	Press <ENTER> to end testclient
 
 largelog:
     Logfile contains 3006 simular lines.  It is used to detect
@@ -54,18 +61,6 @@ testclient.data:
 
 	    NOTE: testclient and testclient.data must be in the same directory
 
-testclient.log
-    Used with "testclient" to provide client with data for a screenshot.
-
-    Usage: ./testclient testclient.log
-
-	Start testclient (it will give instructions and send a 200 line)
-	Start the NCID client on port 3334 (it will receive the 200 line)
-	Press <ENTER> to send CIDLOG lines (logfile)
-	Press <ENTER> to send first CID line (call)
-	Press <ENTER> to send second CID line (call)
-	Press <ENTER> to end testclient
-
 testlog:
 testlog-display:
     Testlog contains test data that is sent to clients at start.
@@ -97,29 +92,42 @@ testscript.data:
 
 testserver:
     This program is used to test ncidd or a client.  The server is
-    optioned for verbose level 3, port 3334 and debug mode.  The test
-    server can be run at the same time as one in actual use.
+    optioned for verbose level 3, port 3334 and either debug mode
+    or Mac OSX launchd mode.  The test server can be run at the same
+    time as one in actual use.
 
-    It will create needed empty files that have a name that start with
-    "T-".  The config and alias files can be populated.  All "T-*"
-    files can be removed when testing is finished.
+    The testserver script creates empty T-data.log and T-alias files
+    in the current directory.  It also creates T-conf, T-blacklist,
+    and T-whitelist files with test data.  When ncidd is launched, it
+    creates T-logfile, T-pid, T-call.log files and will populate them
+    with data.  Most T-* files can be modified for testclient after
+    they have been created.  The T-* files can be by hand or "make clobber"
+    when testing is finished.
 
-    Usage: testserver {<path>/ncidd} [<ncidd_option(s)>]
+    Usage: testserver {<path>/ncidd} {-D|--osx-launchd} [<ncidd_option(s)>]
 
-    Examples: #run the test server in verbose level 4:
-              ./testserver /usr/sbin/ncidd -v4
+    Examples: # Run test server in modem mode with verbose level 4:
+              # must use with TestMdmcalls
+              ./testserver ../server/ncidd -D -v4
 
-              # Run testserver in noserial mode:
-              ./testserver /usr/sbin/ncidd -N1
+              # Run test server with a Linux USB modem
+              ./testserver ../server/ncidd -D -t /dev/ttyACM0
+
+              # Run testserver in launchd mode and noserial (gateway mode)
+              ./testserver ../server/ncidd --osx-launchd -N1
 
 TestGWcalls:
 TestGWcalls.data:
+TestGWcalls-screenshot.data
     This program emulates the output from a gateway.  It is usually
     run at the same time as testserver and ncid.
+    Usage:             ./TestGWcalls [data_file]
+	Default Data File: TestGWcalls.data
+    Alternate File:    TestGWcalls-screenshot.data
 
     To test a server or client, start all three programs in 3 different
     terminal windows in this order:
-        ./testserver ../ncidd -N1
+        ./testserver ../server/ncidd -N1
         ./TestGWcalls
         ./ncid 3334
 
@@ -133,8 +141,8 @@ TestMdmcalls.data:
 
     To test a server or client, start all three programs in 3 different
     terminal windows in this order:
-        ./TestGWcalls
-        ./testserver ../ncidd
+        ./TestMdmcalls
+        ./testserver ../server/ncidd
         ./ncid 3334
 
     Press <ENTER> to send the first line

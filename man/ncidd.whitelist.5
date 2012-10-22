@@ -1,0 +1,63 @@
+.\" %W% %G%
+.TH NCIDD.WHITELIST 5
+.SH NAME
+.B ncidd.whitelist
+- whitelist file for \fIncidd\fR hangup
+.SH DESCRIPTION
+The \fIncidd.whitelist\fR file contains the expressions to match against a
+telephone call name or number.
+.P
+If the hangup option is set and if there is a match in the blacklist file,
+a match in the whitelist file will prevent \fIncidd\fR from automatically
+terminating the call.
+.PP
+The \fIncidd.whitelist\fR file understands 3 types of lines:
+.TP 18
+.B blank line:
+skip it
+.TP
+.B comment line:
+skip it
+.TP
+.B expression line:
+process it
+.PP
+A comment line begins with a '#' and is ignored.
+A non-comment line is divided into expressions, separated by spaces.
+An expression is either a string of non-blank characters
+or everything between double quotes.
+Multiple expressions on a line are permitted.  Anything after
+a '#' on a line is a comment and is ignored.
+.SH NOTES
+.IP \(bu 3
+Each expression is compared to the caller name and number.
+.IP \(bu
+Upper and lower case letters are significant.
+.IP \(bu
+The number must be a string of digits as they appear in
+\fI/dev/log/cidcall.log\fR.
+.IP \(bu
+A leading '1' is required if it is in \fI/dev/log/cidcall.log\fR.
+.IP \(bu
+A partial name or number can match.
+.IP \(bu
+A '^' at the beginning an expression means it must match at the start of
+a name or number.
+.IP \(bu
+If an expression is longer than the name or number field it will never match.
+.SH EXAMPLES
+Hangup on the entire 999 area code (no leading 1 needed)
+.br
+Blacklist file expressions with and without a leading 1:
+.RS 0
+	^999    ^1999
+.RE
+.PP
+Allow a call from 999-555-1212
+.br
+Whitelist file expressions with and without a leading 1:
+.RS 0
+	9995551212    19995551212
+.RE
+.SH SEE ALSO
+ncidd.8, ncidd.conf.5, ncidd.alias.5, ncidd.whitelist.5

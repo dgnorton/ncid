@@ -1,5 +1,5 @@
 /*
- * Copyright 2011
+ * Copyright 2011-2012
  * by  John L. Chmielewski <jlc@cfl.rr.com>
  *
  * nciddhangup.h is free software; you can redistribute it and/or modify
@@ -21,14 +21,18 @@
 #define BLACKLIST   "/etc/ncid/ncidd.blacklist"
 #endif
 
+#ifndef WHITELIST
+#define WHITELIST   "/etc/ncid/ncidd.whitelist"
+#endif
+
 #define PICKUP      "AT H1"
 #define HANGUP      "AT H0"
 #define HANGUPTRY   6
 #define HANGUPDELAY 400000  /* 400000 microseconds = 0.4 seconds */
 
 #define LISTSIZE    200
-#define ERRLIST     "blacklist array too large"
+#define ERRLIST     "list too large"
 
-extern char *blacklist;
-extern int doBlacklist(), doHangup();
-extern void rmbl();
+extern char *blacklist, *whitelist, *blklist[], *whtlist[];
+extern int doList(), doHangup();
+extern void rmEntries();

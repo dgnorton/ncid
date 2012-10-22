@@ -1,5 +1,5 @@
 # This Makefile requires either GNU make or BSD make
-# Last Modified by jlc on Fri Jul 13, 202
+# Last Modified by jlc on Thu Oct 11, 2012
 
 ###########################################################################
 # make local             - builds for /usr/local and /var                 #
@@ -43,8 +43,8 @@
 # make cygwin-install    - installs files in /usr/local, and /var         #
 ###########################################################################
 
-subdirs      = server client cidgate modules scripts tools man test \
-               debian Fedora FreeBSD TiVo
+subdirs      = server client gateway modules logrotate tools man test \
+               debian Fedora FreeBSD Mac TiVo
 
 Version := $(shell sed 's/.* //; 1q' VERSION)
 
@@ -62,6 +62,8 @@ settag       = NONE
 setlock      = NONE
 setname      = NONE
 setmod       = NONE
+setmac       = NONE
+unset        = NONE
 
 BIN          = $(prefix)/bin
 SBIN         = $(prefix)/sbin
@@ -72,6 +74,7 @@ VAR          = $(prefix3)/var
 
 CONFDIR      = $(ETC)/ncid
 MODULEDIR    = $(SHARE)/ncid
+DOCDIR       = $(SHARE)/doc/ncid
 IMAGEDIR	 = $(SHARE)/pixmaps/ncid
 MAN          = $(SHARE)/man
 LOG          = $(VAR)/log
@@ -79,8 +82,10 @@ RUN          = $(VAR)/run
 
 CONF         = $(CONFDIR)/ncidd.conf
 ALIAS        = $(CONFDIR)/ncidd.alias
-MODEMDEV     = $(DEV)/modem
-CALLLOG      = $(LOG)/cidcall.log
+BLACKLIST    = $(CONFDIR)/ncidd.blacklist
+WHITELIST    = $(CONFDIR)/ncidd.whitelist
+TTYPORT      = $(DEV)/modem
+CIDLOG       = $(LOG)/cidcall.log
 DATALOG      = $(LOG)/ciddata.log
 LOGFILE      = $(LOG)/ncidd.log
 PIDFILE      = $(RUN)/ncidd.pid
@@ -90,6 +95,12 @@ TCLSH        = tclsh
 
 # local additions to CFLAGS
 MFLAGS  = -W -Wmissing-declarations \
+
+# Documentation for FreeBSD, Mac, and TiVo
+DOC     = doc/[A-HJ-U]* doc/INSTALL \
+          server/README.server gateway/README.Gateways \
+          client/README.client modules/README.modules doc/Verbose-ncid \
+          doc/Verbose-ncidd doc/Verbose-sip2ncid doc/Verbose-ncid2ncid
 
 default:
 	@echo "make requires an argument, see top of Makefile for description:"
@@ -115,10 +126,12 @@ default:
 	@echo "    make cygwin             # builds for windows using Cygwin"
 	@echo "    make cygwin-install     # installs in /usr/local"
 
-local: serverdir clientdir moduledir cidgatedir tooldir scriptsdir
+local-base: serverdir clientdir moduledir gatewaydir tooldir
+
+local: local-base logrotatedir
 
 version.h: version.h-in
-	sed "s/XXX/$(Version)/" $? > $@
+	sed "s/XXX/$(Version)/" $< > $@
 
 fedoradir:
 	cd Fedora; $(MAKE) init service prefix=$(prefix) prefix2=$(prefix2) \
@@ -136,12 +149,16 @@ tivodir:
 	cd TiVo; $(MAKE) prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
                      OSDCLIENT=$(OSDCLIENT)
 
+macdir:
+	cd Mac; $(MAKE) prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
+
 moduledir:
 	cd modules; $(MAKE) modules prefix=$(prefix) prefix2=$(prefix2) \
-                      prefix3=$(prefix3)
+                      prefix3=$(prefix3) setmod="$(setmod)" \
+                      unset="$(unset)" setmac="$(setmac)"
 
-cidgatedir:
-	cd cidgate; $(MAKE) cidgate prefix=$(prefix) prefix2=$(prefix2) \
+gatewaydir:
+	cd gateway; $(MAKE) gateway prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3) BIN=$(BIN) SBIN=$(SBIN) \
                       MFLAGS="$(MFLAGS)" STRIP=$(STRIP)
 
@@ -159,8 +176,8 @@ tooldir:
 	cd tools; $(MAKE) tools prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3) BIN=$(BIN)
 
-scriptsdir:
-	cd scripts; $(MAKE) scripts prefix=$(prefix) prefix2=$(prefix2) \
+logrotatedir:
+	cd logrotate; $(MAKE) logrotate prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3)
 
 mandir:
@@ -190,7 +207,7 @@ tivo-s1:
 	$(MAKE) tivo-ppc mandir prefix=/var/hack
 
 tivo-ppc:
-	$(MAKE) local tivodir \
+	$(MAKE) local-base tivodir \
 			CC=$(PPCXCOMPILE)gcc \
 			MFLAGS="-DTIVO_S1 -D__need_timeval" \
 			LD=$(PPCXCOMPILE)ld \
@@ -198,14 +215,17 @@ tivo-ppc:
 			setname="TiVo requires CLOCAL" \
 			settag="TiVo PPC Modem Port" \
 			setlock="TiVo Modem Lockfile" \
-			setmod="out2osd" OSDCLIENT=tivocid
+			setmod="TiVo" OSDCLIENT=tivocid
 
 tivo-s2:
 	$(MAKE) tivo-mips mandir prefix=/var/hack
 
 tivo-hack-install:
 	$(MAKE) install-server install-client \
-            install-modules install-cidgate install-tivo
+            install-modules install-gateway install-tivo setmod=TiVo
+	mkdir -p $(DOCDIR)/man
+	install -m 644 $(DOC) doc/INSTALL-TiVo $(DOCDIR)
+	install -m 644 man/*.txt $(DOCDIR)/man
 
 tivo-mips:
 	$(MAKE) local tivodir fedoradir \
@@ -216,72 +236,86 @@ tivo-mips:
 			setname="TiVo requires CLOCAL" \
 			settag="TiVo MIPS Modem Port" \
 			setlock="TiVo Modem Lockfile" \
-			setmod="ncid-tivo" OSDCLIENT=tivoncid
+			setmod="TiVo" OSDCLIENT=tivoncid
 
 tivo-install:
-	$(MAKE) install-server install-client install-modules install-cidgate \
-              install-man install-scripts #install-fedora setmod=tivo
+	$(MAKE) install-server install-client install-modules install-gateway \
+              install-man install-logrotate setmod=TiVo
 
 freebsd:
-	$(MAKE) local freebsddir prefix=/usr/local prefix2=$(prefix) \
+	$(MAKE) local-base freebsddir prefix=/usr/local prefix2=$(prefix) \
             LOCKFILE=/var/spool/lock/LCK.. \
             WISH=/usr/local/bin/wish*.* TCLSH=/usr/local/bin/tclsh*.* \
             BASH=/usr/local/bin/bash
 
 freebsd-install:
-	$(MAKE) install MAN=$(prefix)/man
+	$(MAKE) install-base MAN=$(prefix)/man
+	mkdir -p $(DOCDIR)
+	install -m 644 $(DOC) doc/INSTALL-FreeBSD $(DOCDIR)
 	cd FreeBSD; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
             MAN=$(prefix)/man
 
 mac-fat:
-	$(MAKE) local settag="Macintosh OS X" \
+	$(MAKE) local-base macdir settag="Macintosh OS X" \
+            unset="tts default" setmac="Mac default" \
             LOCKFILE=/var/spool/uucp/LCK.. \
             MFLAGS="-mmacosx-version-min=10.3.9 -arch ppc" STRIP=
 	mv server/ncidd server/ncidd.ppc-mac
-	mv cidgate/sip2ncid cidgate/sip2ncid.ppc-mac
-	mv cidgate/ncid2ncid cidgate/ncid2ncid.ppc-mac
+	mv gateway/sip2ncid gateway/sip2ncid.ppc-mac
+	mv gateway/ncid2ncid gateway/ncid2ncid.ppc-mac
 	$(MAKE) clean
 	$(MAKE) local settag="Macintosh OS X" \
             LOCKFILE=/var/spool/uucp/LCK.. \
             MFLAGS="-mmacosx-version-min=10.4 -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk" STRIP=
 	mv server/ncidd server/ncidd.i386-mac
-	mv cidgate/sip2ncid cidgate/sip2ncid.i386-mac
-	mv cidgate/ncid2ncid cidgate/ncid2ncid.i386-mac
+	mv gateway/sip2ncid gateway/sip2ncid.i386-mac
+	mv gateway/ncid2ncid gateway/ncid2ncid.i386-mac
 	lipo -create server/ncidd.ppc-mac server/ncidd.i386-mac \
          -output server/ncidd
-	lipo -create cidgate/sip2ncid.ppc-mac cidgate/sip2ncid.i386-mac \
-         -output cidgate/sip2ncid
-	lipo -create cidgate/ncid2ncid.ppc-mac cidgate/ncid2ncid.i386-mac \
-         -output cidgate/ncid2ncid
+	lipo -create gateway/sip2ncid.ppc-mac gateway/sip2ncid.i386-mac \
+         -output gateway/sip2ncid
+	lipo -create gateway/ncid2ncid.ppc-mac gateway/ncid2ncid.i386-mac \
+         -output gateway/ncid2ncid
 
 mac:
-	$(MAKE) local settag="Macintosh OS X" \
+	$(MAKE) local-base macdir settag="Macintosh OS X" \
+            unset="tts default" setmac="Mac default" \
             LOCKFILE=/var/spool/uucp/LCK.. \
             MFLAGS="-mmacosx-version-min=10.4" STRIP=
 
 mac-install:
-	$(MAKE) install MAN=$(prefix)/man
+	mkdir -p $(DOCDIR)
+	install -m 644 $(DOC) doc/INSTALL-Mac $(DOCDIR)
+	$(MAKE) install-base install-mac MAN=$(MAN)
 
 cygwin:
 	$(MAKE) local \
-            MFLAGS=-IC:/WpdPack/Include \
-            LDLIBS="-s -LC:/WpdPack/Lib -lwpcap" \
+            MFLAGS=-I/cygdrive/c/WpdPack/Include \
+            LDLIBS="-s -L/cygdrive/c/WpdPack/Lib -lwpcap" \
             SBIN=$(prefix)/bin \
             settag="set noserial" \
-            MODEMDEV=$(DEV)/com1
+            TTYPORT=$(DEV)/com1
 
 cygwin-install:
 	$(MAKE) install \
             SBIN=$(prefix)/bin \
             settag="set noserial" \
-            MODEMDEV=$(DEV)/com1
+            TTYPORT=$(DEV)/com1
+	mkdir -p $(DOCDIR)
+	install -m 644 $(DOC) doc/INSTALL-Cygwin doc/INSTALL-Win  $(DOCDIR)
 
-install: install-server install-client install-man \
-         install-modules install-cidgate install-scripts install-tools
+install-base: install-server install-client install-man \
+         install-modules install-gateway install-tools
+
+install: install-base install-logrotate
 
 install-fedora:
 	cd Fedora; \
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
+
+install-mac:
+	cd Mac; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
 
 install-ubuntu:
@@ -292,26 +326,28 @@ install-tivo:
 	cd TiVo; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
 
-install-cidgate:
-	cd cidgate; \
+install-gateway:
+	cd gateway; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
 
 install-modules:
 	cd modules; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
-			setmod=$(setmod)
+			setmod="$(setmod)"
 
-install-scripts:
-	cd scripts; \
+install-logrotate:
+	cd logrotate; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
 
 install-tools:
 	cd tools; \
-	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) ALIAS=$(ALIAS)
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
+		    ALIAS=$(ALIAS)
 
 install-man:
 	cd man; \
-	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) MAN=$(MAN)
+	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
+		    MAN=$(MAN) setmod="$(setmod)"
 
 install-server:
 	cd server; \
@@ -333,4 +369,4 @@ distclean: clobber
 files: $(FILES)
 
 .PHONY: local ppc-tivo mips-tivo install install-proc \
-        install-scripts install-man install-var clean clobber files
+        install-logrotate install-man install-var clean clobber files

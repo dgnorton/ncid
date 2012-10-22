@@ -4,10 +4,9 @@ After=ncidd.service
 
 [Service]
 Type=simple
-Environment=module=ncid-speak speakopt=-M
-EnvironmentFile=-/usr/local/etc/ncid/ncidmodules.conf
+Environment=module=ncid-speak
 PIDFile=/var/run/ncid-speak.pid
-ExecStart=/usr/bin/ncid --no-gui -p /var/run/${module}.pid -P $module $speakopt
+ExecStart=/usr/bin/ncid --no-gui -p /var/run/${module}.pid -P $module
 ExecStop=/bin/kill $MAINPID ; /bin/rm -f /var/run/${module}.pid
 
 [Install]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2011
+ * Copyright (c) 2005-2012
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddalias.c is free software; you can redistribute it and/or modify
@@ -28,7 +28,64 @@ extern char *getWord();
 
 int doAlias(), nextAlias();
 char *cpy2mem();
-void getAlias(), setAlias(), rmaliases();
+void builtinAlias(), userAlias(), getAlias(), setAlias(), rmaliases();
+
+/*
+ * Built-in Aliases for O, P, and A
+ */
+
+void builtinAlias(char *to, char *from)
+{
+    if (!strcmp(from, "O")) strncpy(to, O, CIDSIZE - 1);
+    else if (!strcmp(from, "P")) strncpy(to, P, CIDSIZE - 1);
+    else if (!strcmp(from, "A")) strncpy(to, A, CIDSIZE - 1);
+    else strncpy(to, from, CIDSIZE - 1);
+}
+
+/*
+ * User defined aliases.
+ */
+
+void userAlias(char *nmbr, char *name, char *line)
+{
+    int i;
+
+    /* we may want to skip the leading 1, if present */
+    if (ignore1 && *nmbr == '1') ++nmbr;
+
+    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+    {
+        switch (alias[i].type)
+        {
+            case NMBRNAME:
+                if (!strcmp(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
+                if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
+                break;
+            case NMBRONLY:
+                if (!strcmp(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
+                break;
+            case NMBRDEP:
+                if (!strcmp(name, alias[i].depend) &&
+                    (!strcmp(nmbr, alias[i].from) ||
+                    !strcmp(alias[i].from, "*")))
+                    strcpy(nmbr, alias[i].to);
+                break;
+            case NAMEONLY:
+                if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
+                break;
+            case NAMEDEP:
+                if (!strcmp(nmbr, alias[i].depend) &&
+                    (!strcmp(name, alias[i].from) ||
+                    !strcmp(alias[i].from, "*")))
+                    strcpy(name, alias[i].to);
+                break;
+            case LINEONLY:
+                if (!strcmp(line, alias[i].from) ||
+                   !strcmp(alias[i].from, "*")) strcpy(line, alias[i].to);
+                break;
+        }
+    }
+}
 
 /*
  * Process the alias file.
@@ -68,6 +125,12 @@ int doAlias()
 
     if (!errorStatus && alias[0].type)
     {
+	
+	    for (i = 0; i < ALIASSIZE && alias[i].type; ++i);
+        sprintf(msgbuf, "Alias Entries: %d/%d\n",
+                i, ALIASSIZE);
+        logMsg(LEVEL1, msgbuf);
+
         /*
          * Make the alias display pretty by determining maximum column
          * widths, and create human readable 'type'.

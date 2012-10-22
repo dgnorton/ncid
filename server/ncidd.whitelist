@@ -1,0 +1,50 @@
+# ncidd.hangup whitelist file
+
+# File last changed: Sun Aug 26, 2012
+
+# This file contains the names and numbers of telephone calls to
+# be excluded from a match in the blacklist file.  It prevents
+# the blacklist file from terminating a call.
+
+###############################
+# Definitions and Line format #
+###############################
+
+# A number must exactly match the number in the cidcall.log file.
+# It will show if a leading 1 is needed for US numbers.
+
+# Types of lines: blank, comment, or expression
+# Comment lines and blank lines are ignored.
+
+# A non-comment line is divided into expressions, separated by spaces.
+# An expression is either a string of non-blank characters or
+# everything between double quotes.  Multiple expressions on a
+# line is permitted.  Anything after a '#' on a line is a comment.
+
+#########
+# NOTES #
+#########
+
+#    - Each expression is compared to the caller name and number.
+#    - A '^' at the beginning an expression means it must match
+#      at the start of a name or number
+#    - Upper and lower case letters are significant.
+#    - A partial name or number can match.
+#    - A leading '1' is required if it is in /dev/log/cidcall.log
+#    - If an expression is longer than the name or number, it
+#      will never match.
+
+###########
+# EXAMPLE #
+###########
+
+#    blacklist the entire 999 areacode in the blacklist file
+#    ^999    ^1999   # blacklist file entry
+#
+#    allow this number from area code 999
+#    999-555-1212    # whitelist file entry
+
+########################
+# Add Expressions here #
+########################
+

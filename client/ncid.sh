@@ -2,7 +2,7 @@
 
 # ncid - Network Caller-ID client
 
-# Copyright (c) 2001-2011
+# Copyright (c) 2001-2012
 # by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # ncid is free software; you can redistribute it and/or modify it
@@ -31,11 +31,11 @@ BINDIR=/usr/local/bin
 # set nice value on TiVo, if "setpri" found \
 type setpri > /dev/null 2>&1 && setpri rr 1 $$
 # set up TiVo options to use out2osd \
-OPTSTIVO="--no-gui --tivo --message --program /usr/local/bin/out2osd"
+OPTSTIVO="--no-gui --tivo --program /usr/local/bin/out2osd"
 # if name is tivocid, exec tivosh (for backward compatibility) \
 case $0 in *tivocid) exec tivosh $BINDIR/ncid $OPTSTIVO "$@"; esac
 # set up TiVo options to use ncid-tivo \
-OPTSTIVO="--no-gui --message --program ncid-tivo"
+OPTSTIVO="--no-gui --program ncid-tivo"
 # if name is tivoncid, exec tivosh \
 case $0 in *tivoncid) exec tivosh $BINDIR/ncid $OPTSTIVO "$@"; esac
 # set location of configuration file (it is also set later on for tcl/tk) \
@@ -55,7 +55,7 @@ CF=/usr/local/etc/ncid/ncid.conf
 # wish not found, look for tclsh and exec it \
 type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" --no-gui "$@"
 # tclsh not found, look for tivosh and exec it \
-type tivosh > /dev/null 2>&1 && exec tivosh "$0" $OPTSTIVO "$@"
+type tivosh > /dev/null 2>&1 && exec tivosh "$0" "$@"
 # tivosh not found, maybe using a Macintosh \
 [ -d /Applications/Wish\ Shell.app ] && \
     /Applications/Wish\ Shell.app/Contents/MacOS/Wish\ Shell -f "$0" "$@"
@@ -82,23 +82,26 @@ set NoGUI       0
 set CallOnRing  0
 set Classic     0
 set TivoFlag    0
-set MsgFlag     0
 set Ring        999
 set NoExit      0
 set ExitOn      exit
+set AltDate     0
 
 ###  global variables that only can be changed by the configuration file
 set ProgDir     /usr/local/share/ncid
 set ProgName    ""
 set Country     "US"
 set NoOne       1
+set DateSepar   "/"
 
 if {[file exists $ConfigFile]} {
     catch {source $ConfigFile}
 }
 
 if {$ProgName != ""} {
-    set Program [list $ProgDir/$ProgName]
+    if {[regexp {^.*/} $ProgName]} {
+        set Program [list $ProgName]
+    } else {set Program [list $ProgDir/$ProgName]}
 } else {set Program ""}
 
 ### global variables that are fixed
@@ -110,9 +113,9 @@ set Version     "(NCID) XxXxX"
 set VersionInfo "Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
+               [--alt-date        | -A]
                [--classic-display | -C]
                [--delay seconds   | -D seconds]
-               [--message         | -M]
                [--noexit          | -X]
                [--program PROGRAM | -P PROGRAM]
                [--pidfile FILE    | -p pidfile]
@@ -120,16 +123,21 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
                [--ring 0-9|-1|-2  | -r 0-9|-1|-2]
                [--tivo            | -T]
                [--PopupTime 1-99  | -t 1-99 seconds]
-               [--verbose         | -V]
+               [--verbose [1-9]   | -V [1-9]]
          ARGS: [IP_ADDRESS        | HOSTNAME]
                [PORT_NUMBER]}
+
+set Author \
+"
+Copyright (C) 2001-2012
+John L. Chmielewski
+http://ncid.sourceforge.net
+"
 
 set About \
 "
 $VersionInfo
-Copyright (C) 2001-2011
-John L. Chmielewski
-http://ncid.sourceforge.net
+$Author
 "
 
 # display error message and exit
@@ -232,7 +240,6 @@ proc getCID {} {
     global cid
     global Connect
     global Host
-    global MsgFlag
     global NoGUI
     global Port
     global Raw
@@ -263,7 +270,7 @@ proc getCID {} {
 
         if $Raw {
             # output NCID data line
-            displayLog $dataBlock 1
+            displayLog "$dataBlock" 1
             if {[string match 200* $dataBlock]} {
                 if {!$NoGUI} { displayCID "$VersionInfo\n$dataBlock" 1 }
             }
@@ -271,8 +278,15 @@ proc getCID {} {
             if {[string match 200* $dataBlock]} {
                 # output NCID server connect message
                 regsub {200 (.*)} $dataBlock {\1} dataBlock
-                if $NoGUI { displayLog "$VersionInfo\n$dataBlock" 1
+                if {$Program != ""} {doVerbose "$VersionInfo\n$dataBlock" 1}
+                if $NoGUI { 
+                   displayLog "$VersionInfo\n$dataBlock" 1
                 } else { displayCID "$VersionInfo\n$dataBlock" 1 }
+            } else {
+              if {[string match 300* $dataBlock]} {
+                  # NCID server sent end of log message
+                  doVerbose "Client: Finished receiving call log" 1
+              }
             }
         }
 
@@ -284,8 +298,13 @@ proc getCID {} {
                     set lineinfo [getField LINE $dataBlock]
                     # must use $call($lineinfo) instead of $cid
                     if {$Program != "" && $Ring == $ringinfo} {
-                        catch {sendCID $call($lineinfo)} oops
-                        if $Verbose {puts "$oops"}
+                        if {[array get call $lineinfo] != {}} {
+                            sendCID $call($lineinfo)
+                            doVerbose "$dataBlock" 1
+                            doVerbose "Sent Module: $call($lineinfo)" 1
+                        } else {
+                            doVerbose "Phone line label \"$lineinfo\" not found" 1
+                        }
                     }
                 }
             } elseif {$type == 4 || $type == 7} {
@@ -293,9 +312,14 @@ proc getCID {} {
                 regsub {MSGL*O*G*: (.*)} $dataBlock {\1} msg
                 displayLog "$msg" 1
                 if {$type == 4} {
-                    displayCID "$msg\n" 1
-                    if !$NoGUI {doPopup}
-                    if {$Program != "" && $MsgFlag} {sendMSG $msg}
+                    if {!$NoGUI} {
+                        displayCID "$msg\n" 1
+                        doPopup
+                    }
+                    if {$Program != ""} {
+                        sendMSG $msg
+                        doVerbose "Sent Module: $msg" 1
+                    }
                 }
             } elseif {$type < 4} {
                 # CID (1), HUP (2), OUT (3)
@@ -312,7 +336,10 @@ proc getCID {} {
                         doPopup
                     }
                     # $cid set above, no need for $call($lineLabel)
-                    if {!$CallOnRing && $Program != ""} {sendCID $cid}
+                    if {!$CallOnRing && $Program != ""} {
+                        sendCID $cid
+                        doVerbose "Sent Module: $cid" 1
+                    }
                 }
             } elseif {$type > 7} {
                 # CIDLOG (8), HUPLOG (9), OUTLOG (10)
@@ -341,13 +368,13 @@ proc doPopup {} {
     # the -topmost option may not be available
     if {[catch {wm attributes . -topmost 1} msg]} {
         raise .
-        if $Verbose {puts "$msg"}
+        doVerbose "$msg" 1
     }
 
     after [expr $PopupTime*1000] {
         # the -topmost option may not be available
         if {[catch {wm attributes . -topmost 0} msg]} {
-            if $Verbose {puts "$msg"}
+            doVerbose "$msg" 1
         }
         if {[focus] != "."} {
             if {$ncidwin == "iconic"} {wm iconify .}
@@ -356,26 +383,30 @@ proc doPopup {} {
 }
 
 proc checkType {dataBlock} {
+    set rtn 0
     # Determine line type
-    if [string match CID:* $dataBlock] {return 1}
-    if [string match HUP:* $dataBlock] {return 2}
-    if [string match OUT:* $dataBlock] {return 3}
-    if [string match MSG:* $dataBlock] {return 4}
-    if [string match CIDINFO:* $dataBlock] {return 5}
-    if [string match LOG:* $dataBlock] {return 6}
-    if [string match MSGLOG:* $dataBlock] {return 7}
-    if [string match CIDLOG:* $dataBlock] {return 8}
-    if [string match HUPLOG:* $dataBlock] {return 9}
-    if [string match OUTLOG:* $dataBlock] {return 10}
-    return 0
+    if [string match CID:* $dataBlock] {set rtn 1
+    } elseif [string match HUP:* $dataBlock] {set rtn 2
+    } elseif [string match OUT:* $dataBlock] {set rtn 3
+    } elseif [string match MSG:* $dataBlock] {set rtn 4
+    } elseif [string match CIDINFO:* $dataBlock] {set rtn 5
+    } elseif [string match LOG:* $dataBlock] {set rtn 6
+    } elseif [string match MSGLOG:* $dataBlock] {set rtn 7
+    } elseif [string match CIDLOG:* $dataBlock] {set rtn 8
+    } elseif [string match HUPLOG:* $dataBlock] {set rtn 9
+    } elseif [string match OUTLOG:* $dataBlock] {set rtn 10}
+    doVerbose "Assigned type $rtn for $dataBlock" 5
+    return $rtn
 }
 
 # must be sure the line passed checkType
 proc formatCID {dataBlock} {
     global Country
     global NoOne
+    global DateSepar
     global lineLabel
     global type
+    global AltDate
 
     set cidname [getField NAME $dataBlock]
     set cidnumber [getField NU*MBE*R $dataBlock]
@@ -465,12 +496,49 @@ proc formatCID {dataBlock} {
           }
         }
       }
+    } elseif {$Country == "HR"} {
+      # http://en.wikipedia.org/wiki/Telephone_numbers_in_Croatia
+      if {![regsub {^(01)([0-9]+)} \
+        $cidnumber {\1-\2} cidnumber]} {
+        if {![regsub {^(02[0123])([0-9]+)} \
+          $cidnumber {\1-\2} cidnumber]} {
+          if {![regsub {^(03[12345])([0-9]+)} \
+            $cidnumber {\1-\2} cidnumber]} {
+            if {![regsub {^(04[0234789])([0-9]+)} \
+              $cidnumber {\1-\2} cidnumber]} {
+              if {![regsub {^(05[123])([0-9]+)} \
+                $cidnumber {\1-\2} cidnumber]} {
+                if {![regsub {^(09[125789])([0-9]+)} \
+                  $cidnumber {\1-\2} cidnumber]} {
+                }
+              }
+            }
+          }
+        }
+      }
     }
 
     set ciddate [getField DATE $dataBlock]
-    if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
-        $ciddate {\1/\2/\3} ciddate]} {
-        regsub {([0-9][0-9])([0-9][0-9].*)} $ciddate {\1/\2} ciddate
+    # slash (/) is the default date separator
+    if {$AltDate} {
+        # Date format: DDMMYY or DDMM
+        if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
+            $ciddate {\2/\1/\3} ciddate]} {
+            regsub {([0-9][0-9])([0-9][0-9].*)} $ciddate {\2/\1} ciddate
+        }
+    } else {
+        # Date format: MMDDYY or MMDD
+        if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
+            $ciddate {\1/\2/\3} ciddate]} {
+            regsub {([0-9][0-9])([0-9][0-9].*)} $ciddate {\1/\2} ciddate
+        }
+    }
+    if {$DateSepar == "-"} {
+        # set hyphen (-) as date separator
+        regsub -all {/} $ciddate - ciddate
+    } elseif {$DateSepar == "."} {
+        # set period (.) as date separator
+        regsub -all {/} $ciddate . ciddate
     }
     set cidtime [getField TIME $dataBlock]
     regsub {([0-9][0-9])([0-9][0-9])} $cidtime {\1:\2} cidtime
@@ -531,14 +599,14 @@ proc sendMSG {msg} {
 
     if $TivoFlag {
       # send "$msg\n"
-      catch {exec [lindex $Program 0] << "$msg\n"} oops
+      catch {exec [lindex $Program 0] << "$msg\n" > @stdout} oops
     } else {
       # send "\n\n\n$msg\n\nMSG\n"
       # not: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n$cidtype\n"
       if $ExecSh {
-        catch {exec sh -c $Program << "\n\n\n$msg\n\nMSG\n"} oops
+        catch {exec sh -c $Program << "\n\n\n$msg\n\nMSG\n" > @stdout} oops
       } else {
-        catch {exec $Program << "\n\n\n$msg\n\nMSG\n"} oops
+        catch {exec $Program << "\n\n\n$msg\n\nMSG\n" > @stdout} oops
       }
     }
 }
@@ -562,6 +630,7 @@ proc displayLog {cid ismsg} {
     global Program
     global Classic
     global NoGUI
+    
     if $NoGUI {
         if {$Program == ""} {
             if $ismsg {
@@ -642,10 +711,10 @@ proc getArg {} {
     global CallOnRing
     global ProgDir
     global TivoFlag
-    global MsgFlag
     global PIDfile
     global PopupTime
     global NoExit
+    global AltDate
 
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
@@ -655,14 +724,14 @@ proc getArg {} {
                 incr cnt
                 if {$optarg != ""
                     && [regexp {^-[12]$} $optarg]
-                    || [regexp {^[023456789]$} $optarg]} {
+                    || [regexp {^[0123456789]$} $optarg]} {
                     set Ring $optarg
                     set CallOnRing 1
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
             }
             {^--no-gui$} {set NoGUI 1}
             {^-A$} -
-            {^--all-calls$} {set Classic 0}
+            {^--alt-date$} {set AltDate 1}
             {^-C$} -
             {^--classic-display$} {set Classic 1}
             {^-D$} -
@@ -700,7 +769,13 @@ proc getArg {} {
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
             }
             {^-V$} -
-            {^--verbose$} {set Verbose 1}
+            {^--verbose$} {
+                incr cnt
+                if {$optarg != ""
+                    && [regexp {^[1-9]+$} $optarg]} {
+                    set Verbose $optarg
+                } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
+            }
             {^-R$} -
             {^--raw$} {set Raw 1}
             {^-X} -
@@ -808,6 +883,12 @@ proc handleMSG {msg} {
   flush $Socket
 }
 
+# Handle verbosity levels
+proc doVerbose {msg level} {
+    global Verbose
+    if {$Verbose >= $level} {puts "$msg"}
+}
+
 # handle a PID file, if it can not be created, ignore it
 proc doPID {} {
     global PIDfile
@@ -841,23 +922,29 @@ proc doPID {} {
             puts $chan [pid]
             close $chan
         }
-        if $Verbose {puts "Using pidfile: $PIDfile"}
-    } else {if $Verbose {puts "Not using a PID file"}}
+        doVerbose "Using pidfile: $PIDfile" 1
+    } else {doVerbose "Not using a PID file" 1}
 }
 
 # This is the default, except when using freewrap or on the TiVo
 if {[catch {encoding system utf-8} msg]} {
-    if $Verbose {puts "$msg"}
+    doVerbose "$msg" 1
 }
 
 getArg
+
+doVerbose "$Author" 1
+
 if {!$NoGUI} {
     if {$NoExit} {set ExitOn do_nothing}
     makeWindow
 }
 if {$Country != "US" && $Country != "SE" && $Country != "NONE" && \
-    $Country != "UK" && $Country != "DE"} {
-    exitMsg 7 "Country Code \"$Country\"is not supported.  Please change it."
+    $Country != "UK" && $Country != "DE" && $Country != "HR"} {
+    exitMsg 7 "Country Code \"$Country\" is not supported. Please change it."
+}
+if {$DateSepar != "/" && $DateSepar != "-" && $DateSepar != "."} {
+    exitMsg 7 "Date separator \"$DateSepar\" is not supported. Please change it."
 }
 if {$Program != ""} {
     if {[file exists $Program]} {
@@ -871,7 +958,18 @@ if {$Program != ""} {
             }
         }
     } else {exitMsg 3 "Program Not Found: $Program"}
-    if $Verbose {puts "Using output Module: $Program"}
+    doVerbose "Using output Module: $Program" 1
+    # change module name from <path>/ncid-<name> to ncid_<name>
+    regsub {.*-(.*)} $Program {ncid_\1} modopt
+    # if it exists, set the module option variable in $$modopt
+    if {[catch {eval [subst $$modopt]} oops]} {
+        doVerbose "No optional \"$modopt\" variable in ncid.conf" 1
+    } else {
+        if $Verbose {
+          set CallOnRing 1
+          doVerbose "Optional \"$modopt\" variable set Ring to $Ring in ncid.conf" 1
+        }
+    }
 }
 if {$NoGUI} doPID
 connectCID $Host $Port

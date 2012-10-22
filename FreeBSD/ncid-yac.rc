@@ -19,12 +19,6 @@ name=ncid
 module=ncid-yac
 pidfile=/var/run/$module.pid
 
-ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/ncidmodules.conf
-
-# source config file
-[ -f $ConfigFile ] && . $ConfigFile
-
 command=/usr/local/bin/$name
 command_args="--no-gui -p $pidfile -P $module &"
 procname=/usr/local/bin/tclsh8.4

@@ -62,7 +62,7 @@ local:
 	$(MAKE) client
 
 ../version.h: ../version.h-in
-	sed "s/XXX/$(Version)/" $? > $@
+	sed "s/XXX/$(Version)/" $< > $@
 
 client: $(SHSCRIPT) $(SITE)
 

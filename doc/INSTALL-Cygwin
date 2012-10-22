@@ -1,16 +1,25 @@
 Cygwin Install
 
-Last edited: Wed Feb 10, 2010
+Last edited: Sat Oct 20, 2012
+
+Sections:
+    NOTES:
+    INSTALL:
+    CONFIGURE:
+    START:
+    TEST:
+    REBASE:
+    RUN AS A QUASI-SERVICE:
+
+If NCID does not work, see INSTALL for some simple tests.
+If using sip2ncid, see Setup-sip2ncid
 
 NOTES:
-    The server has been tested with sip2ncid and ncidsip
+    The server has been tested with sip2ncid.
 
     - The server does not function with a modem so it is configured
-      for "noserial".  It requires sip2ncid, ncidsip or yac2ncid to
-      function.
-    - the supplied sip2ncid gateway is recommended over ncidsip
+      for "noserial".  It requires sip2ncid and yac2ncid to function.
     - the supplied yac2ncid gateway requires YAC to control the modem
-    - The supplied ncidsip gateway requires perl and the Net-Pcap module
       http://search.cpan.org/CPAN/authors/S/SA/SAPER
     - Net-Pcap requires WinPcap: http://www.winpcap.org/
     - The Net-Pcap module has been successfully built under cygwin
@@ -37,13 +46,7 @@ INSTALL:
       * Left click on the icon in upper left
       * Select Properties
       * Check Mark the QuickEdit Mode in Edit Options
-
-    -------------
-    Compile ncid:
-    -------------
-
-    - See INSTALL
-
+    
     -------------
     Install ncid:
     -------------
@@ -53,7 +56,7 @@ INSTALL:
         Copy ncid-VERSION-cygwin.tgz to cygwin, then:
             tar -xzvf ncid-VERSION-cygwin.tgz -C /
             EXAMPLE: tar -xzvf ncid-0.64-cygwin.tgz -C /
-    - if there is no binary package, you need to compile the source:
+    - if there is no binary package, you need to compile the source (usually not required):
         Copy ncid-VERSION-src.tar.gz to cygwin, then:
         tar -xzvf ncid-VERSION-src.tar.gz
         cd ncid
@@ -61,7 +64,7 @@ INSTALL:
         make cygwin-install
 
     -----------------------------------------------------
-    If phone system is VoIP and you want to use sip2ncid: (Recompensed)
+    If phone system is VoIP and you want to use sip2ncid:
     -----------------------------------------------------
 
     - nothing else to do
@@ -72,29 +75,6 @@ INSTALL:
 
     - download and install YAC from http://sunflowerhead.com/software/yac/
     - configure the YAC server for a listener at localhost (127.0.0.1)
-
-    ----------------------------------------------------
-    If phone system is VoIP and you want to use ncidsip: (Not Recommended)
-    ----------------------------------------------------
-
-    - install a development system using gcc
-    - install perl and CPAN
-    - install lynx, wget, and ncftp
-    - install WpdPack at C:\ from http://www.winpcap.org/
-    - run "cpan" and it will configure itself, accept defaults
-      to questions asked, but select multiple download sites
-    - At the "cpan>" prompt, type: install IO::Interface
-      (if it fails, fix problem and try: cpan -r)
-    - At the "cpan>" prompt type: cpan install Net::Pcap
-      It will fail to configure.  Quit cpan and cd .cpan/build
-      do a ls.  You will see the Net-Pcap-xxx directory.  Cd into
-      it and type "make"  when it fails, the error message will
-      tell you what the command line should be for WinPcap installed
-      at C:\.  If it does not, you need to edit Makefile.pl and add
-      } elsif ($^O eq 'cygwin') {
-      as the line above
-      warn <<"REASON" unless have_library('wpcap', 'pcap_lib_version', 'pcap');
-    - After you make it, type: make install
 
 CONFIGURE:
 
@@ -145,41 +125,98 @@ START:
 
     - Call yourself and see if it works.
 
-TEST:
+REBASE:
+	- One of the idiosynracies of Cygwin is the need to rebase the dll's
+	  (set a base dll load addres) so they don't conflict and create
+	  forking errors. The easiest way to do this is documented here:
+		http://cygwin.wikia.com/wiki/Rebaseall
+	  
+	  Just start an ash or dash prompt from \cygwin\bin, and then type
+	  rebaseall -v
+	  exit
+		
+RUN AS A QUASI-SERVICE:
+    - Don't do this process until you have ncidd and sip2ncid or other processes
+	  running properly. Once you have things setup though, you can set ncidd and
+	  sip2ncid to (sort of) run as a service in Windows. I only say "sort of"
+	  because it's not technically a service, but is called from another
+	  Cygwin component that is a service.
+	  
+	- Re-run the setup.exe that you used to install Cygwin, and install the
+	  cygrunsrv package. It's under Admin
+	- Go to a cygwin command line, and type the following to install ncidd as a
+	  service:
+	    cygrunsrv -I ncidd -n -p /usr/local/bin/ncidd \
+                  -f "Network CallerID daemon(ncidd)" -a -D
+		 
+		- Explaining each of thiese parameters:
+		  -I indicates install
+		  -n indicates that the service never exits by itself (I don't
+             recall why this has to be set, but it doesn't work otherwise)
+		  -p  /usr/local/bin/ncidd: Application path which is run as a service.
+		  -f "Network CallerID daemon (ncidd)": Optional string which contains
+		     the service description (the desc you see in the Services listing)
+		  -a -D: passes the parameter "-D" to the ncidd program so it runs in
+		     debug mode. This keeps ncidd running in the "foreground" of the
+		     cygrunsrv process.
+		 
+	- Likewise, to remove the ncidd service:
+		cygrunsrv -R ncidd
+		
+	- To install sip2ncid to run in the background, the command line is similar:
+		cygrunsrv -I sip2ncid -n -p /usr/local/bin/sip2ncid -y ncidd \
+          -a '-i "/Device/NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}" -D' \
+          -f "Service to pick SIP packets from network and send to ncidd" \
+          --termsig KILL
+		
+		- Explaining each of thiese parameters:
+		  -I indicates install
+		  -n indicates that the service never exits by itself (I don't
+             recall why this has to be set, but it doesn't work otherwise)
+		  -p /usr/local/bin/sip2ncid: Application path which is run as
+             a service.
+		  -y ncidd: adds a service dependency with the ncidd service so
+             that the ncidd service gets started automatically when you
+             start sip2ncid
+		  -a '-i "/Device/NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}" -D':
+			 note the single and double quotes in this section. You need to
+			 replace XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX in the above
+			 with NETWORK_INTERFACE from way above. To be clear, you want to
+			 replace /Device/NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
+			 with NETWORK_INTERFACE from way above.
+		  -f "Service to pick SIP packets from network and send to ncidd":
+		     Optional string which contains the service description
+			 (the desc you see in the Services listing)
+		  --termsig KILL: termination signal to send. If you don't include this
+		     the service doesn't always get stopped.
 
-    - You need to test your local network for SIP packets. Follow
-      the instructions in Setup-sip2ncid.  Once you configure your
-      network, if needed, and know what options to give to ncidsip,
-      you are ready to set up NCID.
+	- Likewise, to remove the sip2ncid service:
+		cygrunsrv -R sip2ncid
 
-    - The easiest way to test the setup is to run ncidd in debug mode,
-      it will stay attached to the terminal and not go into daemon mode:
-        ncidd -D
-    - to get more information, add the verbose flag:
-        ncidd -Dv3
-    - to also look at the alias structure
-        ncidd -Dv5
-    - The last three lines will be similar to:
-        CallerID only from CID gateways
-        Network Port: 3333
-        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
-
-    -----------------
-    If using sip2ncid
-    -----------------
-
-    - Start sip2ncid
-    - Call yourself and you should see the CallerID lines.
-    - Once it works, you would normally start it:
-        ncidd
-        sip2ncid
-
-    -----------------
-    If using yac2ncid
-    -----------------
-
-    - Start yac2ncid
-    - Call yourself and you should see the CallerID lines.
-    - Once it works, you would normally start it:
-        ncidd
-        yac2ncid [options needed] &
+	- To install ncid-notify to run in the background, the command
+	  line is similar:
+		cygrunsrv -I ncid-notify -p /bin/sh.exe -a \
+		'-c "/usr/local/bin/ncid --no-gui  --message  --program ncid-notify"' \
+		-f "Service to use notify service to send ncid messages to iPad"
+		
+		- Explaining each of thiese parameters:
+		  -I indicates install
+		  -p /bin/sh.exe: Application path to run, which in this case is 
+		     just sh.exe because ncid-notify is a shell script            
+		  -a '-c "/usr/local/bin/ncid --no-gui  --program ncid-notify"' \
+			 these are the parameters that get sent to sh.exe \
+			 -c "/usr/local/bin/ncid: this is the path to the ncid script
+			 --no-gui: tells ncid not to have a gui
+			 --program ncid-notify: tells ncid to pass data to "ncid-notify"
+		  -f "Service to use notify service to send ncid messages to iPad":
+		     Optional string which contains the service description \
+			 (the desc you see in the Services listing)
+			 
+		  -y ncidd: you COULD also add this line to add a service dependency \
+		     with the ncidd service so that the ncidd service gets started \
+			 automatically when you start ncid-notify. I don't do this, \
+			 because strictly speaking, you could be running ncidd on a \
+			 different computer.
+			 
+	- Likewise, to remove the ncid-notify service:
+		cygrunsrv -R ncid-notify

@@ -22,9 +22,6 @@ DAEMON=/usr/bin/$NAME
 PIDFILE=/var/run/$MODULE.pid
 SCRIPTNAME=/etc/init.d/$MODULE
 
-ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/ncidmodules.conf
-
 DAEMON_ARGS="--no-gui -p $PIDFILE -P $MODULE"
 
 # Exit if the package is not installed
@@ -32,9 +29,6 @@ DAEMON_ARGS="--no-gui -p $PIDFILE -P $MODULE"
 
 # Read configuration variable file if it is present
 [ -r /etc/default/$MODULE ] && . /etc/default/$MODULE
-
-# source config file
-[ -f $ConfigFile ] && . $ConfigFile
 
 # Load the VERBOSE setting and other rcS variables
 [ -f /etc/default/rcS ] && . /etc/default/rcS

@@ -21,7 +21,7 @@ MAN         = $(SHARE)/man
 
 CONF		= $(CONFDIR)/ncidd.conf
 ALIAS		= $(CONFDIR)/ncidd.alias
-CALLLOG		= $(LOG)/cidcall.log
+CIDLOG  	= $(LOG)/cidcall.log
 DATALOG		= $(LOG)/ciddata.log
 MAN1		= $(MAN)/man1
 
@@ -51,7 +51,7 @@ files:	$(FILES)
 .SUFFIXES: .pl .sh -in
 
 .pl : *.pl
-	sed 's,/etc/ncid/ncidd.alias,$(ALIAS),; s,/etc/ncid/ncidd.conf,$(CONF),; s,/var/log/cidcall.log,$(CALLLOG),' $< > $@
+	sed 's,/etc/ncid/ncidd.alias,$(ALIAS),; s,/etc/ncid/ncidd.conf,$(CONF),; s,/var/log/cidcall.log,$(CIDLOG),' $< > $@
 	chmod +x $@
 
 .sh : *.sh

@@ -1,57 +1,67 @@
-SHMODULES = ncid-page.sh ncid-samba.sh ncid-speak.sh \
+SHMOD     = ncid-page.sh ncid-samba.sh ncid-speak.sh \
             ncid-mythtv.sh ncid-kpopup.sh ncid-skel.sh \
-            ncid-yac.sh ncid-initmodem.sh
-DIST      = ncidmodules.conf-in
-FILES     = README.modules Makefile $(SHMODULES) $(DIST)
+            ncid-yac.sh ncid-initmodem.sh ncid-notify.sh
+PLMOD     =
+DIST      = ncid-notify.conf-in ncid-speak.conf-in
+CONF      = ncid-kpopup.conf ncid-mythtv.conf ncid-page.conf \
+            ncid-samba.conf ncid-skel.conf ncid-yac.conf
+FILES     = README.modules Makefile $(SHMOD) $(PLMOD) $(DIST)
 
 prefix    = /usr/local
 prefix2   = $(prefix)
+prefix3   =
 
 setmod    = NONE
+setmac    = NONE
+unset     = NONE
 
-MODULEDIR = $(prefix)/share/ncid
+MOD       = $(prefix)/share/ncid
+
 BIN       = $(prefix)/bin
 ETC       = $(prefix2)/etc
 
 CONFDIR   = $(ETC)/ncid
+CONFMOD   = $(ETC)/ncid/conf.d
 
-MODULES   = $(SHMODULES:.sh=)
-
-TIVOMOD   = ncid-tivo
+MODULES   = $(SHMOD:.sh=) $(PLMOD:.pl=)
 
 CONFFILE  = $(DIST:-in=)
 
-modules: $(MODULES) $(TIVOMOD) $(CONFFILE)
+modules: $(MODULES) $(CONFFILE)
 
 install: install-etc install-modules
 
 install-modules: $(MODULES)
-	@if test ! -d $(MODULEDIR); then mkdir -p $(MODULEDIR); fi
-	install -m 755 $(MODULES) $(MODULEDIR)
-	@if [ "$(setmod)" != "NONE" ] ; \
-		then install -m 755 $(TIVOMOD) $(MODULEDIR)/.; fi
+	@if test ! -d $(MOD); then mkdir -p $(MOD); fi
+	install -m 755 $(MODULES) $(MOD)
 
 install-etc: $(CONFFILE)
-	@if test -f $(CONFDIR)/$(CONFFILE); \
-		then install -m 644 $(CONFFILE) $(CONFDIR)/$(CONFFILE).new; \
-		else install -m 644 $(CONFFILE) $(CONFDIR); \
-	fi
+	@if test ! -d $(CONFMOD); then mkdir -p $(CONFMOD); fi
+	for conf in $(CONFFILE) $(CONF); do \
+		test -f $(CONFMOD)/$$conf &&  \
+			install -m 644 $$conf $(CONFMOD)/$$conf.new || \
+			install -m 644 $$conf $(CONFMOD); \
+	done
 
 clean:
 
 clobber: clean
-	rm -f $(MODULES) $(TIVOMOD) $(CONFFILE)
+	rm -f $(MODULES) $(CONFFILE)
 	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber
 
 files:	$(FILES)
 
-.SUFFIXES: .sh -in
+.SUFFIXES: .sh .pl -in
 
 .sh : *.sh
-	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
+	sed 's,/usr/local/etc,$(ETC),; s,/usr/local/share/ncid,$(MOD),' $< > $@
 	chmod 755 $@
 
+.pl : *.pl
+	sed 's,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
+	chmod +x $@
+
 -in : *-in
-	sed '/"$(setmod)"/s/#//;s,/usr/local,$(prefix),' $< > $@
+	sed '/$(setmod)/s/https/http/; s,/usr/local/bin,$(BIN),; s,/usr/local/etc,$(ETC),; s,/usr/local/share/ncid,$(MOD),; /$(unset)/s,^,#,; /$(setmac)/s,^#,,' $< > $@

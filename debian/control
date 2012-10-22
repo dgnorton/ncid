@@ -21,7 +21,7 @@ Description: NCID (Network Caller ID) server, client, and gateways
 
 Package: ncid-client
 Architecture: all
-Depends: tcl8.4, tk8.4
+Depends: ${shlibs:Depends}, tcl8.4, tk8.4
 Recommends: mailx
 Description: NCID (Network Caller ID) client and base output modules
  The ncid-client obtains the Caller ID from the ncid-server and normally
@@ -34,27 +34,27 @@ Description: NCID (Network Caller ID) client and base output modules
 
 Package: ncid-kpopup
 Architecture: all
-Depends: ncid-speak, kdelibs4c2a, kmix, aumix
+Depends: ${shlibs:Depends}, ncid-speak, kdelibs4c2a, kmix, aumix
 Description: NCID (Network Caller ID) client KDE popup module
  The NCID kpopup module displays caller ID information in a KDE popup window
  and optionally speaks the number via voice synthesis.
 
 Package: ncid-mythtv
 Architecture: all
-Depends: ncid-client, mythtv-frontend
+Depends: ${shlibs:Depends}, ncid-client, mythtv-frontend
 Description: NCID (Network Caller ID) MythTV client module
  The NCID MythTV module displays caller ID information using mythtvosd.
 
 Package: ncid-samba
 Architecture: all
-Depends: ncid-client, samba
+Depends: ${shlibs:Depends}, ncid-client, samba
 Description: NCID (Network Caller ID) samba client module
  The NCID samba module sends caller ID information to a windows machine
  as a popup.  This will not work if the messenger service is disabled.
 
 Package: ncid-speak
 Architecture: all
-Depends: ncid-client, festival
+Depends: ${shlibs:Depends}, ncid-client, festival
 Description: NCID (Network Caller ID) speak client module
  The NCID speak module announces Caller Id information verbally, using
  the Festival text-to-speech voice synthesis system.

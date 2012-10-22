@@ -1,6 +1,22 @@
 TiVo Install
 
-Last edited: Mon Apr 11, 2010
+Last edited: Sat Oct 20, 2012
+
+Sections:
+    COMPILE NCID
+    Install TiVoCID, TiVoNCID, sip2ncid, and ncidd
+    Optional: Install the TiVo OUT2OSD display program
+    Optional: Install Perl
+    Configure ncidd, if you are running it on the TiVo
+    Start and verify the ncid package is working
+    Completing setup
+    Test using a Modem
+    TEST USING sip2ncid:
+    TEST USING yac2ncid:
+    Install ncidd on a separate computer, if not using it on the TiVo
+    Test the TiVo CID Client (if using tivocid)
+    Test the TiVo NCID Client (if using tivoncid)
+    Files installed and modem information
 
 The ncid client replaces the old tivocid package.  It
 functions exactly like TiVoCID, if it is called tivocid,
@@ -32,6 +48,8 @@ client.  Tivocid uses out2osd which does not work on all TiVo software
 hardware combinations.  Tivoncid should work on all TiVo software and
 hardware combinations.
 
+It is recomended you use tivoncid.
+
 If this is an upgrade, you need to save the configuration filesfirst:
     cp -a /var/hack/etc/ncid /var/hack/etc/ncid.old
 
@@ -47,11 +65,12 @@ replace a new configuration with the old one.  Normally you would have
 modified just ncidd.conf and ncidd.alias.
 
 ----------------------------------------
-Install the TiVo OUT2OSD display program 
+Optional: Install the TiVo OUT2OSD display program 
 ----------------------------------------
 
-TiVoCID requires  out2osd.
-TiVoNCID uses the TiVo supplied text2osd.
+The tivocid script uses out2osd for display.  The out2osd
+program only works on a Series 1 and a Series 2.  It is
+recomended you use the tivoncid script instead of tivocid.
 
 Get and install the latest OUT2OSD display program.
 It is available as either a source tar file, or a
@@ -63,9 +82,6 @@ Optional: Install Perl
 
 If you would like to use the cidcall, cidalias, and update
 scripts, you need to get and install Perl into /var/hack/bin
-
-If you would like to use the ncidsip CID client, you need
-to get and install Perl, the Net-Pcap Perl module and libpcap.
 
 --------------------------------------------------
 Configure ncidd, if you are running it on the TiVo
@@ -105,43 +121,37 @@ If you are using using sip2ncid or yac2ncid instead of a modem:
 Start and verify the ncid package is working
 --------------------------------------------
 
-If you are running the server and client on the TiVo
-and are using tivocid with a modem:
+Use the startncid script to start NCID and use stopncid to
+stop all running NCID programs>r.
 
-    ncidd
-    tivocid &
+After you configure and start startncid as indicated below,
+check that the programs are running:
 
-If you are running the server and client on the TiVo
-and are using tivocid with sip2ncid:
-
-    ncidd
-    sip2ncid
-    tivocid &
-
-If you are running the server and client on the TiVo
-and are using tivocid with yac2ncid:
-
-    ncidd
-    yac2ncid
-    tivocid &
-
-If you are only running the client on the TiVo:
-
-    tivocid IP.Server.Address &
-
-    If the server is at 192.168.0.10, the above becomes:
-
-    tivocid 192.168.0.10 &
+    pgrep -fl ncid
 
 If you are running the server and client on the TiVo
 and are using tivoncid with a modem:
 
+    # use the startncid script
+    /var/hack/bin/startncid
+
+    # startncid executes these commands
     ncidd
     tivoncid &
 
 If you are running the server and client on the TiVo
 and are using tivoncid with sip2ncid:
 
+    uncomment one of the timesone lines, for example:
+    TZ=EST5EDT,M3.2.0,M11.1.0    # EASTERN TIME
+
+    # uncomment this line in startncid
+    SIPGW=sip2ncid
+
+    # use the startncid script
+    /var/hack/bin/startncid
+
+    # startncid executes these commands
     ncidd
     sip2ncid
     tivoncid &
@@ -149,17 +159,44 @@ and are using tivoncid with sip2ncid:
 If you are running the server and client on the TiVo
 and are using tivoncid with yac2ncid:
 
+    # uncomment this line in startncid
+    YACGW=yac2ncid
+
+    # use the startncid script
+    /var/hack/bin/startncid
+
+    # startncid executes these commands
     ncidd
     yac2ncid
     tivoncid &
 
-    If you are only running the client on the TiVo:
+If you are only running the client on the TiVo:
 
+    # modify ncid.conf
+    change this line: set Host        127.0.0.1
+    to                set Host        <NCID server IP address>
+
+    # example using the command line:
     tivoncid IP.Server.Address &
 
     If the server is at 192.168.0.10, the above becomes:
 
     tivoncid 192.168.0.10 &
+
+If you are running the server and client on the TiVo
+and are using tivocid with a modem:
+
+    # comment the OSDCLIENT line in startncid:
+    #OSDCLIENT=tivoncid
+    # uncomment the OSDCLIENT line in startncid:
+    OSDCLIENT=tivocid
+
+    # use the startncid script
+    /var/hack/bin/startncid
+
+    # startncid executes these commands
+    ncidd
+    tivocid &
 
 Call yourself and see if it works, if not, kill off ncidd, if
 it is running, and continue reading the test sections.
@@ -387,16 +424,25 @@ The tar files creates the following:
       |       |           |          |              |         |     |
      bin    sbin         etc        log            doc       dev  share
       |       |           |          |              |         |     |
-      |     ncidd       ncid       cidcall.log    ncidd            ncid
-      |     cidsip        |                         |               |
-   tivocid             ncid.conf                 README            ncid-page
-   tivoncid            ncidd.conf                CHANGES           ncid-samba
-   ncid                ncidd.alias               CONTRIBUTORS      ncid-speak
-   cidcall             ncidmodules.conf          ReleaseNotes      ncid-tivo
-   cidalias            ncidsip.conf              INSTALL notes     README
-   cidupdate                                     Documentation   
-   startncid                                     man pages (.txt)
-                                                 man pages (.html)
+      |     ncidd    ---ncid       cidcall.log  --ncidd            ncid
+      |     cidsip   |    |                     |   |               |
+   tivocid           | ncid.conf                |README          ncid-initmodem
+   tivoncid          | ncidd.conf               |CHANGES           ncid-notify
+   ncid              | ncidd.alias              |CONTRIBUTORS      ncid-page
+   startncid         | ncidd.blacklist          |(misc files)      ncid-skel
+   stopncid          | ncidd.whitelist          |                  ncid-tivo
+   initmodem         | yac2ncid.conf            |                  ncid-yac
+   ncid2ncid         | sip2ncid.conf           man
+   yac2ncid          | ncid2ncid.conf           |
+   prgep             |                         man pages (.txt)
+   curl            conf.d
+                     |
+                   ncid-notify.conf
+                   ncid-page.conf
+                   ncid-skel.conf
+                   ncid-tivo.conf
+                   ncid-yac.conf
+      
 
 Note: tivocid is a symbolic link to ncidd
       tivoncid is also a symbolic link to ncid

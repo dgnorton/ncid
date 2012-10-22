@@ -1,0 +1,37 @@
+# ncid-speak.conf - ncid-speak configuration file
+
+# Last Modified: Sat Oct 20, 2012
+
+# Uncomment, comment. or give variables a different value
+
+# $CIDTYPE is one of:
+#   CID: incoming call
+#   OUT: outgoing call
+#   HUP: blacklisted hangup
+#   MSG: message instead of a call
+#
+# All types: "CID OUT HUP MSG"
+
+# $CIDTYPE's to process
+# default: "CID"
+SpeakTypes="CID MSG"
+
+# What to say
+# the default is $CIDNAME but could also be $CIDNMBR or both
+SpeakThis='$CIDNAME'
+
+# If using "festival" for text-to-speech:
+SpeakInput="echo $SpeakThis | festival --tts"   # tts default
+
+# If using the Macintosh "say" for text-to-speech::
+#   To use the default system voice as specified under
+#   System Preferences->Speech->Text to Speech:
+#SpeakInput="say $SpeakThis"    # Mac default
+#   To use a specific voice installed on your system
+#SpeakInput="say -v Vicki $SpeakThis"
+
+# Number of times to speak the same input
+SpeakTimes=1
+
+# delay between speaking
+SpeakDelay=2

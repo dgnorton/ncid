@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2011
+ * Copyright (c) 2002-2012
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd.h is free software; you can redistribute it and/or modify
@@ -80,6 +80,8 @@ Options: [-A aliasfile  | --alias <file>]\n\
          [-t ttyport    | --ttyport <ttyport>]\n\
          [-V            | --version]\n\
          [-v 1-9        | --verbose 1-9]\n\
+         [-W whitelist  | --whitelist <file>]\n\
+         [--osx-launchd]\n\
 "
 
 #ifndef TTYPORT
@@ -140,7 +142,8 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define LOGMSG      "MSG: Caller ID Logfile too big: (%lu > %lu) bytes%s"
 #define TOOMSG      "MSG: Too many clients connected"
 
-#define HANGUPMSG   "Calls in the blacklist file will be terminated"
+#define BLMSG       "Calls in the blacklist file will be terminated"
+#define WLMSG       "Calls in the whitelist file will not be terminated"
 #define IGNORE1     "Leading 1 from a call must not be in an alias definition"
 #define INCLUDE1    "Leading 1 from a call required in an alias definition"
 
@@ -149,6 +152,10 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define LOGLINE     "LOG: "
 #define OUTLINE     "OUT: "
 #define HUPLINE     "HUP: "
+
+#define IN          0
+#define OUT         1
+#define HUP         2
 
 #define LINETYPE    25
 #define ONELINE     "-"

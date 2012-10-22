@@ -1,0 +1,35 @@
+#!/bin/sh
+
+#
+# PROVIDE: ncid-notify
+# REQUIRE: NETWORKING ncidd
+#
+# Add the following lines to /etc/rc.conf to enable ncid-notify:
+#
+#ncidmythtv_enable="YES"
+#
+ncidmythtv_enable="${ncidmythtv_enable-NO}"
+
+. /etc/rc.subr
+
+rcvar=`set_rcvar ncidnotify`
+extra_commands="condrestart"
+
+name=ncid
+module=ncid-notify
+pidfile=/var/run/$module.pid
+
+command=/usr/local/bin/$name
+command_args="--no-gui -p $pidfile -P $module &"
+procname=/usr/local/bin/tclsh8.4
+
+load_rc_config $name
+
+case $1 in
+    condrestart)
+        run_rc_command "stop" && run_rc_command "start"
+        ;;
+    *)
+        run_rc_command "$1"
+        ;;
+esac

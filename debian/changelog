@@ -1,8 +1,17 @@
+ncid (0.85-0ubuntu1) 12.04; urgency=low
+
+  * See NCID CHANGES file
+  * updated rules
+  * added ${shlibs:Depends} all packages in control
+  * rewrote postinst, prerm*, and postrm* scripts
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri, 18 Sep 2012 20:53:00 -0400
+
 ncid (0.84-0ubuntu1) 12.04; urgency=low
 
   * See NCID CHANGES file
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Mon,  2 Jul 2012 00:29:00:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Mon,  2 Jul 2012 00:29:00 -0400
 
 ncid (0.83-0ubuntu1) 11.04; urgency=low
 
@@ -10,39 +19,39 @@ ncid (0.83-0ubuntu1) 11.04; urgency=low
   * removed ncid-tivo.1 from rules
   * added ncid-skel to rules
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Tue,  2 Aug 2011 23:27:00:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Tue,  2 Aug 2011 23:27:00 -0400
 
 ncid (0.82.1-0ubuntu1) 11.04; urgency=low
 
   * See NCID CHANGES file
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri,  6 Jun 2011 13:07:00:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri,  6 Jun 2011 13:07:00 -0400
 
 ncid (0.81-0ubuntu1) 10.04; urgency=low
 
   * See NCID CHANGES file
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Sat,  26 Feb 2011 10:41:00:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Sat, 26 Feb 2011 10:41:00 -0400
 
 ncid (0.80-0ubuntu1) 10.04; urgency=low
 
   * See NCID CHANGES file
   * changed Requires: and added Recommends: for ncid-client in control
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Sun,  10 Oct 2010 23:18:00:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Sun, 10 Oct 2010 23:18:00 -0400
 
 ncid (0.79-0ubuntu1) 10.04; urgency=low
 
   * See NCID CHANGES file
   * added ncid2ncid.init file and ncid2ncid.init to rules
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Thu,  1 Jul 2010 20:26:00:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Thu,  1 Jul 2010 20:26:00 -0400
 
 ncid (0.78-0ubuntu1) 10.04; urgency=low
 
   * See NCID CHANGES file
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri,  14 May 2010 13:16:00:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri, 14 May 2010 13:16:00 -0400
 
 ncid (0.77-0ubuntu1) Karmic Koala; urgency=low
 

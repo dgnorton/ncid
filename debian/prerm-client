@@ -20,9 +20,12 @@ set -e
 case "$1" in
     remove|deconfigure)
         [ -h /usr/doc/ncid-client ] && rm -f /usr/doc/ncid-client
-        [ -x /etc/init.d/ncid-initmodem ] && invoke-rc.d ncid-initmodem stop
-        [ -x /etc/init.d/ncid-page ] && invoke-rc.d ncid-page stop
-        [ -x /etc/init.d/ncid-yac ] && invoke-rc.d ncid-yac stop
+        for script in /usr/share/ncid/ncid-*
+        do
+            name=`basename $script`
+            involk-rc.d $name stop
+            update-rc.d -f $name remove
+        done
     ;;
     upgrade)
         [ -h /usr/doc/ncid-client ] && rm -f /usr/doc/ncid-client

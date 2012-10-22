@@ -20,7 +20,13 @@ set -e
 
 
 case "$1" in
-    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+    purge|remove)
+    ;;
+    upgrade)
+        pgrep -f $ncid-samba > /dev/null 2>&1 && \
+            involk-rc.d $ncid-samba restart
     ;;
 
     *)

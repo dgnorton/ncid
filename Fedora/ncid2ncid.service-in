@@ -9,4 +9,4 @@ PIDFile=/var/run/ncid2ncid.pid
 ExecStart=/usr/bin/ncid2ncid --pidfile /var/run/${prog}.pid
 
 [Install]
-WantedBy=network.target
+WantedBy=multi-user.target

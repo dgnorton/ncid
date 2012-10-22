@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Config File
 
-# File last changed: Tue Apr 26, 2011
+# File last changed: Thu Sep 4, 2012
 
 ################################
 # Definitions and Line formats #
@@ -15,13 +15,14 @@
 #
 # SEND LINE FORMAT:
 #   send DATATYPE [DATATYPE] ...
-#        where DATATYPE = cidlog, cidinfo, callout
+#        where DATATYPE = cidlog, cidinfo
 #
 # SET LINE FORMAT:
 #   set ITEM = VALUE [ITEM = VALUE] ...
 #       where ITEM = cidalias, cidlog, cidlogmax, datalog, gencid, ignore1,
 #                    initcid, initstr, lineid, lockfile, nomodem, noserial,
 #                    pidfile, port, send, ttyclocal, ttyport, ttyspeed, verbose
+#                    hangup, blacklist, whitelist
 
 ##########################
 # Log file verbose level #
@@ -57,10 +58,10 @@ send cidinfo
 
 # Set pidfile to /var/run/ncidd.pid in rc and init scripts
 # The default is no PID file
-# set pidfile = /var/log/ncidd.pid
+# set pidfile = /var/run/ncidd.pid
 
-# The default CID alias file: /etc/ncid/ncidd.alias
-# set cidalias = /etc/ncid/ncidd.alias
+# The default CID alias file: /usr/local/etc/ncid/ncidd.alias
+# set cidalias = /usr/local/etc/ncid/ncidd.alias
 
 # An alias that includes a telephone number depends on the number
 # received from a call.  In the US, a leading 1 is not always part
@@ -88,6 +89,34 @@ send cidinfo
 #   and also /etc/ncid/ncidrotate.conf)
 # set datalog = /var/log/ciddata.log
 
+############################
+# Telephone Line Indicator #
+############################
+
+# Set the line indicator if you want it displayed for the modem.
+# or if you have more than one telephone line.  The default value
+# for lineid is '-' and is not displayed.  Setting it to any other
+# value will display it.
+#
+# You can set lineid to 'POTS' (Plain Old Telephone Service) to
+# have it displayed or the last 4 digits of your number if you
+# have more than one telephone line.
+# lineid default: -
+# set lineid = POTS
+
+################################
+# Generate a generic Caller ID #
+################################
+
+# Generate a generic Caller ID at ring 2 if one is not received
+# from the modem either because the telco is not sending it or
+# because the modem does not support it.  This feature requires
+# the modem to indicate each time the modem rings.
+
+# gencid = 0          never generate a generic Caller ID
+# gencid = 1 default: generate a generic Caller ID when needed 
+# set gencid = 0
+
 #########################
 # Automatic Call Hangup #
 #########################
@@ -97,13 +126,18 @@ send cidinfo
 # the Caller ID information.
 
 # Set hangup to a 1 if you would like ncidd to terminate a
-# call that has its name or number on a blacklist
+# call that has its name or number in a blacklist file but
+# not in a whitelist file.
+#
 # hangup = 0 Default: do not terminate a call
 # hangup = 1          terminate a call based on the blacklist file
 # set hangup = 1
 
-# The default blacklist file: /etc/ncid/ncidd.blacklist
-# set blacklist = /etc/ncid/ncidd.blacklist
+# The default blacklist file: /usr/local/etc/ncid/ncidd.blacklist
+# set blacklist = /usr/local/etc/ncid/ncidd.blacklist
+
+# The default whitelist file: /usr/local/etc/ncid/ncidd.whitelist
+# set whitelist = /usr/local/etc/ncid/ncidd.whitelist
 
 #######################
 # Serial or No Serial #
@@ -120,8 +154,10 @@ send cidinfo
 #  SERIAL AND NETWORK:    noserial = 0 (default - use a serial port)
 # set noserial = 1
 
-## NOTE: if noserial is set to 1 and hangup is set to 0, nothing needs
-## to be configured beyond this point.
+###################################################################
+## NOTE: if noserial is set to 1 and hangup is set to 0, nothing ##
+##       needs to be configured beyond this point.               ##
+###################################################################
 
 #####################
 # TTY Configuration #
@@ -152,39 +188,6 @@ send cidinfo
 #    Default: /var/lock/LCK..modem
 # set lockfile = /var/lock/lockdev/LCK..ttyS0
 #
-
-###################################################################
-## NOTE: if noserial is set to 1 and hangup is set to 0, nothing ##
-##       needs to be configured beyond this point.               ##
-###################################################################
-
-############################
-# Telephone Line Indicator #
-############################
-
-# Set the line indicator if you want it displayed for the modem.
-# or if you have more than one telephone line.  The default value
-# for lineid is '-' and is not displayed.  Setting it to any other
-# value will display it.
-#
-# You can set lineid to 'POTS' (Plain Old Telephone Service) to
-# have it displayed or the last 4 digits of your number if you
-# have more than one telephone line.
-# lineid default: -
-# set lineid = POTS
-
-################################
-# Generate a generic Caller ID #
-################################
-
-# Generate a generic Caller ID at ring 2 if one is not received
-# from the modem either because the telco is not sending it or
-# because the modem does not support it.  This feature requires
-# the modem to indicate each time the modem rings.
-
-# gencid = 0          never generate a generic Caller ID
-# gencid = 1 default: generate a generic Caller ID when needed 
-# set gencid = 0
 
 #####################
 # Modem or No Modem #

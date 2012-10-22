@@ -4,6 +4,7 @@ INIT        = ncidd.init \
               sip2ncid.init \
               yac2ncid.init \
               ncid-mythtv.init \
+              ncid-notify.init \
               ncid-page.init \
               ncid-samba.init \
               ncid-speak.init \
@@ -15,6 +16,7 @@ SERVICE     = ncidd.service-in \
               sip2ncid.service-in \
               yac2ncid.service-in \
               ncid-mythtv.service-in \
+              ncid-notify.service-in \
               ncid-page.service-in \
               ncid-samba.service-in \
               ncid-speak.service-in \

@@ -1,0 +1,13 @@
+[Unit]
+Description=NCID using the NMA Output Module
+After=ncidd.service
+
+[Service]
+Type=simple
+Environment=module=ncid-notify
+PIDFile=/var/run/ncid-notify.pid
+ExecStart=/usr/bin/ncid --no-gui -p /var/run/${module}.pid -P $module
+ExecStop=/bin/kill $MAINPID ; /bin/rm -f /var/run/${module}.pid
+
+[Install]
+WantedBy=multi-user.target

@@ -7,6 +7,7 @@ FreeBSD rc scripts:
     ncid-initmodem.rc - rc file for ncid with ncid-initmodem output module
     ncid-mythtv.rc    - rc file for ncid with ncid-mythtv output module
     ncid-page.rc      - rc file for ncid with ncid-page output module
+    ncid-notify.rc    - rc file for ncid with ncid-notify output module
     ncid-samba.rc     - rc file for ncid with ncid-samba output module
     ncid-speak.rc     - rc file for ncid with ncid-speak output module
     ncid-yac.rc       - rc file for ncid with ncid-yac output module

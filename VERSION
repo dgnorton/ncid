@@ -1,1 +1,11 @@
-NCID Package Version 0.84
+NCID Package Version 0.85
+
+# The first line must contain the NCID package version number.
+# All programs will be compiled with this version.  All scripts
+# that contain a version number will also get it.
+
+# The version number must be last on the line and preceeded by a space.
+# First line format: ^<string> <version number>$
+#   The string may contain spaces but a space must be after it.
+#   The version number can be alpha numeric.
+#   The string is ignored, only the version number is used.

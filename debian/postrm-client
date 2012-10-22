@@ -20,7 +20,18 @@ set -e
 
 
 case "$1" in
-    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+    purge|remove)
+    ;;
+    upgrade)
+        # restart services that are running
+        # a service could have been installed by another package
+        for script in /usr/share/ncid/ncid-*
+        do
+            name=`basename $script`
+            pgrep -f $name > /dev/null 2>&1 && involk-rc.d $name restart
+        done
     ;;
 
     *)
@@ -28,9 +39,5 @@ case "$1" in
         exit 1
     ;;
 esac
-
-update-rc.d -f ncid-initmodem remove
-update-rc.d -f ncid-page remove
-update-rc.d -f ncid-yac remove
 
 exit 0

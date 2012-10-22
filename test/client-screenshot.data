@@ -1,0 +1,23 @@
+# Last updated: Mon Aug 27, 2012
+#
+#   USAGE:
+#   ./testclient client-display.data
+#   ../client/ncid 3334
+#
+#   USAGE (if ncid-page is also used):
+#   ./testclient client-display.data
+#   ../client/ncid -P ncid-page -r -1 3334
+#
+# See README.test for more information on usage.
+#
+200 NCID Client Test Server
+
+OUTLOG: *DATE*07142011*TIME*0905*LINE*VOIP*NMBR*14075551212*MESG*NONE*NAME*NO NAME*
+
+HUPLOG: *DATE*07142011*TIME*0915*LINE*VOIP*NMBR*PRIVATE*MESG*NONE*NAME*PRIVATE*
+
+CID: *DATE*09182011*TIME*1020*LINE*VOIP*NMBR*4075551212*MESG*NONE*NAME*John on cell*
+CIDINFO: *LINE*VOIP*RING*-1*TIME*10:21:00*
+
+MSG: This is an example of a received message
+

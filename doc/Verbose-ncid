@@ -1,0 +1,43 @@
+----------------------------------------------------------------
+ncid client verbose levels.  Higher levels include lower levels.
+----------------------------------------------------------------
+
+Last edited by jlc on Sun Oct 7, 2012
+
+LEVEL9:
+        not used
+
+LEVEL8:
+        not used
+
+LEVEL7:
+        not used
+
+LEVEL6:
+        not used
+
+LEVEL5:
+        display the line type as a numeric
+
+LEVEL4:
+        notused
+
+LEVEL3:
+        not used
+
+LEVEL2:
+        not used
+
+LEVEL1:
+        indicate if using PID file or not
+        display about
+        indicate if a output module is being used and which one
+        indicate if optional module variable is being used or not
+        display received data if in raw mode
+        indicate when call log is completely received
+        show CIDINFO line
+        show data sent to module
+        indicate if phone line label not found
+        show message sent to module
+        show CID data sent to module
+        display popup message

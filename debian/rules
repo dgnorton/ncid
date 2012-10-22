@@ -8,7 +8,7 @@
 # This file may have to be extensively modified
 #
 # Modified by John L. Chmielewski to package ncid
-# Last Modified Fri Sep 2, 2011
+# Last Modified Sun Oct 14, 2012
 
 package = ncid
 prog    = ncidd
@@ -55,66 +55,67 @@ binary-arch:    checkroot build
 	cp -a debian/tmp/* debian/tmp-ncid
 	rm -f debian/tmp-ncid/etc/init.d/ncid-* \
 	      debian/tmp-ncid/etc/ncid/ncid.* \
-          debian/tmp-ncid/etc/ncid/ncidmodules.conf \
 	      debian/tmp-ncid/usr/bin/ncid \
 	      debian/tmp-ncid/usr/share/doc/ncid/README.modules \
 	      debian/tmp-ncid/usr/share/man/man1/ncid.1 \
-          debian/tmp-ncid/usr/share/man/man1/ncidmodules.1 \
+	      debian/tmp-ncid/usr/share/man/man1/ncid-*.1 \
 	      debian/tmp-ncid/usr/share/man/man5/ncid.conf.5 \
-          debian/tmp-ncid/usr/share/man/man5/ncidmodules.conf.5 \
+          debian/tmp-ncid/usr/share/man/man7/ncid-modules.7 \
           debian/tmp-ncid/usr/share/ncid/ncid-*
-	rm -fr debian/tmp-ncid/usr/share/pixmaps
+	rm -fr debian/tmp-ncid/usr/share/pixmaps debian/tmp-ncid/etc/ncid/conf.d
 	install -m 644 debian/changelog debian/tmp-ncid/$(docdir)/changelog.Debian
 	cp -a README VERSION doc debian/README.Debian \
-          server/README.server cidgate/README.Gateways \
-          scripts/README.scripts tools/README.tools \
+          server/README.server gateway/README.Gateways \
+          logrotate/README.logrotate tools/README.tools \
                    debian/tmp-ncid/$(docdir)
 	rm -f debian/tmp-ncid/$(docdir)/doc/CHANGES
 	dpkg-shlibdeps debian/tmp-ncid/usr/sbin/ncidd \
-                   debian/tmp-ncid/usr/sbin/ncid2ncid \
+                   debian/tmp-ncid/usr/bin/ncid2ncid \
                    debian/tmp-ncid/usr/sbin/sip2ncid
 
         # NCID client and base output modules
 	install -m 755 debian/postinst debian/tmp-client/DEBIAN
 	install -m 755 debian/prerm-client debian/tmp-client/DEBIAN/prerm
 	install -m 755 debian/postrm-client debian/tmp-client/DEBIAN/postrm
-	cd debian/tmp-client; mkdir -p etc/init.d etc/ncid usr/bin \
+	cd debian/tmp-client; mkdir -p etc/init.d etc/ncid/conf.d usr/bin \
        usr/share/ncid usr/share/man/man1 usr/share/man/man5
 	mkdir -p debian/tmp-client/usr/share/pixmaps/ncid
 	install -m 755 client/ncid debian/tmp-client/usr/bin
 	install -m 644 client/ncid.gif debian/tmp-client/usr/share/pixmaps/ncid
-	install -m 644 client/ncid.conf modules/ncidmodules.conf \
-                   debian/tmp-client/etc/ncid
-	cd modules; install -m 755 ncid-initmodem ncid-page ncid-skel ncid-yac \
-                               ../debian/tmp-client/usr/share/ncid
+	install -m 644 client/ncid.conf debian/tmp-client/etc/ncid
+	cd modules; install -m 644 ncid-notify.conf ncid-page.conf ncid-skel.conf \
+                   ncid-yac.conf ../debian/tmp-client/etc/ncid/conf.d
+	cd modules; install -m 755 ncid-initmodem ncid-notify ncid-page \
+                   ncid-skel ncid-yac ../debian/tmp-client/usr/share/ncid
 	install -m 644 README VERSION client/README.client modules/README.modules \
           debian/tmp-client/usr/share/doc/ncid-client/.
-	cd debian; install -m 755 ncid-initmodem ncid-page ncid-yac \
+	cd debian; install -m 755 ncid-initmodem ncid-notify ncid-page ncid-yac \
                               ../debian/tmp-client/etc/init.d
-	install -m 644 man/ncid.1 man/ncidmodules.1 man/ncid-initmodem.1 \
-                   man/ncid-page.1 man/ncid-skel.1 \
-                   man/ncid-yac.1 debian/tmp-client/usr/share/man/man1
-	install -m 644 man/ncid.conf.5 man/ncidmodules.conf.5 \
-                   debian/tmp-client/usr/share/man/man5
+	cd man; install -m 644 ncid.1 ncid-initmodem.1 ncid-notify.1 \
+                           ncid-page.1 ncid-skel.1 ncid-yac.1 ncid-modules.7 \
+                           ../debian/tmp-client/usr/share/man/man1
+	install -m 644 man/ncid.conf.5 debian/tmp-client/usr/share/man/man5
 
         # NCID client KDE popup module
 	install -m 755 debian/postinst debian/tmp-kpopup/DEBIAN
-	cd debian/tmp-kpopup; mkdir -p usr/share/ncid \
+	cd debian/tmp-kpopup; mkdir -p etc/ncid/conf.d \
                    usr/share/ncid usr/share/man/man1 usr/share/man/man1
 	install -m 644 VERSION modules/README.modules \
                    debian/tmp-kpopup/usr/share/doc/ncid-kpopup
 	install -m 755 modules/ncid-kpopup debian/tmp-kpopup/usr/share/ncid/.
+	install -m 755 modules/ncid-kpopup.conf debian/tmp-kpopup/etc/ncid/conf.d
 	install -m 644 man/ncid-kpopup.1 debian/tmp-kpopup/usr/share/man/man1
 
         # NCID client MythTV module
 	install -m 755 debian/postinst debian/tmp-mythtv/DEBIAN
 	install -m 755 debian/prerm-mythtv debian/tmp-mythtv/DEBIAN/prerm
 	install -m 755 debian/postrm-mythtv debian/tmp-mythtv/DEBIAN/postrm
-	cd debian/tmp-mythtv; mkdir -p etc/init.d usr/share/ncid \
+	cd debian/tmp-mythtv; mkdir -p etc/init.d usr/share/ncid etc/ncid/conf.d \
                    usr/share/ncid usr/share/man/man1 usr/share/man/man1
 	install -m 644 VERSION modules/README.modules \
                    debian/tmp-mythtv/usr/share/doc/ncid-mythtv
 	install -m 755 modules/ncid-mythtv debian/tmp-mythtv/usr/share/ncid/.
+	install -m 755 modules/ncid-mythtv.conf debian/tmp-mythtv/etc/ncid/conf.d
 	install -m 755 debian/ncid-mythtv debian/tmp-mythtv/etc/init.d/.
 	install -m 644 man/ncid-mythtv.1 debian/tmp-mythtv/usr/share/man/man1
 
@@ -122,11 +123,12 @@ binary-arch:    checkroot build
 	install -m 755 debian/postinst debian/tmp-samba/DEBIAN
 	install -m 755 debian/prerm-samba debian/tmp-samba/DEBIAN/prerm
 	install -m 755 debian/postrm-samba debian/tmp-samba/DEBIAN/postrm
-	cd debian/tmp-samba; mkdir -p etc/init.d usr/share/ncid \
+	cd debian/tmp-samba; mkdir -p etc/init.d etc/ncid/conf.d \
                    usr/share/ncid usr/share/man/man1 usr/share/man/man1
 	install -m 644 VERSION modules/README.modules \
                    debian/tmp-samba/usr/share/doc/ncid-samba
 	install -m 755 modules/ncid-samba debian/tmp-samba/usr/share/ncid/.
+	install -m 755 modules/ncid-samba.conf debian/tmp-samba/etc/ncid/conf.d
 	install -m 755 debian/ncid-samba debian/tmp-samba/etc/init.d/.
 	install -m 644 man/ncid-samba.1 debian/tmp-samba/usr/share/man/man1
 
@@ -134,11 +136,12 @@ binary-arch:    checkroot build
 	install -m 755 debian/postinst debian/tmp-speak/DEBIAN
 	install -m 755 debian/prerm-speak debian/tmp-speak/DEBIAN/prerm
 	install -m 755 debian/postrm-speak debian/tmp-speak/DEBIAN/postrm
-	cd debian/tmp-speak; mkdir -p etc/init.d usr/share/ncid \
+	cd debian/tmp-speak; mkdir -p etc/init.d usr/share/ncid etc/ncid/conf.d \
                    usr/share/ncid usr/share/man/man1 usr/share/man/man1
 	install -m 644 VERSION modules/README.modules \
                    debian/tmp-speak/usr/share/doc/ncid-speak
 	install -m 755 modules/ncid-speak debian/tmp-speak/usr/share/ncid/.
+	install -m 755 modules/ncid-speak.conf debian/tmp-speak/etc/ncid/conf.d
 	install -m 755 debian/ncid-speak debian/tmp-speak/etc/init.d/.
 	install -m 644 man/ncid-speak.1 debian/tmp-speak/usr/share/man/man1
 

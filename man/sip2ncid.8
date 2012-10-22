@@ -27,6 +27,7 @@
 [-v <1-9>           | --verbose <1-9>]
 [-W <1/0>           | --warn <1/0>]
 [-w <dumpfile>      | --writefile <dumpfile>]
+[--osx-launchd]
 .fi
 .SH DESCRIPTION
 Snoops SIP Invites via libpcap and injects the caller id information
@@ -126,6 +127,11 @@ Default: warn = 0
 Write packets to a libpcap capture file.
 This also sets the debug option, verbose to level 3, and no filter
 is applied.  Mostly only useful for development and debug purposes.
+.TP
+.B --osx-launchd
+This option is only for OSX when using launchd to control ncidd.  It
+prevents \fBncidd\fR from entering daemon mode.  It is like debug
+mode, but nothing is printed to the screen.
 .SH FILES
 /etc/ncid/sip2ncid.conf
 .br

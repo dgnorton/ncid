@@ -1,0 +1,114 @@
+# ncid-notify.conf - ncid-notify configuration file
+
+# Last Modified: Fri Oct 18, 2012
+
+# Uncomment, comment. or give variables a different value
+
+# $CIDTYPE is one of:
+#   CID: incoming call
+#   OUT: outgoing call
+#   HUP: blacklisted hangup
+#   MSG: message instead of a call
+#
+# All types: "CID OUT HUP MSG"
+
+# If you want to send notification only when a ring count is reached,
+# configure ring by creating a "ncid_notify" variable in ncid.conf
+
+# $CIDTYPE's to process
+# default: "CID OUT HUP MSG"
+notify_types="CID OUT HUP MSG"
+
+# API key is required
+# For Prowl, get it free by registering at http://www.prowlapp.com
+# For NMA,   get it free by registering at http://notifymyandroid.appspot.com
+# leave notify_apikey blank if you put the API key in key file (recommended)
+# default key files: "/usr/local/etc/ncid/conf.d/key-prowl-api"
+#                    "/usr/local/etc/ncid/conf.d/key-nma-api"
+notify_apikey_prowl=""
+notify_apikey_nma=""
+notify_apikeyfile_prowl="/usr/local/etc/ncid/conf.d/key-prowl-api"
+notify_apikeyfile_nma="/usr/local/etc/ncid/conf.d/key-nma-api"
+
+# high volume key is optional and usually assigned by the service provider
+# if you regularly send a large number of notifications/hour
+# Prowl provider key: 1000/hour
+# NMA  developer key:  800/hour
+# leave notify_hvolkey blank if you put the key in a key file (recommended)
+# default key files: "/usr/local/etc/ncid/conf.d/key-prowl-provider"
+#                    "/usr/local/etc/ncid/conf.d/key-nma-developer"
+notify_hvolkey_prowl=""
+notify_hvolkey_nma=""
+notify_hvolkeyfile_prowl="/usr/local/etc/ncid/conf.d/key-prowl-provider"
+notify_hvolkeyfile_nma="/usr/local/etc/ncid/conf.d/key-nma-developer"
+
+# protocol for each service, "http" or "https"
+# default "https"
+notify_protocol_prowl="https" # must be http for TiVo
+notify_protocol_nma="https"   # must be http for TiVo
+
+# Possible priority values: -2, -1, 0, 1, 2
+# -2 = Very Low; -1 = Moderate; 0 = Normal; 1 = High; 2 = Emergency
+# default is 0
+notify_priority="0"
+
+# Specify time format '12' or '24' hour, default is 12
+notify_clock="12"
+
+# notify 'application', 'event' and 'notification' values: 
+# $CIDNAME $CIDNMBR $CIDLINE $CIDDATE $CIDTIME $CIDTYPE
+# $CIDDESC 
+#
+# Three "rows" of information are available for Prowl:
+# Row 1 'application'                 e.g. NCID
+# Row 2 'event' text                       Incoming Call
+# Row 3 'notification' text                John on Cell 407-555-7777 POTS
+# User must click on ">" to see 'url'       http://callerr.com/4075557777
+#
+# The Prowl "bubble" notification pop-up is even more compact,
+# consisting of only two lines:
+# Row 1 'application' & 'event'       e.g.  NCID -- Incoming Call
+# Row 2 'notification'                      John on Cell 407-555-7777 POTS
+#
+# Prowl defaults:
+#notify_application_prowl='NCID'
+#notify_event_prowl='$CIDDESC'
+#notify_notification_prowl='$CIDNAME $CIDNMBR $CIDLINE'
+notify_application_prowl='NCID'
+notify_event_prowl='$CIDDESC'
+notify_notification_prowl='$CIDNAME $CIDNMBR $CIDLINE'
+#
+# Four "rows" of information are available for NMA:
+# Row 1 'application' name            e.g.  NCID (CID)
+# Row 2 'event' text                        John on Cell 407-555-7777 POTS
+# Row 3 'notification' text                 Incoming Call 02/26/2012 3:36pm
+# Row 4 'url'                               http://callerr.com/4075557777
+#
+# NMA defaults: 
+#notify_application_nma='NCID \(${CIDTYPE}\)'
+#notify_event_nma='$CIDNAME $CIDNMBR $CIDLINE'
+#notify_notification_nma='$CIDDESC: $CIDDATE $CIDTIME'
+notify_application_nma='NCID \(${CIDTYPE}\)'
+notify_event_nma='$CIDNAME $CIDNMBR $CIDLINE'
+notify_notification_nma='$CIDDESC: $CIDDATE $CIDTIME'
+
+# URL to website that can do reverse phone number lookup
+# - or -
+# URI to cause device to dial the phone number
+#
+# The notify_url & appended raw phone number appear as a clickable link if:
+#    - the notify_url is set
+#    - and the call type is "CID"
+#    - Android device is running NMA app version 2.0.4 or later
+# uncomment one of the following links or add your favorate site
+# default: notify_url=
+#notify_url="http://www.411.com/phone/"
+#notify_url="http://whocallsme.com/Phone-Number.aspx/"
+#notify_url="http://whocalled.us/lookup/"
+#notify_url="http://callerr.com/"
+
+# iOS and Android devices both support URI "tel:" for specifying a phone number
+# If your device has phone service, dial the number by clicking the link.
+# If your device is wifi only, action taken by clicking on the link will vary
+# depending on the device and its operating system version.
+#notify_url="tel:"

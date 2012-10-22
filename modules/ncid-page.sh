@@ -1,9 +1,12 @@
 #!/bin/sh
 
-# Page a cell phone, pager, or mail address
-# Requires mail
+# ncid-page
+# usage: ncid --no-gui --program ncid-page
 
-# Last changed by jlc: Sun Sep 11, 2011
+# Last modified: Fri Oct 12, 2012
+
+# sends Caller ID or message to a cell phone, pager, or any other email address
+# Requires a mail program
 
 # input is always 6 lines
 #
@@ -11,11 +14,8 @@
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
 #
 # if input is from a message
-# the  message is in place of NAME:
+# the message is in place of NAME:
 # input: \n\n\n<MESSAGE>\n\nMSG\n
-#
-# ncid usage:
-#   ncid --no-gui [--ring 4] [--message] --program ncid-page
 
 # $CIDTYPE is one of:
 #   CID: incoming call
@@ -23,21 +23,41 @@
 #   HUP: blacklisted hangup
 #   MSG: message instead of a call
 
-ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/ncidmodules.conf
+ConfigDir=/usr/local/etc/ncid/conf.d
+ConfigFile=$ConfigDir/ncid-page.conf
 
-# set ADDRESS to a pager or cell phone email address
+# Test whether echo needs option "-e" to interpret new line "\n"
+if [ "`echo -e`" != "-e" ] ; then use_e=" -e" ; else use_e= ; fi
+
+# default mail program
+PageMail=mail
+
+# default email IP address
 PageTo=
 
-# default mail user is user running script
+# default mail user if root is running script
 PageFrom=mail
+
+# default page subject option, either "" or "-s"
+PageOpt=
+
+# default $CIDTYPES to send page
+PageTypes="CID OUT HUP MSG"
 
 [ -f $ConfigFile ] && . $ConfigFile
 
-[ -z "$PageTo" ] && {
-    echo "Set 'PageTo' to a pager or cell phone email address"
+[ -z "PageTo" ] && \
+{
+    echo "Must set PageTo to SMS Gateway or other email address"
     exit 1
 }
+
+if [ -n "$PageFrom" ]
+then
+    # if valid user and script ID is root, set rootID
+    [ "`id -nu $PageFrom 2> /dev/null`" = "$PageFrom" ] &&
+    [ "`id -nu`" = "root" ] && rootID=1
+fi
 
 read CIDDATE
 read CIDTIME
@@ -46,29 +66,35 @@ read CIDNAME
 read CIDLINE
 read CIDTYPE
 
+# Look for $CIDTYPE
+for i in $PageTypes
+do
+    [ $i = "$CIDTYPE" ] && { found=1; break; }
+done
+
+# Exit if $CIDTYPE not found
+[ -z "$found" ] && exit 0
+
 if [ "$CIDTYPE" = "MSG" ]
 then
-    MailSubject="Message"
-    MailMsg="$CIDNAME"
+    [ -n "$PageOpt" ] && PageOpt="$PageOpt \"Message\""
+    MailMsg="\n$CIDNAME"
 else
-    MailSubject="$CIDNMBR"
-    MailMsg="\nTYPE: $CIDTYPE\nNAME: $CIDNAME\nNMBR: $CIDNMBR\nTIME: $CIDTIME\nDATE: $CIDDATE\n"
+    [ -n "$PageOpt" ] && PageOpt="$PageOpt \"$CIDNMBR\""
+    MailMsg="\nNCID TYPE: $CIDTYPE\nNAME: $CIDNAME\nNMBR: $CIDNMBR\nTIME: $CIDTIME\nDATE: $CIDDATE\n"
 fi
 
 # if line indicator found, include it
 [ -n "$CIDLINE" ] && MailMsg="${MailMsg}LINE: $CIDLINE\n"
 
-# if a mail user specified and script ID is root, set rootID
-[ -n "$PageFrom" ] && [ "`id -nu`" = "root" ] && rootID=1
-
 if [ -n "$rootID" ]
 then
     # send mail as user $PageFrom
-    echo -e $MailMsg |
-        su -s /bin/sh -c "mail -s \"$MailSubject\" $PageTo" $PageFrom
+    echo $use_e $MailMsg |
+        su -s /bin/sh -c "$PageMail $PageOpt $PageTo" $PageFrom
 else
     # send mail as user running script
-    echo -e $MailMsg | mail -s "$MailSubject" $PageTo
+    echo $use_e $MailMsg | $PageMail $PageOpt $PageTo
 fi
 
 exit 0

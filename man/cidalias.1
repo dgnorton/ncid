@@ -1,1 +1,31 @@
-.so man1/ncidtools.1
+.\" %W% %G%
+.TH CIDALIAS 1
+.SH NAME
+.B cidalias
+- view alias definitions in the NCID alias file
+.SH SYNOPSIS
+.B cidalias
+[-r] [aliasfile]
+.SH DESCRIPTION
+The
+.B cidalias
+script displays the aliases in the ncidd.alias file.
+.SS "OPTIONS"
+.PD 0
+.TP 14
+.B -r
+Display the raw call file or alias definition.
+.PD
+.SS "Arguments"
+.PD 0
+.TP 14
+.B aliasfile
+The ncidd alias file.
+.br
+Default: /etc/ncid/ncidd.alias
+.SH SEE ALSO
+ncidd.conf.5,
+ncidd.alias.5,
+ncidd.blacklist.5,
+cidcall.1,
+cidupdate.1

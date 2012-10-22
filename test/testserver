@@ -1,31 +1,64 @@
 #! /bin/sh
 
 # Created by John L. Chmielewski on Sun June 11, 2006
-# Last modified by jlc on Fri Apr 29, 2011
+# Last modified by jlc on Sun Sep 23, 2012
 
-# script runs ncidd in debug mode on port 3334 for testing
-# a server or a client
+# script runs ncidd in debug  or Mac OS X Launchd mode on port 3334
+# for testing a server or a client
 
-[ -x "$1" ] || \
-{
-    echo "Usage: `basename $0` {PATH/ncidd} [-nciddOption(s)]"
+# To run ncidd in 
+
+usage(){
+    echo "Usage: `basename $0` {<path>/ncidd} {-D|--osx-launchd} [-nciddOption(s)]"
     exit 0
 }
 
+[ -x "$1" ] || { usage; exit 0; }
+
+[ "$2" != "-D" -a "$2" != "--osx-launchd" ] && { usage; exit 0; }
+
 NCID="$1"
+MODE="$2"
+shift
 shift
 
-touch T-data.log T-config T-alias T-blacklist
-$NCID -Dv3 \
-      -c T-call.log \
-      -d T-data.log \
-      -L T-logfile \
-      -A T-alias \
-      -B T-blacklist \
-      -C T-config \
-      -P T-pid \
-      -p 3334 \
-      -s cidlog \
-      -s cidinfo \
-      -t ./vmodem0 \
-      $*
+touch T-data.log T-alias
+
+[ -f T-conf ] || \
+{
+# create test configuration file
+cat << EOF > T-conf
+set verbose = 3
+set cidlog = T-call.log
+set datalog = T-data.log
+set cidalias = T-alias
+set blacklist = T-blacklist
+set whitelist = T-whitelist
+set pidfile = T-pid
+set ttyport = vmodem0
+set port = 3334
+send cidlog
+send cidinfo
+EOF
+}
+
+[ -f T-blacklist ] || \
+{
+# create test blacklist file
+cat << EOF > T-blacklist
+PRIVATE
+1999
+EOF
+}
+
+[ -f T-whitelist ] || \
+{
+# create test whitelist file
+cat << EOF > T-whitelist
+19995551212
+EOF
+}
+
+# default server command line
+# command lines options can be added
+$NCID $MODE -C T-conf -L T-logfile $*

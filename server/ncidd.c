@@ -36,15 +36,15 @@ char *lockfile, *name;
 char *TTYspeed;
 int ttyspeed = TTYSPEED;
 int port = PORT;
-int debug, conferr, setcid, locked, sendlog, sendinfo, callout;
+int debug, conferr, setcid, locked, sendlog, sendinfo, calltype;
 int ttyfd, pollpos, pollevents;
 int ring, ringwait, lastring, clocal, nomodem, noserial, gencid = 1;
-int cidsent, verbose = 1, hangup, ignore1;
+int cidsent, verbose = 1, hangup, ignore1, OSXlaunchd;
 long unsigned int cidlogmax = LOGMAX;
 pid_t pid;
 
 char ipaddr[CONNECTIONS][25];
-char ringline[CIDSIZE] = "-";
+char infoline[CIDSIZE] = ONELINE;
 
 struct pollfd polld[CONNECTIONS + 2];
 struct termios otty, rtty, ntty;
@@ -67,8 +67,7 @@ char *strdate();
 #endif
 
 void exit(), finish(), free(), reload(), ignore(), doPoll(), formatCID(),
-     writeClients(), writeLog(), sendLog(), builtinAlias(), userAlias(),
-     sendInfo(), logMsg(), cleanup();
+     writeClients(), writeLog(), sendLog(), sendInfo(), logMsg(), cleanup();
 
 int getOptions(), doConf(), errorExit(), doAlias(), doTTY(), CheckForLockfile(),
     addPoll(), tcpOpen(), doModem(), initModem(), gettimeofday(), doPID(),
@@ -114,20 +113,6 @@ int main(int argc, char *argv[])
             name, VERSION);
     logMsg(LEVEL1, msgbuf);
 
-    /* check status of logfile */
-    if (logptr)
-    {
-        /* logfile opened */
-        sprintf(msgbuf, "logfile: %s\n", logfile);
-        logMsg(LEVEL1, msgbuf);
-    }
-    else
-    {
-        /* logfile open failed */
-        sprintf(msgbuf, "%s: %s\n", logfile, strerror(errnum));
-        logMsg(LEVEL1, msgbuf);
-    }
-
     /* log command line and any options on separate lines */
     sprintf(msgbuf, "Command line: %s", argv[0]);
     for (i = 1; i < argc; i++)
@@ -138,6 +123,20 @@ int main(int argc, char *argv[])
     }
     strcat(msgbuf, NL);
     logMsg(LEVEL1, msgbuf);
+
+    /* check status of logfile */
+    if (logptr)
+    {
+        /* logfile opened */
+        sprintf(msgbuf, "Logfile: %s\n", logfile);
+        logMsg(LEVEL1, msgbuf);
+    }
+    else
+    {
+        /* logfile open failed */
+        sprintf(msgbuf, "%s: %s\n", logfile, strerror(errnum));
+        logMsg(LEVEL1, msgbuf);
+    }
 
     /*
      * read config file, if present, exit on any errors
@@ -173,12 +172,16 @@ int main(int argc, char *argv[])
     sprintf(msgbuf, "%s\n", ignore1 ? IGNORE1 : INCLUDE1);
     logMsg(LEVEL1, msgbuf);
 
-    /* read blacklist file, if hangup option given, exit on any errors */
     if (hangup)
     {
-        sprintf(msgbuf, "%s\n", HANGUPMSG);
+        /* read blacklist and whitelist files, exit on any errors */
+        sprintf(msgbuf, "%s\n", BLMSG);
         logMsg(LEVEL1, msgbuf);
-        if (doBlacklist()) errorExit(-114, 0, 0);
+        if (doList(blacklist, blklist)) errorExit(-114, 0, 0);
+
+        sprintf(msgbuf, "%s\n", WLMSG);
+        logMsg(LEVEL1, msgbuf);
+        if (doList(whitelist, whtlist)) errorExit(-114, 0, 0);
     }
 
     if (stat(cidlog, &statbuf) == 0)
@@ -219,9 +222,10 @@ int main(int argc, char *argv[])
 
     /*
      * lineid could have been changed in either ncidd.conf or ncidd.alias
-     * this sets cid.cidline to lineid after any changes to it
+     * this sets cid.cidline  and infoline to lineid after any changes to it
      */
     strncpy(cid.cidline, lineid, CIDSIZE - 1);
+    strncpy(infoline, lineid, CIDSIZE - 1);
 
     sprintf(msgbuf, "Telephone Line Identifier: %s\n", lineid);
     logMsg(LEVEL1, msgbuf);
@@ -351,9 +355,10 @@ int main(int argc, char *argv[])
     sprintf(msgbuf, "Network Port: %d\n", port);
     logMsg(LEVEL1, msgbuf);
 
-    if (debug)
+    if (debug || OSXlaunchd)
     {
-        sprintf(msgbuf, "Debug Mode\n");
+        if (debug) sprintf(msgbuf, "Debug Mode\n");
+        else sprintf(msgbuf, "OSX Launchd Mode\n"); 
         logMsg(LEVEL1, msgbuf);
     }
     else
@@ -372,7 +377,7 @@ int main(int argc, char *argv[])
         setsid();
     }
 
-    /* reload alias and blacklist files on SIGHUP */
+    /* reload files on SIGHUP */
     signal(SIGHUP, reload);
 
     /*
@@ -512,14 +517,19 @@ int getOptions(int argc, char *argv[])
         {"ttyport", 1, 0, 't'},
         {"verbose", 1, 0, 'v'},
         {"version", 0, 0, 'V'},
+        {"whitelist", 1, 0, 'B'},
+        {"osx-launchd", 0, 0, '0'},
         {0, 0, 0, 0}
     };
 
-    while ((c = getopt_long (argc, argv, "c:d:e:g:hi:l:n:p:s:t:v:A:B:C:DH:I:L:M:N:P:S:T:V",
+    while ((c = getopt_long (argc, argv, "c:d:e:g:hi:l:n:p:s:t:v:A:B:C:DH:I:L:M:N:P:S:T:VW:",
         long_options, &option_index)) != -1)
     {
         switch (c)
         {
+            case '0':
+                ++OSXlaunchd;
+                break;
             case 'A':
                 if (!(cidalias = strdup(optarg))) errorExit(-1, name, 0);
                 if ((num = findWord("cidalias")) >= 0) setword[num].type = 0;
@@ -588,6 +598,10 @@ int getOptions(int argc, char *argv[])
             case 'V': /* version */
                 fprintf(stderr, SHOWVER, name, VERSION);
                 exit(0);
+            case 'W':
+                if (!(whitelist = strdup(optarg))) errorExit(-1, name, 0);
+                if ((num = findWord("whitelist")) >= 0) setword[num].type = 0;
+                break;
             case 'c':
                 if (!(cidlog = strdup(optarg))) errorExit(-1, name, 0);
                 if ((num = findWord("cidlog")) >= 0) setword[num].type = 0;
@@ -1191,11 +1205,11 @@ void doPoll(int events, int mainsock)
 
                 /* get the line label */
                 if ((sptr = strstr(buf, "LINE")) == NULL)
-                    strcpy(ringline, "-");
+                    strcpy(infoline, lineid);
                 else
                 {
                     *(eptr = index(sptr + 4, (int) '.')) = '\0';
-                    strcpy(ringline, sptr + 4);
+                    strcpy(infoline, sptr + 4);
                     /* Restore buffer by replacing '\0' with '.' */
                     *eptr = '.';
                 }
@@ -1474,11 +1488,20 @@ void formatCID(int mainsock, char *buf)
         {
             /*
              * this field is only from a Gateway
-             * will be either CALLIN or CALLOUT
+             * will be either CALLIN, CALLOUT, or CALLHUP
              * only interested in CALLOUT
              */
-             ++callout; /* this is a outgiing call */
+             calltype = OUT; /* this is a outgoing call */
             
+        }
+        else if ((ptr = strstr(buf, "CALLHUP")))
+        {
+            /*
+             * this field is only from a Gateway
+             * will be either CALLIN, CALLOUT, or CALLHUP
+             * only interested in CALLHUP
+             */
+            calltype = HUP; /* this is a call hungup by a gateway */
         }
         if ((ptr = strstr(buf, "LINE")))
         {
@@ -1600,17 +1623,30 @@ void formatCID(int mainsock, char *buf)
          *     the MESG field is not used
          *     the NAME field will be generic if no alias
          *
-         * For HUP text lines (hungup call):
-         * The CID label is replaced by a HUP label
+         * For HUP server generated text lines (hungup call):
+         *     the CID label is replaced by a HUP label
          */
 
         userAlias(cid.cidnmbr, cid.cidname, cid.cidline);
 
-        linelabel = CIDLINE;
-        if (callout) linelabel = OUTLINE;
-        else if (hangup)
+        switch(calltype)
         {
-            /* hangup phone if on blacklist */
+            case IN:
+                linelabel = CIDLINE;
+                break;
+            case OUT:
+                linelabel = OUTLINE;
+                break;
+            case HUP:
+                linelabel = HUPLINE;
+                break;
+            default: /* should not happen */
+                linelabel = CIDLINE;
+                break;
+        }
+        if (hangup)
+        {
+            /* hangup phone if on blacklist but not whitelist */
             if (hup = doHangup(cid.cidname, cid.cidnmbr)) linelabel = HUPLINE;
         }
 
@@ -1641,64 +1677,7 @@ void formatCID(int mainsock, char *buf)
         strcpy(cid.cidline, lineid); /* default line indicator */
         cid.status = 0;
         cidsent = 1;
-        if (callout) callout = 0;
-    }
-}
-
-/*
- * Built-in Aliases for O, P, and A
- */
-
-void builtinAlias(char *to, char *from)
-{
-    if (!strcmp(from, "O")) strncpy(to, O, CIDSIZE - 1);
-    else if (!strcmp(from, "P")) strncpy(to, P, CIDSIZE - 1);
-    else if (!strcmp(from, "A")) strncpy(to, A, CIDSIZE - 1);
-    else strncpy(to, from, CIDSIZE - 1);
-}
-
-/*
- * User defined aliases.
- */
-
-void userAlias(char *nmbr, char *name, char *line)
-{
-    int i;
-
-    /* we may want to skip the leading 1, if present */
-    if (ignore1 && *nmbr == '1') ++nmbr;
-
-    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
-    {
-        switch (alias[i].type)
-        {
-            case NMBRNAME:
-                if (!strcmp(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
-                if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
-                break;
-            case NMBRONLY:
-                if (!strcmp(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
-                break;
-            case NMBRDEP:
-                if (!strcmp(name, alias[i].depend) &&
-                    (!strcmp(nmbr, alias[i].from) ||
-                    !strcmp(alias[i].from, "*")))
-                    strcpy(nmbr, alias[i].to);
-                break;
-            case NAMEONLY:
-                if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
-                break;
-            case NAMEDEP:
-                if (!strcmp(nmbr, alias[i].depend) &&
-                    (!strcmp(name, alias[i].from) ||
-                    !strcmp(alias[i].from, "*")))
-                    strcpy(name, alias[i].to);
-                break;
-            case LINEONLY:
-                if (!strcmp(line, alias[i].from) ||
-                   !strcmp(alias[i].from, "*")) strcpy(line, alias[i].to);
-                break;
-        }
+        if (calltype) calltype = 0;
     }
 }
 
@@ -1848,15 +1827,15 @@ void writeLog(char *logf, char *logbuf)
  *
  * Format of CIDINFO line passed to TCP/IP clients by ncidd:
  *
- * CIDINFO: *LINE*-*RING*1*
+ * CIDINFO: *LINE*<label>*RING*<number>*TIME<hh:rr:mm>
  */
 
 void sendInfo(int mainsock)
 {
     char buf[BUFSIZ], *ptr;
 
-    userAlias("", "", ringline);
-    sprintf(buf, "%s%s%s%s%d%s%s%s",CIDINFO, LINE, ringline, \
+    userAlias("", "", infoline);
+    sprintf(buf, "%s%s%s%s%d%s%s%s",CIDINFO, LINE, infoline, \
             RING, ring, TIME, strdate(ONLYTIME), STAR);
     writeClients(mainsock, buf);
 
@@ -2067,14 +2046,19 @@ void finish(int sig)
     raise (sig);
 }
 
-/* reload signal */
+/*
+ * reload signal
+ *
+ * reload alias file
+ * reload blaqcklist and whitelist files if hangup option given
+ */
 void reload(int sig)
 {
     char msgbuf[BUFSIZ];
 
     sprintf(msgbuf,
-      "Received Signal %d: %s\nReloading alias %s: %s\n",
-      sig, strsignal(sig), hangup ? "and blacklist files" : "file",
+      "Received Signal %d: %s\nReloading alias %s: %s\n", sig,
+      strsignal(sig), hangup ? ", blacklist, and whitelist files" : "file",
       strdate(WITHSEP));
     logMsg(LEVEL1, msgbuf);
 
@@ -2089,14 +2073,21 @@ void reload(int sig)
     /* remove existing aliases to free memory used */
     rmaliases();
 
-    /* remove existing blacklist entries to free memory used */
-    rmbl();
-
     /* reload alias file, but quit on error */
     if (doAlias()) errorExit(-109, 0, 0);
 
-    /* reload blacklist file if hangup option given, but quit on error */
-    if (hangup && doBlacklist()) errorExit(-114, 0, 0);
+    if (hangup)
+    {
+        /* remove existing blacklist entries to free memory used */
+        rmEntries(blklist);
+
+        /* remove existing whitelist entries to free memory used */
+        rmEntries(whtlist);
+
+    /* reload blacklist and whitelist files but quit on error */
+    if (doList(blacklist, blklist) && doList(whitelist, whtlist))
+         errorExit(-114, 0, 0);
+    }
 }
 
 /* ignored signals */

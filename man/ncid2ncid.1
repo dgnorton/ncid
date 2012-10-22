@@ -21,6 +21,7 @@
 [-V                 | --version]
 [-v <1-9>           | --verbose <1-9>]
 [-W <1/0>           | --warn <1/0>]
+[--osx-launchd]
 .fi
 .SH DESCRIPTION
 This gateway obtains the current Caller ID or message from  one or more
@@ -104,6 +105,11 @@ Default: verbose = 1
 Send server disconnected or server reconnected messages to clients.
 .br
 Default: warn = 0
+.TP
+.B --osx-launchd
+This option is only for OSX when using launchd to control ncidd.  It
+prevents \fBncidd\fR from entering daemon mode.  It is like debug
+mode, but nothing is printed to the screen.
 .SH EXAMPLES
 Forward Caller ID information or message from localhost:3334 to localhost:3333
 .RS 0

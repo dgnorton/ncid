@@ -20,7 +20,15 @@ set -e
 
 
 case "$1" in
-    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+    purge|remove)
+    ;;
+    upgrade)
+        for script in ncidsip sip2ncid yac2ncid ncid2ncid ncidd
+        do
+            pgrep -f $script > /dev/null 2>&1 && involk-rc.d $script restart
+        done
     ;;
 
     *)
@@ -28,10 +36,5 @@ case "$1" in
         exit 1
     ;;
 esac
-
-update-rc.d -f ncidsip remove
-update-rc.d -f sip2ncid remove
-update-rc.d -f yac2ncid remove
-update-rc.d -f ncidd remove
 
 exit 0

@@ -1,0 +1,37 @@
+------------
+NCID for Mac
+------------
+
+Mac OSX plist scripts:
+
+net.sourceforge.ncidd.plist          - ncidd server
+net.sourceforge.ncid2ncid.plist      - ncid2ncid gateway
+net.sourceforge.sip2ncid.plist       - sip2ncid gateway
+net.sourceforge.ncid-initmodem.plist - ncid client with ncid-initmodem module
+net.sourceforge.ncid-mythtv.plist    - ncid client with ncid-mythtv module
+net.sourceforge.ncid-notify.plist    - ncid client with ncid-notify module
+net.sourceforge.ncid-page.plist      - ncid client with ncid-page module
+net.sourceforge.ncid-samba.plist     - ncid client with ncid-samba module
+net.sourceforge.ncid-skel.plist      - ncid client with ncid-skel module
+net.sourceforge.ncid-speak.plist     - ncid client with ncid-speak module
+net.sourceforge.ncid-yac.plist       - ncid client with ncid-yac module
+
+See Doc/INSTALL-Mac for install instructions
+
+Related launchd information:
+
+Technical Note TN2083 -- Daemons and Agents
+https://developer.apple.com/library/mac/#technotes/tn2083/_index.html
+
+Daemons and Services Programming Guide: Creating Launch Daemons and Agents
+https://developer.apple.com/library/mac/#documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html#//apple_ref/doc/uid/10000172i-SW7-BCIEDDBJ
+
+launchd -- System wide and per-user daemon/agent manager
+https://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man8/launchd.8.html
+
+launchctl -- Interfaces with launchd
+https://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man1/launchctl.1.html#//apple_ref/doc/man/1/launchctl
+
+Daemons and Services Programming Guide: Startup Items (obsolete)
+https://developer.apple.com/library/mac/#documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/StartupItems.html
+

@@ -1,1 +1,40 @@
-.so man1/ncidtools.1
+.\" %W% %G%
+.TH CIDUPDATE 1
+.SH NAME
+.B cidupdate
+- update aliases in the NCID call file
+.SH SYNOPSIS
+.B cidupdate
+[-A aliasfile] [-C cidlog] [newcidlog]
+.SH DESCRIPTION
+The
+.B cidupdate
+script updates the cidcall.log file using the aliases found in the
+ncidd.alias file.
+.SH "OPTIONS"
+.PD 0
+.TP 14
+.B -A aliasfile
+Set the alias file to \fIaliasfile\fR
+.br
+Default: /etc/ncid/ncidd.alias
+.TP
+.B -C cidlog
+Set the call file to \fIcidlog\fR
+.br
+Default: /var/log/cidcall.log
+.PD
+.SS "Arguments"
+.PD 0
+.TP 14
+.B newcidlog
+The updated call file.
+.br
+Default: <cidlog>.new
+.PD
+.SH SEE ALSO
+ncidd.conf.5,
+ncidd.alias.5,
+ncidd.blacklist.5,
+cidcall.1,
+cidupdate.1

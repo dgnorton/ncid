@@ -1,27 +1,42 @@
 #!/bin/sh
 
+# ncid-speak
+# usage: ncid --no-gui --program ncid-speak
+
+# Last modified: Fri Oct 12, 2012
+
 # Announce the Caller ID
 # Requires festival
-
-# Last changed by jlc: Sun Sep 11, 2011
 
 # most of this program is taken from nciduser by Mace Moneta
 # requires festival: http://www.cstr.ed.ac.uk/projects/festival
 
-# input is 6 lines obtained from ncid
+# input is always 6 lines
+#
+# if input is from a call:
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
 #
-# input is 6 lines if a message was sent
+# if input is from a message
+# the message is in place of NAME:
 # input: \n\n\n<MESSAGE>\n\nMSG\n
-#
-# ncid usage:
-#   ncid --no-gui [--message] --program ncid-speak
 
 # $CIDTYPE is one of:
 #   CID: incoming call
 #   OUT: outgoing call
 #   HUP: blacklisted hangup
 #   MSG: message instead of a call
+
+ConfigDir=/usr/local/etc/ncid/conf.d
+ConfigFile=$ConfigDir/ncid-speak.conf
+
+### defaults if not using config file ###
+SpeakThis='$CIDNAME'
+SpeakInput="echo $SpeakThis | festival --tts"
+SpeakTimes=1
+SpeakDelay=2
+SpeakTypes="CID OUT HUP MSG"
+
+[ -f $ConfigFile ] && . $ConfigFile
 
 read CIDDATE
 read CIDTIME
@@ -30,31 +45,27 @@ read CIDNAME
 read CIDLINE
 read CIDTYPE
 
-### defaults if not using config file ###
-# What to say
-WHAT=$CIDNAME
-#WHAT=$CIDNMBR
-SAY="$CIDTYPE $WHAT"
-#SAY="$WHAT"
-# If festival is being used:
-T2S='`echo $SAY | festival --tts`'
-# If using a Macintosh without festival:
-#T2S='/usr/bin/osascript -e \"say $SAY\"'
-# Number of times to speak
-SAYNUM=1
-# delay between speaking
-SpeakDelay=2
-
-ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/ncidmodules.conf
-
-[ -f $ConfigFile ] && . $ConfigFile
-
-while [ ${SAYNUM:=1} != 0 ]
+# Look for $SpeakType
+for i in $SpeakTypes
 do
-    eval $T2S
-    SAYNUM=`expr $SAYNUM - 1`
-    [ $SAYNUM = 0 ] || /bin/sleep ${SpeakDelay:=1}
+    [ $i = "$CIDTYPE" ] && { found=1; break; }
+done
+
+# Exit if $CIDTYPE not found
+[ -z "$found" ] && exit 0
+
+if [ "$CIDTYPE" = "MSG" ]
+then
+    SpeakThis=$CIDNAME
+else
+    eval : $SpeakThis
+fi
+
+while [ ${SpeakTimes:=1} != 0 ]
+do
+    eval $SpeakInput
+    SpeakTimes=`expr $SpeakTimes - 1`
+    [ $SpeakTimes = 0 ] || /bin/sleep ${SpeakDelay:=1}
 done
 
 exit 0

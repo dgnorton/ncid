@@ -4,10 +4,9 @@ After=ncidd.service
 
 [Service]
 Type=simple
-Environment=module=ncid-mythtv MythMsg=
-EnvironmentFile=-/usr/local/etc/ncid/ncidmodules.conf
+Environment=module=ncid-mythtv
 PIDFile=/var/run/ncid-mythtv.pid
-ExecStart=/usr/bin/ncid --no-gui -p /var/run/${module}.pid -P $module $MythMsg
+ExecStart=/usr/bin/ncid --no-gui -p /var/run/${module}.pid -P $module
 ExecStop=/bin/kill $MAINPID ; /bin/rm -f /var/run/${module}.pid
 
 [Install]

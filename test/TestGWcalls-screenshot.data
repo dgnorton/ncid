@@ -1,0 +1,13 @@
+# Used to generate notifications on Notify My Android (NMA) for screen capture
+# To fit clickable URL on the width of Android G2 phone, use notify_url=http://callerr.com/
+# ./TestGWcalls TestGWcalls-notify.data
+
+MSG: Clothes are ready in the laundry room!
+
+CALL: ###DATE02261536...LINEVOIP...NMBR14075557777...NAMEJohn on Cell+++
+
+CALL: ###DATE0228221534...CALLHUP...LINE7711...NMBR17025551145...NAMEDEBT COLLECTOR +++
+
+CALL: ###DATE03212111...CALLOUT...LINE7711...NMBR12125554000...NAMEVähälä Joe+++
+
+CALL: ###DATE04011529...CALLIN...LINEVOIP...NMBR10075551212...NAMEBOND, JAMES+++

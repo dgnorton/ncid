@@ -1,5 +1,5 @@
 /*
- * Copyright 2011
+ * Copyright 2011-2012
  *  by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddhangup.c is free software; you can redistribute it and/or modify
@@ -20,28 +20,30 @@
 #include "ncidd.h"
 
 /* globals */
-char *blacklist = BLACKLIST, *list[LISTSIZE];
+char *blacklist = BLACKLIST, *blklist[LISTSIZE];
+char *whitelist = WHITELIST, *whtlist[LISTSIZE];
 
-int doBlacklist(), nextbl(), onBlacklist(), hangupCall(), doHangup();
+int doList(), nextEntry(), onList(), hangupCall(), doHangup();
 
-void addbl(), rmbl();
+void addEntry(), rmEntries();
 
 #ifndef __CYGWIN__
     extern char *strsignal();
 #endif
 
 /*
- * Process the blacklist file
+ * Process the blacklist or whitelist file
  */
-int doBlacklist()
+int doList(char *filename, char **list)
 {
     char input[BUFSIZ], word[BUFSIZ], msgbuf[BUFSIZ], *inptr;
     int lc, i;
     FILE *fp;
 
-    if ((fp = fopen(blacklist, "r")) == NULL)
+    if ((fp = fopen(filename, "r")) == NULL)
     {
-        sprintf(msgbuf, "Blacklist file required: %s\n", blacklist);
+        sprintf(msgbuf, "%s file missing: %s\n",
+                blklist == list ? "Blacklist" : "Whitelist", filename);
         logMsg(LEVEL1, msgbuf);
         return 1;
     }
@@ -55,16 +57,18 @@ int doBlacklist()
         if (inptr == 0 || word[0] == '#') continue;
 
         /* get search strings on line */
-        addbl(inptr, word, lc);
+        addEntry(inptr, word, lc, list);
     }
     (void) fclose(fp);
-    sprintf(msgbuf, "Processed blacklist file: %s\n", blacklist);
+    sprintf(msgbuf, "Processed %s file: %s\n",
+            blklist == list ? "blacklist" : "whitelist", filename);
     logMsg(LEVEL1, msgbuf);
 
     if (!errorStatus && list[0])
     {
         for (i = 0; i < LISTSIZE && list[i]; ++i);
-        sprintf(msgbuf, "Blacklist Entries: %d/%d\n", i, LISTSIZE);
+        sprintf(msgbuf, "%s Entries: %d/%d\n",
+                blklist == list ? "Blacklist" : "Whitelist", i, LISTSIZE);
         logMsg(LEVEL1, msgbuf);
 
         for (i = 0; i < LISTSIZE && list[i]; ++i)
@@ -77,17 +81,17 @@ int doBlacklist()
     return errorStatus;
 }
 
-/* Process blacklist lines */
-void addbl(char *inptr, char *wdptr, int lc)
+/* Process blacklist or whitelist file lines */
+void addEntry(char *inptr, char *wdptr, int lc, char **list)
 {
     int cnt;
     char *mem = 0;
 
-    /* process blacklist words */
+    /* process the blacklist or whitelist words */
     do
     {
         if (*wdptr == '#')    break; /* rest of line is comment */
-        if ((cnt = nextbl(lc)) < 0) return;
+        if ((cnt = nextEntry(lc, list)) < 0) return;
         mem = cpy2mem(wdptr, mem);
         list[cnt] = mem;
         
@@ -95,20 +99,20 @@ void addbl(char *inptr, char *wdptr, int lc)
     while ((inptr = getWord(inptr, wdptr, lc)) != 0);
 }
 
-int nextbl(int lc)
+int nextEntry(int lc, char **list)
 {
     int i;
 
     for (i = 0; i < LISTSIZE && list[i]; ++i);
     if (i == LISTSIZE)
     {
-        configError(blacklist, lc, " ", ERRLIST);
+        configError(blklist == list ? blacklist : whitelist, lc, " ", ERRLIST);
         return -1;
     }
     return i;
 }
 
-void rmbl()
+void rmEntries(char **list)
 {
     int i;
 
@@ -124,16 +128,23 @@ void rmbl()
 
 /*
  * Check if call is in blacklist file
- * Hangup phone if in blacklist file
+ *
+ * Hangup phone if match in blacklist file
+ * but no match in whitelist file
+ *
  * return = 0 if call not terminated
  * return = 1 if call terminated
  */
 
 int doHangup(char *namep, char *nmbrp)
 {
-    if (onBlacklist(namep, nmbrp))
+    if (onList(namep, nmbrp, blklist))
     {
-        if (!hangupCall()) return 1;
+        if (!onList(namep, nmbrp, whtlist))
+        {
+            /* a blacklist match must not also be a whitelist match */
+            if (!hangupCall()) return 1;
+        }
     }
 
 return 0;
@@ -238,11 +249,12 @@ return ret;
 }
 
 /*
- * compare blacklist strings to name and number
+ * compare blacklist or whitelist strings to name and number
+ *
  * return = 1  if match
  * return = 0  if no match
  */
-int onBlacklist(char *namep, char *nmbrp)
+int onList(char *namep, char *nmbrp, char **list)
 {
     int ret = 1, i;
 	char msgbuf[BUFSIZ], *ptr;
@@ -266,7 +278,8 @@ int onBlacklist(char *namep, char *nmbrp)
 
     if (!ret)
     {
-        sprintf(msgbuf, "Blacklist#%.2d: %s    number: %s    name: %s\n",
+        sprintf(msgbuf, "%s Match #%.2d: %s    number: %s    name: %s\n",
+                blklist == list ? "Blacklist" : "Whitelist",
                 i, list[i], nmbrp, namep);
         logMsg(LEVEL3, msgbuf);
     }

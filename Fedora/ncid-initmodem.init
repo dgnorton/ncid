@@ -21,12 +21,10 @@
 RETVAL=0
 prog="ncid"
 exec="/usr/local/bin/$prog"
-config="/usr/local/etc/ncid/ncidmodules.conf"
 module=ncid-initmodem
 pidfile=/var/run/$module.pid
 lockfile=/var/lock/subsys/$module
 
-[ -f $config ] && . $config
 args="--no-gui --pidfile $pidfile -P $module"
 
 start() {

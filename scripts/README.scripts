@@ -1,5 +1,0 @@
-The following scripts for log rotation:
-
-ncidrotate      - Script to keep lines in logfile, after it is rotated:
-ncidrotate.conf - Config file for ncidrotate
-ncidd.logrotate - Config file for logrotate

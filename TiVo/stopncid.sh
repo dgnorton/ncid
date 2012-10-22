@@ -2,9 +2,9 @@
 # script to stop NCID
 # Requires the "pgrep" command
 # Created  by jlc: Fri Jul 13, 2012
+# Modified  by jlc: Wed Sep 19, 2012
 
-### This script uses bash and pgrep and requires ncid in the
-### name of the running program.
+### This script uses bash and pgrep
 
 ### If /var/hack/bin/pgrep is not present, you can use pgrep
 ### from the tivotools distribution:
@@ -16,9 +16,9 @@
 ### This script can be run manually and from crontab:
 ### /var/hack/bin/stopncid
 
-### This script will stop ncidd, sip2ncid, yac2ncid, tivocid, tivoncid,
-### ncid-initmodem, and ncid-yac.  It will stop anything with ncid in
-### the running program name.
+### This script will stop ncidd, ncid2ncid, sip2ncid, yac2ncid,
+### tivocid, tivoncid, ncid-initmodem, ncid-notify, ncid-page,
+### ncid-tivo, and ncid-yac.
 
 ###############################
 ###############################
@@ -31,7 +31,7 @@
 ############
 ### If you need to search an additional directory to run pgrep
 ### For example, the pgrep version in tivotools, add the directory path
-### of tovotools to the following line and uncomment it (remove the #):
+### of tivotools to the following line and uncomment it (remove the #):
 #PATH=$PATH:
 
 #######################
@@ -48,11 +48,13 @@
 ### add a program to be stoppped
 
 STOPNCID="
+          ncid2ncid
           sip2ncid
           yac2ncid
           tivocid
           tivoncid
           ncid-initmodem
+          ncid-notify
           ncid-page
           ncid-tivo
           ncid-yac

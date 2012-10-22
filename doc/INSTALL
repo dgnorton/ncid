@@ -1,9 +1,17 @@
 NCID - Network Caller ID Install
 
-Last edited: Mon Jul 13, 2010
+Last edited: Sat Oct 20, 2012
 
-If using sip2ncid, see Setup-ncidsip
-If using ncidsip, see Setup-ncidsip
+Sections:
+    Layout:
+    Compile:
+    INSTALL:
+    TEST USING A MODEM:
+    TEST USING A DEVICE (like the NetCallerID box):
+    TEST USING sip2ncid:
+    TEST USING yac2ncid:
+
+If using sip2ncid, see Setup-sip2ncid
 
 Layout:
 	The programs go into $prefix/bin $prefix/sbin

@@ -5,25 +5,24 @@
 - ncid configuration file
 .SH DESCRIPTION
 The \fIncid.conf\fR file contains the configuration information for
-\fIncid\fR, the Network Caller ID Client.  Use \fIncid.conf\fR to
-configure ncid every time it is started, but use \fIncidmodules.conf\fR
-to configure ncid for a particular output module.  For example, use
-\fIncid.conf\fR to configure ncid for the server address, but use
-\fIncidmodules.conf\fR to configure ncid to for ncid-page.
+\fIncid\fR, the Network Caller ID Client.
 .PP
 The \fIncid.conf\fR file is a tcl/tk configuration file used to set options.
 .PP
 The \fIncid.conf\fR file understands 3 types of lines:
-.TP
+.RS
+.TP 16
 .B blank line
 ignored
 .TP
-.B comment line, beginning with '#'
-ignored
+.B comment line
+beginning with '#' and is ignored
 .TP
-.B command lines, beginning with 'set'
+.B shell variable
+set to a value, for example: foo=bar
+.RE
 .PP
-See ncid.conf for a complete list of variables to set and
+See the ncid.conf file for a complete list of variables to set and
 what the default values are.
 .SH EXAMPLES
 Set ncid to use the page output module:
@@ -31,16 +30,29 @@ Set ncid to use the page output module:
 	set ProgName     \fIncid-page\fR
 .RE
 .PP
-Set ncid to format its output for the US and include the 1.
-The number output display will be 1-XXX-XXX-XXXX instead of XXX-XXX-XXXX:
+Set ncid to format its number output for the US to include the 1.
+The display will be 1-XXX-XXX-XXXX instead of XXX-XXX-XXXX:
 .RS 0
     set NoOne       0
 .RE
 .PP
-Set ncid to format its number output display for Sweden:
-The number output display will be 0X-XXXXXXXX, 0XX-XXXXXXX, 0XXX-XXXXX, etc:
+Set ncid to format its number output display for Sweden.
+The display will be 0X-XXXXXXXX, 0XX-XXXXXXX, 0XXX-XXXXX, etc:
 .RS 0
     set Country     "SE"
+.RE
+.PP
+Set ncid to format its date output in alternate form.
+Assuming the date separator is a "/", the display will be DD/MM/YYYY:
+.RS 0
+    set AltDate     1
+.RE
+.PP
+Set ncid to format its date output with hyphen (-) as separator.
+The display will be MM-DD-YYYY.
+If the date is in alternate form, the display will be DD-MM-YYYY:
+.RS 0
+    set DateSepar     "-"
 .RE
 .SH SEE ALSO
 ncid.1, ncidtools.1, lcdncid.1, out2osd.1, ncidd.8 ncidd.alias.5,

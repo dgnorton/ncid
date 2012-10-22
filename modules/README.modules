@@ -1,36 +1,51 @@
 NCID Client Output Modules:
 
-The following modules are configured by editing /etc/ncid/ncidmodules.conf
+Modules are locates in /usr/share/ncid/
+Module conf files are located in /etc/ncid/conf.d/
+A module are configured by editing /etc/ncid/conf.d/ncid-<name>.conf
 
-The ncidmodules.1 man page documents the following output modules.
-
-Module to reinitialize the modem when RING is received as the number
+Module to reinitialize the modem when RING is received as the number:
+Does not have a configuration file.
     ncid-initmodem
     IMPORTANT: module should only be used if the modem stops sending
                CID to ncidd and only sends RING from that point on
 
-Module to popup Caller ID using KDE:
-    ncid-kpopup
+Module to popup Caller ID using KDE and its conf file:
+    ncid-kpopup ncid-popup.conf
 
-Module to send Caller ID to a cell phone, or pager:
-    ncid-page
-    IMPORTANT: sendmail.cf must hide user root when masquerading is used.
+Module to display Caller ID on MythTV and its conf file:
+    ncid-mythtv ncid-mythtv.conf
+
+Module to display Caller ID on a iOS or Android device and its conf file:
+    ncid-notify ncid-notify.conf
+    IMPORTANT: Register at https://www.prowlapp.com/ for iOS key
+               Register at https://www.notifymyandroid.com/ for Android key
+
+Module to send Caller ID to a cell phone or pager and its conf file:
+    ncid-page ncid-page.conf
+    IMPORTANT: sendmail.cf must hide user root when masquerading is used
                and root is sending the email
 
-Module to send Caller ID to samba to get a popup:
-    ncid-samba
+Module to send Caller ID to samba to get a popup and its conf file:
+    ncid-samba ncid-samba.conf
 
-Module just echos the input.  Modify it to write new modules:
-    ncid-skel
+Module just echos the input.  Modify it and its conf file to write new modules:
+    ncid-skel ncid-skel.conf
 
-Module to send Caller ID to a text-to-speech program:
-    ncid-speak
+Module to send Caller ID to a text-to-speech program and its conf file:
+    ncid-speak ncid-speak.cconf
 
-Module to display Caller ID on MythTV
-    ncid-mythtv
+Module to display Caller ID on TiVo and its conf file:
+    ncid-tivo ncid-tivo.conf
 
-Module to display Caller ID on TiVo
-    ncid-tivo
+Module to send Caller ID to YAC clients and its conf file:
+    ncid-yac ncid-yac.conf
 
-Module to send Caller ID to YAC clients
-    ncid-yac
+The Makefile is used to create the runable scripts.
+
+    prefix  - default: /usr/local:            $(prefix)/bin and $(prefix)/sbin
+    prefix2 - default: prefix2 = $(prefix1):  $(prefix2)/etc
+    prefix3 - default: "":                    $(prefix)/var
+
+    prefix2 controls where to look for the config file,
+    (the default is /usr/local)

@@ -1,7 +1,7 @@
 #!/bin/sh
 # script to start NCID
 # Requires the "pgrep" command
-# Last modified  by jlc: Fri Jul 13, 2012
+# Last modified  by jlc: Thu Oct 4, 2012
 
 ### This script requires pgrep.  If /var/hack/bin/pgrep is not
 ### present, you can use pgrep from the tivotools distribution:
@@ -14,7 +14,8 @@
 ### manually:         /var/hack/bin/startncid
 
 ### This script can start ncidd, sip2ncid, yac2ncid, tivocid, tivoncid,
-### ncid-initmodem, and ncid-yac.  It can also set the local timezone.
+### ncid-initmodem, ncid-yac, and ncid-notify.
+### It can also set the local timezone.
 ### 
 ### The default script starts ncidd and tivocid.
 ###
@@ -93,6 +94,7 @@ LD_LIBRARY_PATH=/lib:/var/hack/lib:/hack/bin
 SERVER=ncidd
 #
 # Enable SIP Gateway if using SIP (VoIP) to get Caller ID
+# Be sure to uncomment this line in ncidd.c: # set noserial = 1
 #SIPGW=sip2ncid
 #
 # Enable YAC Gateway if using yac to get Caller ID
@@ -110,24 +112,45 @@ OSDCLIENT=tivoncid
 # Enable tivocid client if using out2osd, disable tivoncid client
 #OSDCLIENT=tivocid
 #
-# Enable Fly Client Module if using ncid-fly to display on the TiVo
+# Enable the Fly Client Module if using ncid-fly to display on the TiVo
 # OSDCLIENT must not be enabled to use this output module.
-# Requires installation of both fly2osd and rsyslog-5.8.4
-#   http://www.dealdatabase.com/forum/showthread.php?66673-fly2osd&p=315611
+#
+# Requires installation of ncid-fly and supporting programs plus rsyslog-5.8.4
+#
+# Get rsyslog and install it from
 #   http://www.dealdatabase.com/forum/showthread.php?66672-rsyslog-5-8-4
+#
+# Get and install ncid-fly package:
+#   cd /var; tar -xzvf <path>/ncid-fly-mips-tivo.tgz
+#
+# Uncomment this line if using the ncid-fly package
+#MODULES="$MODULES ncid-fly"
+#
+# This package is also usable if you use a full path to fly2osd
+#   http://www.dealdatabase.com/forum/showthread.php?66673-fly2osd&p=315611
+# Uncomment this line if using fly2osd, modify path as required
+# MODULES="$MODULES /var/hack/fly2osd/ncid-fly"
 #
 # For a older version of ncid-fly see
 #   http://www.dealdatabase.com/forum/showpost.php?p=308346&postcount=75
-#FLYMOD=ncid-fly
 
-### Additional clients
+### Additional client modules
 #
-# Enable Initmodem Client Module if need to re-initialize modem
-#INITMOD=ncid-initmodem
+# Enable Initmodem Client Module to automatically reinitialize modem
+# for Caller ID.  Autodetects modem in non-CID mode on a incoming call.
+#MODULES="$MODULES ncid-initmodem"
+#
+# Enable Notify Client module if sending NCID data to iOS or Android device
+# Requires: curl, website registration, and a app for android or iOS
+#MODULES="$MODULES ncid-notify"
+#
+# Enable Page Client module if sending a NCID data SMS message to a cell phone
+# Requires: a mail program
+#MODULES="$MODULES ncid-page"
 #
 # Enable YAC Client Module if sending Caller ID to yac clients
-# Must configure "YACLIST" in ncidmodules.conf
-#YACMOD=ncid-yac
+# Must configure "YACLIST" in ncid-yac.conf
+#MODULES="$MODULES ncid-yac"
 
 #############################
 #############################
@@ -165,29 +188,11 @@ OSDCLIENT=tivoncid
     fi
 }
 
-### Initmodem Client Module
-[ -n "$INITMOD" ] &&
-{
-    if ! pgrep -fl $INITMOD > /dev/null
+### All Modules
+for module in $MODULES
+do
+    if ! pgrep -fl $module > /dev/null
     then
-        ncid --no-gui --program $INITMOD&
+        ncid --no-gui --program $module&
     fi
-}
-
-### YAC Client Module
-[ -n "$YACMOD" ] &&
-{
-    if ! pgrep -fl $YACMOD > /dev/null
-    then
-        ncid --no-gui --message --program $YACMOD&
-    fi
-}
-
-### FLY Client Module
-[ -n "$FLYMOD" ] &&
-{
-    if ! pgrep -fl $FLYMOD > /dev/null
-    then
-        ncid --no-gui --message --program $FLYMOD&
-    fi
-}
+done

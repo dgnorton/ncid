@@ -1,10 +1,18 @@
 Fedora Install
 
-Last edited: Sun Jul 1, 2012
+Last edited: Sat Oct 20, 2012
+
+Sections:
+
+    COMPILE:
+    INSTALL or UPGRADE:
+    CONFIGURE:
+    FIRST STARTUP:
+    START/STOP/RESTART/RELOAD/STATUS:
+    AUTOSTART:
 
 If NCID does not work, see INSTALL for some simple tests.
-If using sip2ncid, see Setup-ncidsip
-If using ncidsip, see Setup-ncidsip
+If using sip2ncid, see Setup-sip2ncid
 
 COMPILE:
 
@@ -22,14 +30,34 @@ INSTALL or UPGRADE:
     The client has a few output modules in its RPM package, and there
     are optional output modules in their own RPM packages.
 
-    - Download server and client RPM Packages from Fedora repositories
+    Download the server and client RPM packages using yum from the
+    Fedora repositories.  You can also download any optional output
+    modules you want.
+
+        - List the NCID packages
+        sudo yum list ncid\*
+
+        - the most recent versions may be here:
+        sudo yum --enablerepo=rawhide list ncid\*
+
+        - Download the server and client packages:
+        sudo yum install ncid-<rpm package>
+        sudo yum install ncid-client-<rpm package>
+
+        - Download any optional module packages wanted:
+        sudo yum install ncid-<module rpm package>
+
+    If the current release is not in the Fedora repositories, download
+    the RPM packages from https://sourceforge.net/projects/ncid/
+
+        - Download server and client RPM Packages from sourceforge
           ncid RPM Package         - server and gateways
           ncid-client RPM Package  - client and default output modules
 
-    - Download any optional output modules wanted:
+        - Download any optional output modules wanted from sourceforge:
           ncid-MODULE RPM Package  - optional client output modules
 
-    - Install or Upgrade the packages:
+        - Install or Upgrade the packages:
         Using the file viewer:
             - Open the file viewer to view the NCID RPM packages
             - Select the RPM packages
@@ -51,9 +79,9 @@ CONFIGURE:
     - If you are using a local modem with or without a Gateway:
         set noserial = 0  (this is the default)
 
-STARTUP:
+FIRST STARTUP:
 
-    - if you are running the server and client on the same computer
+    - If you are running the server and client on the same computer
       and using a modem:
         sudo systemctl start ncidd
         ncid &
@@ -72,7 +100,7 @@ STARTUP:
       and continue reading the test sections.
 
     - If everything is OK, enable the NCID server, gateways, and
-      client modules, your are using, to autostart at boot.
+      client modules you are using, to autostart at boot.
       For example, to start ncidd and sip2ncid at boot:
         sudo systemctl enable ncidd sip2ncid
 

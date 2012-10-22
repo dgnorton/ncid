@@ -2,7 +2,7 @@ PROG        = ncidd
 SRC         = $(PROG).c nciddconf.c nciddalias.c nciddhangup.c poll.c
 DIST        = $(PROG).conf-in
 HEADER      = $(PROG).h nciddconf.h nciddalias.h nciddhangup.h poll.h
-ETCFILE     = ncidd.conf ncidd.alias ncidd.blacklist
+ETCFILE     = ncidd.conf ncidd.alias ncidd.blacklist ncidd.whitelist
 SOURCE      = $(SRC) $(DIST) $(HEADER)
 FILES       = README.server Makefile $(SOURCE) $(ETCFILE)
 
@@ -35,12 +35,13 @@ CONFDIR      = $(ETC)/ncid
 CONF         = $(CONFDIR)/$(PROG).conf
 ALIAS        = $(CONFDIR)/ncidd.alias
 BLACKLIST    = $(CONFDIR)/ncidd.blacklist
+WHITELIST    = $(CONFDIR)/ncidd.whitelist
 
-MODEMDEV     = $(DEV)/modem
+TTYPORT      = $(DEV)/modem
 
 LOGDIR       = $(VAR)/log
 LOGFILE      = $(LOGDIR)/$(PROG).log
-CALLLOG      = $(LOGDIR)/cidcall.log
+CIDLOG       = $(LOGDIR)/cidcall.log
 DATALOG      = $(LOGDIR)/ciddata.log
 
 RUNDIR       = $(VAR)/run
@@ -55,9 +56,10 @@ OBJECT       = $(SRC:.c=.o)
 
 DEFINES      = -DCIDCONF=\"$(CONF)\" \
                -DCIDALIAS=\"$(ALIAS)\" \
-			   -DBLACKLIST=\"$(BLACKLIST)\" \
-               -DCIDLOG=\"$(CALLLOG)\" \
-               -DTTYPORT=\"$(MODEMDEV)\" \
+               -DBLACKLIST=\"$(BLACKLIST)\" \
+               -DWHITELIST=\"$(WHITELIST)\" \
+               -DCIDLOG=\"$(CIDLOG)\" \
+               -DTTYPORT=\"$(TTYPORT)\" \
                -DDATALOG=\"$(DATALOG)\" \
                -DLOGFILE=\"$(LOGFILE)\" \
                -DPIDFILE=\"$(PIDFILE)\" \
@@ -124,7 +126,7 @@ $(PROG): $(SRC) $(HEADER) ../version.h
 	$(CC) $(CFLAGS) -o $@ $(SRC)
 
 ../version.h: ../version.h-in
-	sed "s/XXX/$(Version)/" $? > $@
+	sed "s/XXX/$(Version)/" $< > $@
 
 install: $(PROG) dirs install-etc
 	install -m 755 $(PROG) $(SBIN)
@@ -141,6 +143,10 @@ install-etc: site
 	@if test -f $(BLACKLIST); \
 		then install -m 644 $(PROG).blacklist $(BLACKLIST).new; \
 		else install -m 644 $(PROG).blacklist $(CONFDIR); \
+	fi
+	@if test -f $(WHITELIST); \
+		then install -m 644 $(PROG).whitelist $(WHITELIST).new; \
+		else install -m 644 $(PROG).whitelist $(CONFDIR); \
 	fi
 
 dirs:
@@ -163,4 +169,4 @@ files:	$(FILES)
 .SUFFIXES: -in
 
 -in : *-in
-	sed '/share/s,/usr/local,$(prefix),;/$(settag)/s/# set/set/;/$(setname)/s/# set/set/;/$(setlock)/s/# set/set/' $< > $@
+	sed 's,/usr/local/etc,$(prefix2)/etc,;/$(settag)/s/# set/set/;/$(setname)/s/# set/set/;/$(setlock)/s/# set/set/' $< > $@

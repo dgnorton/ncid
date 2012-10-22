@@ -2,7 +2,7 @@
 NCIDD server verbose levels.  Higher levels include lower levels.
 ----------------------------------------------------------------
 
-Last edited by jlc on Sat Feb 12, 2011
+Last edited by jlc on Sun Aug 19, 2012
 
 LEVEL9:
         (can only be set by the command line)
@@ -11,7 +11,7 @@ LEVEL9:
 LEVEL8:
         (can only be set by the command line)
         show alias table
-        show blacklist array
+        show blacklist  and whitelist tables
         indicate client sent empty line
 
 LEVEL7:
@@ -59,7 +59,8 @@ LEVEL1:
         indicate data type sent to clients
         indicate alias file messages
         indicate if leading 1 needed for aliases
-        indicate blacklist file messages
+        indicate blacklist  and whitelist file messages
+        indicate alias, blacklist, and whitelist total/maximum entries, if any
         indicate cid logfile messages
         indicate if no data logfile
         indicate name and location of data logfile

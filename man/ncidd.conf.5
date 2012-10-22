@@ -30,10 +30,29 @@ where DATATYPE = cidlog or cidinfo
 .B command lines, beginning with 'set'
 set ITEM = VALUE [ITEM = VALUE] [...]
 .RS 11
-where ITEM = cidalias, cidlog, cidlogmax, datalog, genid,
-ignore1, initcid, initstr, lineid, lockfile,
-nomodem, noserial, pidfile, port, send, ttyclocal, ttyport, ttyspeed,
-verbose
+where ITEM =
+blacklist,
+cidalias,
+cidlog,
+cidlogmax,
+datalog,
+genid,
+blacklist,
+ignore1,
+initcid,
+initstr,
+lineid,
+lockfile,
+nomodem,
+noserial,
+pidfile,
+port,
+send,
+ttyclocal,
+ttyport,
+ttyspeed,
+verbose,
+whitelist
 .RE
 .SH EXAMPLES
 Send the CID log to each client at connect:

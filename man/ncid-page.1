@@ -1,1 +1,65 @@
-.so man1/ncidmodules.1
+.\" %W% %G%
+.TH NCID-PAGE 1
+.SH NAME
+.B ncid-page
+.SH SYNOPSIS
+ncid --no-gui --program
+.B ncid-page
+.SH DESCRIPTION
+The
+.B ncid-page
+output module sends the Caller ID or message to a cell phone, pager,
+or any other email address.  Can have multiple email addresses
+.PP
+It normally sends the information as soon as the Caller ID
+is received.  It can be configured to wait until a specific number of rings
+before sending the Caller ID when using a modem that indicates RING, or it
+can send the Caller ID if the call was unanswered or at the completion of
+the call when using a SIP gateway.  A message is always sent immediately.
+.PP
+The module requires \fIPageTo\fR in \fIncid-page.conf\fR to be set
+to the SMS gateway for your cell phone carrier.
+.TP 10
+List of SMS gateways:
+https://en.wikipedia.org/wiki/List_of_SMS_gateways
+.TP
+Requires:
+mail program
+.SH EXAMPLES
+If you want to call a module ona certain ring count, you need
+to configure the module to set ring in the ncid.conf file.
+.PP
+The \fIncid-page\fR module requires the \fIPageTo\fR variable to be set.
+The \fIncid-notify\fR module requires either a key variable to be set
+to a API key or a key file that contains the API key
+key file
+.PP
+.RS 0
+ncid command line options to call ncid-page at ring number 4
+
+    ncid --no-gui --program ncid-page --ring 4
+
+ncid.conf line and ncid command line to call ncid-page if no answer
+
+    uncomment the ncid_page line in ncid.conf and change 4 to -1
+    set ncid_page {set Ring -1}
+
+    ncid command to call ncid-page if no answer
+    ncid --no-gui --program  ncid-page
+.RE
+.PP
+.SH FILES
+/etc/ncid/conf.d/ncid-page.conf
+.br
+/usr/share/ncid/ncid-page
+.SH SEE ALSO
+ncidd.8,
+ncid.1,
+ncid-initmodem.1,
+ncid-kpopup.1,
+ncid-mythtv.1,
+ncid-notify.1,
+ncid-samba.1,
+ncid-skel.1,
+ncid-speak.1,
+ncid-yac.1

@@ -1,0 +1,23 @@
+/var/log/cid*.log /var/log/*ncid*.log {
+    monthly
+    rotate 5
+    missingok
+    #compress
+    notifempty
+    sharedscripts
+    prerotate
+        [ -x /usr/local/share/ncid/ncidrotate ] && \
+            /usr/local/share/ncid/ncidrotate prerotate
+    endscript
+    postrotate
+        [ -x /usr/local/share/ncid/ncidrotate ] && \
+            /usr/local/share/ncid/ncidrotate postrotate
+        for i in $*; do
+            n=`basename $i .log`
+            [ -x /etc/init.d/$n ] && /etc/init.d/$n condrestart
+            [ -f /usr/lib/systemd/system/$n.service ] && \
+                systemctl condrestart $n.service
+        done
+        true
+    endscript
+}

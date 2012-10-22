@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.84
+Version:    0.85
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -100,9 +100,10 @@ rm -fr $RPM_BUILD_DIR/%{name}
 
 %files
 %defattr(-,root,root)
-%doc README VERSION doc
-%doc cidgate/README.Gateways Fedora/README.Fedora
-%doc scripts/README.scripts tools/README.tools
+%doc README VERSION doc/[A-HJ-U]* doc/INSTALL doc/INSTALL-Fedora
+%doc doc/Verbose-ncidd doc/Verbose-sip2ncid doc/Verbose-ncid2ncid
+%doc server/README.server gateway/README.Gateways
+%doc logrotate/README.logrotate tools/README.tools Fedora/README.Fedora
 %{_bindir}/cidcall
 %{_bindir}/cidalias
 %{_bindir}/cidupdate
@@ -115,6 +116,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %{_datadir}/ncid/ncidrotate
 %dir /etc/ncid
 %config(noreplace) /etc/ncid/ncidd.blacklist
+%config(noreplace) /etc/ncid/ncidd.whitelist
 %config(noreplace) /etc/ncid/ncidd.conf
 %config(noreplace) /etc/ncid/ncidd.alias
 %config(noreplace) /etc/ncid/ncidrotate.conf
@@ -129,13 +131,13 @@ rm -fr $RPM_BUILD_DIR/%{name}
 /usr/lib/systemd/system/sip2ncid.service
 /usr/lib/systemd/system/yac2ncid.service
 %{_mandir}/man1/ncidrotate.1*
-%{_mandir}/man1/ncidtools.1*
 %{_mandir}/man1/cidalias.1*
 %{_mandir}/man1/cidcall.1*
 %{_mandir}/man1/cidupdate.1*
 %{_mandir}/man1/ncid2ncid.1*
 %{_mandir}/man1/yac2ncid.1*
 %{_mandir}/man5/ncidd.blacklist.5*
+%{_mandir}/man5/ncidd.whitelist.5*
 %{_mandir}/man5/ncidd.conf.5*
 %{_mandir}/man5/ncid2ncid.conf.5*
 %{_mandir}/man5/sip2ncid.conf.5*
@@ -149,33 +151,41 @@ rm -fr $RPM_BUILD_DIR/%{name}
 
 %files client
 %defattr(-,root,root)
-%doc README VERSION modules/README.modules
+%doc README VERSION client/README.client modules/README.modules
+%doc doc/Verbose-ncid
 %{_bindir}/ncid
 %dir %{_datadir}/ncid
+%dir /etc/ncid/conf.d
 %{_datadir}/ncid/ncid-initmodem
+%{_datadir}/ncid/ncid-notify
 %{_datadir}/ncid/ncid-page
 %{_datadir}/ncid/ncid-skel
 %{_datadir}/ncid/ncid-yac
 %{_datadir}/pixmaps/ncid/ncid.gif
 %dir /etc/ncid
 %config(noreplace) /etc/ncid/ncid.conf
-%config(noreplace) /etc/ncid/ncidmodules.conf
+%config(noreplace) /etc/ncid/conf.d/ncid-notify.conf
+%config(noreplace) /etc/ncid/conf.d/ncid-page.conf
+%config(noreplace) /etc/ncid/conf.d/ncid-skel.conf
+%config(noreplace) /etc/ncid/conf.d/ncid-yac.conf
 /usr/lib/systemd/system/ncid-initmodem.service
+/usr/lib/systemd/system/ncid-notify.service
 /usr/lib/systemd/system/ncid-page.service
 /usr/lib/systemd/system/ncid-yac.service
 %{_mandir}/man1/ncid.1*
-%{_mandir}/man1/ncidmodules.1*
 %{_mandir}/man1/ncid-initmodem.1*
+%{_mandir}/man1/ncid-notify.1*
 %{_mandir}/man1/ncid-page.1*
 %{_mandir}/man1/ncid-skel.1*
 %{_mandir}/man1/ncid-yac.1*
 %{_mandir}/man5/ncid.conf.5*
-%{_mandir}/man5/ncidmodules.conf.5*
+%{_mandir}/man7/ncid-modules.7*
 
 %files mythtv
 %defattr(-,root,root)
 %doc VERSION modules/README.modules
 %{_datadir}/ncid/ncid-mythtv
+%config(noreplace) /etc/ncid/conf.d/ncid-mythtv.conf
 /usr/lib/systemd/system/ncid-mythtv.service
 %{_mandir}/man1/ncid-mythtv.1*
 
@@ -183,12 +193,14 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %defattr(-,root,root)
 %doc VERSION modules/README.modules
 %{_datadir}/ncid/ncid-kpopup
+%config(noreplace) /etc/ncid/conf.d/ncid-kpopup.conf
 %{_mandir}/man1/ncid-kpopup.1*
 
 %files samba
 %defattr(-,root,root)
 %doc VERSION modules/README.modules
 %{_datadir}/ncid/ncid-samba
+%config(noreplace) /etc/ncid/conf.d/ncid-samba.conf
 /usr/lib/systemd/system/ncid-samba.service
 %{_mandir}/man1/ncid-samba.1*
 
@@ -196,6 +208,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %defattr(-,root,root)
 %doc VERSION modules/README.modules
 %{_datadir}/ncid/ncid-speak
+%config(noreplace) /etc/ncid/conf.d/ncid-speak.conf
 /usr/lib/systemd/system/ncid-speak.service
 %{_mandir}/man1/ncid-speak.1*
 
@@ -233,10 +246,14 @@ fi
 %preun client
 if [ $1 = 0 ] ; then ### Uninstall package ###
     # stop services and remove autostart
-    for SCRIPT in ncid-initmodem ncid-page ncid-yac
+    # a service could have been installed by another package
+    for SCRIPT in /usr/share/ncid/ncid-*
     do
-        /bin/systemctl stop $SCRIPT.service
-        /bin/systemctl --quiet disable $SCRIPT.service
+        NAME=`basename $SCRIPT`
+        if [ -f /usr/lib/systemd/system/$NAME ]; then
+            /bin/systemctl stop $NAME.service
+            /bin/systemctl --quiet disable $NAME.service
+        fi
     done
 fi
 
@@ -276,7 +293,10 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
     # a service could have been installed by another package
     for SCRIPT in /usr/share/ncid/ncid-*
     do
-        /bin/systemctl try-restart `basename $SCRIPT`.service
+        NAME=`basename $SCRIPT`
+        if [ -f /usr/lib/systemd/system/$NAME ]; then
+            /bin/systemctl try-restart $NAME.service
+        fi
     done
 fi
 
@@ -299,6 +319,15 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+
+* Fri Oct 18 2012 John Chmielewski <jlc@users.sourceforge.net> 0.85
+- Added ncidd.whitelist ncid-notify ncid-notify.service
+- Added ncidd.whitelist.5 ncid-notify.1 ncid-modules.7
+- Added Verbose-ncid to client
+- Removed ncidmodules.1 and ncidmodules.conf.5 ncidtools.1
+- renamed scripts/ to logname/ and README.scripts to README.logrotate
+- fixed %postun client
+- updated %doc files
 
 * Mon Jul 2 2012 John Chmielewski <jlc@users.sourceforge.net> 0.84
 - Changed from using service & init scripts to systemctl & service scripts

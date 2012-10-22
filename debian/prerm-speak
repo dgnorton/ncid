@@ -20,7 +20,8 @@ set -e
 case "$1" in
     remove|deconfigure)
         [ -h /usr/doc/ncid-speak ] && rm -f /usr/doc/ncid-speak
-        [ -x /etc/init.d/ncid-speak ] && invoke-rc.d ncid-speak stop
+        involk-rc.d $ncid-speak stop
+        update-rc.d -f $ncid-speak remove
     ;;
     upgrade)
         [ -h /usr/doc/ncid-speak ] && rm -f /usr/doc/ncid-speak

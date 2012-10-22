@@ -8,15 +8,15 @@ Man Pages: http://ncid.sourceforge.net/man/man.html
 
 Software Development Kit: http://ncid.sourceforge.net/NCID-SDK.odt
 
-File last changed: Sun Jan 30, 2011
+File last changed: Fri Sep 7, 2012
 
 Directories:
-    cidgate:     gateway programs
     client:      client program
     Debian:      files specific to Debian.
     doc:         most of the documentation
     Fedora:      files specific to Fedora.
     FreeBSD:     files specific to FreeBSD.
+    gateway:     gateway programs
     man:         man pages
     modules:     client modules
     server:      server program
@@ -67,8 +67,9 @@ This only works with SIP gateways that indicate outgoing calls.
 The NCID package has the following features:
 
     Server Features (ncidd):
-    - Gets CID information from a modem, device or gateway.
-    - Indicates a call from modems that indicate ring but not Caller ID.
+    - Handles CID information from a modem, device or gateway.
+    - Handles calls from modems that indicate ring but not Caller ID.
+    - Handles outgoing or hangup calls from gateways that support them.
     - Shares the modem for outgoing calls.
     - Supports CID devices like NetCallerID
     - Supports VoIP using SIP
@@ -79,7 +80,7 @@ The NCID package has the following features:
     - Can alias the telephone line identifier
     - Logs all calls:  Track who called when.
     - Has a configuration file to set most options and aliases.
-    - Runs on Linux, UNIX, Macintosh OS X, TiVo and Windows using andLinux
+    - Runs on Linux, UNIX, Macintosh OS X, TiVo and Windows using Ubuntu
       or Cygwin.
     - Supports Distinctive Ring
     - Supports Multiline (1 POTS and 1 or Gateways)
@@ -92,13 +93,14 @@ The NCID package has the following features:
       answer if input device supports it.
     - supports sending outgoing calls to clients if received from a gateway
     - Automatically terminates a telephone call using a modem if name or
-      number is in the blacklist file.
-    - Reloads the alias and blacklist files when it receives a SIGHUP signal.
+      number is in the blacklist file but not in a whitelist file.
+    - Reloads the alias, blacklist, and whitelist files when it receives
+      a SIGHUP signal.
     - Documented protocol
 
     Client Features (ncid):
     - Displays the number in a specific country format for US, Sweden,
-      United kingdom, Germany, and no format.
+      United kingdom, Germany, Croatia, and no format.
     - Displays the current Caller ID Log when a call is received.
     - Displays outgoing calls if they are supported by the server
     - Displays messages received from the server.
@@ -135,7 +137,7 @@ The NCID package has the following features:
 See the doc directory for most documentation, including OS
 specific INSTALL files.
 
-See cidgate/README.gateways Fedora/README.Fedora FreeBSD/README.FreeBSD
+See gateway/README.gateways Fedora/README.Fedora FreeBSD/README.FreeBSD
 modules/README.modules scripts/README.logfile, tools/README.tools, and
 test/README.
 
@@ -147,12 +149,13 @@ Instructions for using ncidd are in the man page: ncidd.8
 Instructions for configuring ncidd are in the man page: ncidd.conf.5
 Instructions for configuring ncidd aliases are in the man page: ncidd.alias.5
 Instructions for ncid.blacklist are in the man page: ncidd.blacklist.conf.5
+Instructions for ncid.whitelist are in the man page: ncidd.whitelist.conf.5
 
 Instructions for using ncid are in the man page: ncid.1
 Instructions for configuring ncid are in the man page: ncid.conf.5
 
-Instructions for using ncidmodules are in the man page: ncidmodules.1
-Instructions for configuring ncidmodules are in the man page: ncidmodules.conf.5
+Instructions for using ncid-<name> are in the man page: ncid-<name>.1
+Overview of the modules are in the man page: ncid-modules.7
 
 Instructions for using ncid2ncid are in the man page: ncid2ncid.1
 Instructions for configuring ncid2ncid are in the man page: ncid2ncid.conf.5
@@ -176,6 +179,7 @@ The distributed configuration files are:
     ncidd.conf
     ncidd.alias
     ncidd.blacklist
+    ncidd.whitelist
     ncidsip.conf
     ncidrotate.conf
     ncidmodules.conf

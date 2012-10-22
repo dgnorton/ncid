@@ -6,6 +6,7 @@ Fedora systemd service files:
 
   ncid-initmodem.service - service file for ncid using ncid-initmodem module
   ncid-mythtv.service    - service file for ncid using ncid-mythtv module
+  ncid-notify.service    - service file for ncid using ncid-notify module
   ncid-page.service      - service file for ncid using ncid-page module
   ncid-samba.service     - service file for ncid using ncid-samba module
   ncid-speak.service     - service file for ncid using ncid-speak module

@@ -1,12 +1,14 @@
 #!/usr/bin/perl -w
 
 # Created by Chris Lenderman on March 25, 2010
+# Modified by jlc on Wed Aug 22, 2012
+# Copyright 2010-2012
 #
 # This script simulates a TTY connection and sends modem CallerID data to NCIDD
 # The initstr or initcid variable in ncidd.conf must not be ""
 # The way to test ncid and ncidd
 # ./TestMdmcalls
-# ./testserver ../ncidd
+# ./testserver ../server/ncidd
 # ./ncid 3334
 #
 use strict;
@@ -37,7 +39,9 @@ select(NEWSOCK); $| = 1;select(STDOUT);
 vec($BitMask,fileno(NEWSOCK),1)=1;
 
 #prompt for NCIDD connection
-print "Connect server to port 3334 and tty ./vmodem0 for test: ./testserver ../ncidd -t ./vmodem0 \n\n";
+print "The initstr or initcid variable in ncidd.conf must not be NULL\n";
+print "Connect server to port 3334 and tty ./vmodem0 for test:\n";
+print "    ../server/ncidd -t ./vmodem0 \n\n";
 print "Then press <ENTER> multiple times to send different caller data\n\n";
 
 #Send the "OK" in response to AT commands
@@ -48,17 +52,17 @@ while ($total_cmds < 2)
    sysread(NEWSOCK, $buf, 1);
    $dataline.=$buf; 
    
-   if ($dataline =~/\r/)
+   if ($dataline =~/\n\r|\r\n/)
    {
       if ($dataline =~/^AT/)
       {
-         #print "INIT STRING: $dataline\nSENDING: OK\n\n";
+         if (!$total_cmds) {print "INIT STRING: ${dataline}SENDING:     OK\n\n";}
+         else {print "CID STRING: ${dataline}SENDING:     OK\n\n";}
          print NEWSOCK "OK\n";
-	 $total_cmds++;
+	     $total_cmds++;
       }
       $dataline = "";
    }
-   select($rout=$BitMask,$wout=$BitMask,$eout=$BitMask,0);
 }
 
 #send the data

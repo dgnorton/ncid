@@ -2,7 +2,8 @@
 sip2ncid server verbose levels.  Higher levels include lower levels.
 --------------------------------------------------------------------
 
-Last edited by jlc on Fri Aug 13, 2010
+Last edited by jlc on Sun Oct 7, 2012
+
 LEVEL9:
         (can only be set by the command line)
         show lines received from the NCID server
@@ -17,7 +18,8 @@ LEVEL6:
         not used
 
 LEVEL5:
-        not used
+        show linenum array and number as they are compared for a call
+        indicate checked for "Call ID: call-" and outcall value
 LEVEL4:
         UDP packet from address
         UDP packet to address

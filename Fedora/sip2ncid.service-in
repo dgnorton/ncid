@@ -9,4 +9,4 @@ PIDFile=/var/run/sip2ncid.pid
 ExecStart=/usr/sbin/sip2ncid --pidfile /var/run/${prog}.pid
 
 [Install]
-WantedBy=network.target
+WantedBy=multi-user.target

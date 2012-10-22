@@ -2,11 +2,14 @@
 .TH NCIDD.BLACKLIST 5
 .SH NAME
 .B ncidd.blacklist
-- \fIncidd\fR call blacklist file
+- blacklist file for \fIncidd\fR hangup
 .SH DESCRIPTION
-The \fIncidd.blacklist\fR file contains the expressions  to match against a
-telephone call name or number.  if the hangup option is set and If there
-is a match \fIncidd\fR will automatically terminate the call.
+The \fIncidd.blacklist\fR file contains the expressions to match against a
+telephone call name or number.
+.P
+If the hangup option is set and if there is no match in the whitelist file,
+a match in the blacklist file will cause \fIncidd\fR to automatically
+terminate the call.
 .PP
 The \fIncidd.blacklist\fR file understands 3 types of lines:
 .TP 18
@@ -42,15 +45,11 @@ A '^' at the beginning an expression means it must match at the start of
 a name or number.
 .IP \(bu
 If an expression is longer than the name or number field it will never match.
+.IP \(bu
 .SH EXAMPLES
-blacklist the entire 999 area code (no leading 1 needed):
+blacklist the unassigned 999 area code with and without a leading 1
 .RS 0
-	^999
-.RE
-.PP
-blacklist the entire 999 area code (leading 1 needed):
-.RS 0
-	^1999
+	^999    ^1999
 .RE
 .PP
 blacklist "BAD MARKETING":
@@ -68,4 +67,4 @@ blacklist a name and a number on one line:
 	Ogre 13215551212
 .RE
 .SH SEE ALSO
-ncidd.8, ncidd.conf.5 ncidd.alias.5
+ncidd.8, ncidd.conf.5, ncidd.alias.5, ncidd.whitelist.5

@@ -20,10 +20,11 @@ set -e
 case "$1" in
     remove|deconfigure)
         [ -h /usr/doc/ncid ] && rm -f /usr/doc/ncid
-        [ -x /etc/init.d/ncidsip ] && invoke-rc.d ncidsip stop
-        [ -x /etc/init.d/sip2ncid ] && invoke-rc.d sip2ncid stop
-        [ -x /etc/init.d/yac2ncid ] && invoke-rc.d yac2ncid stop
-        [ -x /etc/init.d/ncidd ] && invoke-rc.d ncidd stop
+        for script in ncidd ncidsip sip2ncid yac2ncid ncid2ncid
+        do
+            involk-rc.d $script stop
+            update-rc.d -f $script remove
+        done
     ;;
     upgrade)
         [ -h /usr/doc/ncid ] && rm -f /usr/doc/ncid

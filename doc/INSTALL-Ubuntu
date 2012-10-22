@@ -1,10 +1,18 @@
 Ubuntu Install
 
-Last edited: Mon May 17, 2010
+Last edited: Sat Oct 20, 2012
+
+Sections:
+
+    COMPILE:
+    INSTALL or UPGRADE:
+    CONFIGURE:
+    FIRST STARTUP:
+    START/STOP/RESTART/RELOAD/STATUS:
+    AUTOSTART:
 
 If NCID does not work, see INSTALL for some simple tests.
-If using sip2ncid, see Setup-ncidsip
-If using ncidsip, see Setup-ncidsip
+If using sip2ncid, see Setup-sip2ncid
 
 COMPILE:
 
@@ -23,12 +31,34 @@ INSTALL or UPGRADE:
     The client has a few output modules in its DEB package, and there
     are optional output modules in their own DEB packages.
 
+    If installing from 3rd Party Repository: GetDeb Apps
+
+    - Add the repository if needed:
+      wget -q -O - http://archive.getdeb.net/getdeb-archive.key \
+        | sudo apt-key add -
+      sudo sh -c \
+        'echo "deb http://archive.getdeb.net/ubuntu precise-getdeb apps" \
+        >> /etc/apt/sources.list
+
+    - Update the apt cache:
+      sudo apt-get update
+
+    - List the available packages:
+      sudo apt-cache search ncid
+
+    - Install the server and client:
+      sudo apt-get install ncid ncid-client
+
+    - Install any optional output modules wanted:
+      sudo apt-get install ncid-<module>
+
+    If the latest source is not available at the repository:
+
     - Download the latest NCID deb packages from sourceforge
           ncid DEB Package
           ncid-client DEB Package - client and default output modules
 
     - Download any optional output modules wanted:
-      (if installing ncid-kpopup, ncid-speak needs to be installed first)
           ncid-MODULE DEB Package  - optional client output modules
 
     - Install or Upgrade the packages:
@@ -39,12 +69,6 @@ INSTALL or UPGRADE:
             - Select the DEB packages
             - double click selections or right click selections and select
               "Open with GDebi Package installer"
-
-    If you want to use ncidsip:
-
-    - Install the build-essential package: sudo apt-get install build-essential
-    - Download, compile, and install the IO-Interface module from CPAN
-    - Download, compile, and install the Net-Pcap module from CPAN
 
 CONFIGURE:
 
@@ -115,6 +139,5 @@ AUTOSTART:
     Here are some examples:
     - start ncidd at boot: sudo update-rc.d ncidd defaults
     - start ncid-page at boot: sudo update-rc.d ncid-page defaults
-    - remove ncidsip form starting at boot: sudo update-rc.d -f ncidsip remove
 
     Review the man page (man update-rc.d).

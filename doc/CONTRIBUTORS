@@ -1,7 +1,10 @@
-Last edited on Mon Oct 19, 2009
+Last edited on mon Oct 1, 2012 
+
+Any omissions are entirely my fault.  Please notify me for
+any corrections.
 
 John L. Chmielewski:
-    Designed and wrote most of the programs.
+    Designed, developed, and wrote most of the programs.
 
 Mark Salyzyn:
     Ported ncidd to BSD and Macintosh.
@@ -85,16 +88,26 @@ Todd Andrews <taa@pobox.com>
     - Helped with server testing and fixing various OSX problems
     - Provided a server fix for the hangup configuration/option
       problem on OSX
+    - developed ncid-nma output module which was converted to ncid-notify
+    - developed wc2ncid gateway
+    - developed ncid-notify
+    - helped improve various NCID documentation
+    - did a lot of work for the NCID 0.85 distribution
 
 Charlie Heitzig <mail@heitzig.org>
     - Spent time debugging sip2ncid and WinPacp.
     - Contributed fix for sip2ncid to it exits instead of failing
       while running when it receives a system error.
+    - contributed ncid-prowl which became part of ncid-notify
 
 Jeff Rabin <jeff@jrgator.com>
     - Helped with the ncidd hangup option by testing, reviewing
       documentation, suggesting improvements, and providing patches.
     - created the ncidd configuration option "ignore1" patches.
+
+Nrven Ćosić <senseitcom@email.t-com.hr>
+    - added country code HR (Croatia) to ncid and ncid.conf
+    - added alternate date separaters
 
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Adam 'Starblazer' Romberg
@@ -120,6 +133,7 @@ New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Marko Koski-Vähälä
     George Johnson
     Steve Major
+    Charlie Heitzig
 
 Feedback on working modems:
     Derek Huxley

@@ -1,22 +1,26 @@
 #!/bin/bash
 
-# reinitialize a modem to handle Caller ID if CIDNMBR=RING
-# which indicates modem is not in Caller ID mode
+# ncid-initmodem
+# usage: ncid --no-gui --program ncid-initmodem
 
-# Last changed by jlc: Sun Sep 11, 2011
+# Last modified: Fri Oct 12, 2012
+
+# reinitialize a modem to handle Caller ID if CIDNMBR=RING
+# this indicates modem droped out of Caller ID mode.  Do
+# not use with a modem that does not support Caller ID.
+# requires a modem
 
 # modem must send "RING" each time it sees the ringing signal
 # must be run as root
 
-# input is 6 lines obtained from ncid
+# input is always 6 lines
+#
+# if input is from a call:
 # input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
 #
-# input is 6 lines if a message was sent
+# if input is from a message
+# the message is in place of NAME:
 # input: \n\n\n<MESSAGE>\n\nMSG\n
-# Message will be in $CIDNAME
-#
-# ncid usage:
-#   ncid --no-gui --program ncid-initmodem
 
 # $CIDTYPE is one of:
 #   CID: incoming call
@@ -24,10 +28,11 @@
 #   HUP: blacklisted hangup
 #   MSG: message instead of a call
 
-ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/ncidmodules.conf
-nciddconf=$ConfigDir/ncidd.conf
+ConfigDir=/usr/local/etc/ncid/conf.d
+ConfigFile=$ConfigDir/ncid-initmodem.conf
+nciddconf=/usr/local/etc/ncid/ncidd.conf
 
+# Configuration file is not needed
 [ -f $ConfigFile ] && . $ConfigFile
 
 read CIDDATE

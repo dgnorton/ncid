@@ -1,6 +1,11 @@
 Windows Install
 
-Last edited: Wed Feb 10, 2010
+Last edited: Fri Oct 18, 2012
+
+Sections:
+    WINDOWS CLIENT INSTALL:
+    WINDOWS COMPLETE COMPILE:
+    NCID.TCL INSTALL:
 
 Install either the windows client package or the complete package.
 
@@ -19,25 +24,27 @@ WINDOWS CLIENT INSTALL:
 
 WINDOWS COMPLETE COMPILE:
 
-    See INSTALL, INSTALL-Cygwin, and INSTALL-andLinux
+    See INSTALL and INSTALL-Cygwin or Install-Ubuntu
 
 WINDOWS COMPLETE INSTALL:
 
-    Install andLinux or Cygwin if you need to install the complete
-    NCID package, including server, client, and gateways.
+    Install Ubuntu on windows or Cygwin if you need to install the
+    complete NCID package, including server, client, and gateways.
 
     The serial port functions of ncidd do not work under Windows or
     Cygwin so you must use the SIP or YAC gateway with it.  It is
-    unknown if a modem will work under andLinux so it is best to
-    use a gateway with it also.
+    unknown if a modem will work under Ubuntu so you may need to
+    use a gateway with it also.  If a modem is usable, it should
+    be a modem that supports Linux like the USB modem described
+    on http://ncid.sourceforge.net
 
     NCID under Cygwin is a fairly complex command line install, and there
-    are some performance issues with it.  It is recommended you use andLinux.
+    are some performance issues with it.  It is recommended you try Ubuntu.
     See INSTALL-Cygwin if you want to install Cygwin and NCID.
 
-    NCID under andLinux is a easy install.  It is based on Ubuntu and
-    can use the GUI based package manager to install/update/remove it.
-    See INSTALL-andLinux if you want to install andLinux and NCID.
+    NCID under Ubuntu is a easy install.  You can use the GUI based
+    package manager to install/update/remove it.
+    See INSTALL-Ubuntu if you want to install Ubuntu and NCID.
 
 NCID.TCL INSTALL:
 

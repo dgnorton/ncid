@@ -1,0 +1,90 @@
+#!/bin/sh
+#
+# ncid-notify          Sent a notification to Android and iOS devices
+#
+# chkconfig: - 96 04
+# description: ncid using the Notify Output Module
+
+### BEGIN INIT INFO
+# Short-Description: NCID Client using the notify module
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 1
+
+RETVAL=0
+prog="ncid"
+exec="/usr/local/bin/$prog"
+module=ncid-notify
+pidfile=/var/run/$module.pid
+lockfile=/var/lock/subsys/$module
+
+args="--no-gui --pidfile $pidfile -P $module"
+
+start() {
+    [ -x $exec ] || exit 5
+    [ -f $config ] || exit 6
+    echo -n $"Starting $prog with output module $module: "
+    daemon --pidfile=/var/run/$module.pid $prog $args \&
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch $lockfile
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Shutting down $prog with output module $module: "
+    killproc -p /var/run/$module.pid $prog
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f $lockfile
+    return $RETVAL
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    echo -n $"Reloading $prog alias files: "
+    killproc $prog -HUP
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    reload)
+        # reload
+        restart
+        ;;
+    restart)
+        restart
+        ;;
+    condrestart)
+        [ -f $lockfile ] && restart
+        ;;
+    status)
+        status $module
+        RETVAL=$?
+        ;;
+    *)
+        echo $"Usage: $prog {start|stop|reload|restart|condrestart|status}"
+        exit 2
+esac
+
+exit $RETVAL

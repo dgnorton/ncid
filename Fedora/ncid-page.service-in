@@ -4,11 +4,9 @@ After=ncidd.service
 
 [Service]
 Type=simple
-Environment=module=ncid-page ringopt= pageopt=-M
-EnvironmentFile=-/usr/local/etc/ncid/ncidmodules.conf
+Environment=module=ncid-page
 PIDFile=/var/run/ncid-page.pid
-ExecStart=/usr/bin/ncid --no-gui -p /var/run/${module}.pid -P $module \
-                        $ringopt $pageopt
+ExecStart=/usr/bin/ncid --no-gui -p /var/run/${module}.pid -P $module
 ExecStop=/bin/kill $MAINPID ; /bin/rm -f /var/run/${module}.pid
 
 [Install]

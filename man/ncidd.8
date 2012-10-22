@@ -35,6 +35,8 @@
 [-t <ttyport>    | --ttyport <ttyport>]
 [-V              | --version]
 [-v <1-9>        | --verbose <1-9>]
+[-W <file>       | --whitelist <file>]
+[--osx-launchd]
 .fi
 .SH DESCRIPTION
 .B NCIDD
@@ -88,34 +90,31 @@ was not answered.
 If the Caller ID is obtained from a SIP Gateway that supports outgoing
 calls, ncidd will send outgoing call text lines to the clients.
 
-If the hangup option is configured, ncidd will send hangup call text lines
-to the clients.
+If the Caller ID is obtained from a Gateway that supports automatic
+hangup, ncidd will send hangup call text lines to the clients.
+
+If the hangup option is configured, ncidd will automatically hangup the
+call and send hangup call text lines to the clients.
 .PP
-.B NCIDD
-will accept a text message for a client, and then send it to all
-connected clients, including the one that sent it.
+A client can send \fBncidd\fR a text message.  The text message
+is then send to all connected clients, including the one that sent it.
 .PP
-.B NCIDD
-will accept a CALL line from a gateway.  A CALL line contains the
-Caller ID information or message from a gateway instead of a serial device
-or modem.
+Gateways send \fBncidd\fR a \fICALL text line\fR.  The \fICALL text line\fR
+is either a incoming call (CID), a outgoing call (OUT), a hangup (HUP), or
+a message (MSG).  Gateways are normally used in place of a modem, but can
+also be used with a modem connected to ncidd.
 .PP
-.B NCIDD
-will accept a CALLINFO line from a gateway.  A SIP gateway will send
-a CALLINFO line when it receives a CANCEL  or BYE command.  The server
-will then send a ring count of -1 to its clients to indicate a hangup with
-no answer.
+Gateways also send \fBncidd\fR \fICALLINFO text lines\fR.
+A SIP gateway will send a CALLINFO line when it receives a CANCEL or
+BYE command.  The server then sends a ring count of -1 to its clients
+to indicate a hangup with no answer.
 .PP
-.B NCIDD
-will accept MSG lines from a gateway.  A MSG line contains a text message.
+The NCID gateway sends \fBncidd\fR CID and CIDINFO text lines instead
+of the normal gateway CALL and CALLINFO lines which need conversion.
 .PP
-.B NCIDD
-will accept CID and CIDINFO lines directly from a NCID gateway.
-There is no need to convert into the usual CALL and CALLINFO
-gateway formats.
-.PP
-.B NCIDD
-will reload the alias and blacklist files when sent a SIGHUP signal.
+When \fBncidd\fZR receives a SIGHUP signal, it will reload the alias
+file.  If the hangup option is set, \fBncidd\fR will also reload
+the blacklist and whitelist files.
 .SH "OPTIONS"
 .PD 0
 .TP
@@ -269,6 +268,16 @@ logfile very fast.
 To debug, try: verbose = 3
 .br
 Default: verbose = 1
+.TP
+.B -B <file> | --whitelist <file>
+Whitelist file.
+.br
+Default: /etc/ncid/ncidd.whitelist
+.TP
+.B --osx-launchd
+This option is only for OSX when using launchd to control ncidd.  It
+prevents \fBncidd\fR from entering daemon mode.  It is like debug
+mode, but nothing is printed to the screen.
 .PD
 .SH CONFIGURATION
 The ncidd.conf(5) file is used to set options.
@@ -355,10 +364,10 @@ Server log file.  Contents controlled by verbose.
       -111         Cannot init TTY
       -112         Serial device error
       -113         string too long
-      -114         Blacklist file error
+      -114         Blacklist or whitelist file error
         -?         System error
 .fi
 .SH SEE ALSO
 sip2ncid.8, ncidsip.8, ncid2ncid.1, ncidrotate.1, yac2ncid.1
-ncid.1, ncidmodules.1 ncidtools.1, lcdncid.1,
-ncidd.conf.5, ncidd.alias.5, ncidd.blacklist.5
+ncid.1, ncidtools.1, lcdncid.1,
+ncidd.conf.5, ncidd.alias.5, ncidd.blacklist.5, ncidd.whitelist.5

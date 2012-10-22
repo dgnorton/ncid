@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Disabled</key>
+		<true/>
+	<key>Label</key>
+		<string>net.sourceforge.ncid-samba</string>
+	<key>ProgramArguments</key>
+		<array>
+			<string>/usr/local/bin/ncid</string>
+			<string>--no-gui</string>
+			<string>--pidfile</string>
+			<string>/var/run/ncid-samba.pid</string>
+			<string>--program</string>
+			<string>ncid-samba</string>
+		</array>
+	<key>RunAtLoad</key>
+		<true/>
+	<!-- OnDemand used by OS X 10.4 -->
+	<key>OnDemand</key>
+		<false/>
+	<!-- KeepAlive used by OS X 10.5 and later -->
+	<key>KeepAlive</key>
+		<true/>
+</dict>
+</plist>

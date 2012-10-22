@@ -2,7 +2,8 @@
 ncid2ncid server verbose levels.  Higher levels include lower levels.
 --------------------------------------------------------------------
 
-Last edited by jlc on Fir Aun 13, 2010
+Last edited by jlc on Sun Oct 7, 2012
+
 LEVEL9:
         (can only be set by the command line)
         Indicate reading socket

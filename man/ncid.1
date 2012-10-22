@@ -17,9 +17,9 @@
 .PP
 .nf
 [--no-gui]
+[--alt-date               | -A]
 [--classic-display        | -C]
 [--delay <seconds>        | -D <seconds>]
-[--message                | -M]
 [--noexit                 | -X]
 [--program <program name> | -P <program name>]
 [--pidfile <file name>    | -p <file name>]
@@ -45,7 +45,7 @@ startup.  The history window is then updated by \fIncid\fR whenever
 a call is received.
 .PP
 The history window displays one line per call or message.  Each
-line line starts with a libe label.  There are three types of
+line line starts with a call label.  There are three types of
 calls and a message that can be displayed:
 .PP
 .PD 0
@@ -68,12 +68,18 @@ also has a message window that will send a single line message
 to the server which, in turn, will send it to all connected clients.
 .PP
 The \fBncid\fR client
-runs on Linux and Windows 98, ME, XP, 2000, NT.  In the GUI mode, it
-will pop up, and go on top whenever a call comes in.  In addition,
-it will display itself on whatever desktop is active in Linux.
-If \fIncid\fR is given the --no-gui option, it will either output
-to a external program, output module, or use the verbose mode to
-display the CID information in a terminal window.
+runs on Linux and Windows 98, ME, XP, 2000, NT and Mac OS X.  In the 
+GUI mode, it will pop up, and go on top whenever a call comes in.
+In addition, it will display itself on whatever desktop is active in 
+Linux.  If \fIncid\fR is given the --no-gui option, it will run
+without a GUI.
+.PP
+If \fIncid\fR is given the --program <module> option, it will
+output to either a external program or output module.  The
+.B ncid
+client can be configured to call any one module.  It cannot call
+multiple modules, but multiple clients can be used, each calling
+a different output module.
 .PP
 If \fIncid\fR is named \fItivocid\fR, it will start in a no-gui mode
 and output to a external program called \fIout2osd\fR which displays
@@ -90,8 +96,8 @@ it will terminate with a error message.
 .PP
 The configuration file for \fIncid\fR is /etc/ncid/ncid.conf.
 .PP
-The distributed output modules are listed in the ncidmodules man page,
-can be customized as needed in the /etc/ncid/ncidmodules.conf file:
+The distributed output modules are listed in the ncid-modules man page,
+can be customized as needed in the /etc/ncid/conf.d/ncid-<name>.conf files.
 .PP
 Whenever the server connection is broken, \fIncid\fR will normally try
 to reconnect once a minute.  It provides a visual record of the countdown
@@ -120,14 +126,22 @@ terminates \fIncid\fR.
 .B --no-gui
 Do not display CID information using a GUI
 .br
-Default: display CID using a GUI, except if called tivocid
+Default: display CID using a GUI, unless called as \fItivocid\fR
+or \fItivoncid\fR.
+.TP
+.B --alt-date | -A
+Display the date in a alternate format.
+Assuming the date separator is a "/",
+the date is displayed as dd/mm/yyyy
+.br
+Default: display the date as mm/dd/yyyy
 .TP
 .B --classic-display | -C
-Ingores all call types except incoming calls (CID:).
 Displays only incoming calls and messages in the
-history window.  Ignores outgoing calls and hungup calls.
+GUI history window.  Ignores outgoing calls and auto hungup calls.
+Has no effect with output modules.
 .br
-Default: Do not display all call types
+Default: show all call types in the GUI history window
 .TP
 .B --delay SECONDS | -D SECONDS
 Delay SECONDS between server connection attempts if SECONDS > 0.
@@ -136,8 +150,6 @@ Only one attempt to connect to server if SECONDS = 0.
 .br
 Default: 60 seconds
 .TP
-.B --message | -M
-Send messages to the output modules
 .B --noexit | -X
 Configure ncid to to ignore the close window button.
 .TP
@@ -151,9 +163,7 @@ There is no default.  If pidfile is not set, no pid file will be used.
 .B --program PROGRAM | -P PROGRAM
 Output the Caller ID information to the external program or output module.
 PROGRAM is the name of the output module (program) to use.
-The selected module is sent the Caller ID information.
-Outgoing call information is also sent if the call-out option is enabled.
-A message is also sent, if the message option is enabled.
+The selected module is sent all calls and messages.
 .br
 Default module PATH: /usr/share/ncid
 .TP
@@ -212,6 +222,9 @@ Default: 3333
 /usr/share/ncid/*
 .SH EXAMPLES
 .nf
+# Display the date as dd/mm/yyyy
+ncid --alt-date
+
 # run ncid in a terminal window, server on remote host
 ncid --no-gui tardis.drwho.home
 
@@ -221,16 +234,22 @@ ncid --no-gui --program ncid-speak
 # send CID output to GUI and speak it
 ncid --program /usr/local/bin/ncid-speak
 
-# send CID output to a cell phone after third ring
-ncid --no-gui --program ncid-page --ring 3
-
-# send CID output to a cell phone on hangup before answer
-ncid --no-gui --program ncid-page --ring -1
+# send CID output to a cell phone
+ncid --no-gui --program ncid-page
 
 # run ncid on a TiVo using out2osd, server on remote host
 tivocid 192.168.0.1
 .fi
 .SH SEE ALSO
 ncidd.8, sip2ncid.8,
-ncid2ncid.1, ncidmodules.1, ncidrotate.1, ncidtools.1, yac2ncid.1,
-ncid.conf.5, 
+ncid2ncid.1, ncidrotate.1, ncidtools.1, yac2ncid.1,
+ncid-initmodem.1,
+ncid-kpopup.1,
+ncid-mythtv.1,
+ncid-notify.1,
+ncid-page.1,
+ncid-samba.1,
+ncid-skel.1,
+ncid-speak.1,
+ncid-yac.1,
+ncid.conf.5 
