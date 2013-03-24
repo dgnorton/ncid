@@ -1,12 +1,16 @@
 ------------
 NCID for Mac
 ------------
+fix-combobox.sh                      - patch file for ActiveTcl 8.4.19.6
+ncid-gui.command.sh                  - script to start ncid in background
 
 Mac OSX plist scripts:
 
 net.sourceforge.ncidd.plist          - ncidd server
 net.sourceforge.ncid2ncid.plist      - ncid2ncid gateway
 net.sourceforge.sip2ncid.plist       - sip2ncid gateway
+net.sourceforge.wc2ncid.plist        - wc2ncid gateway
+net.sourceforge.yac2ncid.plist       - yac2ncid gateway
 net.sourceforge.ncid-initmodem.plist - ncid client with ncid-initmodem module
 net.sourceforge.ncid-mythtv.plist    - ncid client with ncid-mythtv module
 net.sourceforge.ncid-notify.plist    - ncid client with ncid-notify module
@@ -16,7 +20,7 @@ net.sourceforge.ncid-skel.plist      - ncid client with ncid-skel module
 net.sourceforge.ncid-speak.plist     - ncid client with ncid-speak module
 net.sourceforge.ncid-yac.plist       - ncid client with ncid-yac module
 
-See Doc/INSTALL-Mac for install instructions
+See doc/INSTALL-Mac for install instructions
 
 Related launchd information:
 

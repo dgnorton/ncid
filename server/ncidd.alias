@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Alias File
 
-# File last changed: Sun Aug 26, 2012
+# File last changed: Sat Feb 16, 2013
 
 ###############################
 # Definitions and Line format #
@@ -23,6 +23,7 @@
 #               TO is the alias for the FROM string
 #               VALUE is a NAME if KEYWORD = NMBR
 #               VALUE is a NMBR if KEYWORD = NAME
+#                      can contain a '^' (partial match from beginning)
 #               VALUE is a LINE if KEYWORD = LINE
 
 ##################
@@ -41,18 +42,18 @@
 # Mask a phone number:
 # alias NMBR 4075551212 = "----------"
 #
-# The default line indicator for a POTS line is "-".  The ncid client
-# will not display the "-" indicator.
+# The default line label for a POTS line is "-".  The ncid client
+# will not display the "-" label.
 #
 # To display 'POTS' for a POTS line:
-# alias LINE - = POTS
+alias LINE - = POTS
 
-# To not display a gateway line indicator, change it from the one
-# received a '-'.  If the line indicator is '1122':
+# To not display a gateway line label, change it from the one
+# received a '-'.  If the line label is '1122':
 # alias LINE 1122 = -
 #
-# Change any line indicator to VOIP.  Be careful to place this after
-# a POTS line indicator if a POTS line is also present:
+# Change any line label to VOIP.  Be careful to place this after
+# a POTS line label if a POTS line is also present:
 # alias LINE * = VOIP
 
 ####################

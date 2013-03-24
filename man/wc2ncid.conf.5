@@ -1,0 +1,33 @@
+.\" %W% %G%
+.TH WC2NCID.CONF 5
+.SH NAME
+.B wc2ncid.conf
+- wc2ncid configuration file
+.SH DESCRIPTION
+The \fIwc2ncid.conf\fR file contains the configuration information for
+\fIwc2ncid\fR.
+.PP
+The \fIwc2ncid.conf\fR file understands 3 types of lines:
+.TP
+.B blank line
+ignored
+.TP
+.B comment line, beginning with '#'
+ignored
+.TP
+.B Variable = Argument
+.PP
+See wc2ncid.conf for a complete list of variables to set and
+what the default values are.
+.SH EXAMPLES
+Set the NCID server IP address:
+.RS 0
+	ncidaddr = 192.168.1.20
+.RE
+.PP
+Set the WC Internet Link address
+.RS 0
+	wcaddr = 192.168.1.90
+.RE
+.SH SEE ALSO
+yac2ncid.1, ncidd.8 ncidd.alias.5, ncidd.conf.5

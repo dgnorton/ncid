@@ -1,7 +1,7 @@
 ;NCIDpop Windows Client installer
 ;Written by Rich West 01/27/2006
 ;Updated by Lyman Epp 02/11/2006
-;Updated by John Chmielewski 12/21/2008
+;Updated by John Chmielewski 1/5/2013
 
 ;--------------------------------
 ;Include Modern UI
@@ -13,7 +13,7 @@
 ;Application
 
 	!define NAME            ncid
-	!define VERSION         0.85
+	!define VERSION         0.86
 	!define PROG            "${NAME}.exe"
 	!define LICENSE_FILE    "LICENSE.txt"
 	!define WEB_PAGE        "http://ncid.sourceforge.net"
@@ -183,8 +183,9 @@ Section "${NAME} (Required)" Sec${NAME}
 	SetOutPath "$INSTDIR"
 	SetShellVarContext all
 
-	; Put file there
+	; Put files there
 	File "${PROG}"
+	File "ncidconf.txt"
 	File "README.txt"
 	File "ncid.1.txt"
 	File "ncid.1.htm"
@@ -223,22 +224,24 @@ Section -Shortcuts
 	CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
 	CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\${NAME}.lnk" \
 		"$INSTDIR\${PROG}" "$R0"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" \
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" \
 		"$INSTDIR\Uninstall.exe"
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\ncidconf.txt.lnk" \
+		"$INSTDIR\ncidconf.txt"
 	CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\README.txt.lnk" \
 		"$INSTDIR\README.txt"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1.txt.lnk" \
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1.txt.lnk" \
 		"$INSTDIR\ncid.1.txt"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.1.txt.lnk" \
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.1.txt.lnk" \
 		"$INSTDIR\ncid.conf.5.txt"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1.htm.lnk" \
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.1.htm.lnk" \
 		"$INSTDIR\ncid.1.htm"
-        CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.5.htm.lnk" \
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID.CONF.5.htm.lnk" \
 		"$INSTDIR\ncid.conf.5.htm"
 	CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\NCID Web Page.lnk" \
 		${WEB_PAGE}
-        ; CreateShortCut "$SMPROGRAMS\Startup\${NAME}.lnk" "$INSTDIR\${PROG}" "$R0"
-        CreateShortCut "$DESKTOP\${NAME}.lnk" "$INSTDIR\${PROG}" "$R0" ""
+    ; CreateShortCut "$SMPROGRAMS\Startup\${NAME}.lnk" "$INSTDIR\${PROG}" "$R0"
+    CreateShortCut "$DESKTOP\${NAME}.lnk" "$INSTDIR\${PROG}" "$R0" ""
 	!insertmacro MUI_STARTMENU_WRITE_END
 
 SectionEnd

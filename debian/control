@@ -6,22 +6,22 @@ Build-Depends: libpcap0.8-dev
 Standards-Version: 3.7.2
 
 Package: ncid
-Architecture: i386
-Depends: ${shlibs:Depends}, libpcap0.8, perl
+Architecture: any
+Depends: ${shlibs:Depends}, libpcap0.8, perl, ${perl:Depends} libconfig-simple-perl
 Description: NCID (Network Caller ID) server, client, and gateways
  NCID is Caller ID (CID) distributed over a network to a variety of
  devices and computers. NCID includes a server, gateways, a client,
- and client output modules.
+ client output modules and command line tools.
  .
- The NCID server obtains the Caller ID information from a serial device,
- like a modem, and from VOIP and YAC gateways.
+ The NCID server obtains the Caller ID information from a modem,
+ a serial device, and from gateways for NCID, SIP, WC, & YAC.
  .
- This package contains the server and gateways.  The client is in the
- ncid-client package.
+ This package contains the server, gateways, and command line tools.
+ The client is in the ncid-client package.
 
 Package: ncid-client
 Architecture: all
-Depends: ${shlibs:Depends}, tcl8.4, tk8.4
+Depends: ${shlibs:Depends}, tcl8.5, tk8.5
 Recommends: mailx
 Description: NCID (Network Caller ID) client and base output modules
  The ncid-client obtains the Caller ID from the ncid-server and normally
@@ -34,7 +34,7 @@ Description: NCID (Network Caller ID) client and base output modules
 
 Package: ncid-kpopup
 Architecture: all
-Depends: ${shlibs:Depends}, ncid-speak, kdelibs4c2a, kmix, aumix
+Depends: ${shlibs:Depends}, ncid-speak, kdelibs-bin, kde-baseapps, kmix
 Description: NCID (Network Caller ID) client KDE popup module
  The NCID kpopup module displays caller ID information in a KDE popup window
  and optionally speaks the number via voice synthesis.

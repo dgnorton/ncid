@@ -4,6 +4,9 @@ Modules are locates in /usr/share/ncid/
 Module conf files are located in /etc/ncid/conf.d/
 A module are configured by editing /etc/ncid/conf.d/ncid-<name>.conf
 
+Module to send NCID call or message desktop notifications
+    ncid-alert ncid-alert.conf
+
 Module to reinitialize the modem when RING is received as the number:
 Does not have a configuration file.
     ncid-initmodem
@@ -11,7 +14,7 @@ Does not have a configuration file.
                CID to ncidd and only sends RING from that point on
 
 Module to popup Caller ID using KDE and its conf file:
-    ncid-kpopup ncid-popup.conf
+    ncid-kpopup ncid-kpopup.conf
 
 Module to display Caller ID on MythTV and its conf file:
     ncid-mythtv ncid-mythtv.conf
@@ -37,6 +40,10 @@ Module to send Caller ID to a text-to-speech program and its conf file:
 
 Module to display Caller ID on TiVo and its conf file:
     ncid-tivo ncid-tivo.conf
+
+Module to wakeup a X-Window system that is using Gnome.  It is
+automatically called when the ncid option is set:
+    ncid-wakeup
 
 Module to send Caller ID to YAC clients and its conf file:
     ncid-yac ncid-yac.conf

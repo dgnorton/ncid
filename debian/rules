@@ -71,7 +71,8 @@ binary-arch:    checkroot build
 	rm -f debian/tmp-ncid/$(docdir)/doc/CHANGES
 	dpkg-shlibdeps debian/tmp-ncid/usr/sbin/ncidd \
                    debian/tmp-ncid/usr/bin/ncid2ncid \
-                   debian/tmp-ncid/usr/sbin/sip2ncid
+                   debian/tmp-ncid/usr/sbin/sip2ncid \
+                   debian/tmp-ncid/usr/bin/wc2ncid
 
         # NCID client and base output modules
 	install -m 755 debian/postinst debian/tmp-client/DEBIAN
@@ -84,15 +85,18 @@ binary-arch:    checkroot build
 	install -m 644 client/ncid.gif debian/tmp-client/usr/share/pixmaps/ncid
 	install -m 644 client/ncid.conf debian/tmp-client/etc/ncid
 	cd modules; install -m 644 ncid-notify.conf ncid-page.conf ncid-skel.conf \
-                   ncid-yac.conf ../debian/tmp-client/etc/ncid/conf.d
+                   ncid-alert.conf ncid-yac.conf \
+                   ../debian/tmp-client/etc/ncid/conf.d
 	cd modules; install -m 755 ncid-initmodem ncid-notify ncid-page \
-                   ncid-skel ncid-yac ../debian/tmp-client/usr/share/ncid
+                   ncid-alert ncid-wakeup ncid-skel ncid-yac \
+                   ../debian/tmp-client/usr/share/ncid
 	install -m 644 README VERSION client/README.client modules/README.modules \
           debian/tmp-client/usr/share/doc/ncid-client/.
 	cd debian; install -m 755 ncid-initmodem ncid-notify ncid-page ncid-yac \
                               ../debian/tmp-client/etc/init.d
 	cd man; install -m 644 ncid.1 ncid-initmodem.1 ncid-notify.1 \
-                           ncid-page.1 ncid-skel.1 ncid-yac.1 ncid-modules.7 \
+                           ncid-page.1 ncid-skel.1 ncid-wakeup.1 ncid-yac.1 \
+                           ncid-alert.1 ncid-modules.7 \
                            ../debian/tmp-client/usr/share/man/man1
 	install -m 644 man/ncid.conf.5 debian/tmp-client/usr/share/man/man5
 

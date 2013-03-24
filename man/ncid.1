@@ -18,16 +18,16 @@
 .nf
 [--no-gui]
 [--alt-date               | -A]
-[--classic-display        | -C]
 [--delay <seconds>        | -D <seconds>]
+[--help                   | -h]
 [--noexit                 | -X]
-[--program <program name> | -P <program name>]
 [--pidfile <file name>    | -p <file name>]
-[--raw                    | -R]
+[--PopupTime <seconds>    | -t <seconds>]
+[--program <program name> | -P <program name>]
 [--ring <count>           | -r <count>]
 [--tivo                   | -T]
-[--PopupTime <seconds>    | -t <seconds>]
-[--verbose                | -V]
+[--verbose                | -v]
+[--version                | -V]
 .fi
 .PP
 .I Arguments:\^
@@ -43,6 +43,10 @@ In the default GUI mode, if the server is configured to send the
 Call Log, it will load the call log in the call history window at
 startup.  The history window is then updated by \fIncid\fR whenever
 a call is received.
+.PP
+The size of the client window at startup is controlled by the
+the \fIncid.conf\fR file.  The user can resize the window, but
+there is a minimum size restriction.
 .PP
 The history window displays one line per call or message.  Each
 line line starts with a call label.  There are three types of
@@ -121,34 +125,30 @@ clears the call log
 terminates \fIncid\fR.
 .PD
 .SH "OPTIONS"
-.PD 0
+.PD
 .TP
 .B --no-gui
-Do not display CID information using a GUI
-.br
-Default: display CID using a GUI, unless called as \fItivocid\fR
-or \fItivoncid\fR.
+Do not display CID information using a GUI.
+.IP
+Default: display CID using a GUI, unless called as \fBtivocid\fR
+or \fBtivoncid\fR.
 .TP
 .B --alt-date | -A
 Display the date in a alternate format.
 Assuming the date separator is a "/",
-the date is displayed as dd/mm/yyyy
-.br
+the date is displayed as dd/mm/yyyy.
+.IP
 Default: display the date as mm/dd/yyyy
-.TP
-.B --classic-display | -C
-Displays only incoming calls and messages in the
-GUI history window.  Ignores outgoing calls and auto hungup calls.
-Has no effect with output modules.
-.br
-Default: show all call types in the GUI history window
 .TP
 .B --delay SECONDS | -D SECONDS
 Delay SECONDS between server connection attempts if SECONDS > 0.
 .br
 Only one attempt to connect to server if SECONDS = 0.
-.br
+.IP
 Default: 60 seconds
+.TP
+.B --help | -h
+Display usage.
 .TP
 .B --noexit | -X
 Configure ncid to to ignore the close window button.
@@ -164,56 +164,66 @@ There is no default.  If pidfile is not set, no pid file will be used.
 Output the Caller ID information to the external program or output module.
 PROGRAM is the name of the output module (program) to use.
 The selected module is sent all calls and messages.
-.br
+.IP
 Default module PATH: /usr/share/ncid
-.TP
-.B --raw | -R
-display data received from the CID Server
-.br
-Default: raw data not displayed
 .TP
 .B --ring count | -r count
 Call output module on specific ring count.
 .br
-For modems that indicate RING, count can be: 0 2 3 4 5 6 7 8 9
+All count values: -9 -2 -1 0 2 3 4 5 6 7 8 9
+.IP
+For modems that indicate RING, count is: -9 0 2 3 4 5 6 7 8 9
 .br
-For VoIP, using a SIP gateway, count can be: -2 -1
+A count of -9 indicates call on each ring.
 .br
-A count of -1 indicates a hangup before answer.
+A count of 0 indicates call when ringing stops.
 .br
-A count of -2 indicates a hangup after answer.
+A count of 1 should never be used, Caller ID is between 1 and 2.
 .br
+A count between 2-9 indicates call on that ring number.
+.br
+A count greater than 9 is not useful.
+.IP
+For VoIP, using a SIP or wc2ncid gateway, count is: -2 -1
+.br
+A count of -1 indicates call on hangup with no answer.
+.br
+A count of -2 indicates call on hangup after answer.
+.IP
 Default: output module called as soon as CID received
 .TP
 .B --Tivo | -T
 This option is for a TiVo using out2osd or text2osd
 .br
-Changes output to 2 lines: name number line
-.br
-Default output is 5 lines: date time number name line
+Changes output to 2 lines: name number line.
+.IP
+Default output is 5 lines: date time number name line.
 .TP
 .B --PopupTime seconds | -t seconds
 Time for the popup to stay on top of all windows.
-Range is 1 second to 99 seconds
-.br
-Default popup time os 5 seconds
+Range is 1 second to 99 seconds.
+.IP
+Default popup time os 5 seconds.
 .TP
-.B --verbose | -V
-display formatted CID information, including CID log file
-.br
+.B --verbose | -v
+Display formatted CID information, including CID log file.
+.IP
 Default: silent
+.TP
+.B --version | -V
+Display version and quit.
 .PD
 .SS "Arguments"
-.PD 0
+.PD
 .TP 30
 .B IP_ADDRESS | HOSTNAME
-set the IP Address
-.br
+Set the IP Address.
+.IP
 Default: 127.0.0.1 (localhost)
 .TP
 .B PORT_NUMBER
-set the port number
-.br
+Set the port number.
+.IP
 Default: 3333
 .PD
 .SH FILES

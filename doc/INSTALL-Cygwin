@@ -1,13 +1,12 @@
 Cygwin Install
 
-Last edited: Sat Oct 20, 2012
+Last edited: Sun Dec 23, 2012
 
 Sections:
     NOTES:
     INSTALL:
     CONFIGURE:
     START:
-    TEST:
     REBASE:
     RUN AS A QUASI-SERVICE:
 
@@ -81,35 +80,33 @@ CONFIGURE:
     The Makefile preconfigures ncidd.conf for the Cygwin, but you may
     want to change some of the defaults.
 
-    You need to configure sip2ncid or ncidsip to use the Network Interface.
+    You need to configure sip2ncid to use the Network Interface.
     To find out the network interface name, you need to use the '-l'
-    option to either sip2ncid or ncidsip.  You should see your Network
-    interface names listed.  Select the active one and use it with the
-    -i option to sip2ncid or ncidsip.
+    option to sip2ncid.  You should see your Network interface names
+    listed.  Select the active one and use it with the -i option to
+    sip2ncid.
 
 START:
 
-    - If this is your first time, you should do the TEST procedure first
+    - If this is your first time, you should do the TEST procedure in
+      the INSTALL file first.
 
     - start the server and clients:
         ncidd
 
-    -----------------
-    If using sip2ncid
-    -----------------
+    -----------------------------------------
+    If using sip2ncid (review Setup-sip2ncid)
+    -----------------------------------------
 
         sip2ncid -l (list NETWORK_INTERFACES)
         sip2ncid -i NETWORK_INTERFACE
         (Note: display is <INTERFACE : DESCRIPTION>)
 
-    ----------------
-    If using ncidsip (NOTE: this program is replaced by sip2ncid)
-    ----------------
+    ---------------------------------------
+    If using wc2ncid (review Setup-wc2ncid)
+    ---------------------------------------
 
-        ncidsip -l (list NETWORK_INTERFACES)
-        ncidsip -i NETWORK_INTERFACE &
-        (Note1: display is <INTERFACE : DESCRIPTION>)
-        (Note2: change any '\' to '/' in INTERFACE when using it)
+        wc2ncid &
 
     -----------------
     If using yac2ncid

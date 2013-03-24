@@ -11,8 +11,6 @@ Ubuntu service files:
   ncid-samba.init     - service file for ncid with ncid-samba module
   ncid-speak.init     - service file for ncid with ncid-speak module
   ncid-yac.init       - service file for ncid with ncid-yac module
-  ncidd.init          - service file for ncidd
-  ncidsip.init        - service file for ncidsip
   ncid2ncid.init      - service file for ncid2ncid
   sip2ncid.init       - service file for sip2ncid
   yac2ncid.init       - service file for yac2ncid
@@ -38,21 +36,21 @@ Ubuntu files for building the package:
 
 ---------------------------------------------------
 Steps required to build a Ubuntu or Debian package:
-The steps use ncid-0.85-src.tar.gz as an example:
+The steps use ncid-0.86-src.tar.gz as an example:
 ---------------------------------------------------
 
-    mkdir ncid (and put ncid-0.85-src.tar.gz in it)
+    mkdir ncid (and put ncid-0.86-src.tar.gz in it)
     cd ncid
-    tar -xzvf ncid-0.85-src.tar.gz
-    mv ncid ncid-0.85
-    cd ncid-0.85
+    tar -xzvf ncid-0.86-src.tar.gz
+    mv ncid ncid-0.86
+    cd ncid-0.86
     fakeroot debian/rules build
     fakeroot debian/rules binary
     fakeroot debian/rules clean
 
 Binary package built:
 
-    ncid_0.85-0ubuntu1_i386.deb
+    ncid_0.86-0ubuntu1_i386.deb
 
 Build the source package (not needed)
 
@@ -60,14 +58,14 @@ Build the source package (not needed)
 
 Source file built:
 
-    ncid_0.85-0ubuntu1.tar.gz
+    ncid_0.86-0ubuntu1.tar.gz
 
 The ncid directory may contain:
 
-    ncid-0.85/
-    ncid-0.85.tar.gz
-    ncid_0.85-0ubuntu1_i386.deb
-    ncid_0.85-0ubuntu1.tar.gz
+    ncid-0.86/
+    ncid-0.86.tar.gz
+    ncid_0.86-0ubuntu1_i386.deb
+    ncid_0.86-0ubuntu1.tar.gz
 
 
  -- John L. Chmielewski <jlc@users.sourceforge.net>  Sat, 19 Feb 2012 00:15:00 -0400

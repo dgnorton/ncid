@@ -12,7 +12,6 @@ FreeBSD rc scripts:
     ncid-speak.rc     - rc file for ncid with ncid-speak output module
     ncid-yac.rc       - rc file for ncid with ncid-yac output module
     ncidd.rc          - rc file for ncidd
-    ncidsip.rc        - rc file for ncidsip
     ncid2ncid.rc      - rc file for ncid2ncid
     sip2ncid.rc       - rc file for sip2ncid
     yac2ncid.rc       - rc file for yac2ncid

@@ -1,0 +1,121 @@
+How to setup one or more Whozz Calling Ethernet Link (WC) devices for
+Caller ID using the wc2ncid gateway.
+
+Last edited on Tue Mar 12, 2013
+
+A Whozz Calling Ethernet Link (WC) device (see: http://callerid.com)
+connects to a POTS (Plain Old Telephone System) line and can handle
+2, 4, or 8 lines.  Some models only handle incoming calls while
+others handle incoming and outgoing calls.
+
+The Whozz Calling user manual tells how to hook up the device.
+You plug your POTS telephone lines into the device and you connect
+the device to your local network.
+
+All WC devices must have an IP address within your network in order
+for them to be configured for use by wc2ncid.  This limitation will
+be removed in a future release.  When you try to configure a device
+with a address outside your network, wc2ncid will either give a warning
+or a error message and terminate.  You can then use wct to change
+the IP address to one that is in your network.  Use the discover
+option of wct to locate the device.
+
+    wct --discover
+
+The ncidd server defaults to using a modem to get Caller ID.  If
+you have a standard telephone line (POTS) modem configured, you
+you can keep the modem and use the WC device to handle additional
+POTS or VoIP lines or you can replace the modem with the WC device.
+
+If you do not use a modem (recommended), you need to configure ncidd
+by changing one line in ncidd.conf.
+
+    Change the line: # set noserial = 1
+                 To: set noserial = 1
+
+    This tells ncidd to run without a serial device or modem connected.
+    Once you change ncidd.conf, you must start/restart ncidd to read it.
+
+Edit wc2ncid.conf to configure one or more devices:
+
+    Edit the line: wcaddr = 192.168.0.90
+
+    If your network is on 192.168.0 and the above address is not used,
+    you can leave it.  If your network is on 192.168.1 you can set the
+    IP address for WC device number 1 (WC-1), for example:
+
+    Change: wcaddr = 192.168.0.90
+    To:     wcaddr = 192.168.1.90
+
+    If you have 2 devices and want to use addresses 192.168.2.90 and
+    192.168.2.91, WC device 1 is 192.168.2.90 and WC device 2 is
+    192.168.2.91.
+
+    Change: wcaddr = 192.168.0.90
+    To:     wcaddr = 192.168.2.90, 192.168.2.91
+
+Once you set the IP address for the WC device in wc2ncid.conf, start
+wc2ncid and tell it to configure the WC device:
+
+    wc2ncid [--test] --set-wc
+
+The --test option is optional, but it is a good idea to use it so
+wc2ncid does not connect to the NCID server during the configuration
+process.
+
+If you have 2 or more WC devices, and they are both set to the same
+address or the factory default of 192.168.0.90, you need to change
+both addresses in wc2ncid.conf, for example:
+
+    Change: wcaddr = 192.168.0.90
+    To:     wcaddr = 192.168.0.91, 192.168.0.92
+
+Turn on one device and execute:
+
+    wc2ncid [--test] --set-wc
+
+Terminate wc2ncid with <CTRL><C> and turn on the other device (leave
+the first device on) and execute:
+
+    wc2ncid [--test] --set-wc
+
+Both devices should be configured and operational.  Terminate wc2ncid
+with <CTRL><C>.
+
+If this is the first time you set wc2ncid up, you should test wc2ncid
+without connecting it to the ncidd server.
+
+    wc2ncid --test
+
+The above command puts wc2ncid in test and debug modes at verbose level 3.
+It will display verbose statements on the terminal, ending with "Waiting
+for calls".  It should show the configured address for each device.
+Test mode prevents wc2ncid from connecting with ncidd.
+
+If wc2ncid terminates you should be able to see why and fix it.
+wc2ncid --help will give a detailed usage message, wc2ncid --man
+will print out the manual page.
+
+Call yourself.  You should see more verbose messages as the call is
+processed.  If it looks OK, terminate wc2ncid with <CTRL><C>.
+
+You may want to restart wc2ncid in debug mode so it will connect to ncidd:
+
+    wc2ncid -Dv3
+
+Call yourself.  If you do not get a caller id message sent to the server,
+you should get a error message saying what is wrong.
+
+If you had Caller ID sent to a client, setup is complete.
+
+Normally wc2ncid is started using the provided init, service, rc, or
+plist script for your OS. For more information, refer to the INSTALL
+document for your OS.  If none is provided you need to start wc2ncid
+manually:
+
+    sudo wc2ncid &
+
+You can also set it up to start at boot, along with ncidd.  If any options
+are needed, add them to /etc/ncid/wc2ncid.conf.
+
+If wc2ncid did not work, you should have enough information to ask for help.

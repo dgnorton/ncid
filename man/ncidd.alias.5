@@ -20,10 +20,12 @@ The \fIncidd.alias\fR file understands 3 types of lines:
     alias [NMBR|NAME] ["]FROM["] = ["]TO["] [if ["]VALUE["]]
     alias [LINE] ["]FROM["] = ["]TO["
          where  NMBR, NAME or LINE is a KEYWORD
-                FROM is a CID string, can be '*' when using 'if'
+                FROM is a CID string:
+                     can be a '*' (match everything) when using if
                 TO is the alias for the FROM string
                 VALUE is a NAME if KEYWORD = NMBR
                 VALUE is a NMBR if KEYWORD = NAME
+                      can contain a '^' (partial match from beginning)
                 VALUE is a LINE if KEYWORD = LINE
 .RE
 .SH EXAMPLES
@@ -40,6 +42,11 @@ Change OUT-OF-AREA to UNAVAILABLE in the name field only:
 Change any name to a specific name for a phone number:
 .RS 0
 	alias NAME * = "John on cell" if 4075551212
+.RE
+.PP
+Change any name to a specific name matching the beginning of a phone number
+.RS 0
+	alias NAME * = "Toll Free" if ^800
 .RE
 .PP
 Mask a phone number:

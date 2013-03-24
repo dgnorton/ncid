@@ -1,10 +1,10 @@
 SHMOD     = ncid-page.sh ncid-samba.sh ncid-speak.sh \
-            ncid-mythtv.sh ncid-kpopup.sh ncid-skel.sh \
-            ncid-yac.sh ncid-initmodem.sh ncid-notify.sh
+            ncid-mythtv.sh ncid-kpopup.sh ncid-skel.sh ncid-alert \
+            ncid-yac.sh ncid-initmodem.sh ncid-notify.sh ncid-wakeup.sh
 PLMOD     =
 DIST      = ncid-notify.conf-in ncid-speak.conf-in
 CONF      = ncid-kpopup.conf ncid-mythtv.conf ncid-page.conf \
-            ncid-samba.conf ncid-skel.conf ncid-yac.conf
+            ncid-alert.conf ncid-samba.conf ncid-skel.conf ncid-yac.conf
 FILES     = README.modules Makefile $(SHMOD) $(PLMOD) $(DIST)
 
 prefix    = /usr/local

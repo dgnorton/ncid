@@ -74,7 +74,6 @@ Options: [-C configfile      | --config configfile]\n\
 #define NOYEAR      2
 #define ONLYTIME    4
 #define MAXCALL     30
-#define NUMSIZ      50
 #define CIDSIZ      75
 #define SIPSIZ      2048
 #define PKTWAIT     120
@@ -117,6 +116,7 @@ Options: [-C configfile      | --config configfile]\n\
 #define FROM        "From:"
 #define TO          "To:"
 #define CALLID      "Call-ID:"
+#define OUTCALL     "Call-ID: call-"
 #define CONTACT     "Contact:"
 #define PROXY       "Proxy-Authenticate:"
 #define AGENT       "User-Agent:"
@@ -132,10 +132,9 @@ Options: [-C configfile      | --config configfile]\n\
 #define CALLOUT     "OUT"
 #define CALLIN      "IN" 
 
-#define CIDCAN      "CALLINFO: ###CANCEL...DATE%s...CALL%s...LINE%s...NMBR%s+++\r\n"
-#define CIDBYE      "CALLINFO: ###BYE...DATE%s...CALL%s...LINE%s...NMBR%s+++\r\n"
-#define CIDLINE     "CALL: ###DATE%s...CALL%s...LINE%s...NMBR%s...NAME%s+++\r\n"
 #define REGLINE     "Registered: phoneline[%d] = %s\n"
+#define CIDLINE     "CALL: ###DATE%s...CALL%s...LINE%s...NMBR%s...NAME%s+++\r\n"
+#define INFOLINE    "CALLINFO: ###%s...DATE%s...SCALL%s...ECALL%s...CALL%s...LINE%s...NMBR%s...NAME%s+++\r\n"
 
 enum
 {

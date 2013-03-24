@@ -5,7 +5,6 @@ After=ncidd.service
 [Service]
 Type=simple
 Environment=prog=ncidsip
-EnvironmentFile=-/usr/local/etc/ncid/ncidsip.conf
 PIDFile=/var/run/ncidsip.pid
 ExecStart=/usr/sbin/ncidsip --pidfile /var/run/${prog}.pid $opts
 

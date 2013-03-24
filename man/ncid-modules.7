@@ -8,8 +8,7 @@ NCID output modules are used to extend the functionality of the client.
 They are mostly simple shell scripts although there is one program
 for the TiVo that acts like a module.
 .PP
-Module names are of the format: \fBncid-<name>\fR. Each module has its
-own configuration file with a name format: \fBncid-<name>.conf\fR.
+Module names are of the format: \fBncid-<name>\fR.
 .PP
 Modules are normally called by the client using the command line:
 .RS
@@ -19,49 +18,57 @@ Modules are normally called by the client using the command line:
 The client can only call one module at a time, but multiple clients
 can each have a different output module.
 .PP
-Each module has a configuration file called \fIncid-<name>.conf>\fR.
+Each module may have a configuration file called \fIncid-<name>.conf>\fR.
 The \fIncid-<name>.conf>\fR also understands three line types:
 .RS
+.PD 0
 .TP 16
-.B blank line
+.B blank line:
 ignored
 .TP
-.B comment line
-beginning with '#' and is ignored
+.B comment line:
+begins with a '#' and is ignored
 .TP
-.B shell variable
+.B shell variable:
 set to a value, for example: foo=bar
+.PD
 .RE
 .PP
 The current modules distributed with NCID are:
 .RS
-.I ncid-initmodem
+.B ncid-alert
 .br
-.I ncid-kpopup
+.B ncid-initmodem
 .br
-.I ncid-mythtv
+.B ncid-kpopup
 .br
-.I ncid-notify
+.B ncid-mythtv
 .br
-.I ncid-page
+.B ncid-notify
 .br
-.I ncid-samba
+.B ncid-page
 .br
-.I ncid-skel
+.B ncid-samba
 .br
-.I ncid-speak
+.B ncid-skel
 .br
-.I ncid-tivo
+.B ncid-speak
 .br
-.I ncid-yac
+.B ncid-tivo
+.br
+.B ncid-wakeup
+.br
+.B ncid-yac
 .RE
 .SH FILES
 /usr/share/ncid/ncid-<name>
 .br
 /etc/ncid/conf.d/ncid-<name>.conf
+.br
+/etc/ncid/ncid.conf
 .SH SEE ALSO
-ncidd.8,
 ncid.1,
+ncid.conf.5,
 ncid-modules.conf.5
 ncid-initmodem.1,
 ncid-kpopup.1,
@@ -71,4 +78,5 @@ ncid-page.1,
 ncid-samba.1,
 ncid-skel.1,
 ncid-speak.1,
+ncid-wakeup.1
 ncid-yac.1

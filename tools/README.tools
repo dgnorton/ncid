@@ -1,8 +1,11 @@
 The ncidtools are mostly perl scripts that run under Linux and UNIX.
 
-cidalias	   - list alias definitions in the ncidd alias file
-cidcall		   - list calls in the CID call file
-cidupdate	   - update aliases in the CID alias file
+cidalias    - list alias definitions in the ncidd.alias
+              and ncidd.blacklist files
+cidcall     - list calls in the cidcall.log file
+cidupdate   - update aliases in the cidcall.log file
+wct         - interactively configure a Whozz Calling (WC)
+              Ethernet Link device
 
 The Makefile is used to create the runable scripts.
 

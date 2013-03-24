@@ -1,19 +1,20 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Created by John L. Chmielewski on Sat May 24, 2008
 
 # this script sends CALL and CALLINFO lines to the server
 # The way to test ncid and ncidd
-# ./testserver ../ncidd OR ./testserver /usr/sbin/ncidd -N1
+# ./testserver ../server/ncidd -D -N1
 # ./TestGWcalls
-# ./ncid 3334
+# ../client/ncid 3334
 
 ($testfile = shift) || ($testfile = "TestGWcalls.data");
 
 open(OUTPUT, '|nc localhost 3334') || die "Could not open netcat\n";
 open(TESTFILE, $testfile) || die "Could not open $testfile\n";
 
-print "Connect server to port 3334 for test: ./testserver ../ncid\n\n";
+print "Connect server to port 3334 for test:\n";
+print "    ./testserver ../server/ncidd -D -N1\n\n";
 print "Then press <ENTER> multiple times to:\n";
 print "    send CALL:     line (Incoming Call)\n";
 print "    send CALLINFO: line (Hangup After Answer)\n";
@@ -28,7 +29,7 @@ $| = 1;
 while (<TESTFILE>) {
     if (/^#/) { next; }
 	if (/\w.*/) { print STDOUT; print; }
-	else { $response = <STDIN>; }
+	else { my $response = <STDIN>; }
 }
 
 exit 0;

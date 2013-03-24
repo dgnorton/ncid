@@ -10,6 +10,9 @@ ncid2ncid.conf - configuration file for ncid2ncid
 sip2ncid       - SIP gateway: receives CID information from SIP Invite
                  packets and sends it as a CID line to the NCID server
 sip2ncid.conf  - configuration file for sip2ncid
+wc2ncid        - Whozz Calling (WC) gateway: receives CID information from
+                 WC Ethernet Link Devices http://callerid.com
+wc2ncid.conf   - configuration file for wc2ncid
 yac2ncid       - YAC gateway: receives CID information and messages from a
                  YAC server and sends them as CID or message lines to the
                  NCID server
@@ -23,10 +26,3 @@ The Makefile is used to create the runable scripts.
 
 	prefix2 controls where to look for the config file,
 	(the default is /usr/local)
-
-Recommend using sip2ncid instead of ncidsip.  NCIDsip is a Perl program that
-requires the Net-Pcap module.  If your repository does not have it, obtain
-the source from CPAN then compile and install it.
-
-    ncidsip        - Original SIP gateway
-    ncidsip.conf   - configuration file for ncidsip-init

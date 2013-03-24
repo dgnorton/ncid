@@ -1,11 +1,12 @@
 How to setup VoIP Caller ID using sip2ncid
 
-Last edited by jlc on Fri Jul 6, 2012
+Last edited by jlc on Wed Jan 2, 2013
 
-The server, ncidd, always checks for a CID message, so if you have a
-standard telephone line modem configured, and you have at least one VoIP
-telephone line, all you need to do is to configure and start sip2ncid.
-The server will handle both easily.
+The ncidd server defaults to a using a modem to get Caller ID.  if
+you have a standard telephone line (POTS) modem configured, and you
+have at least one VoIP telephone line, all you need to do is configure
+start sip2ncid to get Caller ID from VoIP.  The server will handle
+a modem and the sip2ncid gateway easily.
 
 If you are only using VoIP and do not want to use a modem, you
 need to configure ncidd by changing one line in ncidd.conf.
@@ -76,7 +77,7 @@ Then about every 20 seconds you should see something like:
 The Registered Line Number line will only appear in packet number 1
 
 If you do not get the above, you may need to specify a address and or port
-for ncidsip to listen for the SIP Invite.  You cannot continue unless you
+for sip2ncid to listen for the SIP Invite.  You cannot continue unless you
 get the above.
 
 If you are using the Linksys RT31P2 Router, you will not see any packets
@@ -90,8 +91,8 @@ caller id message sent to the server, you should get a error message saying
 what is wrong.  This has been tested with Vonage and so may need tweaking.
 
 If you had Caller ID sent to a client, setup is complete.  You can then
-restart ncidsip without the test option so it will not display anything.
+restart sip2ncid without the test option so it will not display anything.
 You can also set it up to start at boot, along with ncidd.  If any options
-are needed, at boot, add them to /etc/ncid/ncidsip.conf.
+are needed, at boot, add them to /etc/ncid/sip2ncid.conf.
 
-If ncidsip did not work, you should have enough information to ask for help.
+If sip2ncid did not work, you should have enough information to ask for help.

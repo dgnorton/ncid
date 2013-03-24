@@ -19,17 +19,35 @@
 # Modified by John L. Chmielewski on Sat Jun 11, 2011
 #   - fixed regex and changed join and split character from ':' to '"'
 #   - changed regex for getting the number to include special characters
+# modified by jlc on Sat Jan 19, 2013
+#   - improved code, addcwedd long options, and added pod documentation
 
-use Getopt::Std;
+use strict;
+use warnings;
+use Pod::Usage;
+use Getopt::Long qw(:config no_ignore_case_always);
 
-$ALIAS = "/etc/ncid/ncidd.alias";
-$CIDLOG = "/var/log/cidcall.log";
+my ($alias, $cidlog, $help, $man);
+my $newcidlog;
+my @aliases;
+my ($type, $from, $to, $value);
+my ($date, $time, $line, $number, $mesg, $name);
 
-getopts('A:C:') ||
-    die "Usage: cidupdate [-A aliasfile] [-C cidlog] [newcidlog]\n";
+my $ALIAS = "/etc/ncid/ncidd.alias";
+my $CIDLOG = "/var/log/cidcall.log";
 
-($alias = $opt_A) || ($alias = $ALIAS);
-($cidlog = $opt_C) || ($cidlog = $CIDLOG);
+Getopt::Long::Configure ("bundling");
+my ($result) = GetOptions(
+    "help|h"        => \$help,
+    "man|m"         => \$man,
+    "aliasfile|a=s" => \$alias,
+    "cidlog|c=s"    => \$cidlog
+ ) || pod2usage(2);
+pod2usage(-verbose => 1, -exitval => 0) if $help;
+pod2usage(-verbose => 2, -exitval => 0) if $man;
+
+$alias = $ALIAS if !$alias;
+$cidlog = $CIDLOG if !$cidlog;
 ($newcidlog = shift) || ($newcidlog = sprintf("%s.new", $cidlog));
 
 open(ALIASFILE, $alias) || die "Could not open $alias\n";
@@ -40,7 +58,7 @@ while (<ALIASFILE>) {
     if (/^alias/) {
         chomp;
         ($type, $from, $to, $value) = /^.*alias\s+(\w+)\s+"*([^"]+)"*\s+=\s+"*([^"]+)"*\s+if\s+"*([^"]+)"*$/;
-        if ($value == "") {
+        if ($value eq "") {
         ($type, $from, $to) = /^.*alias\s+(\w+)\s+"*([^"]+)"*\s+=\s+"*([^"]+)"*(.*)$/;
         }
         $alias = join('"', ($type, $from, $to, $value));
@@ -75,3 +93,68 @@ while (<CIDLOG>) {
 }
 print "diff $cidlog $newcidlog\n";
 exec('diff', $cidlog, $newcidlog);
+
+=head1 NAME
+
+cidupdate -  update aliases in the NCID call file
+
+=head1 SYNOPSIS
+
+cidupdate [--help|-h]
+          [--man|-m]
+          [--aliasfile|-a <aliasfile>]
+          [--cidlog|-c <cidlog>]
+          [newcidlog]
+
+=head1 DESCRIPTION
+
+The cidupdate script updates the cidcall.log file using the aliases
+found in the ncidd.alias file.
+
+=head2 Options
+
+=over 7
+
+=item -h, --help
+
+Prints the help message and exits
+
+=item -m, --man
+
+Prints the manual page and exits
+
+=item -a <aliasfile>, --aliasfile <aliasfile>
+
+Set the alias file to <aliasfile>
+
+Default: /etc/ncid/ncidd.alias
+
+=item -c <logfile>, --cidlog <logfile>
+
+Set the call file to <logfile>
+
+Default: /var/log/cidcall.log
+
+=back
+
+=head2 Arguments
+
+=over 7
+
+=item newcidlog <newlogname>
+
+Set the new cidlog file to <newlogname>
+
+Default: /var/log/cidcall.new
+
+=back
+
+=head1 SEE ALSO
+
+ncidd.conf.5,
+ncidd.alias.5,
+ncidd.blacklist.5,
+cidalias.1,
+cidcall.1
+
+=cut

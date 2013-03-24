@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Config File
 
-# File last changed: Thu Sep 4, 2012
+# File last changed: Sat Feb 16, 2013
 
 ################################
 # Definitions and Line formats #
@@ -19,10 +19,12 @@
 #
 # SET LINE FORMAT:
 #   set ITEM = VALUE [ITEM = VALUE] ...
-#       where ITEM = cidalias, cidlog, cidlogmax, datalog, gencid, ignore1,
-#                    initcid, initstr, lineid, lockfile, nomodem, noserial,
-#                    pidfile, port, send, ttyclocal, ttyport, ttyspeed, verbose
-#                    hangup, blacklist, whitelist
+#       where ITEM = blacklist, cidalias, cidlog, cidlogmax, cidname,
+#                    datalog, gencid, hangup, ignore1, initcid, initstr,
+#                    lineid, lockfile, nomodem, noserial,
+#                    pidfile, port, send,
+#                    ttyclocal, ttyport, ttyspeed,
+#                    verbose whitelist
 
 ##########################
 # Log file verbose level #
@@ -117,6 +119,19 @@ send cidinfo
 # gencid = 1 default: generate a generic Caller ID when needed 
 # set gencid = 0
 
+#############################
+# CID NAME sent or not sent #
+#############################
+
+# If your Telco does not send a name with the Caller ID, you can
+# configure ncidd to receive a CID without a name so it does not
+# need to wait until ring 2 to determine that no name was sent.
+
+# cidnoname = 0 default: CID does contain a name
+# cidnoname = 1          CID does not contain a name
+# set cidnoname = 1
+
+
 #########################
 # Automatic Call Hangup #
 #########################
@@ -166,9 +181,10 @@ send cidinfo
 ## Required if noserial is set to 0 or hangup is set to 1
 
 # The default tty port: /dev/modem
-# set ttyport = /dev/cu.modem # Macintosh OS X
-# set ttyport = /dev/ttyS0    # Linux Serial Port 0
-# set ttyport = /dev/ttyACM0  # Linux USB modem 0
+# set ttyport = /dev/cu.modem            # default Mac OS X internal modem
+# set ttyport = /dev/cu.usbmodem24680241 # Mac OS X USB modem (DualComm, Zoom)
+# set ttyport = /dev/ttyS0               # Linux Serial Port 0
+# set ttyport = /dev/ttyACM0             # Linux USB modem 0
 
 # The default tty port speed: 19200
 # The tty speed can be one of: 38400, 19200, 9600, 4800
@@ -179,15 +195,22 @@ send cidinfo
 #   Enable tty control signals: ttyclocal = 0 (default)
 # set ttyclocal = 1
 
-# The lockfile name is generated automatically
-# If tty port is /dev/modem, the default lockfile is:
+# The lockfile name is generated automatically for the following distributions
+# when tty port is /dev/modem:
 #    Fedora : /var/lock/lockdev/LCK..modem
 #    FreeBSD: /var/spool/lock/LCK..modem
 #    Mac    : /var/spool/uucp/LCK..modem
 #    Ubuntu : /var/lock/LCK..modem
-#    Default: /var/lock/LCK..modem
-# set lockfile = /var/lock/lockdev/LCK..ttyS0
 #
+# The default lockfile name when not build to a distribution
+# and the tty port is /dev/modem:
+#    Default: /var/lock/LCK..modem
+#
+# You can also set the lockfile manually for a OS not distributed
+# when tty port is /dev/modem:
+#    Debian : /var/lock/LCK..modem
+#
+# set lockfile = /var/lock/lockdev/LCK..ttyS0
 
 #####################
 # Modem or No Modem #
@@ -217,7 +240,7 @@ send cidinfo
 # set initstr = "AT&FE1V1Q0+VIP"
 
 # Modem initialization string for the Mac Motorola UbiSoft modem
-# set initstr = "AT+FCLASS=8;+VCID=1" # Macintosh OS X
+# set initstr = "AT+FCLASS=8;+VCID=1" # default Mac OS X internal modem
 
 # Modem initialization string for the US Robotics 5637, v.92 56k USB modem
 # set initstr = "ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0"

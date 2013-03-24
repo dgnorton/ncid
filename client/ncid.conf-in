@@ -1,10 +1,10 @@
 # ncid configuration file
 
-# File last changed: Thu Oct 4, 2012
+# File last changed: Fri Feb 8, 2013
 
 # This configuration file takes effect every time ncid is started.
 
-# set PIDfile to /var/run/ncid.pid in rc and init scripts
+# PIDfile is set to /var/run/ncid.pid in rc, init, and service scripts
 # set PIDfile to "" to not use a PID file.
 # it is best to leave the default
 # Default: ""
@@ -16,8 +16,8 @@ set PIDfile     ""
 # it is best left as the default
 set ProgDir     "/usr/local/share/ncid"
 
-# output module to be used instead of GUI
-# can be a script located in $ProgDir
+# a output module (program) to be used instead of GUI
+# the module can be a script located in $ProgDir
 #    set ProgName ncid-page
 # or a program like /var/hack/out2osd
 #    set ProgName /var/hack/out2osd
@@ -44,11 +44,6 @@ set PopupTime   5
 # Default: 60
 set Delay       60
 
-# If set to 1, display raw data received from the NCID server
-# If set to 0, do not display raw data received from the NCID server
-# Default: 0
-set Raw         0
-
 # Output to client module or TiVo OSD
 # TivoFlag = 0: date time number name line
 # TivoFlag = 1: name number line
@@ -65,25 +60,18 @@ set Verbose     0
 # Default: 0
 set NoGUI       0
 
-# ring number to call external program
-# Default: 0
-set CallOnRing  0
+# Defines how lines in the history window are wrapped.
+# Can be set to one of the following:
+#    "char"     Will wrap long lines between characters
+#    "word"     Will wrap long lines at word boundaries
+#    "none"     Will not wrap, long lines will be truncated in display
+# Default: "char"
+set WrapLines   "none"
 
-# If set to 1, display only incoming calls and messages in history window
-# If set to 0, display call tag, all calls (incoming, outgoing, auto hangup),
-#              and messages in history window
-# Default: 0
-set Classic     0
-
-# Message Flag: send messages to output modules
-# Default: 0
-set MsgFlag     0
-
-# Country is used to display the number for a particular country format
+# Country is used to display the number in a format for a particular country
 # or no format at all if set to "NONE"
 # Country must be either "US", "UK", "SE", "DE", "HR" or "NONE"
 # http://www.iso.org/iso/english_country_names_and_code_elements
-# The default format for the US is xxx-xxx-xxxx
 # Default: "US"
 set Country     "US"
 
@@ -99,6 +87,11 @@ set NoOne       1
 # Default: 0
 set NoExit      0
 
+# Wakeup the monitor on a X-window system when a NCID message comes in.
+# set WakeUp to 1 to enable or 0 to disable
+# Default: 0
+set WakeUp      0
+
 # The displayed date can be shown in a alternate format
 # Assuming the date separator is a "/"
 # if AltDate = 0, the date is displayed as mm/dd/yyyy
@@ -113,47 +106,85 @@ set AltDate     0
 # Default: "/"
 set DateSepar   "/"
 
+# call external program on specific ring value or on every ring
+# not needed if using recommended method to set ring options below
+# if used, Ring Options must also be set, see Ring Options section
+# if set to 1, call external program on ring number in Ring
+# if set to 0, call external program when CID arrives
+# Default: 0
+set CallOnRing  0
+
 # ========================================================================
+# Ring Options
+# ========================================================================
+# For Ring options to take effect, CallOnRing must be set to 1
+# unless the recomended method, described below, is used
+#
 # Ring options should be specific to a output module.
-# See below for how to do this.
+# See recommended method for how to do this.
 #
 # Without a ring option, NCID data is sent to a output module
 # as soon as the Caller ID is received.  This is the default.
-# ========================================================================
-# Ring options available for modems that indicate ring.
 #
-# These options cannot be used witch a modem does not not indicate ring,
-# the NetCallerID device, or a Gateway; otherwise the NCID data will never
+# ------------------------------------------------------------------------
+# Ring options available for modems that indicate ring.
+# ------------------------------------------------------------------------
+#
+# THESE OPTIONS CANNOT BE USED with a modem does not not indicate ring,
+# a NetCallerID device, or a Gateway; otherwise the NCID data will never
 # be sent.
+#
+# To set the ring options for all modules (not recommended).
+# See below for recommended way to set ring options.
+# Valid ring options: -9 0 2 3 4 5 6 7 8 9
 #
 # send NCID data on ring number number 4
 # set Ring 4
 #
 # send NCID data after ringing stops
 # set Ring 0
-# ========================================================================
-# Ring options available for SIP gateways (sip2ncid and ncidsip).
 #
-# These options cannot be used with  modems, the NetCallerID device,
-# or the YAC Gateway; otherwise the NCID data will never be sent.
+# send NCID data on every ring
+# set Ring -9
+#
+# ------------------------------------------------------------------------
+# Ring options available for the sip2ncid and wc2ncid gateways.
+# ------------------------------------------------------------------------
+#
+# THESE OPTIONS CANNOT BE USED with a modem, a NetCallerID device,
+# or a YAC Gateway; otherwise the NCID data will never be sent.
+#
+# To set the ring options for all modules (not recommended)
+# See below for recommended way to set ring options.
+# Valid ring options: -1 -2
 #
 # send NCID data if the call had a hangup without answer
 # set Ring -1
 #
 # send NCID data if the call had a hangup after answer
 # set Ring -2
-# ========================================================================
+#
+# ------------------------------------------------------------------------
+# Recommended method to set ring options.
+# CallOnRing is automatically set
+# See above to determine type of ring option values to use
+# ------------------------------------------------------------------------
 #
 # To set the ring option for a specific module, use the module name
 # with the "-" replaced by a "_" as a indirect variable to set ring.
-# set ncid_<name> {set Ring <number>}
+# See above for ring options available for modems and for gateways.
 #
-# If the module name is ncid-page: set ncid_page {set Ring <number>}
-# if the module name is ncid-notify: set ncid_notify {set Ring <number>}
+#   set ncid_<name> {set Ring <number>}
 #
-# Uncomment this line if you want NCID data sent at ring 4 using ncid-page.
+# If the module name is ncid-page: set ncid_page {set Ring <number>}.
+# Uncomment this line if you want NCID data sent at ring 4
 # set ncid_page {set Ring 4}
+# Uncomment this line if you want NCID data sent at hangup with no answer
+# set ncid_page {set Ring -1}
 #
-# Uncomment this line if you want NCID data sent at ring 4 using ncid-notify.
+# If the module name is ncid-notify: set ncid_notify {set Ring <number>}.
+# Uncomment this line if you want NCID data sent at ring 4
 # set ncid_notify {set Ring 4}
+# Uncomment this line if you want NCID data sent at hangup with no answer
+# set ncid_notify {set Ring -1}
 

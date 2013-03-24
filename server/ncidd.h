@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2012
+ * Copyright (c) 2002-2013
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd.h is free software; you can redistribute it and/or modify
@@ -104,15 +104,22 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #endif
 
 #define STDOUT      1
-#define BUFSIZE     512
 #define CHARWAIT    2       /* deciseconds */
 #define READWAIT    100000  /* microseconds */
 #define READTRY     10      /* number of times to INITWAIT for a character */
 #define MODEMTRY    6
 #define TTYSPEED    B19200
 
+/* server messages */
 #define ANNOUNCE    "200 Server:"
-#define LOGEND      "300 end of call log"
+#define LOGEND      "300 End of call log"
+#define NOLOG       "300 No Call log"
+#define NOLOGSENT   "300 Call log not sent"
+#define EMPTYLOG    "300 Call log empty"
+
+/* server warning messages */
+#define LOGMSG      "MSG: Call Log too big: (%lu > %lu) bytes%s"
+#define TOOMSG      "MSG: Too many clients connected"
 
 #define INITSTR     "AT Z S0=0 E1 V1 Q0"
 #define INITCID1    "AT+VCID=1"
@@ -139,8 +146,6 @@ Options: [-A aliasfile  | --alias <file>]\n\
 
 #define LOGMAX      110000
 #define LOGMAXNUM   100000000
-#define LOGMSG      "MSG: Caller ID Logfile too big: (%lu > %lu) bytes%s"
-#define TOOMSG      "MSG: Too many clients connected"
 
 #define BLMSG       "Calls in the blacklist file will be terminated"
 #define WLMSG       "Calls in the whitelist file will not be terminated"
@@ -152,16 +157,21 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define LOGLINE     "LOG: "
 #define OUTLINE     "OUT: "
 #define HUPLINE     "HUP: "
+#define BLKLINE     "BLK: "
+#define ENDLINE     "END: "
 
 #define IN          0
 #define OUT         1
 #define HUP         2
+#define BLK         4
 
 #define LINETYPE    25
 #define ONELINE     "-"
 
 #define CALLOUT     "CALLOUT"
 #define CALLIN      "CALLIN"
+#define CALLHUP     "CALLHUP"
+#define CALLBLK     "CALLBLK"
 
 #define DATE        "*DATE*"
 #define TIME        "*TIME*"
@@ -169,6 +179,10 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define MESG        "*MESG*"
 #define NAME        "*NAME*"
 #define LINE        "*LINE*"
+#define HTYPE       "*HTYPE*"
+#define SCALL       "*SCALL*"
+#define ECALL       "*ECALL*"
+#define CTYPE       "*CTYPE*"
 #define STAR        "*"
 
 #define CIDINFO     "CIDINFO: "
@@ -189,10 +203,10 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define CIDNMBR      0x04
 #define CIDNAME      0x08
 #define CIDMESG      0x10
-#define CIDALL3      0x07   /* Date, Time, Nmbr */
-#define CIDALT3      0x0B   /* Date, Time, Nmbr, Name */
-#define CIDALL4      0x0F   /* Date, Time, Name */
-#define CIDALT4      0x17   /* Date, Time, Nmbr, Mesg */
+#define CIDALL3      (CIDDATE | CIDTIME | CIDNMBR)
+#define CIDALT3      (CIDDATE | CIDTIME | CIDNAME)
+#define CIDALL4      (CIDDATE | CIDTIME | CIDNMBR | CIDNAME)
+#define CIDALT4      (CIDDATE | CIDTIME | CIDNMBR | CIDMESG)
 
 #define MAXLEVEL     9
 enum
@@ -212,7 +226,7 @@ extern char *ttyport, *TTYspeed;
 extern char *initstr, *initcid;
 extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile;
 extern int setcid, port, clocal, ttyspeed, ttyfd, hangup;
-extern int sendlog, sendinfo, ignore1;
+extern int sendlog, sendinfo, ignore1, cidnoname;
 extern int nomodem, noserial, gencid, verbose;
 extern long unsigned int cidlogmax;
 extern void logMsg();

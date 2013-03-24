@@ -35,12 +35,18 @@ FILE *logptr;
 pcap_t *descr;
 pcap_dumper_t *dumpfile;
 struct sigaction sigact;
+struct calls                    /* calls in progress */
+{
+    char *callid;
+    char *callstart;
+    char *line;
+} calls[MAXCALL];
 
 int doPID(), getOptions(), pcapListDevs(), parseLine(), getCallID(),
-    rmCallID(), socketRead(), callType();
+    findCallID(), addCallID(), rmCallID(), socketRead(), callType();
 void cleanup(), doPCAP(), sigdetect(), errorExit(), socketConnect(),
      processPackets();
-char *strdate(), *inet_ntoa(), *strmatch();
+char *strdate(), *inet_ntoa(), *strmatch(), *lineLabel();
 #ifndef __CYGWIN__
     extern char *strsignal();
 #endif
@@ -533,7 +539,6 @@ void processPackets(u_char *args,
     static unsigned int gotdup = 0;        /* INVITE packet duplicate */
     static unsigned int charcnt;           /* character count */
     static char *linenum[MAXLINE];         /* telephone lines */
-    static char *calls[MAXCALL];           /* calls in progress */
 
     /* declare pointers to packet headers */
     const struct ip *ip;                   /* IP Header */
@@ -543,8 +548,9 @@ void processPackets(u_char *args,
     int size_ip, size_udp, size_pdata, cnt, pos, empty, retval, outcall;
 
     char sipbuf[SIPSIZ], msgbuf[BUFSIZ], cidmsg[BUFSIZ], warnmsg[BUFSIZ],
-         tonumber[NUMSIZ], fromnumber[NUMSIZ], callid[CIDSIZ];
-    char *line, *number, *name, *type;
+         tonumber[CIDSIZ], fromnumber[CIDSIZ], callid[CIDSIZ],
+         toname[CIDSIZ], fromname[CIDSIZ];
+    char *line, *number, *name, *type, *ptr;
 
     struct tm *tm;
     struct timeval tv;
@@ -765,35 +771,12 @@ void processPackets(u_char *args,
                      * Call-ID should already have been cleared,
                      * but just in case ...
                      */
-                    rmCallID(calls, callid);
+                    (void) rmCallID(callid);
                     return;
                 }
 
                 /* if Call-ID found, call in progress */
-                for (cnt = pos = 0; cnt < MAXCALL; ++cnt)
-                {
-                    if (!calls[cnt])
-                    {
-                        if (!pos) pos = cnt;
-                        continue;
-                    }
-                    if (!strcmp(calls[cnt], callid)) return;
-                }
-
-                if (pos)
-                {
-                    /* add Call-ID to calls in-progress table */
-                    calls[pos] = strdup(callid);
-                    sprintf(msgbuf, "Added calls[%d]=%s\n", pos, callid);
-                    logMsg(LEVEL2, msgbuf);
-                }
-                else
-                {
-                    /* calls in-progress table filled */
-                    sprintf(msgbuf, "%d simultaneous calls exceeded\n",
-                            MAXCALL);
-                    logMsg(LEVEL1, msgbuf);
-                }
+                if (findCallID(callid) != -1) return;
 
                 /*
                  * Get called number from To line:
@@ -823,7 +806,8 @@ void processPackets(u_char *args,
                     if (outcall)
                     {
                         /* Outgoing Call */
-                        line = fromnumber + strlen(fromnumber) - 4;
+                        //jlc line = fromnumber + strlen(fromnumber) - 4;
+                        line = lineLabel(fromnumber);
                         number = tonumber;
                         name = NONAME;
                         type = CALLOUT;
@@ -831,10 +815,14 @@ void processPackets(u_char *args,
                     else
                     {
                         /* Incoming Call */
-                        line = tonumber + strlen(tonumber) - 4;
+                        //jlc line = tonumber + strlen(tonumber) - 4;
+                        line = lineLabel(tonumber);
                         number = fromnumber;
                         type = CALLIN;
                     }
+
+                /* add Call-ID to calls in-progress table, if not filled */
+                (void) addCallID(callid, line);
 
                     sprintf(cidmsg, CIDLINE, strdate(NOYEAR), type, line,
                             number, name);
@@ -858,20 +846,18 @@ void processPackets(u_char *args,
                 /* Get the unique Call-ID */
                 getCallID(sipbuf, callid, sizeof(callid), CANCEL);
 
-                /*
-                 * If Call-ID found remove it
-                 * If Call-ID not found, return
-                 */
-                if (rmCallID(calls, callid)) return;
+                /* If Call-ID not found, return */
+                if (pos = findCallID(callid) == -1) return;
 
                 /*
                  * Get calling number from a "From:" line
                  *
                  * From: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDR>;tag=TAG_NMBR
                  */
-                if (parseLine(sipbuf, CANCEL, FROM, (char *) 0,
+                if (parseLine(sipbuf, CANCEL, FROM, (char *) &name,
                     (char *) &number)) return;
                 strcpy(fromnumber, number);
+                strcpy(fromname, name);
 
                 /*
                  * if number is a telephone line number, it is a outgoing call
@@ -879,10 +865,11 @@ void processPackets(u_char *args,
                  *
                  * To: [["]NAME["]] <sip:CALLED_NMBR@IP_ADDR>;tag=TAG_NMBR
                  */
-                if (parseLine(sipbuf, CANCEL, TO, (char *) 0,
+                if (parseLine(sipbuf, CANCEL, TO, (char *) &name,
                     (char *) &number) == 0)
                 {
                     strcpy(tonumber, number);
+                    strcpy(toname, name);
 
                     /* Determine if call is incoming or outgoing. */
                     outcall = callType(sipbuf, fromnumber, linenum);
@@ -890,25 +877,29 @@ void processPackets(u_char *args,
                     if (outcall)
                     {
                         /* Outgoing Call */
-                        line = fromnumber + strlen(fromnumber) - 4;
-                        /* get the called number from the TO line */
                         number = tonumber;
+                        name = toname;
                         type = CALLOUT;
                     }
                     else
                     {
                         /* Incoming Call */
-                        line = tonumber + strlen(tonumber) - 4;
-                        /* get the calling number from the From line */
                         number = fromnumber;
+                        name = fromname;
                         type = CALLIN;
                     }
 
-                    sprintf(cidmsg, CIDCAN, strdate(NOYEAR), type, line,
-                            number);
+                    ptr = strdup(strdate(NOYEAR));
+                    sprintf(cidmsg, INFOLINE, CANCEL, ptr,
+                            calls[pos].callstart, strdate(WITHYEAR),
+                            type, calls[pos].line, number, name);
+                    free(ptr);
                     if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                     logMsg(LEVEL1, cidmsg);
                 }
+
+                /* Remove Call-ID */
+                (void) rmCallID(callid);
             }
 
             /*
@@ -927,19 +918,17 @@ void processPackets(u_char *args,
                 /* Get the unique Call-ID */
                 getCallID(sipbuf, callid, sizeof(callid), BYE);
 
-                /*
-                 * If Call-ID found remove it
-                 * If Call-ID not found, return
-                 */
-                if (rmCallID(calls, callid)) return;
+                /* If Call-ID not found, return */
+                if (pos = findCallID(callid) == -1) return;
 
                 /*
                  * Get calling number from a "To:" or "From:" line
                  * To: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDR>;tag=TAG_NMBR
                  */
-                if (parseLine(sipbuf, BYE, TO, (char *) 0,
+                if (parseLine(sipbuf, BYE, TO, (char *) &name,
                     (char *) &number)) return;
                 strcpy(tonumber, number);
+                strcpy(toname, name);
 
                 /*
                  * if number is the telephone line number,
@@ -947,10 +936,11 @@ void processPackets(u_char *args,
                  *
                  * From: [["]NAME["]] <sip:CALLING_NMBR@IP_ADDR>;tag=TAG_NMBR
                  */
-                if (parseLine(sipbuf, BYE, FROM, (char *) 0,
-                    (char *) &number))
+                if (parseLine(sipbuf, BYE, FROM, (char *) &name,
+                    (char *) &number) == 0)
                 {
                     strcpy(fromnumber, number);
+                    strcpy(fromname, name);
 
                     /* Determine if call is incoming or outgoing. */
                     outcall = callType(sipbuf, fromnumber, linenum);
@@ -958,23 +948,29 @@ void processPackets(u_char *args,
                     if (outcall)
                     {
                         /* Outgoing Call */
-                        line = fromnumber + strlen(fromnumber) - 4;
                         number = tonumber;
+                        name = toname;
                         type = CALLOUT;
                     }
                     else
                     {
                         /* Incoming Call */
-                        line = tonumber + strlen(tonumber) - 4;
                         number = fromnumber;
+                        name = fromname;
                         type = CALLIN;
                     }
 
-                    sprintf(cidmsg, CIDBYE, strdate(NOYEAR), type, line,
-                            number);
+                    ptr = strdup(strdate(NOYEAR));
+                    sprintf(cidmsg, INFOLINE, BYE, ptr,
+                            calls[pos].callstart, strdate(WITHYEAR),
+                            type, calls[pos].line, number, name);
+                    free(ptr);
                     if (sd) retval =  write(sd, cidmsg, strlen(cidmsg));
                     logMsg(LEVEL1, cidmsg);
                 }
+
+                /* Remove Call-ID it */
+                (void) rmCallID(callid);
             }
 
             /*
@@ -1033,6 +1029,22 @@ void processPackets(u_char *args,
 }
 
 /*
+ * Determine the line label, usually last 4 digits
+ * of the receiving call telephone number, but it
+ * might be masked in which case it is anon [ymous]
+ */
+char *lineLabel(char *number)
+{
+    char *label;
+
+    if (isdigit(number[0]) && isdigit(number[1]))
+        label = number + strlen(number) - 4;
+    else label = "ANON";
+
+    return label;
+}
+
+/*
  * Determine if call is incoming or outgoing
  *  Returns 0 if incoming call
  *  Returns 1 if outgoing call
@@ -1074,9 +1086,9 @@ int callType(char *sipbuf, char *number, char *linenum[])
          * Look for "Call-ID: call-" at the begining of
          * the buffer.  If there, it is a outgoing call.
         */
-        if (!strcmp(sipbuf, "Call ID: call-")) outcall = 1;
-        sprintf(msgbuf, "Checked for \"Call ID: call-\" outcall= %d\n",
-            outcall);
+        if (strstr(sipbuf, OUTCALL) != NULL) outcall = 1;
+        sprintf(msgbuf, "Checked for \"%s\" outcall= %d\n",
+            OUTCALL, outcall);
         logMsg(LEVEL5, msgbuf);
     }
     return outcall;
@@ -1250,28 +1262,86 @@ int getCallID(char *sipbuf, char *callid, int size, char *label)
 }
 
 /*
- * Remove CallID from calls array
- * if found return 0
- * if not found return MAXCALL
+ * find the CallID in calls array
+ * if found return position
+ * if not found return -1
  */
-int rmCallID(char *calls[], char *callid)
+int findCallID(char *callid)
 {
-    int cnt;
+    int pos;
     char msgbuf[BUFSIZ];
 
-    for (cnt = 0; cnt < MAXCALL; ++cnt)
+    for (pos = 0; pos < MAXCALL; ++pos)
     {
-        if (calls[cnt] && !strcmp(calls[cnt], callid))
+        if (calls[pos].callid && !strcmp(calls[pos].callid, callid))
         {
-            sprintf(msgbuf, "Removed calls[%d]=%s\n", cnt, calls[cnt]);
+            /* found call in the calls in-progress table */
+            sprintf(msgbuf, "found calls[%d]=%s\n", pos, calls[pos].callid);
             logMsg(LEVEL2, msgbuf);
-            free(calls[cnt]);
-            calls[cnt] = 0;
-            cnt = 0;
             break;
         }
     }
-    return cnt;
+    return (pos == MAXCALL ? -1 : pos);
+}
+
+
+/*
+ * add the CallID, CallStart, and line label to calls array
+ * if added return position
+ * if not added return -1
+ */
+int addCallID(char *callid, char *line)
+{
+    int pos;
+    char msgbuf[BUFSIZ];
+
+    for (pos = 0; pos < MAXCALL; ++pos)
+    {
+        if (!calls[pos].callid)
+        {
+            /* add call to in-progress table */
+            calls[pos].callid = strdup(callid);
+            calls[pos].callstart = strdup(strdate(WITHYEAR));
+            calls[pos].line = strdup(line);
+            sprintf(msgbuf, "Added calls[%d].callid=%s\n", pos, callid);
+            logMsg(LEVEL2, msgbuf);
+            break;
+        }
+    }
+    if (pos == MAXCALL)
+    {
+        /* in-progress table filled, call not added */
+        sprintf(msgbuf, "%d simultaneous calls exceeded\n", pos);
+        logMsg(LEVEL1, msgbuf);
+        pos = -1;
+    }
+    return pos;
+}
+
+/*
+ * Remove CallID, Call Start, and line label from calls array
+ * if removed return position
+ * if not removed return -1
+ */
+int rmCallID(char *callid)
+{
+    int pos;
+    char msgbuf[BUFSIZ];
+
+    for (pos = 0; pos < MAXCALL; ++pos)
+    {
+        if (calls[pos].callid && !strcmp(calls[pos].callid, callid))
+        {
+            sprintf(msgbuf, "Removed calls[%d]=%s\n", pos, calls[pos].callid);
+            logMsg(LEVEL2, msgbuf);
+            free(calls[pos].callid);
+            free(calls[pos].callstart);
+            free(calls[pos].line);
+            calls[pos].callid = 0;
+            break;
+        }
+    }
+    return (pos == MAXCALL ? -1 : pos);
 }
 
 void doPCAP()

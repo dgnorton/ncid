@@ -1,7 +1,7 @@
 #!/bin/sh
 # script to start NCID
 # Requires the "pgrep" command
-# Last modified  by jlc: Thu Oct 4, 2012
+# Last modified  by jlc: Wed Oct 31, 2012
 
 ### This script requires pgrep.  If /var/hack/bin/pgrep is not
 ### present, you can use pgrep from the tivotools distribution:
@@ -120,7 +120,8 @@ OSDCLIENT=tivoncid
 # Get rsyslog and install it from
 #   http://www.dealdatabase.com/forum/showthread.php?66672-rsyslog-5-8-4
 #
-# Get and install ncid-fly package:
+# Get and install the ncid-fly package from:
+# http://www.dealdatabase.com/forum/showthread.php?53236-Series-3-caller-ID-NCID&p=316308#post316308
 #   cd /var; tar -xzvf <path>/ncid-fly-mips-tivo.tgz
 #
 # Uncomment this line if using the ncid-fly package

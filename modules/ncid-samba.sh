@@ -3,7 +3,7 @@
 # ncid-samba
 # usage: ncid --no-gui --program ncid-samba
 
-# Last modified: Fri Oct 12, 2012
+# Last modified: Thu Nov 1, 2012
 
 # Samba Interface to create a popup
 # Requires smbclient
@@ -55,7 +55,7 @@ done
 # Exit if $CIDTYPE not found
 [ -z "$found" ] && exit 0
 
-if [ "$CIDTYPE" = "MAG" ]
+if [ "$CIDTYPE" = "MSG" ]
 then
     # Display Message
     echo "$CIDNAME" | smbclient -M $SambaClient

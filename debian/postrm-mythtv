@@ -25,8 +25,8 @@ case "$1" in
     purge|remove)
     ;;
     upgrade)
-        pgrep -f $ncid-mythtv > /dev/null 2>&1 && \
-            involk-rc.d $ncid-mythtv restart
+        pgrep -f ncid-mythtv > /dev/null 2>&1 && \
+            invoke-rc.d ncid-mythtv restart
     ;;
 
     *)

@@ -1,7 +1,7 @@
 INIT        = ncidd.init \
-              ncidsip.init \
               ncid2ncid.init \
               sip2ncid.init \
+              wc2ncid.init \
               yac2ncid.init \
               ncid-mythtv.init \
               ncid-notify.init \
@@ -10,18 +10,18 @@ INIT        = ncidd.init \
               ncid-speak.init \
               ncid-yac.init \
               ncid-initmodem.init
-SERVICE     = ncidd.service-in \
-              ncidsip.service-in \
-              ncid2ncid.service-in \
-              sip2ncid.service-in \
-              yac2ncid.service-in \
-              ncid-mythtv.service-in \
-              ncid-notify.service-in \
-              ncid-page.service-in \
-              ncid-samba.service-in \
-              ncid-speak.service-in \
-              ncid-yac.service-in \
-              ncid-initmodem.service-in
+SERVICE     = ncidd.service \
+              ncid2ncid.service \
+              sip2ncid.service \
+              wc2ncid.service \
+              yac2ncid.service \
+              ncid-mythtv.service \
+              ncid-notify.service \
+              ncid-page.service \
+              ncid-samba.service \
+              ncid-speak.service \
+              ncid-yac.service \
+              ncid-initmodem.service
 SPEC        = ncid.spec
 FILES		= README.Fedora Makefile $(INIT) $(SPEC)
 
@@ -49,13 +49,13 @@ LOG			= $(VAR)/log
 PLSCRIPT    = $(PLSOURCE:.pl=)
 SHSCRIPT    = $(SHSOURCE:.sh=)
 INITSITE    = $(INIT:.init=)
-SITE        = $(SERVICE:-in=)
 
-service: $(SITE)
+service: $(SERVICE)
+
 init: $(INITSITE)
 
-install: $(SITE) dirs
-	install -m 644 $(SITE) $(SERVICEDIR)
+install: $(SERVICE) dirs
+	install -m 644 $(SERVICE) $(SERVICEDIR)
 
 install-init: $(INITSITE) initdirs
 	install -m 755 $(INITSITE) $(INITDIR)
@@ -69,18 +69,15 @@ initdirs:
 clean:
 
 clobber: clean
-	rm -f $(SITE) $(INITSITE)
+	rm -f $(INITSITE)
 	rm -f *.zip *.tar.gz *.tgz
 
 distclean: clobber
 
 files:	$(FILES)
 
-.SUFFIXES: .init -in
+.SUFFIXES: .init
 
 .init : *.init
-	sed '/exec/s,/usr/local,$(prefix),;/config/s,/usr/local,$(prefix2),;s,.*/functions,. $(FUN),$(SHARP)' $< > $@
+	sed 's,.*/functions,. $(FUN),$(SHARP)' $< > $@
 	chmod +x $@
-
--in : *-in
-	sed '/EnvironmentFile/s,/usr/local,$(prefix2),' $< > $@

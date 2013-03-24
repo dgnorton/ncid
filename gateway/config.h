@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 John L. Chmielewski <jlc@cfl.rr.com>
+ * Copyright 2007-2012 John L. Chmielewski <jlc@cfl.rr.com>
  *
  * config.h is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <ctype.h>
 
 #ifndef CONFIG
-#define CONFIG      "/usr/local/etc/ncid/ncidsip.conf"
+#define CONFIG      "/usr/local/etc/ncid/sip2ncid.conf"
 #endif
 
 #define WORDZERO    0x00

@@ -1,6 +1,6 @@
 FreeBSD Install
 
-Last edited: Sat Oct 20, 2012
+Last edited: Sat Mar 9, 2013
 
 Sections:
 
@@ -65,6 +65,11 @@ STARTUP:
     - If you are running the server and using a SIP gateway:
         /usr/local/etc/rc.d/rc.d/ncidd onestart
         /usr/local/etc/rc.d/rc.d/sip2ncid onestart
+        ncid &
+
+    - If you are running the server and using a Whozz Calling gateway:
+        /usr/local/etc/rc.d/rc.d/ncidd onestart
+        /usr/local/etc/rc.d/rc.d/wc2ncid onestart
         ncid &
 
     - If you are running the server and using a YAC gateway:

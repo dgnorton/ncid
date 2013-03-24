@@ -1,3 +1,17 @@
+ncid (0.86-1) Ubuntu-12.10 raspian; urgency=low
+
+  * See NCID CHANGES file
+  * updated rules
+  * changed i386 in the control file to any
+  * added ${perl:Depends} to controlfile
+  * added gateway: wc2ncid.pl
+  * added modules: ncid-alert ncid-wakeup
+  * removed gateway: ncidsip
+  * updated postrm, prerm
+  * fixed pre-* and post-* scripts
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Wed, 20 Mar 2013 14:45:00 -0400
+
 ncid (0.85-0ubuntu1) 12.04; urgency=low
 
   * See NCID CHANGES file

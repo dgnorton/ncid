@@ -1,0 +1,45 @@
+#!/usr/bin/perl -w
+
+# Created on Sat Jan 11, 2013 by Steve Limkemann
+# Last updated on Sun Jan 12, 2013 by sl
+
+use strict;
+use Socket;
+
+my ($testfile, $response, $wait, $datagram);
+
+$testfile = (shift or "testSIPgw.data");
+
+my $proto = getprotobyname ('udp');
+my $port = 20000; 
+
+my $servaddr = sockaddr_in ($port, 127.0.0.1);
+
+socket SERVER, PF_INET, SOCK_DGRAM, $proto or die "Unable to create socket: $!";
+
+open(TESTFILE, $testfile) || die "Could not open $testfile\n";
+
+print "Connect SIP gateway to interface lo and port 20000 to test\n";
+print "    for example: sudo sip2ncid -ti lo -s :20000\n\n";
+print "Then press <ENTER> multiple times to:\n";
+print "    send packet\n";
+print "    end  program\n\n";
+
+$| = 1;
+
+$wait = 1;
+while (<TESTFILE>) {
+	next if /^#/;
+    if (/^\s*$/ or $wait) {
+        send SERVER, $datagram, 0, $servaddr if $datagram;
+        $response = <>;
+        $datagram = undef;
+        $wait = 0;
+        next;
+    }
+	print;
+    $datagram .= $_;
+}
+close (SERVER);
+
+exit 0;

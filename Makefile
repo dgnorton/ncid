@@ -8,8 +8,11 @@
 # make package           - builds for /usr, /etc, and /var                #
 # make package-install   - installs files in /usr, /etc, and /var         #
 #                                                                         #
-# make fedora            - builds for Fedora (includes init.d/ files)     #
+# make fedora            - builds for Fedora with service files           #
 # make fedora-install    - installs in /usr, /etc, and /var               #
+#                                                                         #
+# make redhat            - builds for Redhat           with init.d files  #
+# make redhat-install    - installs in /usr, /etc, and /var               #
 #                                                                         #
 # make ubuntu            - builds for Ubuntu (includes init.d/ files)     #
 # make ubuntu-install    - installs in /usr, /etc, and /var               #
@@ -97,10 +100,9 @@ TCLSH        = tclsh
 MFLAGS  = -W -Wmissing-declarations \
 
 # Documentation for FreeBSD, Mac, and TiVo
-DOC     = doc/[A-HJ-U]* doc/INSTALL \
+DOC     = doc/[A-HJ-V]* doc/INSTALL \
           server/README.server gateway/README.Gateways \
-          client/README.client modules/README.modules doc/Verbose-ncid \
-          doc/Verbose-ncidd doc/Verbose-sip2ncid doc/Verbose-ncid2ncid
+          client/README.client modules/README.modules
 
 default:
 	@echo "make requires an argument, see top of Makefile for description:"
@@ -109,8 +111,10 @@ default:
 	@echo "    make install            # installs into /usr/local and /var"
 	@echo "    make package            # builds for /usr and /var"
 	@echo "    make package-install    # installs into for /usr and /var"
-	@echo "    make fedora             # builds for Fedora, includes init.d/"
+	@echo "    make fedora             # builds for Fedora/Redhat with service files/"
 	@echo "    make fedora-install     # installs in /usr, /etc, and /var"
+	@echo "    make redhat             # builds for Redhat/Fedora, with init files/"
+	@echo "    make redhat-install     # installs in /usr, /etc, and /var"
 	@echo "    make ubuntu             # builds for Ubuntu, includes init.d/"
 	@echo "    make ubuntu-install     # installs in /usr, /etc, and /var"
 	@echo "    make tivo-mips          # builds for TiVo in /usr/local, /var"
@@ -134,6 +138,10 @@ version.h: version.h-in
 	sed "s/XXX/$(Version)/" $< > $@
 
 fedoradir:
+	cd Fedora; $(MAKE) service service prefix=$(prefix) prefix2=$(prefix2) \
+                      prefix3=$(prefix3)
+
+redhatdir:
 	cd Fedora; $(MAKE) init service prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3)
 
@@ -196,6 +204,13 @@ fedora:
 fedora-install:
 	$(MAKE) install install-fedora prefix=/usr prefix2=
 
+redhat:
+	$(MAKE) local redhatdir prefix=/usr prefix2= \
+            LOCKFILE=/var/lock/lockdev/LCK..
+
+redhat-install:
+	$(MAKE) install install-redhat prefix=/usr prefix2=
+
 ubuntu:
 	$(MAKE) local ubuntudir prefix=/usr prefix2= \
             LOCKFILE=/var/lock/LCK..
@@ -257,7 +272,7 @@ freebsd-install:
             MAN=$(prefix)/man
 
 mac-fat:
-	$(MAKE) local-base macdir settag="Macintosh OS X" \
+	$(MAKE) local-base macdir settag="default Mac OS X" \
             unset="tts default" setmac="Mac default" \
             LOCKFILE=/var/spool/uucp/LCK.. \
             MFLAGS="-mmacosx-version-min=10.3.9 -arch ppc" STRIP=
@@ -265,7 +280,7 @@ mac-fat:
 	mv gateway/sip2ncid gateway/sip2ncid.ppc-mac
 	mv gateway/ncid2ncid gateway/ncid2ncid.ppc-mac
 	$(MAKE) clean
-	$(MAKE) local settag="Macintosh OS X" \
+	$(MAKE) local settag="default Mac OS X" \
             LOCKFILE=/var/spool/uucp/LCK.. \
             MFLAGS="-mmacosx-version-min=10.4 -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk" STRIP=
 	mv server/ncidd server/ncidd.i386-mac
@@ -279,7 +294,7 @@ mac-fat:
          -output gateway/ncid2ncid
 
 mac:
-	$(MAKE) local-base macdir settag="Macintosh OS X" \
+	$(MAKE) local-base macdir settag="default Mac OS X" \
             unset="tts default" setmac="Mac default" \
             LOCKFILE=/var/spool/uucp/LCK.. \
             MFLAGS="-mmacosx-version-min=10.4" STRIP=
@@ -313,6 +328,10 @@ install: install-base install-logrotate
 install-fedora:
 	cd Fedora; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
+
+install-redhat:
+	cd Fedora; \
+	$(MAKE) install-init prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3)
 
 install-mac:
 	cd Mac; \

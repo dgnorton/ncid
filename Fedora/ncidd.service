@@ -7,6 +7,7 @@ Type=forking
 Environment=prog=ncidd
 PIDFile=/var/run/ncidd.pid
 ExecStart=/usr/sbin/ncidd --pidfile /var/run/${prog}.pid
+ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target

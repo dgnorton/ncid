@@ -31,7 +31,7 @@ ConfigFile=$ConfigDir/ncid-kpopup.conf
 # Test whether echo needs option "-e" to interpret new line "\n"
 if [ "`echo -e`" != " -e" ] ; then use_e="-e " ; else use_e= ; fi
 
-# Defaults (see ncidmocules.conf for description):
+# Defaults (see ncid-kpopup.conf for description):
 kdialog=/usr/bin/kdialog
 kpopup_geo="0x0+1600+1000" #Display in the bottom right corner of a 22" monitor
 kpopup_timeout=10 #Displays popup for X number of seconds used by kdialog
@@ -63,6 +63,7 @@ do
         esac
         found=1
         break
+    }
 done
 
 # Exit if $CIDTYPE not found

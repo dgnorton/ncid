@@ -22,7 +22,6 @@ ncid-tivo      - TiVo module used to display CID on TV
 ncid-tivo.conf - TiVo module configuration file
 
 The following scripts are not useful on the TiVo and are not installed.
-    ncidsip
     ncidrotate
     ncidtools
     ncid-kpopup

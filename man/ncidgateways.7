@@ -1,0 +1,37 @@
+.\" %W% %G%
+.TH NCIDGATEWAYS 7
+.SH NAME
+.B ncidgateways
+- NCID gateways overview
+.SH DESCRIPTION
+NCID gateways convert other protocols to the NCID protocol.
+.P
+The current gateways distributed with NCID are:
+.PP
+.PD 0
+.TP 10
+.B ncid2ncid
+Connect multiple NCID servers to a single NCID server
+.TP
+.B sip2ncid
+Inject CID info into ncidd by snooping SIP invites
+.TP
+.B wc2ncid
+Whozz Calling devices to NCID server gateway
+.TP
+.B yac2ncid
+YAC server to NCID server gateway
+.PD
+.SH FILES
+/var/log/ncid2ncid.log
+.br
+/var/log/sip2ncid.log
+.br
+/var/log/wc2ncid.log
+.br
+/var/log/yac2ncid.log
+.SH SEE ALSO
+ncid2ncid.1,
+sip2ncid.8,
+wc2ncid.1,
+yac2ncid.1

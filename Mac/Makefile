@@ -1,6 +1,7 @@
-PLISTD  = net.sourceforge.ncidd.plist \
+PLIST   = net.sourceforge.ncidd.plist \
           net.sourceforge.ncid2ncid.plist \
           net.sourceforge.sip2ncid.plist \
+          net.sourceforge.wc2ncid.plist \
           net.sourceforge.yac2ncid.plist \
           net.sourceforge.ncid-initmodem.plist \
           net.sourceforge.ncid-page.plist \
@@ -8,10 +9,14 @@ PLISTD  = net.sourceforge.ncidd.plist \
           net.sourceforge.ncid-samba.plist \
           net.sourceforge.ncid-speak.plist \
           net.sourceforge.ncid-yac.plist
-PLISTA  = net.sourceforge.ncid-gui.plist
+
+SCRIPT  = fix-combobox.sh ncid-gui.command.sh
+
+COMMAND = ncid-gui.command
+
 DOC     = README.Mac
 
-FILES   = Makefile $(PLISTD) $(PLISTA) $(DOC)
+FILES   = Makefile $(PLIST) $(DOC) $(SCRIPT)
 
 prefix  = /usr/local
 prefix2 = $(prefix)
@@ -27,29 +32,31 @@ DOCDIR  = $(SHARE)/doc/ncid
 
 LAUNCHD = $(prefix3)/Library/LaunchDaemons
 LAUNCHA = $(prefix3)/Library/LaunchAgents
+APPDIR  = $(prefix3)/Applications
 
-SITE    =
+SITE    = fix-combobox
 
-plist: $(PLISTD) $(PLISTA)
+default: $(PLIST) $(SITE)
 
-install: install-doc install-plistd install-plista
+install: install-doc install-plist install-command
 
-install-doc: $(DOC)
+install-doc: $(DOC) $(SITE)
 	@if ! test -d $(DOCDIR); then mkdir -p $(DOCDIR); fi
 	install -m 644 $(DOC) $(DOCDIR)
+	install -m 755 $(SITE) $(DOCDIR)
 
-install-plistd: $(PLISTD)
+install-plist: $(PLIST)
 	@if test ! -d $(LAUNCHD); then mkdir -p $(LAUNCHD); fi
-	@install -m 644 $(PLISTD) $(LAUNCHD)
+	@install -m 644 $(PLIST) $(LAUNCHD)
 
-install-plista: $(PLISTA)
-	@if test ! -d $(LAUNCHA); then mkdir -p $(LAUNCHA); fi
-	@install -m 644 $(PLISTA) $(LAUNCHA)
+install-command: $(COMMAND)
+	@if test ! -d $(APPDIR); then mkdir -p $(APPDIR); fi
+	@install -m 755 $(COMMAND) $(APPDIR)
 
 clean:
 
 clobber: clean
-	rm -f *.zip *.tar.gz *.tgz
+	rm -f $(COMMAND) $(SITE) *.zip *.tar.gz *.tgz
 
 distclean: clobber
 

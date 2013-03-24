@@ -1,6 +1,6 @@
 Ubuntu Install
 
-Last edited: Sat Oct 20, 2012
+Last edited: Wed Mar 20, 2013
 
 Sections:
 
@@ -37,7 +37,7 @@ INSTALL or UPGRADE:
       wget -q -O - http://archive.getdeb.net/getdeb-archive.key \
         | sudo apt-key add -
       sudo sh -c \
-        'echo "deb http://archive.getdeb.net/ubuntu precise-getdeb apps" \
+        'echo "deb http://archive.getdeb.net/ubuntu precise-getdeb apps"' \
         >> /etc/apt/sources.list
 
     - Update the apt cache:
@@ -52,7 +52,7 @@ INSTALL or UPGRADE:
     - Install any optional output modules wanted:
       sudo apt-get install ncid-<module>
 
-    If the latest source is not available at the repository:
+    If the latest packages are not available at the repository:
 
     - Download the latest NCID deb packages from sourceforge
           ncid DEB Package
@@ -61,7 +61,24 @@ INSTALL or UPGRADE:
     - Download any optional output modules wanted:
           ncid-MODULE DEB Package  - optional client output modules
 
-    - Install or Upgrade the packages:
+    Use gdebi to install the local NCID packages and dependent packages.
+    Using "sudo dpkg -i <package>" will not install dependent packages.
+    Using "sudo apt-get install <package>" will not install local packages.
+
+    - Install or Upgrade the packages using gdebi (command line):
+        * Install gdebi if needed:
+          sudo apt-get install gdebi
+        * Install the NCID server and gateways:
+          sudo gdebi ncid-<version>_armhf.deb
+        * Install the client package and default modules:
+          sudo gdebi ncid-client-<version>_all.deb
+        * Install any optional modules:
+          sudo gdebi ncid-<module-<version>_all.deb
+      Notes:
+        <version> would be something like: 0.86-0ubuntu1
+        <module> would be a module name like: kpopup, mythtc, samba
+
+    - Install or Upgrade the packages using gdebi-gtk (GUI):
         * If needed use the the menu item "Add/Remove.." to install the
           GDebi Package Installer.
         * Using the file viewer:
@@ -94,6 +111,20 @@ FIRST STARTUP:
     - If you are running the server and using a SIP gateway:
         sudo invoke-rc.d ncidd start
         sudo invoke-rc.d sip2ncid start
+        ncid &
+
+    - If you are running the server and using a Whozz Calling gateway:
+      You need to install the Data::HexDump Perl module using cpan
+        cpan
+          interactive mode, first use will enter configure
+          configure as much as possible automatically
+          choose sudo from: (Choose 'local::lib', 'sudo' or 'manual')
+          automatically choose some CPAN mirror
+          at cpan prumpt install module
+        install Data::HexDump
+        quit
+        sudo invoke-rc.d ncidd start
+        sudo invoke-rc.d wc2ncid start
         ncid &
 
     - If you are running the server and using a YAC gateway:
@@ -134,7 +165,7 @@ START/STOP/STATUS:
 
 AUTOSTART:
 
-    Use the update-rc.d command to install/remove the service at boot.
+    Use the update-rc.d command to enable/disable the service at boot.
 
     Here are some examples:
     - start ncidd at boot: sudo update-rc.d ncidd defaults

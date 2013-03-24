@@ -1,23 +1,42 @@
-# Last updated: Mon Aug 27, 2012
+# Last updated: Mon Feb 6, 2013
 #
 #   USAGE:
-#   ./testclient client-display.data
-#   ../client/ncid 3334
+#       ./testclient client-display.data
 #
-#   USAGE (if ncid-page is also used):
-#   ./testclient client-display.data
-#   ../client/ncid -P ncid-page -r -1 3334
+#       (if displaying on ncid in GUI mode)
+#       ../client/ncid 3334
+#
+#       (if using ncid-page):
+#       ../client/ncid -P ncid-page --ring -1 3334
+#
+#       (if using ncid-notify):
+#       ../client/ncid -P ncid-notify --ring -1 3334
 #
 # See README.test for more information on usage.
 #
 200 NCID Client Test Server
+300 Call log not sent
 
-OUTLOG: *DATE*07142011*TIME*0905*LINE*VOIP*NMBR*14075551212*MESG*NONE*NAME*NO NAME*
+OUT: *DATE*07142012*TIME*0905*LINE*VOIP*NMBR*14075551212*MESG*NONE*NAME*NO NAME*
+CIDINFO: *LINE*VOIP*RING*-1*TIME*10:10:00*
 
-HUPLOG: *DATE*07142011*TIME*0915*LINE*VOIP*NMBR*PRIVATE*MESG*NONE*NAME*PRIVATE*
+HUP: *DATE*07142012*TIME*0915*LINE*VOIP*NMBR*PRIVATE*MESG*NONE*NAME*PRIVATE*
+CIDINFO: *LINE*VOIP*RING*-1*TIME*10:15:00*
 
-CID: *DATE*09182011*TIME*1020*LINE*VOIP*NMBR*4075551212*MESG*NONE*NAME*John on cell*
-CIDINFO: *LINE*VOIP*RING*-1*TIME*10:21:00*
+CID: *DATE*01072012*TIME*1018*LINE*VOIP*NMBR*8775558360*MESG*NONE*NAME*800 Service
+CIDINFO: *LINE*-*RING*-1*TIME*10:19:20*
 
-MSG: This is an example of a received message
+CID: *DATE*09182012*TIME*1120*LINE*VOIP*NMBR*4075551212*MESG*NONE*NAME*John on cell*
+CIDINFO: *LINE*VOIP*RING*-1*TIME*11:21:00*
+
+CID: *DATE*01282012*TIME*1509*LINE*HOME*NMBR*5415554330*MESG*NONE*NAME*Albany       OR*
+CIDINFO: *LINE*B*RING*-2*TIME*15:15:15*
+
+CID: *DATE*01282012*TIME*1309*LINE*SPY*NMBR*0075551007*MESG*NONE*NAME*Bond, James*
+CIDINFO: *LINE*B*RING*-2*TIME*13:15:25*
+
+CID: *DATE*01282012*TIME*1509*LINE*B*NMBR*9085555002*MESG*NONE*NAME*Vähälä*
+CIDINFO: *LINE*B*RING*-2*TIME*15:15:15*
+
+MSG: check out NCID at http://ncid.sourceforge.net
 

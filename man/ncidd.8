@@ -39,8 +39,7 @@
 [--osx-launchd]
 .fi
 .SH DESCRIPTION
-.B NCIDD
-collects Caller ID data from:
+The \fBncidd\fR server collects Caller ID data from:
 .PP
 .nf
     - a modem or CID device on a telephone line
@@ -50,9 +49,9 @@ collects Caller ID data from:
 .PP
 It formats the data on a single text line, and then sends it
 to one or more
-\fINetwork\fR \fICaller ID\fR (\fINCID\fR)
+\fBNetwork Caller ID\fR (\fBNCID\fR)
 clients over TCP/IP.
-.B NCIDD
+The \fBncidd\fR server
 also allows an alias for the number, an alias for the name,
 and an alias for the telephone line identifier.
 .PP
@@ -81,19 +80,19 @@ can handle calls without Caller ID by generating call data on ring
 number 2 and send it to the connect clients.  The number will be "RING"
 and the name will be "No Caller ID".  This feature is on by default.
 
-If the Caller ID is obtained from a SIP Gateway the CIDINFO line is
-only sent at the beginning and end of a call.  At the end of a call, RING
+If the Caller ID is obtained from a Gateway, the CIDINFO line may be sent
+at the beginning and end of a call.  At the end of a call, RING
 indicates either \fIHangup Without Answer\fR or \fIHangup after Answer\fR
 This allows a cell phone or pager to receive a message only if the phone
 was not answered.
 
-If the Caller ID is obtained from a SIP Gateway that supports outgoing
+If the Caller ID is obtained from a Gateway that supports outgoing
 calls, ncidd will send outgoing call text lines to the clients.
 
 If the Caller ID is obtained from a Gateway that supports automatic
 hangup, ncidd will send hangup call text lines to the clients.
 
-If the hangup option is configured, ncidd will automatically hangup the
+If the \fBhangup\fR option is configured, ncidd will automatically hangup the
 call and send hangup call text lines to the clients.
 .PP
 A client can send \fBncidd\fR a text message.  The text message
@@ -112,8 +111,8 @@ to indicate a hangup with no answer.
 The NCID gateway sends \fBncidd\fR CID and CIDINFO text lines instead
 of the normal gateway CALL and CALLINFO lines which need conversion.
 .PP
-When \fBncidd\fZR receives a SIGHUP signal, it will reload the alias
-file.  If the hangup option is set, \fBncidd\fR will also reload
+When \fBncidd\fR receives a SIGHUP signal, it reloads the alias
+file.  If the hangup option is set, \fBncidd\fR also reloads
 the blacklist and whitelist files.
 .SH "OPTIONS"
 .PD 0
@@ -368,6 +367,6 @@ Server log file.  Contents controlled by verbose.
         -?         System error
 .fi
 .SH SEE ALSO
-sip2ncid.8, ncidsip.8, ncid2ncid.1, ncidrotate.1, yac2ncid.1
+sip2ncid.8, ncid2ncid.1, ncidrotate.1, yac2ncid.1, wc2ncid.1
 ncid.1, ncidtools.1, lcdncid.1,
 ncidd.conf.5, ncidd.alias.5, ncidd.blacklist.5, ncidd.whitelist.5

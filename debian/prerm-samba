@@ -20,8 +20,8 @@ set -e
 case "$1" in
     remove|deconfigure)
         [ -h /usr/doc/ncid-samba ] && rm -f /usr/doc/ncid-samba
-        involk-rc.d $ncid-samba stop
-        update-rc.d -f $ncid-samba remove
+        invoke-rc.d ncid-samba stop
+        update-rc.d -f ncid-samba remove
     ;;
     upgrade)
         [ -h /usr/doc/ncid-samba ] && rm -f /usr/doc/ncid-samba

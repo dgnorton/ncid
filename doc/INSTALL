@@ -1,6 +1,6 @@
 NCID - Network Caller ID Install
 
-Last edited: Sat Oct 20, 2012
+Last edited: Sat Mar 16, 2013
 
 Sections:
     Layout:
@@ -24,11 +24,14 @@ Layout:
     Fedora:
 	The init scripts go into $prefix2/etc/rc.d/init.d
 
-    Debian or Ubuntu:
+    Debian,Ubuntu or Raspberry Pi (RPi):
 	The init scripts go into $prefix2/etc/init.d
 
     FreeBSD:
     The rc scripts go into $prefix2/etc/rc.d
+
+    Macintosh OSX:
+    The plist scripts go into $(prefix3)/Library/LaunchDaemons
 
 Compile:
 
@@ -43,8 +46,22 @@ Compile:
 	To configure programs and config file for /usr/local:
 		- make local
 
-	To configure for programs for /usr, and the config file for /etc:
+	To compile programs for /usr, and the config file for /etc:
 		- make package
+
+	To compile programs for Fedora
+		- make fedora
+
+	To compile programs for enterprise
+		- make redhat
+
+	To compile programs for Debian, Ubuntu, or Raspberry Pi
+		- make ubuntu
+
+	To compile programs for Maqcintosh OSX
+		- make mac
+            OR
+        - make mac-fat
 
 	To cross-compile for the TiVo:
 		- make tivo-s1 (requires TiVo PPC cross-development:
@@ -68,6 +85,18 @@ INSTALL:
         - make package-install
         This also works:
 		- make install prefix=/usr prefix2=
+
+	To install programs for Fedora
+		- make fedora-install
+
+	To install programs for enterprise
+		- make redhat-install
+
+	To install programs for Debian, Ubuntu, or Raspberry Pi
+		- make ubuntu-install
+
+	To install programs for Macintosh OSX
+		- make mac-install
 
     Note: See the top of the Makefile for more information on targets.
 
@@ -135,7 +164,29 @@ TEST USING sip2ncid:
 
     Start (in this order):
 	    ncidd
-        sip2ncid (may need to add options, review Setup-sip2ncid)
+        sip2ncid (review Setup-sip2ncid)
+        ncid
+
+	Call yourself
+
+	if you have problems, start ncidd in debug mode:
+		- ncidd -D
+    to get more information, add the verbose flag:
+        ncidd -Dv3
+    to also look at the alias structure
+        ncidd -Dv5
+    The last three lines will be similar to:
+        CallerID only from CID gateways
+        Network Port: 3333
+        Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+
+	Once you solve any problems, restart ncidd normally
+
+TEST USING wc2ncid:
+
+    Start (in this order):
+	    ncidd
+        wc2ncid (review Setup-wc2ncid)
         ncid
 
 	Call yourself

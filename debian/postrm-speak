@@ -25,8 +25,8 @@ case "$1" in
     purge|remove)
     ;;
     upgrade)
-        pgrep -f $ncid-speak > /dev/null 2>&1 && \
-            involk-rc.d $ncid-speak restart
+        pgrep -f ncid-speak > /dev/null 2>&1 && \
+            invoke-rc.d ncid-speak restart
     ;;
 
     *)

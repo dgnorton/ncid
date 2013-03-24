@@ -6,6 +6,6 @@ clean:
 	rm -f T-* vmodem0
 
 clobber: clean
-	rm -f *.zip *.tar.gz *.tgz
+	rm -f *.zip *.tar.gz *.tgz wct.log
 
 distclean: clobber

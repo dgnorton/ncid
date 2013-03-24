@@ -1,0 +1,37 @@
+.\" %W% %G%
+.TH NCID-WAKEUP 1
+.SH NAME
+.B ncid-wakeup
+.SH SYNOPSIS
+ncid --wakeup
+.B ncid-wakeup
+.SH DESCRIPTION
+The
+.B ncid-wakeup
+output module is called to wakeup X-Windows for ncid in GUI mode
+or ncid using a output module.  If another module is called, it
+is executed before that module.  Since no information regarding
+the call is required, none is sent.
+It is called when the WakeUp option is set either on the command
+line of in the \fIncid.conf\fR file.
+.SH REQUIREMENTS
+This module only works with X-windows and Gnome.
+.br
+Do not set the ncid "--program | -P" option.
+.SH FILES
+/etc/ncid/ncid.conf
+.br
+/usr/share/ncid/ncid-skel
+.SH SEE ALSO
+ncidd.8,
+ncid.1,
+ncid-alert.1,
+ncid-initmodem.1,
+ncid-kpopup.1,
+ncid-mythtv.1,
+ncid-notify.1,
+ncid-page.1,
+ncid-samba.1,
+ncid-skel.1,
+ncid-speak.1,
+ncid-yac.1

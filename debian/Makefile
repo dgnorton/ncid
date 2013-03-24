@@ -1,4 +1,4 @@
-DIST        = ncidd.init ncidsip.init ncid2ncid.init \
+DIST        = ncidd.init ncid2ncid.init wc2ncid.init \
               sip2ncid.init yac2ncid.init ncid-mythtv.init ncid-page.init \
               ncid-notify.init ncid-samba.init ncid-speak.init ncid-yac.init \
               ncid-initmodem.init

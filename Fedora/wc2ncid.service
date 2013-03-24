@@ -1,0 +1,12 @@
+[Unit]
+Description=Whozz Calling Ethernet Link Device to NCID Gateway
+After=ncidd.service
+
+[Service]
+Type=simple
+Environment=prog=wc2ncid
+PIDFile=/var/run/wc2ncid.pid
+ExecStart=/usr/bin/wc2ncid --pidfile /var/run/${prog}.pid
+
+[Install]
+WantedBy=multi-user.target

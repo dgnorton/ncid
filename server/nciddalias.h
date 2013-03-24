@@ -1,5 +1,5 @@
-/*, 2009
- * Copyright (c) 2005, 2006
+/*
+ * Copyright (c) 2005-2013
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddalias.h is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #define CIDALIAS     "/etc/ncid/ncidd.alias"
 #endif
 
-#define ALIASSIZE    200
+#define ALIASSIZE    500
 #define NMBRNAME     0x01
 #define NMBRONLY     0x10
 #define NMBRDEP      0x11

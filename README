@@ -8,9 +8,10 @@ Man Pages: http://ncid.sourceforge.net/man/man.html
 
 Software Development Kit: http://ncid.sourceforge.net/NCID-SDK.odt
 
-File last changed: Fri Sep 7, 2012
+File last changed: Tue Feb 12, 2013
 
 Directories:
+    attic:       obsolete programs and files
     client:      client program
     Debian:      files specific to Debian.
     doc:         most of the documentation
@@ -38,15 +39,16 @@ The NCID package contains:
     - A NCID to NCID gateway: ncid2ncid
     - A SIP Invite Gateway: sip2ncid
       sip2ncid runs on Linux/UNIX/Windows/Mac OSX/Cygwin
-    - Original SIP Invite Gateway: ncidsip
-      ncidsip runs on Linux/UNIX/Windows/Mac OSX/Cygwin
-      (requires Perl and Perl modules)
+    - A Whozz Calling Ethernet Link device gateway: wc2ncid
+      wc2ncid is a Perl program and runs on Linux/UNIX/Windows/Mac OSX/Cygwin
     - A YAC to NCID gateway: yac2ncid (requires a yac server to input CID)
-      yac2ncid Linux/UNIX/Cygwin/Mac
+      yac2ncid runs on Linux/UNIX/Cygwin/Mac
+    - A Whozz Calling Ethernet Link Device to NCID Gateway: wc2ncid
     - tools to work with the CID log and alias files: ncidtools
       ncidtools runs on Linux/UNIX/Mac OSX/Cygwin/TiVo (requires Perl)
     - a log rotate module
-    - init scripts for Fedora, and Ubuntu
+    - init and service scripts for Fedora
+    - init scripts for Ubuntu
     - rc scripts for FreeBSD
 
 The server, ncidd, is a TCP/IP Caller ID Daemon.  It either monitors a modem
@@ -61,8 +63,9 @@ by sending RING as the number and "No CID From Modem" as the name.  This
 permits NCID to display a visual indication of a call along with the date
 and time.  This requires of a modem that indicates RING.
 
-The ncidd server can also be configured to send outgoing calls to its clients.
-This only works with SIP gateways that indicate outgoing calls.
+The ncidd server also sends outgoing calls and hangup calls from a blacklist.
+Outgoing calls require a gateway that handles outgoing calls.
+Call Hangups require a modem to hangup the call.
 
 The NCID package has the following features:
 
@@ -99,27 +102,34 @@ The NCID package has the following features:
     - Documented protocol
 
     Client Features (ncid):
-    - Displays the number in a specific country format for US, Sweden,
-      United kingdom, Germany, Croatia, and no format.
-    - Displays the current Caller ID Log when a call is received.
+    - GUI can be resized and saved.
+    - Fonts for the history window and call area can be changed and saved.
+    - Time of call can be either 24 or 12 hour format.
+    - Date of call can be mm/dd/yyyy or dd/mm/yyyy
+    - Date separator can be either '/', '-', or '.'
+    - Displays the number in a specific country format:
+      US, Sweden, United kingdom, Germany, Croatia, or no format.
+    - Displays the Caller ID log file in the call history window.
+    - Displays the current Caller ID when a call is received.
     - Displays outgoing calls if they are supported by the server
+    - Displays auto hangup on calls if supported by the server
     - Displays messages received from the server.
     - Supports Distinctive Ring and multiple telephone lines.
-    - Supports output modules to customize its output and to send the CID
-      to cell phones, pagers or email.
+    - Supports output modules to customize its output and to send NCID
+      calls and messages to cell phones, tablets, pagers or email.
     - Can call a output module on a specific ring count or hangup indicator
     - Can send a message to all active clients using the server
     - Multiple clients allowed, usually each with a different output module.
     - Runs on Windows, Linux, UNIX, and Macintosh OS X.
     - Documented protocol
 
-    CID Gateway Features (sip2ncid and ncidsip)
+    CID Gateway Features sip2ncid
     - Receives Caller ID information from SIP Invite
     - Creates a CID Message and sends it to the NCID server
     - indicates call answered or not answered
     - Handles multiple VoIP Lines
     - Indicates the telephone line by the last 4 digits
-    - can have multiple ncidsip clients, each monitoring VoIP hardware
+    - can have multiple sip2ncid gateways, each monitoring VoIP hardware
     - Documented protocol
 
     NCID Gateway Features (ncid2ncid)
@@ -128,9 +138,19 @@ The NCID package has the following features:
     - Handles up to 3 sending NCID servers
     - Documented protocol
 
+    CID Gateway Features (wc2ncid)
+    - Handles multiple Whozz Calling Ethernet link devices
+    - Receives Caller ID or outgoing call information
+    - Creates a NCID Message and sends it to the NCID server
+    - indicates call answered or not answered
+    - Handles multiple POTS Lines
+    - Indicates the telephone line by the "WCxx"
+    - can have multiple wc2ncid gateways
+    - Documented protocol
+
     YAC Gateway Features (yac2ncid)
     - Receives Caller ID information from a YAC server
-    - Creates a CID Message and sends it to the NCID server
+    - Creates a NCID Message and sends it to the NCID server
     - telephone line identifier can be set in yac2ncid.conf
     - Documented protocol
 
@@ -163,12 +183,16 @@ Instructions for configuring ncid2ncid are in the man page: ncid2ncid.conf.5
 Instructions for using sip2ncid are in the man page: sip2ncid.8
 Instructions for configuring sip2ncid are in the man page: sip2ncid.conf.5
 
+Instructions for using wc2ncid are in the man page: wc2ncid.1
+Instructions for configuring wc2ncid are in the man page: wc2ncid.conf.5
+
 Instructions for using yac2ncid are in the man page: yac2ncid.1
 Instructions for configuring yac2ncid are in the man page: yac2ncid.conf.5
 
 Instructions for using ncidrotate are in the man page: ncidrotate.1
 
-Instructions for using ncidtools are in the man page: ncidtools.1
+Instructions for using ncidtools are in the man pages: cid<name>.1 wct.1
+Overview of ncidtools are in the man page: ncidtools.7
 
 Formatted man pages are text files and html files. They are created in the
 man directory after a "make mandir" in the top level directory, or a "make"
@@ -180,11 +204,19 @@ The distributed configuration files are:
     ncidd.alias
     ncidd.blacklist
     ncidd.whitelist
-    ncidsip.conf
     ncidrotate.conf
-    ncidmodules.conf
+    ncid-alert
+    ncid-kpopup.conf
+    ncid-mythtv.conf
+    ncid-notify.conf
+    ncid-page.conf
+    ncid-speak.conf
+    ncid-samba.conf
+    ncid-skel.conf
+    ncid-yac.conf
     ncid2ncid.conf
     sip2ncid.conf
+    wc2ncid.conf
     yac2ncid.conf
 
 NCID is free software; you can redistribute it and/or modify

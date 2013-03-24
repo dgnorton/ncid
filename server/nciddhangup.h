@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012
+ * Copyright 2011-2013
  * by  John L. Chmielewski <jlc@cfl.rr.com>
  *
  * nciddhangup.h is free software; you can redistribute it and/or modify
@@ -30,7 +30,7 @@
 #define HANGUPTRY   6
 #define HANGUPDELAY 400000  /* 400000 microseconds = 0.4 seconds */
 
-#define LISTSIZE    200
+#define LISTSIZE    500
 #define ERRLIST     "list too large"
 
 extern char *blacklist, *whitelist, *blklist[], *whtlist[];

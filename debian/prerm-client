@@ -20,10 +20,10 @@ set -e
 case "$1" in
     remove|deconfigure)
         [ -h /usr/doc/ncid-client ] && rm -f /usr/doc/ncid-client
-        for script in /usr/share/ncid/ncid-*
+        for script in /etc/init.d/ncid-*
         do
             name=`basename $script`
-            involk-rc.d $name stop
+            invoke-rc.d $name stop
             update-rc.d -f $name remove
         done
     ;;

@@ -1,0 +1,36 @@
+.\" %W% %G%
+.TH NCIDTOOLS 7
+.SH NAME
+.B ncidtools
+- NCID tools overview
+.SH DESCRIPTION
+NCID tools are Perl scripts for dealing with files and devices.
+The current tools distributed with NCID are:
+.PP
+.PD 0
+.TP 10
+.B cidalias
+view alias definitions in the NCID alias and blacklist files
+.TP
+.B cidcall
+view calls, hangups, messages, and end of calls in the NCID
+.TP
+.B cidupdate
+update aliases in the NCID call file
+.TP
+.B wct
+Whozz Calling Ethernet Link Device interactive tool
+.PD
+.SH FILES
+/var/log/cidcall.log
+.br
+/etc/ncid/ncidd.alias
+.br
+/etc/ncid/ncidd.blacklist
+.br
+/etc/ncid/ncidd.whitelist
+.SH SEE ALSO
+cidcall.1,
+cidalias.1,
+cidupdate.1,
+wct.1

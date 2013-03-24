@@ -92,7 +92,8 @@ Todd Andrews <taa@pobox.com>
     - developed wc2ncid gateway
     - developed ncid-notify
     - helped improve various NCID documentation
-    - did a lot of work for the NCID 0.85 distribution
+    - did a lot of work for the NCID 0.85 and 0.86 distributions
+    - in general, helps with various NCID programs and documentation
 
 Charlie Heitzig <mail@heitzig.org>
     - Spent time debugging sip2ncid and WinPacp.
@@ -105,9 +106,20 @@ Jeff Rabin <jeff@jrgator.com>
       documentation, suggesting improvements, and providing patches.
     - created the ncidd configuration option "ignore1" patches.
 
-Nrven Ćosić <senseitcom@email.t-com.hr>
+Neven Ćosić <senseitcom@email.t-com.hr>
     - added country code HR (Croatia) to ncid and ncid.conf
-    - added alternate date separaters
+    - added alternate date separators
+    - wrote a ncid-tiny module that became the basis for ncid-alert
+    - in general, helps with various NCID programs and documentation
+
+Steve Limkemann <stevelim@wwnet.com>
+    - modified ncidd to output CID information quickly
+      if a name is not part of the Caller ID received
+    - improved the cidalias tool
+    - improved ncid code, by adding multiple features such as resizing
+      and ability to change fonts and font sizes to ncid
+    - added wakeup to ncid and wrote the ncid-wakeup module
+    - in general, helps with various NCID programs
 
 New Feature Requests, Bug Reports, testing fixes, and testing new features:
     Adam 'Starblazer' Romberg

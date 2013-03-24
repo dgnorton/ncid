@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012
+ * Copyright 2011-2013
  *  by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddhangup.c is free software; you can redistribute it and/or modify
@@ -33,6 +33,8 @@ void addEntry(), rmEntries();
 
 /*
  * Process the blacklist or whitelist file
+ * Returns: 0 - no errors
+ *          # of errors
  */
 int doList(char *filename, char **list)
 {

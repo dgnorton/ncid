@@ -1,0 +1,55 @@
+--------------------------------------------------------------------
+wc2ncid gateway verbose levels.  Higher levels include lower levels.
+--------------------------------------------------------------------
+
+Last edited on Fri Mar 8, 2013
+
+LEVEL9:
+        not used
+
+LEVEL8:
+        not used
+
+LEVEL7:
+        not used
+
+LEVEL6:
+        not used
+
+LEVEL5:
+        Show call log from ncidd, if received
+        Show Caller ID line from ncidd
+
+LEVEL4:
+        Show hex dump of received packet
+
+LEVEL3:
+        Show unit and serial numbers from Whozz Calling device
+        Show Call line from Whozz Calling device
+
+LEVEL2:
+        Show CALL and CALLINFO lines sent to ncidd
+        Show Phone Off Hook
+        Show Phone On Hook
+
+LEVEL1:
+        Show Started
+        Show command line and any options on separate lines
+        Show version
+        Show verbose level
+        Show debug mode if in debug mode
+        Show test mode if in test mode
+        Show logfile name and whether opened as append or overwrite
+        Show logfile could not be opened
+        Show processed config file or config file not found
+        Show connected to NCID address:port or error exit
+        Show greeting line from NCID
+        Show opened broadcast port
+        Show closed broadcast port
+        Show opened WC device port
+        Show closed WC device port
+        Show commands sent
+        Show Pause after sending ^^Id-V
+        Show checking and setting required flags
+        Indicate command data received or timeout in seconds
+        Show data from some commands

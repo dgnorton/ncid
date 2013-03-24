@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2012
+ * Copyright (c) 2005-2013
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * nciddalias.c is free software; you can redistribute it and/or modify
@@ -49,6 +49,7 @@ void builtinAlias(char *to, char *from)
 void userAlias(char *nmbr, char *name, char *line)
 {
     int i;
+    char *ptr;
 
     /* we may want to skip the leading 1, if present */
     if (ignore1 && *nmbr == '1') ++nmbr;
@@ -68,16 +69,34 @@ void userAlias(char *nmbr, char *name, char *line)
                 if (!strcmp(name, alias[i].depend) &&
                     (!strcmp(nmbr, alias[i].from) ||
                     !strcmp(alias[i].from, "*")))
+                {
                     strcpy(nmbr, alias[i].to);
+                }
                 break;
             case NAMEONLY:
                 if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
                 break;
             case NAMEDEP:
-                if (!strcmp(nmbr, alias[i].depend) &&
-                    (!strcmp(name, alias[i].from) ||
-                    !strcmp(alias[i].from, "*")))
-                    strcpy(name, alias[i].to);
+                ptr = alias[i].depend;
+                if (*ptr == '^')
+                {
+                    ++ptr;
+                    if (!strncmp(nmbr, ptr, strlen(ptr)) &&
+                        (!strcmp(name, alias[i].from) ||
+                        !strcmp(alias[i].from, "*")))
+                    {
+                        strcpy(name, alias[i].to);
+                    }
+                }
+                else
+                {
+                    if (!strcmp(nmbr, ptr) &&
+                        (!strcmp(name, alias[i].from) ||
+                        !strcmp(alias[i].from, "*")))
+                    {
+                        strcpy(name, alias[i].to);
+                    }
+                }
                 break;
             case LINEONLY:
                 if (!strcmp(line, alias[i].from) ||
@@ -89,8 +108,8 @@ void userAlias(char *nmbr, char *name, char *line)
 
 /*
  * Process the alias file.
- *    returns:
- *    0
+ * Returns: 0 - no errors
+ *          # of errors
  */
 
 int doAlias()

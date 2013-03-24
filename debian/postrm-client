@@ -27,10 +27,10 @@ case "$1" in
     upgrade)
         # restart services that are running
         # a service could have been installed by another package
-        for script in /usr/share/ncid/ncid-*
+        for script in /etc/init.d/ncid-*
         do
             name=`basename $script`
-            pgrep -f $name > /dev/null 2>&1 && involk-rc.d $name restart
+            pgrep -f $name > /dev/null 2>&1 && invoke-rc.d $name restart
         done
     ;;
 

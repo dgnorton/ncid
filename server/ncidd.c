@@ -1,7 +1,7 @@
 /*
  * ncidd - Network Caller ID Daemon
  *
- * Copyright (c) 2002-2012
+ * Copyright (c) 2002-2013
  * by John L. Chmielewski <//jlc@users.sourceforge.net>
  *
  * This file is part of ncidd, a caller-id program for your TiVo.
@@ -36,7 +36,7 @@ char *lockfile, *name;
 char *TTYspeed;
 int ttyspeed = TTYSPEED;
 int port = PORT;
-int debug, conferr, setcid, locked, sendlog, sendinfo, calltype;
+int debug, conferr, setcid, locked, sendlog, sendinfo, calltype, cidnoname;
 int ttyfd, pollpos, pollevents;
 int ring, ringwait, lastring, clocal, nomodem, noserial, gencid = 1;
 int cidsent, verbose = 1, hangup, ignore1, OSXlaunchd;
@@ -60,6 +60,31 @@ struct cid
     char cidmesg[CIDSIZE];
     char cidline[CIDSIZE];
 } cid = {0, "", "", "", "", NOMESG, ONELINE};
+
+struct end
+{
+    char htype[CIDSIZE];
+    char ctype[CIDSIZE];
+    char  date[CIDSIZE];
+    char  time[CIDSIZE];
+    char scall[CIDSIZE];
+    char ecall[CIDSIZE];
+    char  line[CIDSIZE];
+    char  nmbr[CIDSIZE];
+    char  name[CIDSIZE];
+} endcall;
+
+/* All line labels, new types must be added */
+char *lineTags[] =
+{
+    CIDLINE,
+    MSGLINE,
+    OUTLINE,
+    HUPLINE,
+    BLKLINE,
+    ENDLINE,
+    "NULL"
+};
 
 char *strdate();
 #ifndef __CYGWIN__
@@ -152,6 +177,13 @@ int main(int argc, char *argv[])
     sprintf(msgbuf,
         "The nomodem option cannot be used with the hangup option.");
         errorExit(-110, "Fatal", msgbuf);
+    }
+
+    if (cidnoname)
+    {
+        sprintf(msgbuf,
+            "Configured to receive a CID without a NAME\n");
+        logMsg(LEVEL1, msgbuf);
     }
 
     /*
@@ -517,7 +549,7 @@ int getOptions(int argc, char *argv[])
         {"ttyport", 1, 0, 't'},
         {"verbose", 1, 0, 'v'},
         {"version", 0, 0, 'V'},
-        {"whitelist", 1, 0, 'B'},
+        {"whitelist", 1, 0, 'W'},
         {"osx-launchd", 0, 0, '0'},
         {0, 0, 0, 0}
     };
@@ -944,7 +976,7 @@ void doPoll(int events, int mainsock)
 {
   int num, pos, sd = 0, ret, cnt = 0;
   char buf[BUFSIZ], msgbuf[BUFSIZ];
-  char *sptr, *eptr;
+  char *sptr, *eptr, *ptr, *label;
 
   /*
    * Poll is configured for POLLIN and POLLPRI events
@@ -1104,6 +1136,9 @@ void doPoll(int events, int mainsock)
             else
             {
               /* Client connected, CID log not sent */
+              sprintf(msgbuf, "%s%s", NOLOGSENT, CRLF);
+              ret = write(sd, msgbuf, strlen(msgbuf));
+              logMsg(LEVEL3, msgbuf);
               sprintf(msgbuf, "Client %d from %s connected.\n", sd, ipaddr[sd]);
               logMsg(LEVEL3, msgbuf);
             }
@@ -1191,10 +1226,10 @@ void doPoll(int events, int mainsock)
                  * Found a CALLINFO Line
                  *
                  * CALLINFO Line Format:
-                 *  CALLINFO: ###CANCEL...DATE%s...CALLIN...LINE%s...NMBR%s+++
-                 *  CALLINFO: ###CANCEL...DATE%s...CALLOUT...LINE%s...NMBR%s+++
-                 *  CALLINFO: ###BYE...DATE%s...CALLIN...LINE%s...NMBR%s+++
-                 *  CALLINFO: ###BYE...DATE%s...CALLOUT...LINE%s...NMBR%s+++
+                 *  CALLINFO: ###CANCEL...DATE%s...SCALL%S...ECALL%s...CALLIN...LINE%s...NMBR%s...NAME%s+++
+                 *  CALLINFO: ###CANCEL...DATE%s...SCALL%S...ECALL%s...CALLOUT...LINE%s...NMBR%s...NAME%s+++
+                 *  CALLINFO: ###BYE...DATE%s...SCALL%S...ECALL%s...CALLIN...LINE%s...NMBR%s...NAME%s+++
+                 *  CALLINFO: ###BYE...DATE%s...SCALL%S...ECALL%s...CALLOUT...LINE%s...NMBR%s...NAME%s+++
                  */
 
                 sprintf(msgbuf, "Gateway (sd %d) sent CALLINFO:\n",
@@ -1203,29 +1238,140 @@ void doPoll(int events, int mainsock)
 
                 writeLog(datalog, buf);
 
-                /* get the line label */
-                if ((sptr = strstr(buf, "LINE")) == NULL)
-                    strcpy(infoline, lineid);
-                else
-                {
-                    *(eptr = index(sptr + 4, (int) '.')) = '\0';
-                    strcpy(infoline, sptr + 4);
-                    /* Restore buffer by replacing '\0' with '.' */
-                    *eptr = '.';
-                }
-
+                /* get and process end of call termination */
                 if (strstr(buf, CANCEL))
                 {
-                ring = -1;
-                sendInfo(mainsock);
-                ring = 0;
+                    strcpy(endcall.htype, CANCEL);
+                    ring = -1;
+                    sendInfo(mainsock);
+                    ring = 0;
                 }
                 else if (strstr(buf, BYE))
                 {
-                ring = -2;
-                sendInfo(mainsock);
-                ring = 0;
+                    strcpy(endcall.htype, BYE);
+                    ring = -2;
+                    sendInfo(mainsock);
+                    ring = 0;
                 }
+                else strcpy(endcall.htype, "-");
+
+                /* get end of call date and time */
+                label = "DATE";
+                if ((sptr = strstr(buf, label)) != NULL)
+                {
+                    /* points to MMDDYYYYHHMM */
+                    sptr += (strlen(label) + 4); /* HHMM */
+                    if (!(eptr = strstr(sptr, "...")))
+                        eptr = strstr(sptr, "+++");
+                    strncpy(endcall.time, sptr, eptr - sptr);
+                    endcall.time[eptr - sptr] = '\0';
+
+                    ptr = strdate(NOSEP);   /* returns: MMDDYYYY HHMM */
+                    strcpy(endcall.date, ptr);
+                    endcall.date[8] = '\0';     /* MMDDYYYY */
+                    
+                }
+                else
+                {
+                    strcpy(endcall.date, "-");
+                    strcpy(endcall.time, "-");
+                }
+
+                /* get end of call start date and extended time */
+                label = "SCALL";
+                if ((sptr = strstr(buf, label)) != NULL)
+                {
+                    sptr += strlen(label);
+                    if (!(eptr = strstr(sptr, "...")))
+                        eptr = strstr(sptr, "+++");
+                    strncpy(endcall.scall, sptr, eptr - sptr);
+                    endcall.scall[eptr - sptr] = '\0';
+                }
+                else  strcpy(endcall.scall, "-");
+
+                /* get end of call end date and extended time */
+                label = "ECALL";
+                if ((sptr = strstr(buf, label)) != NULL)
+                {
+                    sptr += strlen(label);
+                    if (!(eptr = strstr(sptr, "...")))
+                        eptr = strstr(sptr, "+++");
+                    strncpy(endcall.ecall, sptr, eptr - sptr);
+                    endcall.ecall[eptr - sptr] = '\0';
+                }
+                else  strcpy(endcall.ecall, "-");
+
+                /* get end of call type */
+                label = ".CALL";
+                if ((sptr = strstr(buf, label)) != NULL)
+                {
+                    sptr += strlen(label);
+                    if (!(eptr = strstr(sptr, "...")))
+                        eptr = strstr(sptr, "+++");
+                    strncpy(endcall.ctype, sptr, eptr - sptr);
+                    endcall.ctype[eptr - sptr] = '\0';
+                }
+                else  strcpy(endcall.ctype, "-");
+                
+
+                /* get end of call line label */
+                label = "LINE";
+                if ((sptr = strstr(buf, label)) != NULL)
+                {
+                    sptr += strlen(label);
+                    if (!(eptr = strstr(sptr, "...")))
+                        eptr = strstr(sptr, "+++");
+                    strncpy(endcall.line, sptr, eptr - sptr);
+                    endcall.line[eptr - sptr] = '\0';
+                    strcpy(infoline, endcall.line);
+                }
+                else
+                {
+                    strcpy(infoline, lineid);
+                    strcpy(endcall.line, "-");
+                }
+
+                /* get end of call telephone number */
+                label = "NMBR";
+                if ((sptr = strstr(buf, label)) != NULL)
+                {
+                    sptr += strlen(label);
+                    if (!(eptr = strstr(sptr, "...")))
+                        eptr = strstr(sptr, "+++");
+                    strncpy(endcall.nmbr, sptr, eptr - sptr);
+                    endcall.nmbr[eptr - sptr] = '\0';
+                }
+                else  strcpy(endcall.nmbr, "-");
+
+                /* get end of call name */
+                label = "NAME";
+                if ((sptr = strstr(buf, label)) != NULL)
+                {
+                    sptr += strlen(label);
+                    if (!(eptr = strstr(sptr, "...")))
+                        eptr = strstr(sptr, "+++");
+                    strncpy(endcall.name, sptr, eptr - sptr);
+                    endcall.name[eptr - sptr] = '\0';
+                }
+                else  strcpy(endcall.name, "-");
+
+                userAlias(endcall.nmbr, endcall.name, endcall.line);
+
+                sprintf(msgbuf, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+                    ENDLINE,
+                    HTYPE, endcall.htype,
+                    DATE,  endcall.date,
+                    TIME,  endcall.time,
+                    SCALL, endcall.scall,
+                    ECALL, endcall.ecall,
+                    CTYPE, endcall.ctype,
+                    LINE,  endcall.line,
+                    NMBR,  endcall.nmbr,
+                    NAME,  endcall.name,
+                    STAR);
+
+                /* Log the end of call "END:" line */
+                writeLog(cidlog, msgbuf);
               }
               else if (strncmp(buf, CIDLINE, strlen(CIDLINE)) == 0)
               {
@@ -1237,6 +1383,36 @@ void doPoll(int events, int mainsock)
                  */
 
                  sprintf(msgbuf, "Gateway (sd %d) sent CID:\n",
+                         polld[pos].fd);
+                 logMsg(LEVEL3, msgbuf);
+                 writeLog(cidlog, buf);
+                 writeClients(mainsock, buf);
+              }
+              else if (strncmp(buf, HUPLINE, strlen(HUPLINE)) == 0)
+              {
+                /*
+                 * Found a HUP: line from another NCID server
+                 *
+                 * record the HUP: line in the cidcall file
+                 * write line to cidlog and send line to clients
+                 */
+
+                 sprintf(msgbuf, "Gateway (sd %d) sent HUP:\n",
+                         polld[pos].fd);
+                 logMsg(LEVEL3, msgbuf);
+                 writeLog(cidlog, buf);
+                 writeClients(mainsock, buf);
+              }
+              else if (strncmp(buf, OUTLINE, strlen(OUTLINE)) == 0)
+              {
+                /*
+                 * Found a OUT: line from another NCID server
+                 *
+                 * record the OUT: line in the cidcall file
+                 * write line to cidlog and send line to clients
+                 */
+
+                 sprintf(msgbuf, "Gateway (sd %d) sent OUT:\n",
                          polld[pos].fd);
                  logMsg(LEVEL3, msgbuf);
                  writeLog(cidlog, buf);
@@ -1422,10 +1598,21 @@ void formatCID(int mainsock, char *buf)
         {
             /*
              * At a RING
-             * CID already processed or is incomplete
+             * CID not here yet, already processed, or is incomplete
              * Make sure status is clear
              */
-            cid.status = 0;
+            if (cidnoname && ring == 1)
+            {
+                /*
+                 * CIDNAME optional on some systems
+                 * if ncidd.conf set cidnoname then set
+                 * cid.cidname to NONAME to get response
+                 * before ring 2
+                 */
+                cid.status = CIDNAME;
+                strncpy(cid.cidname, NONAME, CIDSIZE - 1);
+            }
+            else cid.status = 0;
             return;
         }
     }
@@ -1484,24 +1671,33 @@ void formatCID(int mainsock, char *buf)
                 cid.status |= CIDDATE;
             }
         }
-        if ((ptr = strstr(buf, "CALLOUT")))
+        if ((ptr = strstr(buf, CALLOUT)))
         {
             /*
              * this field is only from a Gateway
-             * will be either CALLIN, CALLOUT, or CALLHUP
+             * will be either CALLIN, CALLOUT, CALLHUP, or CALLBLK
              * only interested in CALLOUT
              */
              calltype = OUT; /* this is a outgoing call */
             
         }
-        else if ((ptr = strstr(buf, "CALLHUP")))
+        else if ((ptr = strstr(buf, CALLHUP)))
         {
             /*
              * this field is only from a Gateway
-             * will be either CALLIN, CALLOUT, or CALLHUP
+             * will be either CALLIN, CALLOUT, CALLHUP, or CALLBLK
              * only interested in CALLHUP
              */
             calltype = HUP; /* this is a call hungup by a gateway */
+        }
+        else if ((ptr = strstr(buf, CALLBLK)))
+        {
+            /*
+             * this field is only from a Gateway
+             * will be either CALLIN, CALLOUT, CALLHUP, or CALLBLK
+             * only interested in CALLBLK
+             */
+            calltype = BLK; /* this is a call hungup by a gateway */
         }
         if ((ptr = strstr(buf, "LINE")))
         {
@@ -1617,7 +1813,7 @@ void formatCID(int mainsock, char *buf)
          * All Caller ID or outgoing call information received.
          *
          * Create the CID (Caller ID), OUT (outgoing call),
-         * or HUP (hungup call) text line
+         * HUP (hungup call), or BLK (call bloackd) text line.
          *
          * For OUT text lines (outgoing calls):
          *     the MESG field is not used
@@ -1639,6 +1835,9 @@ void formatCID(int mainsock, char *buf)
                 break;
             case HUP:
                 linelabel = HUPLINE;
+                break;
+            case BLK:
+                linelabel = BLKLINE;
                 break;
             default: /* should not happen */
                 linelabel = CIDLINE;
@@ -1707,7 +1906,7 @@ void writeClients(int mainsock, char *inbuf)
 void sendLog(int sd, char *logbuf)
 {
     struct stat statbuf;
-    char *iptr = 0, *optr, input[BUFSIZ], msgbuf[BUFSIZ];
+    char **ptr, *iptr, *optr, input[BUFSIZ], msgbuf[BUFSIZ], buf[BUFSIZ];
     FILE *fp;
     int ret, len;
 
@@ -1721,12 +1920,16 @@ void sendLog(int sd, char *logbuf)
             sprintf(msgbuf, LOGMSG, (long unsigned int) statbuf.st_size,
                     cidlogmax, NL);
             logMsg(LEVEL1, msgbuf);
+            sprintf(msgbuf, "%s%s", NOLOGSENT, CRLF);
+            ret = write(sd, msgbuf, strlen(msgbuf));
             return;
         }
     }
 
     if ((fp = fopen(cidlog, "r")) == NULL)
     {
+        sprintf(msgbuf, "%s%s", NOLOG, CRLF);
+        ret = write(sd, msgbuf, strlen(msgbuf));
         sprintf(msgbuf, "cidlog: %s\n", strerror(errno));
         logMsg(LEVEL4, msgbuf);
         return;
@@ -1737,6 +1940,7 @@ void sendLog(int sd, char *logbuf)
      * add "LOG" to line tag (CID: becomes CIDLOG:)
      * send line to clients
      */
+    iptr = 0;
     while (fgets(input, BUFSIZ - sizeof(LINETYPE), fp) != NULL)
     {
         /* strip <CR> and <LF> */
@@ -1744,13 +1948,25 @@ void sendLog(int sd, char *logbuf)
         if ((iptr = strchr( input, '\n')) != NULL) *iptr = 0;
 
         optr = logbuf;
+        iptr = input;
         if (strstr(input, ": ") != NULL)
         {
-            /* copy line tag, skip ": " */
-            for(iptr = input; *iptr != ':';) *optr++ = *iptr++;
-            iptr += 2;
+            /* possible line tag found */
+            for(ptr = lineTags; *ptr; ++ptr)
+            {
+                if (!strncmp(input, *ptr, strlen(*ptr)))
+                {
+                    /* copy line tag, skip ": " */
+                    for(iptr = input; *iptr != ':';) *optr++ = *iptr++;
+                    iptr += 2;
+                    break;
+                }
+            }
         }
-        else iptr = input;
+        /*
+         * if line "<label>: " found, line begins with "<label>LOG: "
+         * if line label not found, line begins with "LOG: "
+         */
         strcat(strcat(strcpy(optr, LOGLINE), iptr), CRLF);
         len = strlen(logbuf);
         ret = write(sd, logbuf, len);
@@ -1789,11 +2005,18 @@ void sendLog(int sd, char *logbuf)
         /* Indicate end of the Call Log */
         sprintf(msgbuf, "%s%s", LOGEND, CRLF);
         ret = write(sd, msgbuf, strlen(msgbuf));
-    }
-
-    sprintf(msgbuf, "Client %d from %s connected, sent call log: %s\n",
+        sprintf(msgbuf, "Client %d from %s connected, sent call log: %s\n",
             sd, ipaddr[sd], cidlog);
-    logMsg(LEVEL3, msgbuf);
+        logMsg(LEVEL3, msgbuf);
+    }
+    else
+    {
+        sprintf(msgbuf, "%s%s", EMPTYLOG, CRLF);
+        ret = write(sd, msgbuf, strlen(msgbuf));
+        sprintf(msgbuf, "Client %d from %s connected, call log empty: %s\n",
+            sd, ipaddr[sd], cidlog);
+        logMsg(LEVEL3, msgbuf);
+    }
 }
 
 /*
@@ -2047,10 +2270,10 @@ void finish(int sig)
 }
 
 /*
- * reload signal
+ * reload signal SIGHUP
  *
  * reload alias file
- * reload blaqcklist and whitelist files if hangup option given
+ * reload blacklist and whitelist files if hangup option given
  */
 void reload(int sig)
 {
@@ -2085,7 +2308,7 @@ void reload(int sig)
         rmEntries(whtlist);
 
     /* reload blacklist and whitelist files but quit on error */
-    if (doList(blacklist, blklist) && doList(whitelist, whtlist))
+    if (doList(blacklist, blklist) || doList(whitelist, whtlist))
          errorExit(-114, 0, 0);
     }
 }

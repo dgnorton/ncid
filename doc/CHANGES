@@ -1,5 +1,150 @@
 ncid - Network CallerID
 
+Version 0.86
+    - README: updated
+              added redhat: and redhat-install:
+    - attic/*: new
+    - client/ncid.sh: added more doVerbose statements and levels
+                      changed 300* doVerbose message to any one of four
+                      added line count to "End of call log" message
+                      removed the --raw | -R option
+                      fixed and improved call on a ring number
+                      fonts used depend on platform and OS
+                      allow resizing of window
+                      allow font size changes
+                      time format in history window can be either 12 and 24
+                      new menu called Preferences for Fonts and time format
+                      menu item to save window size
+                      menu item to save window size and location
+                      added the "-h | --help" option
+                      added the "-v | --version" option
+                      added the "-w | --wakeup" option
+                      getCID{}: added calls to ncid-wakeup module
+                      changed "-V" to be the "-v | --verbose" option
+                      makeWindow{}: improved widget and menu code
+                      added saveSize{} write_rc_file{} logFont{} changeFont{}
+                      getField{}: changed regex to include "*" and "-"
+    - client/ncid.conf-in: removed MsgFlag variable and comments
+                           removed Raw variable and comments
+                           added comments to CallOnRing section
+                           added comments to Ring Options section
+                           new "WakeUp" section
+                           new "WrapLines" section
+    - debian/Makefile: updated
+    - debian/wc2ncid.init: new
+    - debian/ncidsip.init: removed
+    - doc/CONTRIBUTORS: updated
+    - doc/NCID-SDK.odt: updated
+    - doc/Setup-ncidsip: removed
+    - doc/Setup-sip2ncid: updated
+    - doc/Setup-wc2ncid: new
+    - doc/INSTALL-Redhat: new
+    - doc/INSTALL*: updated
+    - doc/INSTALL-RPi: new
+    - Fedora/Makefile: updated
+    - Fedora/README.Fedora: updated
+    - Fedora/*.service-in changed to *.service
+      Fedora/ncidd.service-in: added ExecReload
+    - Fedora/wc2ncid.init: new
+    - Fedora/wc2ncid.service: new
+    - Fedora/ncidsip.init: removed
+    - Fedora/ncidsip.service: removed
+    - Fedora/wc2ncid.service: new
+    - FreeBSD/Makefile: updated
+    - FreeBSD/README: updated
+    - FreeBSD/wc2ncid.rc: new
+    - FreeBSD/ncidsip.rc: removed
+    - gateway/Makefile: updated
+    - gateway/README.Gateways: updated
+    - gateway/config.h: changed ncidsip.conf to sip2ncid.conf
+    - gateway/sip2ncid.c: - fixed calltype() "if (cnt >= MAXLINE)" to
+                            properly detect outgoing call
+                          - added lineLabel()
+                          - changed rmCallID() return values
+                          - added findCallID() and addCallID()
+                         processPackets(): - changed INVITE, CANCEL, and BYE
+                                             to use rmCallID(), findCallID()
+                                             and addCallID()
+                                           - changed INVITE to use lineLabel()
+    - gateway/sip2ncid.h: - added OUTCALLi and INFOLINE,
+                          - removed CIDCAN, CIDBYE, and NUMSIZ
+    - gateway/wc2ncid.pl: new
+    - gateway/wc2ncid.conf: new
+    - gateway/ncidsip.pl: removed
+    - gateway/ncidsip.conf: removed
+    - Mac/Makefile: updated
+    - Mac/README.Mac: updated
+    - Mac/net.sourceforge.wc2ncid.plist: new
+    - Mac/net.sourceforge.ncid-gui.plist: removed
+    - Mac/_ncid-gui.command: new
+    - Mac/ncid-gui.command.sh: new
+    - Mac/fix-combobox.sh: new
+    - man/Makefile: updated
+    - man/cidalias.1: removed
+    - man/cidcall.1: removed
+    - man/cidupdate.1: removed
+    - man/ncidsip.1: removed
+    - man/ncidsip.conf.5: removed
+    - man/ncid.1: updated
+    - man/ncidd.8: updated
+    - man/ncidd.alias.5: updated
+    - man/ncid-*: updated
+    - man/ncidtools.7: new
+    - man/wc2ncid.conf.5: new
+    - man/ncid-alert.1: new
+    - man/ncid-wakeup.1: new
+    - modules/ncid-samba.sh:  Fixed typo: MAG -> MSG
+    - modules/ncid-kpopup.sh:  added closing brace on line 66
+    - modules/ncid-alert.sh:  new
+    - modules/ncid-alert.conf:  new
+    - modules/ncid-wakeup.sh:  new
+    - screenshots/ncid-call.png: updated
+    - screenshots/ncid-call-mesg.png: updated
+    - screenshots/ncid-call-classic.png: removed
+    - screenshots/ncid-font.png: new
+    - server/ncidd.blacklist: added new area code to block
+    - server/ncidd.h: added NOLOG, NOLOGSENT, and EMPTYLOG
+                      removed BUFSIZE definition
+                      added externint cidnoname
+    - server/ncidd.c: added char *lineTags[] = {...}
+                      main(): added logMsg() for when cidnoname is set
+                      doPoll(): added send NOLOG, NOLOGSENT, EMPTYLOG
+                      getOptions(): corrected whitelist long option 
+                      formatCID(): added test for cidnoname and ring == 1
+                                   to set cid.cidname to NONAME
+                      doPoll(): - added HUP and OUT text lines as valid
+                                - input from a NCID gateway
+                                - added parsing of CALLINFO into "END:" line
+                                  and writing the "END:" line into cidlog
+                      sendLog(): - changed how line labels are found so "LOG: "
+                                   is added at proper spot.
+                      reload(): corrected reload if statement to errorExit
+    - server/nciddconf.c: corrected spelling: &obsolute -> obsolete
+                          added "cidnoname" to setword structure
+    - server/nciddalias.c: userAlias(): added "^" in NAMEDEP case statement
+                           formatCID(): added BLK call type
+    - server/nciddalias.h: increased ALIASSIZE from 200 to 500
+    - server/nciddhangup.h: increased LISTSIZEfrom 200 to 500
+    - server/ncidd.alias: updated
+    - server/ncidd.conf-in: improved comments for the lockfile section
+    - test/README.test: updated
+    - test/largelog: removed
+    - test/lorgecall.log: new
+    - test/TestGWcalls: added client directory and added server start option
+    - test/TestMdmcalls: added client directory and added server start option
+    - test/testclient.data: updated test calls
+    - test/testSIPgw: new
+    - test/testSIPgw.data: new
+    - TiVo/startncid.sh: updated ncid-fly comments
+    - TiVo/README.TiVo: updated
+    - tools/cidalias.pl: improved code and display, added blacklist feature
+                        added pod documentation
+    - tools/cidcall.pl: added option -e and fixed if statement for no options
+                        added pod documentation
+    - tools/cidupdate.pl: added pod documentation
+    - tools/wct.pl: new
+    - tools/README: updated
+
 Version 0.85
     - README: updated
     - Makefile: updated
@@ -691,7 +836,7 @@ Version 0.77
     - modules/ncid-hangup.sh: changed "ncidscript.conf" to "ncidmodiles.conf"
                               removed "-o" option from HangupOpts
     - modules/ncid.minicom: corrected script as it was suppose to be in 0.76
-                            updated comments and removed obsolute comments
+                            updated comments and removed obsolete comments
                             replaced print with "send AT/expect OK"
     - modules/ncidmodules.conf-in: added comment: URL listing SMS gateways
     - modules/ncid-yac.sh: modified to handle messages

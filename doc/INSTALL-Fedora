@@ -1,6 +1,6 @@
 Fedora Install
 
-Last edited: Sat Oct 20, 2012
+Last edited: Mon Mar 11, 2013
 
 Sections:
 
@@ -13,6 +13,7 @@ Sections:
 
 If NCID does not work, see INSTALL for some simple tests.
 If using sip2ncid, see Setup-sip2ncid
+If using wc2ncid, see Setup-wc2ncid
 
 COMPILE:
 
@@ -90,6 +91,10 @@ FIRST STARTUP:
         sudo systemctl start ncidd sip2ncid
         ncid &
 
+    - If you are running the server and using a Whozz Calling gateway:
+        sudo systemctl start ncidd wc2ncid
+        ncid &
+
     - If you are running the server and using a YAC gateway:
         sudo systemctl start ncidd yac2ncid
         ncid &
@@ -114,7 +119,7 @@ FIRST STARTUP:
 START/STOP/RESTART/RELOAD/STATUS:
 
     Use the 'systemctl' command to start any of the daemons.  The service
-    commands are: start, stop, restart, reload-or-restart, and status.
+    commands are: start, stop, restart, reload, reload-or-restart, and status.
     The client can also be started using the output module name instead
     of ncid.  All output modules can be run at the same time.
 
@@ -130,17 +135,18 @@ START/STOP/RESTART/RELOAD/STATUS:
     - get the status of ncid using ncid-speak:
       sudo status systemctl ncid-speak.service
 
-    Review the man page (man service).
+    Review the man page (man systemctl).
 
 AUTOSTART:
 
-    Use the chkconfig command to configure/remove the service to start at boot.
+    Use the 'systemctl' command to enable/disable a service to start at boot.
 
     Here are some examples:
-    - autostart ncidd at boot: sudo chkconfig ncidd on
-    - autostart ncid-page at boot: sudo chkconfig ncid-page on
-    - autostart ncid-kpopup at boot: sudo chkconfig ncid-kpopup on
-    - list runlevels for sip2ncid: sudo chkconfig --list sip2ncid
-    - remove ncid-speak from starting at boot: sudo chkconfig ncid-speak off
+    - autostart ncidd at boot:
+      sudo systemctl enable ncidd
+    - autostart ncidd and sip2ncid at boot:
+      sudo systemctl enable ncidd sip2ncid
+    - remove ncid-speak from starting at boot:
+      sudo systemctl disable ncid-speak
 
-    Review the manpage (man chkconfig).
+    Review the manpage (man systemctl).

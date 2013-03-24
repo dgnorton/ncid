@@ -4,13 +4,12 @@ PROG        = $(PROG1) $(PROG2)
 SRC1        = $(PROG1).c config.c
 SRC2        = $(PROG2).c
 SRC         = $(SRC1) $(SRC2)
-CONF        = $(PROG1).conf ncidsip.conf yac2ncid.conf \
-              ncid2ncid.conf ncid2ncid.conf
+CONF        = $(PROG1).conf ncid2ncid.conf yac2ncid.conf wc2ncid.conf
 HEADER1     = $(PROG1).h config.h
 HEADER2     = $(PROG2).h
 HEADER      = $(HEADER1) $(HEADER2)
 SOURCE      = $(SRC) $(CONF) $(HEADER)
-PLSOURCE    = ncidsip.pl
+PLSOURCE    = wc2ncid.pl
 SHSOURCE    = yac2ncid.sh
 FILES       = README.gateways Makefile $(SOURCE ) $(PLSOURCE) $(SHSOURCE)
 
@@ -121,8 +120,7 @@ install: $(PROG) dirs install-script install-etc
 	install -m 755 $(PROG2) $(BIN)
 
 install-script: $(PLSCRIPT) $(SHSCRIPT)
-	install -m 755 $(SHSCRIPT) $(BIN)
-	install -m 755 $(PLSCRIPT) $(SBIN)
+	install -m 755 $(SHSCRIPT) $(PLSCRIPT) $(BIN)
 
 install-etc: $(CONF)
 	@if test -f $(CONFDIR)/$(PROG1).conf; \
@@ -133,9 +131,9 @@ install-etc: $(CONF)
 		then install -m 644 $(PROG2).conf $(CONFDIR)/$(PROG2).conf.new; \
 		else install -m 644 $(PROG2).conf $(CONFDIR); \
 	fi
-	@if test -f $(CONFDIR)/ncidsip.conf; \
-		then install -m 644 ncidsip.conf $(CONFDIR)/ncidsip.conf.new; \
-		else install -m 644 ncidsip.conf $(CONFDIR); \
+	@if test -f $(CONFDIR)/wc2ncid.conf; \
+		then install -m 644 wc2ncid.conf $(CONFDIR)/wc2ncid.conf.new; \
+		else install -m 644 wc2ncid.conf $(CONFDIR); \
 	fi
 	@if test -f $(CONFDIR)/yac2ncid.conf; \
 		then install -m 644 yac2ncid.conf $(CONFDIR)/yac2ncid.conf.new; \
@@ -167,7 +165,7 @@ files:	$(FILES)
 	chmod +x $@
 
 .pl : *.pl
-	sed 's/XxXxX/$(Version)/' $< > $@
+	sed 's/XxXxX/$(Version)/;/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
 	chmod +x $@
 
 .sh : *.sh

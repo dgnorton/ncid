@@ -3,6 +3,9 @@ These are the test programs and test files for the NCID server,
 clients, and client output modules.
 ===============================================================
 
+    If you haven't built up ncidd(server) and ncid(client),
+    do it now to be able to perform the following tests.
+
 aliasfile:
     Used to view the cidalias array in the server.  Called
     from the ncidd-noerrors.conf file.
@@ -23,8 +26,8 @@ client-screenshot.data:
 	Press <ENTER> to send MSG line (received message)
 	Press <ENTER> to end testclient
 
-largelog:
-    Logfile contains 3006 simular lines.  It is used to detect
+largecall.log:
+    This call Logfile contains 3006 simular lines.  It is used to detect
     any dropping of characters by the client or server.
 
 ncidd-errors.conf:
@@ -116,6 +119,20 @@ testserver:
               # Run testserver in launchd mode and noserial (gateway mode)
               ./testserver ../server/ncidd --osx-launchd -N1
 
+testSIPgw:
+testSIPgw.data:
+    This program emulates a SIP server for testing a SIP gateway.
+    Usage:             ./TestSIPgw [data_file]
+    Default Data File: TestSIPgw.data
+
+    To test a SIP gateway:
+        Start testSIPgw (it will give instructions for sip2ncid)
+        Start the SIP gateway on port 3334
+        Press <ENTER> to send the first SIP packet
+        Press <ENTER> to keep sending packets until program terminates
+
+    NOTE: testclient and testclient.data must be in the same directory
+
 TestGWcalls:
 TestGWcalls.data:
 TestGWcalls-screenshot.data
@@ -127,12 +144,14 @@ TestGWcalls-screenshot.data
 
     To test a server or client, start all three programs in 3 different
     terminal windows in this order:
-        ./testserver ../server/ncidd -N1
+        ./testserver ../server/ncidd -D -N1
         ./TestGWcalls
-        ./ncid 3334
+        ../client/ncid 3334
 
     Press <ENTER> to send the first line
     Press <ENTER> to keep sending lines until program terminates
+
+    NOTE: testclient and testclient.data must be in the same directory
 
 TestMdmcalls:
 TestMdmcalls.data:
@@ -142,8 +161,10 @@ TestMdmcalls.data:
     To test a server or client, start all three programs in 3 different
     terminal windows in this order:
         ./TestMdmcalls
-        ./testserver ../server/ncidd
-        ./ncid 3334
+        ./testserver ../server/ncidd -D
+        ../client/ncid 3334
 
     Press <ENTER> to send the first line
     Press <ENTER> to keep sending lines until program terminates
+
+    NOTE: testclient and testclient.data must be in the same directory

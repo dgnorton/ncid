@@ -1,4 +1,4 @@
-PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl
+PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl wct.pl
 SHSOURCE	= 
 ETCFILE     =
 FILES		= Makefile $(PLSOURCE) $(SHSOURCE) $(MANSRC)
@@ -29,6 +29,8 @@ PLSCRIPT    = $(PLSOURCE:.pl=)
 SHSCRIPT    = $(SHSOURCE:.sh=)
 SITE        = $(DIST:-in=)
 
+Version := $(shell sed 's/.* //; 1q' ../VERSION)
+
 tools: $(PLSCRIPT) $(SHSCRIPT) $(SITE)
 
 install: install-script
@@ -42,7 +44,7 @@ clean:
 
 clobber: clean
 	rm -f $(PLSCRIPT) $(SHSCRIPT) $(SITE)
-	rm -f *.zip *.tar.gz *.tgz
+	rm -f *.zip *.tar.gz *.tgz rm *.log
 
 distclean: clobber
 
@@ -51,11 +53,11 @@ files:	$(FILES)
 .SUFFIXES: .pl .sh -in
 
 .pl : *.pl
-	sed 's,/etc/ncid/ncidd.alias,$(ALIAS),; s,/etc/ncid/ncidd.conf,$(CONF),; s,/var/log/cidcall.log,$(CIDLOG),' $< > $@
+	sed 's,/etc/ncid/ncidd.alias,$(ALIAS),; s,/etc/ncid/ncidd.conf,$(CONF),;s/XxXxX/$(Version)/;s,/var/log/cidcall.log,$(CIDLOG),' $< > $@
 	chmod +x $@
 
 .sh : *.sh
-	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),' $< > $@
+	sed '/ConfigDir/s,/usr/local/etc/ncid,$(CONFDIR),;s/XxXxX/$(Version)/' $< > $@
 	chmod 755 $@
 
 -in : *-in

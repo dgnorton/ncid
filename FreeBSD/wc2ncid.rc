@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# PROVIDE: wc2ncid
+# REQUIRE: NETWORKING ncidd
+
+#
+# Add the following lines to /etc/rc.conf to enable wc2ncid:
+#
+#wc2ncid_enable="YES"
+#
+wc2ncid_enable="${wc2ncid_enable-NO}"
+
+. /etc/rc.subr
+
+name=wc2ncid
+rcvar=`set_rcvar`
+extra_commands="condrestart"
+
+pidfile="/var/run/${name}.pid"
+
+ConfigDir=/usr/local/etc/ncid
+ConfigFile=$ConfigDir/wc2ncid.conf
+
+# source config file
+[ -f $ConfigFile ] && . $ConfigFile
+args="--pidfile /var/run/${name}.pid $opts"
+
+command=/usr/local/sbin/$name
+command_args="$args &"
+command_interpreter=perl
+
+load_rc_config $name
+
+case $1 in
+    condrestart)
+        run_rc_command "stop" && run_rc_command "start"
+        ;;
+    *)
+        run_rc_command "$1"
+        ;;
+esac

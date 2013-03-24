@@ -1,0 +1,19 @@
+Programs and files not used in NCID anymore.  They can be used as
+examples of NCID usage.
+
+    - Original SIP Invite Gateway: ncidsip
+      ncidsip runs on Linux/UNIX/Windows/Mac OSX/Cygwin
+      (requires Perl and Perl modules)
+
+ncidsip        - Original SIP gateway (needs updating to use with NCID)
+                 NCIDsip is a Perl program that requires the Net-Pcap
+                 module.  If your repository does not have it, obtain
+                 the source from CPAN then compile and install it.
+               - ncidsip runs on Linux/UNIX/Windows/Mac OSX/Cygwin
+                 (requires Perl and Perl modules)
+ncidsip.conf   - configuration file for ncidsip-init
+
+ncidsip.service    - service file for ncidsip
+ncidd.init         - service file for ncidd
+ncidsip.rc         - rc file for ncidsip
+ncidd.init-debian  - service file for ncidd

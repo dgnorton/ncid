@@ -1,21 +1,27 @@
+Last modified: Sat Mar 23, 2013
+
 The current TODO list (in no particular order)
 
-Last modified: Mon Feb 21, 2011
-
-    - Add graphics to view image of who is calling.
-    - Add ncid.exe to the Windows tray.
-    - Add support for PBX.
+    - Add graphics to view image of who is calling
+    - Add ncid.exe to the Windows tray
+    - Add support for PBX
     - Redo web site
     - Add a iax2 gateway
     - Add a GUI configuration program for the server, client, modules,
-      and gateways.
+      and gateways
+    - Create a Mac OS X installer
+    - Add blacklist/whitelist support to wc2ncid gateway
+    - Allow wc2ncid/wct to configure devices out-of-subnet
 
 The MAYBE TODO list (in no particular order)
 
-    - Add ringtone support. (NCIDpop and ncid-applet have ringtone support)
-    - Add a firefox module.
-    - Add SSL between server and client for secure use over Internet.
+    - Add ringtone support (NCIDpop and ncid-applet have ringtone support)
+    - Add a Firefox module
+    - Add SSL between server and client for secure use over Internet
     - Use separate ports for clients and gateways
-    - add SIP blocking and recording capibility
-    - add a Modem On Hold feature or at least display the Caller ID
-      during a modem data call.
+    - Add SIP blocking and recording capability
+    - Add a Modem On Hold feature or at least display the Caller ID
+      during a modem data call
+    - Add GoogleTV support
+    - Add Google Voice support
+    - Add XBMC support

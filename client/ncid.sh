@@ -49,41 +49,46 @@ CF=/usr/local/etc/ncid/ncid.conf
 # if $DISPLAY is not in the environment, set GUI="" \
 [ -z "$DISPLAY" ] && GUI=""
 # if $GUI is set, look for wish and exec it \
-[ -n "$GUI" ] && type $WISH > /dev/null 2>&1 && exec $WISH -f "$0" "$@"
+[ -n "$GUI" ] && type $WISH > /dev/null 2>&1 && exec $WISH -f "$0" -- "$@"
 # if $GUI is not set, look for tclsh and exec it \
 [ -z "$GUI" ] && type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" "$@"
 # wish not found, look for tclsh and exec it \
 type $TCLSH > /dev/null 2>&1 && exec $TCLSH "$0" --no-gui "$@"
 # tclsh not found, look for tivosh and exec it \
-type tivosh > /dev/null 2>&1 && exec tivosh "$0" "$@"
+type tivosh > /dev/null 2>&1 && exec tivosh "$0" --no-gui "$@"
 # tivosh not found, maybe using a Macintosh \
 [ -d /Applications/Wish\ Shell.app ] && \
-    /Applications/Wish\ Shell.app/Contents/MacOS/Wish\ Shell -f "$0" "$@"
+    /Applications/Wish\ Shell.app/Contents/MacOS/Wish\ Shell -f "$0" -- "$@"
 # tcl or tk not found \
 echo "wish or tclsh or tivosh not found or not in your \$PATH"; exit -1
 
 set ConfigDir   /usr/local/etc/ncid
-set ConfigFile  [list $ConfigDir/ncid.conf]
+set ConfigFile  "$ConfigDir/ncid.conf"
 
 ### Constants
 set Logo        /usr/local/share/pixmaps/ncid/ncid.gif
 set CygwinBat   /cygwin.bat
+
+if {$::tcl_platform(platform) == "windows"} {
+    set ConfigDir [file join $env(ProgramFiles) "ncid"]
+    set ConfigFile [file join $ConfigDir "ncidconf.txt"]
+    set Logo [file join $ConfigDir "ncid.gif"]
+}
 
 ### global variables that can be changed by command line options
 ### or by the configuration file
 set Host        127.0.0.1
 set Port        3333
 set Delay       60
-set Raw         0
 set PIDfile     ""
 set PopupTime   5
 set Verbose     0
 set NoGUI       0
 set CallOnRing  0
-set Classic     0
 set TivoFlag    0
 set Ring        999
 set NoExit      0
+set WakeUp      0
 set ExitOn      exit
 set AltDate     0
 
@@ -93,15 +98,25 @@ set ProgName    ""
 set Country     "US"
 set NoOne       1
 set DateSepar   "/"
+set WrapLines   "char"
+
+### global variables that are used as static variables
+set display_line_num    0
+set awakened            0
+set clock               24
+set oldClock            24
+set autoSave            "off"
+set oldAutoSave         "off"
+set Begin               0
+set End                 0
 
 if {[file exists $ConfigFile]} {
     catch {source $ConfigFile}
 }
 
 if {$ProgName != ""} {
-    if {[regexp {^.*/} $ProgName]} {
-        set Program [list $ProgName]
-    } else {set Program [list $ProgDir/$ProgName]}
+    if {[regexp {^.*/} $ProgName]} { set Program "$ProgName"
+    } else {set Program "$ProgDir/$ProgName"}
 } else {set Program ""}
 
 ### global variables that are fixed
@@ -113,19 +128,20 @@ set Version     "(NCID) XxXxX"
 set VersionInfo "Client: ncid $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
-               [--alt-date        | -A]
-               [--classic-display | -C]
-               [--delay seconds   | -D seconds]
-               [--noexit          | -X]
-               [--program PROGRAM | -P PROGRAM]
-               [--pidfile FILE    | -p pidfile]
-               [--raw             | -R]
-               [--ring 0-9|-1|-2  | -r 0-9|-1|-2]
-               [--tivo            | -T]
-               [--PopupTime 1-99  | -t 1-99 seconds]
-               [--verbose [1-9]   | -V [1-9]]
-         ARGS: [IP_ADDRESS        | HOSTNAME]
-               [PORT_NUMBER]}
+               [--alt-date               | -A]                      
+               [--delay <seconds>        | -D <delay in seconds>]   
+               [--help                   | -h]                      
+               [--noexit                 | -X]                      
+               [--pidfile <FILE>         | -p <pidfile>]            
+               [--PopupTime <1-99>       | -t <1-99 seconds>]       
+               [--program <PROGRAM>      | -P <PROGRAM or MODULE>]  
+               [--ring <0-9|-1|-2|-9>    | -r <0-9|-1|-2|-9]>       
+               [--tivo                   | -T]                      
+               [--verbose <[1-9]>        | -v <[1-9]]>              
+               [--version                | -V]                      
+               [--wakeup                 | -W]                      
+         ARGS: [<IP_ADDRESS>             | <HOSTNAME>]              
+               [<PORT_NUMBER>]}
 
 set Author \
 "
@@ -147,6 +163,7 @@ proc exitMsg {code msg} {
     if $NoGUI {
         puts stderr $msg
     } else {
+        wm withdraw .
         option add *Dialog.msg.wrapLength 9i
         option add *Dialog.msg.font "courier 12"
         tk_messageBox -message $msg -type ok
@@ -229,8 +246,9 @@ proc Reconnect {} {
 # This catches a lot of errors!
 proc bgerror {mess} {
     global errorInfo
+    global errorCode
 
-    exitMsg 1 "BGError: $mess\n"
+    exitMsg 1 "BGError: $mess\n$errorInfo\n$errorCode\n"
 }
 
 # Get data from CID server
@@ -242,7 +260,6 @@ proc getCID {} {
     global Host
     global NoGUI
     global Port
-    global Raw
     global Ring
     global Socket
     global Try
@@ -251,7 +268,9 @@ proc getCID {} {
     global lineLabel
     global call
     global type
-    global Classic
+    global display_line_num
+    global WakeUp
+    global wakened targetTime doingLog Begin End
 
     set msg {CID connection closed}
     set cnt 0
@@ -268,44 +287,62 @@ proc getCID {} {
         # get rid of non-printable characters at start/end of string
         set dataBlock [string trim $dataBlock]
 
-        if $Raw {
-            # output NCID data line
-            displayLog "$dataBlock" 1
-            if {[string match 200* $dataBlock]} {
-                if {!$NoGUI} { displayCID "$VersionInfo\n$dataBlock" 1 }
-            }
-        } else {
-            if {[string match 200* $dataBlock]} {
-                # output NCID server connect message
-                regsub {200 (.*)} $dataBlock {\1} dataBlock
-                if {$Program != ""} {doVerbose "$VersionInfo\n$dataBlock" 1}
-                if $NoGUI { 
-                   displayLog "$VersionInfo\n$dataBlock" 1
-                } else { displayCID "$VersionInfo\n$dataBlock" 1 }
+        if {[string match 200* $dataBlock]} {
+            # output NCID server connect message
+            set Begin [clock clicks -milliseconds]
+            regsub {200 (.*)} $dataBlock {\1} dataBlock
+            if {$Program != ""} {doVerbose "$VersionInfo\n$dataBlock" 1}
+            if $NoGUI { 
+               displayLog "$VersionInfo\n$dataBlock" 1
+               set targetTime 0
             } else {
-              if {[string match 300* $dataBlock]} {
-                  # NCID server sent end of log message
-                  doVerbose "Client: Finished receiving call log" 1
-              }
+                set targetTime [expr [clock clicks -milliseconds] + 500]
+                .vh configure -state normal
+                set doingLog 1
+                .vh insert 1.0 "\n\n\t\tReading the call log\n\n"
+                update idletasks
+                displayCID "$VersionInfo\n$dataBlock" 1
+                }
+        } else {
+            if {[string match 300* $dataBlock]} {
+                # NCID server sent end of log message
+                if !$NoGUI {
+                    .vh delete 1.0 6.0
+                    .vh yview moveto 1.0
+                    .vh configure -state disabled
+                }
+                set doingLog 0
+                regsub {300 (.*)} $dataBlock {\1} dataBlock
+                if {[regexp {End of call log} $dataBlock]} {
+                    doVerbose "Message: $dataBlock - $display_line_num lines" 1
+                } else {doVerbose "Message: $dataBlock" 1}
+                set End [clock clicks -milliseconds]
+                set elapsed [expr $End - $Begin]
+                doVerbose "$display_line_num entries in $elapsed milliseconds" 4
             }
         }
 
         if {[set type [checkType $dataBlock]]} {
             if {$type == 5} {
                 # CIDINFO (5) line
-                if {$CallOnRing} {
-                    set ringinfo [getField RING $dataBlock]
-                    set lineinfo [getField LINE $dataBlock]
-                    # must use $call($lineinfo) instead of $cid
-                    if {$Program != "" && $Ring == $ringinfo} {
-                        if {[array get call $lineinfo] != {}} {
-                            sendCID $call($lineinfo)
-                            doVerbose "$dataBlock" 1
-                            doVerbose "Sent Module: $call($lineinfo)" 1
-                        } else {
-                            doVerbose "Phone line label \"$lineinfo\" not found" 1
-                        }
-                    }
+                set ringinfo [getField RING $dataBlock]
+                # must use $call($lineinfo) instead of $cid
+                set lineinfo [getField LINE $dataBlock]
+                if {[array get call $lineinfo] != {}} {
+                  if {$CallOnRing} {
+                    if {$Program != "" && ($Ring == $ringinfo ||
+                        ($Ring == -9 && $ringinfo > 1))} {
+                      sendCID $call($lineinfo)
+                      doVerbose "$dataBlock" 1
+                      doVerbose "Sent $Program: $call($lineinfo)" 1
+                    } else { doVerbose "$dataBlock" 5 }
+                  }
+                } else {
+                    doVerbose "Phone line label \"$lineinfo\" not found" 1
+                }
+                if {$WakeUp && $ringinfo == 1} {
+                    doWakeup
+                    set wakened 1
                 }
             } elseif {$type == 4 || $type == 7} {
                 # MSG (4), MSGLOG (7)
@@ -318,40 +355,57 @@ proc getCID {} {
                     }
                     if {$Program != ""} {
                         sendMSG $msg
-                        doVerbose "Sent Module: $msg" 1
+                        doVerbose "Sent $Program: $msg" 1
                     }
                 }
             } elseif {$type < 4} {
                 # CID (1), HUP (2), OUT (3)
-                if {($type == 1) || (!$Classic && ($type > 1))} {
-                    set cid [formatCID $dataBlock]
-                    array set call "$lineLabel [list $cid]"
-                    # display log
+                if {$WakeUp} {
+                    if {!$wakened} {
+                        doWakeup
+                    } else {set wakened 0}
+                }
+                set cid [formatCID $dataBlock]
+                array set call "$lineLabel [list $cid]"
+                # display log
+                # $cid set above, no need for $call($lineLabel)
+                displayLog $cid 0
+                # display CID
+                if {!$NoGUI} {
                     # $cid set above, no need for $call($lineLabel)
-                    if {!$Raw} {displayLog $cid 0}
-                    # display CID
-                    if {!$NoGUI} {
-                        # $cid set above, no need for $call($lineLabel)
-                        displayCID $cid 0
-                        doPopup
-                    }
-                    # $cid set above, no need for $call($lineLabel)
-                    if {!$CallOnRing && $Program != ""} {
-                        sendCID $cid
-                        doVerbose "Sent Module: $cid" 1
-                    }
+                    displayCID $cid 0
+                    doPopup
+                }
+                # $cid set above, no need for $call($lineLabel)
+                if {(!$CallOnRing || $Ring == -9) && $Program != ""} {
+                    sendCID $cid
+                    doVerbose "Sent $Program: $cid" 1
                 }
             } elseif {$type > 7} {
                 # CIDLOG (8), HUPLOG (9), OUTLOG (10)
-                if {($type == 8) || (!$Classic && ($type > 8))} {
-                    set cid [formatCID $dataBlock]
-                    array set call "$lineLabel [list $cid]"
-                    # display log
-                    # $cid set above, no need for $call($lineLabel)
-                    if {!$Raw} {displayLog $cid 0}
+                set cid [formatCID $dataBlock]
+                array set call "$lineLabel [list $cid]"
+                # display log
+                # $cid set above, no need for $call($lineLabel)
+                displayLog $cid 0
+                if {$targetTime && [clock clicks -milliseconds] >= $targetTime} {
+                    set targetTime [expr [clock clicks -milliseconds] + 500]
+                    .vh insert 3.end "."
+                    update idletasks
                 }
             }
         }
+    }
+}
+
+proc doWakeup {} {
+    global ExecSh
+    global ProgDir
+
+    if $ExecSh {
+        catch {exec sh -c $ProgDir/ncid-wakeup} oops
+    } else {
+        catch {exec $ProgDir/ncid-wakeup} oops
     }
 }
 
@@ -395,7 +449,7 @@ proc checkType {dataBlock} {
     } elseif [string match CIDLOG:* $dataBlock] {set rtn 8
     } elseif [string match HUPLOG:* $dataBlock] {set rtn 9
     } elseif [string match OUTLOG:* $dataBlock] {set rtn 10}
-    doVerbose "Assigned type $rtn for $dataBlock" 5
+    doVerbose "Assigned type $rtn for $dataBlock" 6
     return $rtn
 }
 
@@ -407,10 +461,12 @@ proc formatCID {dataBlock} {
     global lineLabel
     global type
     global AltDate
+    global clock
 
     set cidname [getField NAME $dataBlock]
     set cidnumber [getField NU*MBE*R $dataBlock]
     if {$Country  == "US"} {
+    # https://en.wikipedia.org/wiki/North_American_Numbering_Plan
         if {![regsub \
             {(^1)([0-9]+)([0-9]{3})([0-9]{4})} \
             $cidnumber {\1-\2-\3-\4} cidnumber]} {
@@ -423,7 +479,7 @@ proc formatCID {dataBlock} {
             regsub {^1-?(.*)} $cidnumber {\1} cidnumber
         }
     } elseif {$Country == "SE"} {
-      # http://en.wikipedia.org/wiki/Telephone_numbers_in_Sweden#Area_codes
+      # https://en.wikipedia.org/wiki/Telephone_numbers_in_Sweden#Area_codes
       if {![regsub {^(07[0-9])([0-9]+)} \
           $cidnumber {\1-\2} cidnumber]} {
        if {![regsub {^(08)([0-9]+)} \
@@ -451,7 +507,7 @@ proc formatCID {dataBlock} {
        }
       }
     } elseif {$Country == "UK"} {
-      # http://en.wikipedia.org/wiki/United_Kingdom_area_codes
+      # https://en.wikipedia.org/wiki/United_Kingdom_area_codes
       if {![regsub {^(011[0-9])([0-9]{3})([0-9]+)} \
         $cidnumber {\1-\2-\3} cidnumber]} {
         if {![regsub {^(01[0-9]1)([0-9]{3})([0-9]+)} \
@@ -483,7 +539,7 @@ proc formatCID {dataBlock} {
         }
       }
     } elseif {$Country == "DE"} {
-      # http://en.wikipedia.org/wiki/Area_codes_in_Germany
+      # https://en.wikipedia.org/wiki/Area_codes_in_Germany
       if {![regsub {^(0[1-2][0-9])([0-9]+)} \
         $cidnumber {\1-\2} cidnumber]} {
         if {![regsub {^(03[01247]|040)([0-9]+)} \
@@ -497,7 +553,7 @@ proc formatCID {dataBlock} {
         }
       }
     } elseif {$Country == "HR"} {
-      # http://en.wikipedia.org/wiki/Telephone_numbers_in_Croatia
+      # https://en.wikipedia.org/wiki/Telephone_numbers_in_Croatia
       if {![regsub {^(01)([0-9]+)} \
         $cidnumber {\1-\2} cidnumber]} {
         if {![regsub {^(02[0123])([0-9]+)} \
@@ -541,7 +597,12 @@ proc formatCID {dataBlock} {
         regsub -all {/} $ciddate . ciddate
     }
     set cidtime [getField TIME $dataBlock]
-    regsub {([0-9][0-9])([0-9][0-9])} $cidtime {\1:\2} cidtime
+    regexp {(\d{2})(\d{2})} $cidtime time hours minutes
+    if {$clock == 24} {
+        set cidtime "$hours:$minutes"
+    } else {
+       set cidtime [convertTo12 $hours $minutes]
+    }
     set cidline ""
     if [string match {*\*LINE\**} $dataBlock] {
         set cidline [getField LINE $dataBlock]
@@ -560,10 +621,34 @@ proc formatCID {dataBlock} {
     return [list $ciddate $cidtime $cidnumber $cidname $cidline $cidtype]
 }
 
+proc convertTo12 {hours minutes} {
+    set AmPm "am"
+    if {$hours > 12} {
+        set hours [expr $hours - 12]
+        set AmPm "pm"
+    } elseif {$hours == 12} {
+        set AmPm "pm"
+    } elseif {$hours == 0} {
+        set hours 12
+    }
+    regsub {^(0|\s|)?(\d)$} $hours { \2} hours
+    return "$hours:$minutes $AmPm"
+}
+
+proc convertTo24 {hours minutes AmPm} {
+    if {$hours == 12 && $AmPm eq "am"} {
+        set hours 0
+    } elseif {$hours != 12 && $AmPm eq "pm"} {
+        set hours [expr $hours + 12]
+    }
+    regsub {^(0|\s|)?(\d)$} $hours {0\2} hours
+    return "$hours:$minutes"
+}
+
 # get a field from the CID data
 proc getField {dataString dataBlock} {
     regsub ".*\\*$dataString\\*" $dataBlock {} result
-    regsub {([\w\s]*)\*.*} $result {\1} result
+    regsub {(\**[\w\s-]*\**)\*.*} $result {\1} result
     return $result
 }
 
@@ -573,6 +658,8 @@ proc sendCID {cid} {
     global Program
     global TivoFlag
     global ExecSh
+    global ProgDir
+    global WakeUp
 
       if $TivoFlag {
         # pass NAME NUMBER\nLINE\n
@@ -582,10 +669,10 @@ proc sendCID {cid} {
         # pass DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
         if $ExecSh {
           catch {exec sh -c $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n > @stdout"} oops
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n > @stdout" &} oops
         } else {
           catch {exec $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n > @stdout"} oops
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n > @stdout" &} oops
         }
       }
 }
@@ -620,7 +707,6 @@ proc displayCID {cid ismsg} {
 
     if {$ismsg} { set Txt $cid
     } else { set Txt "[lindex $cid 3]\n[lindex $cid 2]" }
-    update
 }
 
 # display Call Log
@@ -628,47 +714,42 @@ proc displayCID {cid ismsg} {
 # Input: "message"
 proc displayLog {cid ismsg} {
     global Program
-    global Classic
     global NoGUI
+    global display_line_num maxNumberWidth doingLog
     
     if $NoGUI {
         if {$Program == ""} {
             if $ismsg {
                 puts $cid
             } else {
-                if $Classic {
-                    puts "[lindex $cid 0] [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
-                } else {
-                    puts "[lindex $cid 0] [lindex $cid 1]  [lindex $cid 5] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
-                }
+                puts "[lindex $cid 0] [lindex $cid 1]  [lindex $cid 5] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
             }
         }
+        incr display_line_num
     } else {
-        .vh configure -state normal -font {Monospace -14}
-        .vh tag configure blue -foreground blue
-        .vh tag configure red -foreground red
-        .vh tag configure purple -foreground purple
-
+        incr display_line_num
+        if {! $doingLog} {.vh configure -state normal}
         if $ismsg {
-            if !$Classic {.vh insert end "MSG: " purple}
-            .vh insert end "$cid\n" blue
+            .vh insert end "\nMSG: " purple $cid blue
         } else {
             set ciddate [lindex $cid 0]
             set cidtime [lindex $cid 1]
-            set cidnmbr [lindex $cid 2]
+            set cidnmbr [format "%-${maxNumberWidth}s " [lindex $cid 2]]
             set cidname [lindex $cid 3]
-            set cidline [lindex $cid 4]
+            set cidline [format "%-4s " [lindex $cid 4]]
             set cidtype [lindex $cid 5]
 
-            if !$Classic {.vh insert end "$cidtype: " purple}
-            .vh insert end "$ciddate " blue
-            .vh insert end "$cidtime " red
-            .vh insert end "$cidline " purple
-            .vh insert end "$cidnmbr " blue
-            .vh insert end "$cidname\n" red
+            .vh insert end "\n$cidtype: " purple "$ciddate " \
+                    blue "$cidtime " red $cidline purple $cidnmbr blue \
+                    "$cidname" red
         }
-        .vh yview moveto 1.0
-        .vh configure -state disabled
+        if {! $doingLog} {
+            if {$display_line_num == 1} {
+                .vh delete 1.0 2.0
+            }
+            .vh yview moveto 1.0
+            .vh configure -state disabled
+        }
     }
 }
 
@@ -687,10 +768,10 @@ proc connectCID {Host Port} {
         fconfigure $Socket -blocking 0 
         # get response from server as an event
         fileevent $Socket readable getCID
-        if $NoGUI { displayLog "Connecting to $Host:$Port" 1
+        if $NoGUI { displayLog "Connected to $Host:$Port" 1
         } else {
             clearLog
-            displayCID "Connecting to\n$Host:$Port" 1
+            displayCID "Connected to\n$Host:$Port" 1
         }
     }
 }
@@ -698,7 +779,6 @@ proc connectCID {Host Port} {
 proc getArg {} {
     global argc
     global argv
-    global Raw
     global Host
     global Port
     global Delay
@@ -706,7 +786,6 @@ proc getArg {} {
     global NoGUI
     global Verbose
     global Program
-    global Classic
     global Ring
     global CallOnRing
     global ProgDir
@@ -715,6 +794,9 @@ proc getArg {} {
     global PopupTime
     global NoExit
     global AltDate
+    global WakeUp
+    global Version
+    global WrapLines
 
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
@@ -723,7 +805,7 @@ proc getArg {} {
             {^--ring$} {
                 incr cnt
                 if {$optarg != ""
-                    && [regexp {^-[12]$} $optarg]
+                    && [regexp {^-[129]$} $optarg]
                     || [regexp {^[0123456789]$} $optarg]} {
                     set Ring $optarg
                     set CallOnRing 1
@@ -733,7 +815,7 @@ proc getArg {} {
             {^-A$} -
             {^--alt-date$} {set AltDate 1}
             {^-C$} -
-            {^--classic-display$} {set Classic 1}
+            {^--classic-display$} {set Classic 1 # obsolete, can be removed}
             {^-D$} -
             {^--delay$} {
                 incr cnt
@@ -742,8 +824,10 @@ proc getArg {} {
                     set Delay $optarg
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
             }
+            {^-h$} -
+            {^--help$} {exitMsg 1 "$Usage\n"}
             {^-M$} -
-            {^--message$} {set MsgFlag 1}
+            {^--message$} {set MsgFlag 1; # obsolete, can be removed}
             {^-P$} -
             {^--program$} {
                 incr cnt
@@ -768,7 +852,7 @@ proc getArg {} {
                     set PopupTime $optarg
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
             }
-            {^-V$} -
+            {^-v$} -
             {^--verbose$} {
                 incr cnt
                 if {$optarg != ""
@@ -776,10 +860,15 @@ proc getArg {} {
                     set Verbose $optarg
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
             }
-            {^-R$} -
-            {^--raw$} {set Raw 1}
+            {^-V$} -
+            {^--version$} {
+                puts $Version
+                exit 0
+            }
             {^-X} -
             {^--noexit} {set NoExit 1}
+            {^-W$} -
+            {^--wakeup$} {set WakeUp 1}
             {^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$} {set Host $opt}
             {^[A-Za-z]+[.A-Za-z0-9-]+$} {set Host $opt}
             {^[0-9]+$} {set Port $opt}
@@ -793,50 +882,162 @@ proc do_nothing {} {
 
 proc makeWindow {} {
     global ExitOn
-    global Classic
+    global env
+    global rcfile Verbose WrapLines
+    global fontList clock oldClock autoSave oldAutoSave m maxNumberWidth NoOne
 
-    frame .fr -borderwidth 2
+    doVerbose "Platform: $::tcl_platform(platform)\nOS: $::tcl_platform(os)" 1
+    switch $::tcl_platform(platform) {
+      "unix" {
+        # Macintosh
+        if {$::tcl_platform(os) == "Darwin"} {
+          set rcfile [file join \
+              $env(HOME)/Library/Preferences "ncid gui preferences"]
+        } else {
+          # UNIX or Linux
+          set rcfile "$env(HOME)/.ncid"
+        }
+      }
+      "windows" {
+        set rcfile [file join $env(AppData) "ncid.dat"]
+      }
+    }
+
+    if [file exists $rcfile] {
+        set id [open $rcfile]
+        set data [read $id]
+        close $id
+        set lines [split $data "\n"]
+        foreach line $lines {
+            if [regexp {geometry\s+\S+\s+[0-9x]+} $line] {
+                eval $line
+            } elseif [regexp {font\s+create} $line] {
+                eval $line
+            } elseif [regexp {(:?fontList|clock|autoSave)\s+} $line] {
+                eval $line
+            }
+        }
+    }
+    set oldClock $clock
+    set oldAutoSave $autoSave
+    set auto [expr \"$autoSave\" eq \"off\" ? \"normal\" : \"disabled\"]
+    if {![info exists fontList]} {
+        scanFonts
+    }
+    if {[catch {font configure FixedFontH}]} {
+        if {[catch {font configure currentFontH}]} {
+            set currentFont [lindex $fontList 0]
+        }
+        font create FixedFontH -family "$currentFont" -size 11
+        font create FixedFontM -family "$currentFont" -size 12
+        write_rc_file "FixedFontH" \
+                "font create FixedFontH [font configure FixedFontH]"
+        write_rc_file "FixedFontM" \
+                "font create FixedFontM [font configure FixedFontM]"
+    }
+
     wm title . "Network Caller ID"
     wm protocol . WM_DELETE_WINDOW $ExitOn
-    wm resizable . 0 0
-    pack .fr
 
-    frame .menubar -relief raised -bd 2
-    pack .menubar -in .fr -fill x
+    # menu options: no tearoff and help menu on far right
+    option add *background #d9d9d9
+    option add *highlightBackground #d9d9d9
+    option add *tearOff 0
+    option add *Menu.useMotifHelp 1
+    option add *Text.relief sunken
+    option add *Text.background #f0f0ff
+    option add *Text.borderWidth 2
+    option add *highlightThickness 1
 
-    # create and place: call and server message display
-    # label .md -textvariable Txt -font {Helvetica -14 bold}
-    label .md -textvariable Txt -font {Monospace -14} -fg blue
-    pack .md -side bottom
+    # create menubar
+    menu .menubar
+    . configure -menu .menubar
+    . configure -background #d9d9d9
+
+    # create File, Preferences and Help menus
+    set m .menubar
+    menu $m.file
+    menu $m.file.auto
+    menu $m.prefs
+    menu $m.help
+    $m add cascade -menu $m.file -label File -underline 0
+    $m add cascade -menu $m.prefs -label Preferences -underline 0
+    $m add cascade -menu $m.help -label Help -underline 0
+
+    # create File menu items
+    $m.file add command -label "Clear Log" -command clearLog
+    $m.file add command -label "Reconnect" -command Reconnect
+    $m.file add separator
+    $m.file add cascade -menu $m.file.auto -label "Auto Save"
+    $m.file add command -label "Save Size" -state $auto -command {saveSize 0}
+    $m.file add command -label "Save Size & Pos" -state $auto -command {saveSize 1}
+    $m.file add separator
+    $m.file add command -label Quit -command exit
+
+    $m.file.auto add radiobutton -label "Size" -variable autoSave -value "size" -command {logAuto $m.file}
+    $m.file.auto add radiobutton -label "Size & Position" -variable autoSave -value "both" -command {logAuto $m.file}
+    $m.file.auto add radiobutton -label "Off" -variable autoSave -value "off" -command {logAuto $m.file}
+
+    # create Preferences menu items
+    $m.prefs add command -label "Font..." -command {changeFont}
+    $m.prefs add separator
+    $m.prefs add radiobutton -label "12 hour time" -variable clock -value 12 -command {logClock .vh}
+    $m.prefs add radiobutton -label "24 hour time" -variable clock -value 24 -command {logClock .vh}
+
+    # create Help menu item
+    $m.help add command -label About -command aboutPopup
 
     # create and place: CID history scroll window
-    if ($Classic) {set maxline 62} else {set maxline 67}
-    text .vh -width $maxline -height 4 -yscrollcommand ".ys set" \
-        -state disabled -font {Courier -14 bold}
+    text .vh -width 57 -height 4 -yscrollcommand ".ys set" \
+        -state disabled -font {FixedFontH} -setgrid 1 -wrap $WrapLines
     scrollbar .ys -command ".vh yview"
-    pack .vh .ys -in .fr -side left -fill y
+    grid .vh -row 1 -sticky nsew -padx 2 -pady 2
+    grid .ys -row 1 -column 1 -sticky ns -pady 2
 
     # create and place: user message window with a label
-    label .spacer -width 10
-    label .ml -text "Send Message: " -fg blue
-    text .im -width 25 -height 1 -font {Courier -14} -fg red
-    pack .spacer .ml .im -side left
+    frame .fr
+    grid .fr -row 2 -columnspan 2
+    label .ml -text "Send Message: " -height 1 -font {FixedFontM} -fg blue
+    text .im -width 25 -height 1 -font {FixedFontM} -fg red
+    grid .ml .im -in .fr -sticky ew
 
-    # create menu bar with File and Help
-    menubutton .menubar.file -text File -underline 0 -menu .menubar.file.menu
-    pack .menubar.file -side left
-    menubutton .menubar.help -text Help -underline 0 -menu .menubar.help.menu
-    pack .menubar.help -side right
+    # create and place: call and server message display
+    label .md -textvariable Txt -font {FixedFontM} -fg blue -height 2
+    grid .md -row 3 -sticky ew -columnspan 2
+    
+    grid columnconfigure . 0 -weight 1
+    grid rowconfigure . 1 -weight 1
 
-    # create file menu items
-    menu .menubar.file.menu -tearoff 0
-    .menubar.file.menu add command -label "Clear Log" -command clearLog
-    .menubar.file.menu add command -label "Reconnect" -command Reconnect
-    .menubar.file.menu add command -label Quit -command exit
+    update
+    set geometry [wm grid .]
+    wm minsize . [lindex $geometry 0] [lindex $geometry 1]
 
-    # create help menu
-    menu .menubar.help.menu -tearoff 0
-    .menubar.help.menu add command -label About -command aboutPopup
+    switch $autoSave {
+        "size" {
+            $m.file entryconfigure Quit -command {saveSize 0; exit}
+            wm protocol . WM_DELETE_WINDOW {saveSize 0; $ExitOn}
+        }
+        "both" {
+            $m.file entryconfigure Quit -command {saveSize 1; exit}
+            wm protocol . WM_DELETE_WINDOW {saveSize 1; $ExitOn}
+        }
+    }
+    .vh tag configure blue -foreground blue
+    .vh tag configure red -foreground red
+    .vh tag configure purple -foreground purple
+    if $NoOne {set maxNumberWidth 12} else {set maxNumberWidth 14}
+
+    if {$Verbose >= 4} {
+        set temp "[font configure FixedFontH]"
+        regsub {\s+\-slant.+$} $temp {} temp
+        puts "History window font set to: $temp"
+        set temp "[font configure FixedFontM]"
+        regsub {\s+\-slant.+$} $temp "" temp
+        puts "Message window and display font set to: $temp"
+        set temp [wm geometry .]
+        regsub {(\d+x\d+)\+(\d+)\+(\d+)} $temp {\1 at x=\2 y=\3} temp
+        puts "Window geometry set to: $temp"
+    }
 }
 
 proc aboutPopup {} {
@@ -851,16 +1052,229 @@ proc aboutPopup {} {
 
     option add *Dialog.msg.wrapLength 9i
     option add *Dialog.msg.font "Helvetica 14"
-    #option add *Dialog.msg.foreground blue
     tk_messageBox -message $About -type ok -title About
 }
 
 proc clearLog {} {
+    global display_line_num
 
+    set display_line_num 0
     .vh configure -state normal
     .vh delete 1.0 end
     .vh yview moveto 0.0
     .vh configure -state disabled
+}
+
+proc saveSize {flag} {
+    global Txt
+    
+    set save $Txt
+    set Txt ""
+    update
+    set geometry [wm geometry .]
+    set Txt $save
+    if {$flag == 0} {
+        regexp {(\d+x\d+)\+} $geometry -> geometry
+    }
+    write_rc_file "geometry\\s+\\S+\\s+\[0-9x\]+" "wm geometry . $geometry"
+}
+
+proc write_rc_file {regexpr command} {
+    global rcfile
+
+    if [file exists $rcfile] {
+        set id [open $rcfile]
+        set data [read $id]
+        close $id
+        set lines [lrange [split $data "\n"] 0 end-1]
+        set index 0
+        foreach line $lines {
+            if [regexp $regexpr $line] {
+                break
+            }
+        incr index
+        }
+        if {$index >= [llength $lines]} {
+            lappend lines "$command"
+        } else {
+            lset lines $index "$command"
+        }
+        set data [join $lines "\n"]
+        set id [open $rcfile w]
+        puts $id $data
+    } else {
+        set id [open $rcfile w]
+        puts $id $command
+    }
+    close $id
+}
+
+# Change Font
+proc changeFont {} {
+    global fontList
+    global spinvalH
+    global spinvalM
+    global boldH
+    global boldM
+    global SelectionFontH
+
+    toplevel .f
+    wm title .f "Change Fixed Font"
+    wm resizable .f 0 0
+
+    eval [concat {font create SelectionFontH} [font configure FixedFontH]]
+    eval [concat {font create SelectionFontM} [font configure FixedFontM]]
+    set spinvalH [font configure FixedFontH -size]
+    set boldH [font configure FixedFontH -weight]
+    set spinvalM [font configure FixedFontM -size]
+    set boldM [font configure FixedFontM -weight]
+    set currentFont [font configure FixedFontH -family]
+    
+    grid [labelframe .f.fn -text "Font Name" -labelanchor "nw"] -pady 8 -padx 4 -sticky "ew"
+    grid [ttk::combobox .f.fn.cb -values $fontList -textvariable currentFont] -padx 15 -pady 5
+    grid [button .f.fn.btn -text "Re-scan"] -column 0 -row 1 -pady 5
+    .f.fn.cb set $currentFont
+
+    grid [labelframe .f.fh -text "History Window Font" -labelanchor "nw"] -column 0 -pady 8 -padx 4 -sticky "ew"
+    grid [checkbutton .f.fh.cb -text "Bold" -variable boldH -onvalue "bold" \
+                -offvalue "normal" -command \
+                {font configure SelectionFontH -weight $boldH}] -pady 5 -padx 5
+    grid [label .f.fh.label -text "Size: "] -column 1 -row 0 -pady 5 -padx 5
+    grid [spinbox .f.fh.size -from 8 -to 36 -width 3 -textvariable spinvalH \
+                -state readonly -command {font configure SelectionFontH -size $spinvalH}] \
+                -column 2 -row 0 -pady 5 -padx 5
+    grid [label .f.fh.sample -text "Sample text 0123456789" -font SelectionFontH] -row 1 -columnspan 3 -pady 5
+
+    grid [labelframe .f.fm -text "Message Font" -labelanchor "nw"] -column 0  -pady 8 -padx 4 -sticky "ew"
+    grid [checkbutton .f.fm.cb -text "Bold" -variable boldM  -onvalue "bold" \
+                -offvalue "normal" -command \
+                {font configure SelectionFontM -weight $boldM}] -pady 5 -padx 5
+    grid [label .f.fm.label -text "Size: "] -column 1 -row 0 -pady 5 -padx 5
+    grid [spinbox .f.fm.size -from 8 -to 36 -width 3 -textvariable spinvalM \
+                -state readonly -command {font configure SelectionFontM -size $spinvalM}] \
+                -column 2 -row 0 -pady 5
+    grid [label .f.fm.sample -text "Sample text 0123456789" -font SelectionFontM] -row 1 -columnspan 3 -pady 5
+
+    grid [frame .f.f]  -column 0 -sticky "ew" -pady 8
+    grid [button .f.f.cancel -text "Cancel"] -padx 10 -pady 6
+    grid [button .f.f.apply -text "Apply"] -column 1 -row 0 -padx 10
+    grid [button .f.f.ok -text "OK"] -column 2 -row 0 -padx 10
+
+    # change font family
+    bind all <<ComboboxSelected>> {
+        font configure SelectionFontH -family "$currentFont"
+        font configure SelectionFontM -family "$currentFont"
+    }
+
+    bind Button <ButtonRelease-1> {+
+        set temp [%W cget -text]
+        switch $temp {
+            "Cancel" {
+                destroy .f
+                break
+            }
+            "OK" -
+            "Apply" {
+                font configure FixedFontH -family "$currentFont" \
+                    -size $spinvalH -weight $boldH
+                font configure FixedFontM -family "$currentFont" \
+                    -size $spinvalM -weight $boldM
+                logFont
+                if {$temp eq "OK"} {
+                    destroy .f
+                }
+                break
+            }
+            "Re-scan" {
+                .f.fn.cb configure -values {}
+                unset fontList
+                scanFonts
+                .f.fn.cb configure -values $fontList
+                break
+            }
+        }
+    }
+
+    grab .f
+    wm transient .f .
+    wm protocol .f WM_DELETE_WINDOW {grab release .f; destroy .f}
+    raise .f
+    tkwait window .f
+
+    font delete SelectionFontH
+    font delete SelectionFontM
+}
+
+proc logFont {} {
+    set tempH "[font configure FixedFontH]"
+    set tempM "[font configure FixedFontM]"
+    write_rc_file "FixedFontH" "font create FixedFontH $tempH"
+    write_rc_file "FixedFontM" "font create FixedFontM $tempM"
+    doVerbose "history window font set to: $tempH" 1
+    doVerbose "message window and display font set to: $tempM" 1
+}
+
+proc logClock {widget} {
+    global  clock oldClock
+
+    if {$clock == $oldClock} { return }
+    set oldClock $clock
+    write_rc_file "set clock" "set clock $clock"
+    doVerbose "Time display has been changed to: $clock hours" 1
+    $widget configure -state normal
+    for {set line 0} {1} {incr line} {
+        set temp [$widget dump -text "1.0 + $line l" "1.0 + $line l lineend"]
+        if {$temp eq ""} {break}
+        if {![regexp {^(CID|HUP|OUT)} [lindex $temp 1]]} {continue}
+        set time [lindex $temp 7]
+        set start [lindex $temp 8]
+        set stop [lindex $temp 11]
+        if {$clock == 12} {
+            set hours [string range $time 0 1]
+            set minutes [string range $time 3 4]
+            set time [convertTo12 $hours $minutes]
+        } else {
+            set hours [string range $time 0 1]
+            set minutes [string range $time 3 4]
+            set AmPm [string range $time 6 7]
+            set time [convertTo24 $hours $minutes $AmPm]
+        }
+        $widget insert "$stop - 1 c" "$time"
+        $widget delete "$start" "$stop - 1 c"
+    }
+    $widget configure -state disabled
+}
+
+proc logAuto {menu} {
+    global      ExitOn autoSave oldAutoSave m
+
+    if {$autoSave eq $oldAutoSave} { return }
+    set oldAutoSave $autoSave
+    write_rc_file "set autoSave" "set autoSave \"$autoSave\""
+    switch $autoSave {
+        "size" {
+            set temp "save size only"
+            $menu entryconfigure *Size -state disabled
+            $menu entryconfigure *Pos -state disabled
+            $menu entryconfigure Quit -command {saveSize 0; exit}
+            wm protocol . WM_DELETE_WINDOW {saveSize 0; $ExitOn}
+        }
+        "both" {
+            set temp "save size and position"
+            $menu entryconfigure *Size -state disabled
+            $menu entryconfigure *Pos -state disabled
+            $menu entryconfigure Quit -command {saveSize 1; exit}
+            wm protocol . WM_DELETE_WINDOW {saveSize 1; $ExitOn}
+        }
+        "off" {
+            set temp "off"
+            $menu entryconfigure *Size -state normal
+            $menu entryconfigure *Pos -state normal
+            $menu entryconfigure Quit -command {exit}
+            wm protocol . WM_DELETE_WINDOW $ExitOn
+        }
+    }
+    doVerbose "Auto save has been set to $temp" 1
 }
 
 # Handle MSG from GUI
@@ -926,6 +1340,33 @@ proc doPID {} {
     } else {doVerbose "Not using a PID file" 1}
 }
 
+proc scanFonts {} {
+    global fontList
+
+    set numberFonts 0
+    set numberFixed 0
+    # find a fixed-width font and use it
+    foreach family [font families] {
+        incr numberFonts
+        #Next line is for Apple Mac. Microsoft Word font Bauhaus93 triggers
+        #an error in Wish:
+        #    CoreText: Invalid 'kern' Table In CTFont <name: Bauhaus93....
+        if {$family == "Bauhaus 93"} {continue} 
+
+        if {[font metrics \"$family\" -fixed]} {
+            incr numberFixed
+            doVerbose "detected fixed font $family" 4
+            lappend fontList $family
+            if {![info exists currentFont]} {
+                set currentFont $family
+            }
+        }
+    }
+    doVerbose "$numberFixed fixed fonts out of $numberFonts fonts" 1
+    set fontList [lsort -dictionary $fontList]
+    write_rc_file "fontList " "set fontList \"$fontList\""
+}
+
 # This is the default, except when using freewrap or on the TiVo
 if {[catch {encoding system utf-8} msg]} {
     doVerbose "$msg" 1
@@ -933,18 +1374,42 @@ if {[catch {encoding system utf-8} msg]} {
 
 getArg
 
-doVerbose "$Author" 1
+doVerbose "$VersionInfo" 1
+doVerbose "Verbose Level: $Verbose" 1
+doVerbose "Config file: $ConfigFile" 1
+doVerbose "Delay between reconnect tries to the server: $Delay (seconds)" 1
 
-if {!$NoGUI} {
-    if {$NoExit} {set ExitOn do_nothing}
+
+ if {!$NoGUI} {
+    package require tile
+    doVerbose "GUI Display" 1
+    doVerbose "Popup time: $PopupTime" 1
+    if {$NoExit} {
+        set ExitOn do_nothing
+        doVerbose "The \"Close Window\" button is disabled" 1
+    }
+    if {![regexp {^(:?char|word|none)$} $WrapLines]} {
+        doVerbose "WrapLines set to invalid value of \"$WrapLines\", using default" 1
+        set WrapLines "char"
+    }
     makeWindow
 }
 if {$Country != "US" && $Country != "SE" && $Country != "NONE" && \
     $Country != "UK" && $Country != "DE" && $Country != "HR"} {
-    exitMsg 7 "Country Code \"$Country\" is not supported. Please change it."
+    exitMsg 7 "Country Code \"$Country\" is not supported.Please change it."
 }
+doVerbose "Country Code: $Country" 1
 if {$DateSepar != "/" && $DateSepar != "-" && $DateSepar != "."} {
     exitMsg 7 "Date separator \"$DateSepar\" is not supported. Please change it."
+}
+if $AltDate {
+    doVerbose "Date Format: DD${DateSepar}MM${DateSepar}YYYY" 1
+} else { doVerbose "Date Format: MM${DateSepar}DD${DateSepar}YYYY" 1 }
+if {$WakeUp} {
+    if {![file executable $ProgDir/ncid-wakeup]} {
+        set WakeUp 0
+        doVerbose "Module ncid-wakeup not found or not executable, wakeup option removed" 1
+    }
 }
 if {$Program != ""} {
     if {[file exists $Program]} {
@@ -965,10 +1430,21 @@ if {$Program != ""} {
     if {[catch {eval [subst $$modopt]} oops]} {
         doVerbose "No optional \"$modopt\" variable in ncid.conf" 1
     } else {
-        if $Verbose {
-          set CallOnRing 1
-          doVerbose "Optional \"$modopt\" variable set Ring to $Ring in ncid.conf" 1
-        }
+        regsub {.*set *(\w+)\s+.*} [eval concat $$modopt] {\1} modvar
+        regsub {.*set *(\w+)\s+(\w+).*} [eval concat $$modopt] {\2} modval
+        if {$modvar == "Ring"} { set CallOnRing 1 }
+        doVerbose "Optional \"$modopt\" variable set \"$modvar\" to \"$modval\" in ncid.conf" 1
+    }
+    if {$CallOnRing} {
+      switch -- $Ring {
+        -9 {doVerbose "Will execute $Program every ring after CID" 1}
+        -2 {doVerbose "Will execute $Program after hangup after answer" 1}
+        -1 {doVerbose "Will execute $Program after hangup with no answer" 1}
+         0 {doVerbose "Will execute $Program when ringing stops" 1}
+         default {doVerbose "Will execute $Program at Ring $Ring" 1}
+      }
+    } elseif {$Program != ""} {
+       doVerbose "Will execute $Program when CID arrives" 1
     }
 }
 if {$NoGUI} doPID

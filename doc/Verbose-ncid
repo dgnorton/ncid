@@ -14,13 +14,14 @@ LEVEL7:
         not used
 
 LEVEL6:
-        not used
-
-LEVEL5:
         display the line type as a numeric
 
+LEVEL5:
+        show CIDINFO line
+
 LEVEL4:
-        notused
+        showed fixed font family
+        display history entries in  milliseconds
 
 LEVEL3:
         not used
@@ -32,10 +33,11 @@ LEVEL1:
         indicate if using PID file or not
         display about
         indicate if a output module is being used and which one
-        indicate if optional module variable is being used or not
+        indicate if optional module variable is not being used
+        indicate if optional module variable is being used and ring count
         display received data if in raw mode
         indicate when call log is completely received
-        show CIDINFO line
+        show CIDINFO line on ring count match
         show data sent to module
         indicate if phone line label not found
         show message sent to module
