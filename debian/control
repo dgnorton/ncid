@@ -21,7 +21,7 @@ Description: NCID (Network Caller ID) server, client, and gateways
 
 Package: ncid-client
 Architecture: all
-Depends: ${shlibs:Depends}, tcl8.5, tk8.5
+Depends: ${shlibs:Depends}, tcl8.5, tk8.5, curl
 Recommends: mailx
 Description: NCID (Network Caller ID) client and base output modules
  The ncid-client obtains the Caller ID from the ncid-server and normally
