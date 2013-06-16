@@ -1,15 +1,17 @@
 Name:       ncid
-Version:    0.86
+Version:    0.87
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
 Group:      Applications/Communications
 License:    GPLv2+
 Url:        http://ncid.sourceforge.net
-Source0:    http://downloads.sourceforge.net/%{name}/%{name}-%{version}-src.tar.gz
+Source0:    http://sourceforge.net/projects/ncid/files/ncid/%{version}/%{name}-%{version}-src.tar.gz
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires: libpcap-devel
+
+%global _hardened_build 1
 
 %description
 NCID is Caller ID (CID) distributed over a network to a variety of
@@ -19,14 +21,14 @@ client output modules, and command line tools.
 The NCID server obtains the Caller ID information from a modem,
 a serial device, and from gateways for NCID, SIP, WC, & YAC.
 
-This package contains the server and gateways and command line tools.
+This package contains the server, gateways and command line tools.
 The client is in the ncid-client package.
 
 %package client
 Summary:    NCID (Network Caller ID) client
 Group:      Applications/Communications
 BuildArch:  noarch
-Requires:   tcl, tk, mailx, nc, libnotify
+Requires:   tcl, tk, mailx, nc
 
 %description client
 The NCID client obtains the Caller ID from the NCID server and normally
@@ -34,8 +36,8 @@ displays it in a GUI window.  It can also display the Called ID in a
 terminal window or, using an output module, format the output and send it
 to another program.
 
-This package contains the NCID client with initmodem, notify, page,
-skel, and yac output modules.
+This package contains the NCID client and output modules that are not
+separate packages.
 
 %package mythtv
 Summary:    NCID mythtv module sends Caller ID information MythTV
@@ -52,10 +54,10 @@ Group:      Applications/Communications
 BuildArch:  noarch
 Requires:   %{name}-client = %{version}-%{release}
 Requires:   %{name}-speak = %{version}-%{release}
-Requires:   kdelibs, kde-baseapps, kmix
+Requires:   kde-baseapps, kmix
 
 %description kpopup
-The NCID kpopup module displays Caller ID information in a KDE popup window
+The NCID kpopup module displays Caller ID information in a KDE pop-up window
 and optionally speaks the number via voice synthesis.  The KDE or Gnome
 desktop must be running.
 
@@ -67,7 +69,7 @@ Requires:   %{name}-client = %{version}-%{release}, samba-client
 
 %description samba
 The NCID samba module sends Caller ID information to a windows machine
-as a popup.  This will not work if the messenger service is disabled.
+as a pop-up.  This will not work if the messenger service is disabled.
 
 %package speak
 Summary:    NCID speak module speaks Caller ID information via voice synthesis
@@ -102,12 +104,13 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %doc README VERSION doc/[A-HJ-U]* doc/INSTALL doc/INSTALL-Fedora
 %doc doc/Verbose-ncidd doc/Verbose-sip2ncid doc/Verbose-ncid2ncid
 %doc doc/Verbose-wc2ncid
-%doc server/README.server gateway/README.Gateways attic/README.attic
+%doc server/README.server gateway/README.gateways attic/README.attic
 %doc logrotate/README.logrotate tools/README.tools Fedora/README.Fedora
 %{_bindir}/cidcall
 %{_bindir}/cidalias
 %{_bindir}/cidupdate
 %{_bindir}/ncid2ncid
+%{_bindir}/rn2ncid
 %{_bindir}/wc2ncid
 %{_bindir}/wct
 %{_bindir}/yac2ncid
@@ -122,20 +125,23 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %config(noreplace) /etc/ncid/ncidd.alias
 %config(noreplace) /etc/ncid/ncidrotate.conf
 %config(noreplace) /etc/ncid/ncid2ncid.conf
+%config(noreplace) /etc/ncid/rn2ncid.conf
 %config(noreplace) /etc/ncid/sip2ncid.conf
 %config(noreplace) /etc/ncid/wc2ncid.conf
 %config(noreplace) /etc/ncid/yac2ncid.conf
 %config(noreplace) /etc/logrotate.d/ncid
-/usr/lib/systemd/system/ncidd.service
-/usr/lib/systemd/system/ncid2ncid.service
-/usr/lib/systemd/system/sip2ncid.service
-/usr/lib/systemd/system/yac2ncid.service
-/usr/lib/systemd/system/wc2ncid.service
+%{_usr}/lib/systemd/system/ncidd.service
+%{_usr}/lib/systemd/system/ncid2ncid.service
+%{_usr}/lib/systemd/system/rn2ncid.service
+%{_usr}/lib/systemd/system/sip2ncid.service
+%{_usr}/lib/systemd/system/wc2ncid.service
+%{_usr}/lib/systemd/system/yac2ncid.service
 %{_mandir}/man1/ncidrotate.1*
 %{_mandir}/man1/cidalias.1*
 %{_mandir}/man1/cidcall.1*
 %{_mandir}/man1/cidupdate.1*
 %{_mandir}/man1/ncid2ncid.1*
+%{_mandir}/man1/rn2ncid.1*
 %{_mandir}/man1/wc2ncid.1*
 %{_mandir}/man1/wct.1*
 %{_mandir}/man1/yac2ncid.1*
@@ -143,6 +149,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %{_mandir}/man5/ncidd.whitelist.5*
 %{_mandir}/man5/ncidd.conf.5*
 %{_mandir}/man5/ncid2ncid.conf.5*
+%{_mandir}/man5/rn2ncid.conf.5*
 %{_mandir}/man5/sip2ncid.conf.5*
 %{_mandir}/man5/wc2ncid.conf.5*
 %{_mandir}/man5/yac2ncid.conf.5*
@@ -175,10 +182,10 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %config(noreplace) /etc/ncid/conf.d/ncid-page.conf
 %config(noreplace) /etc/ncid/conf.d/ncid-skel.conf
 %config(noreplace) /etc/ncid/conf.d/ncid-yac.conf
-/usr/lib/systemd/system/ncid-initmodem.service
-/usr/lib/systemd/system/ncid-notify.service
-/usr/lib/systemd/system/ncid-page.service
-/usr/lib/systemd/system/ncid-yac.service
+%{_usr}/lib/systemd/system/ncid-initmodem.service
+%{_usr}/lib/systemd/system/ncid-notify.service
+%{_usr}/lib/systemd/system/ncid-page.service
+%{_usr}/lib/systemd/system/ncid-yac.service
 %{_mandir}/man1/ncid.1*
 %{_mandir}/man1/ncid-alert.1*
 %{_mandir}/man1/ncid-initmodem.1*
@@ -195,7 +202,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %doc VERSION modules/README.modules
 %{_datadir}/ncid/ncid-mythtv
 %config(noreplace) /etc/ncid/conf.d/ncid-mythtv.conf
-/usr/lib/systemd/system/ncid-mythtv.service
+%{_usr}/lib/systemd/system/ncid-mythtv.service
 %{_mandir}/man1/ncid-mythtv.1*
 
 %files kpopup
@@ -210,7 +217,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %doc VERSION modules/README.modules
 %{_datadir}/ncid/ncid-samba
 %config(noreplace) /etc/ncid/conf.d/ncid-samba.conf
-/usr/lib/systemd/system/ncid-samba.service
+%{_usr}/lib/systemd/system/ncid-samba.service
 %{_mandir}/man1/ncid-samba.1*
 
 %files speak
@@ -218,7 +225,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %doc VERSION modules/README.modules
 %{_datadir}/ncid/ncid-speak
 %config(noreplace) /etc/ncid/conf.d/ncid-speak.conf
-/usr/lib/systemd/system/ncid-speak.service
+%{_usr}/lib/systemd/system/ncid-speak.service
 %{_mandir}/man1/ncid-speak.1*
 
 %post
@@ -259,7 +266,7 @@ if [ $1 = 0 ] ; then ### Uninstall package ###
     for SCRIPT in /usr/share/ncid/ncid-*
     do
         NAME=`basename $SCRIPT`
-        if [ -f /usr/lib/systemd/system/$NAME ]; then
+        if [ -f %{_usr}/lib/systemd/system/$NAME ]; then
             /bin/systemctl stop $NAME.service
             /bin/systemctl --quiet disable $NAME.service
         fi
@@ -303,7 +310,7 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
     for SCRIPT in /usr/share/ncid/ncid-*
     do
         NAME=`basename $SCRIPT`
-        if [ -f /usr/lib/systemd/system/$NAME ]; then
+        if [ -f %{_usr}/lib/systemd/system/$NAME ]; then
             /bin/systemctl try-restart $NAME.service
         fi
     done
@@ -329,9 +336,16 @@ fi
 
 %changelog
 
-* Mon Feb 11 2013 John Chmielewski <jlc@users.sourceforge.net> 0.86
+* Thu May 23 2013 John Chmielewski <jlc@users.sourceforge.net> 0.87-1
+- Updated lincese file and GNU license headers in files
+- fixed ncidd to output a CID line if cidcall.log file not present
+- modified cidnoname logic to add "NONMAE" when number was optained
+- added rn2ncid, rn2ncid.conf, rn2ncid.service
+- enabled _hardened_build
+
+* Mon Feb 11 2013 John Chmielewski <jlc@users.sourceforge.net> 0.86-1
 - Updated man pages: ncid*
-- Updated and fixed %description client
+- Updated and fixed client description
 - Fixed typo in mythtv package summary
 - New gateway: wc2ncid wc2ncid.conf wc2ncid.1 wc2ncid.conf.5 wc2ncid.service
 - New output module: ncid-wakeup ncid-wakeup.1
@@ -339,19 +353,19 @@ fi
 - new tool (wct), new man pages: ncidtools.7 ncidgateways.7
 - Removed ncidsip and related ncidsip files
 
-* Fri Oct 18 2012 John Chmielewski <jlc@users.sourceforge.net> 0.85
+* Fri Oct 18 2012 John Chmielewski <jlc@users.sourceforge.net> 0.85-1
 - Added ncidd.whitelist ncid-notify ncid-notify.service
 - Added ncidd.whitelist.5 ncid-notify.1 ncid-modules.7
 - Added Verbose-ncid to client
 - Removed ncidmodules.1 and ncidmodules.conf.5 ncidtools.1
 - Renamed scripts/ to logname/ and README.scripts to README.logrotate
-- Fixed %postun client
-- Updated %doc files
+- Fixed postun client
+- Updated doc files
 
-* Mon Jul 2 2012 John Chmielewski <jlc@users.sourceforge.net> 0.84
+* Mon Jul 2 2012 John Chmielewski <jlc@users.sourceforge.net> 0.84-1
 - Changed from using service & init scripts to systemctl & service scripts
 
-* Fri Sep 2 2011 John Chmielewski <jlc@users.sourceforge.net> 0.83
+* Fri Sep 2 2011 John Chmielewski <jlc@users.sourceforge.net> 0.83-1
 - Removed /usr/share/ncid/ncid-tivo
 - Removed ncid-tivo.1
 
@@ -360,11 +374,11 @@ fi
 
 * Sat Feb 26 2011 John Chmielewski <jlc@users.sourceforge.net> 0.81-1
 - Removed: /usr/share/ncid/ncid-hangup
-- Removed: %_initrddir/ncid-hangup
+- Removed: _initrddir/ncid-hangup
 - Removed: /etc/ncid/ncid.minicom
-- Added:   %{_mandir}/man5/ncidd.blacklist.5*
-- Removed line: %config(noreplace) /etc/ncid/ncid.blacklist
-- Added line: %config(noreplace) /etc/ncid/ncidd.blacklist
+- Added:   _mandir/man5/ncidd.blacklist.5*
+- Removed line: config(noreplace) /etc/ncid/ncid.blacklist
+- Added line: config(noreplace) /etc/ncid/ncidd.blacklist
 - Added man pages: cidalias.1 cidcall.1 cidupdate.1 ncid-initmodem.1
 - Added man pages ncid-kpopup.1 ncid-page.1 ncid-samba.1 ncid-speak.1
 - Added man pages: ncid-mythtv.1 ncid-skel.1 ncid-tivo.1 ncid-yac.1
@@ -374,23 +388,23 @@ fi
 
 * Thu Aug 26 2010 John Chmielewski <jlc@users.sourceforge.net> 0.79-1
 - Added line: /usr/bin/ncid2ncid
-- Added line: %config(noreplace) /etc/ncid/ncid2ncid.conf
-- Added line: %_initrddir/ncid2ncid
-- Added line: %{_mandir}/man1/ncid2ncid.1*
-- Added line: %{_mandir}/man5/ncid2ncid.conf.5*
+- Added line: config(noreplace) /etc/ncid/ncid2ncid.conf
+- Added line: _initrddir/ncid2ncid
+- Added line: _mandir/man1/ncid2ncid.1*
+- Added line: _mandir/man5/ncid2ncid.conf.5*
 
 * Fri May 14 2010 John Chmielewski <jlc@users.sourceforge.net> 0.78-1
 - New release
 
 * Fri Apr 9 2010 John Chmielewski <jlc@users.sourceforge.net> 0.77-1
-- Removed line: %_initrddir/ncid-kpopup
-- Removed section: %post kpopup
-- Removed section: %preun kpopup
-- Removed section: %postun kpopup
-- Added line: %_initrddir/ncid-initmodem
+- Removed line: _initrddir/ncid-kpopup
+- Removed section: post kpopup
+- Removed section: preun kpopup
+- Removed section: postun kpopup
+- Added line: _initrddir/ncid-initmodem
 - Added line: /usr/share/ncid/ncid-initmodem
 - Added line: /etc/ncid/ncid.minicom
-- Added line: %config(noreplace) /etc/ncid/ncid.blacklist in client section
+- Added line: config(noreplace) /etc/ncid/ncid.blacklist in client section
 - Added ncid-initmodem and ncid-hangup to SCRIPT lines in client sections
 - Added more comments
 
@@ -399,7 +413,7 @@ fi
 
 * Mon Oct 19 2009 John Chmielewski <jlc@users.sourceforge.net> 0.75-1
 - Client package changed from i386 to noarch
-- Added line: %_initrddir/ncid-hangup
+- Added line: _initrddir/ncid-hangup
 - Added line: /usr/share/ncid/ncid-hangup
 
 * Fri Jun 19 2009 John Chmielewski <jlc@users.sourceforge.net> 0.74-1

@@ -5,12 +5,12 @@ MANSRC1  = ncid.1 \
            ncid-skel.1 ncid-wakeup.1 ncid-yac.1
 MANSRC5  = ncidd.blacklist.5 ncidd.whitelist.5 ncid.conf.5 \
            ncidd.conf.5 ncidd.alias.5 \
-           ncidrotate.conf.5 ncid2ncid.conf.5 \
+           ncidrotate.conf.5 ncid2ncid.conf.5 rn2ncid.conf.5 \
            sip2ncid.conf.5 wc2ncid.conf.5 yac2ncid.conf.5
 MANSRC7  = ncid-modules.7 ncidtools.7 ncidgateways.7
 MANSRC8  = ncidd.8 sip2ncid.8
-PERLMAN1 = cidalias.1 cidcall.1 cidupdate.1 wc2ncid.1 wct.1
-MANSRC   = $(MANSRC1) $(PERLMAN1) $(MANSRC5) $(MANSRC7) $(MANSRC8)
+PERLMAN1 = cidalias.1 cidcall.1 cidupdate.1 rn2ncid.1 wc2ncid.1 wct.1
+MANSRC   = $(MANSRC1) $(MANSRC5) $(MANSRC7) $(MANSRC8) $(PERLMAN1)
 FILES    = Makefile $(MANSRC)
 
 prefix   = /usr/local
@@ -33,6 +33,9 @@ txt: $(MANSRC1:.1=.1.txt) $(MANSRC5:.5=.5.txt) $(MANSRC7:.7=.7.txt) $(MANSRC8:.8
 html: $(MANSRC1:.1=.1.html) $(MANSRC5:.5=.5.html) $(MANSRC7:.7=.7.html) $(MANSRC8:.8=.8.html)
 
 install: install-man
+
+rn2ncid.1:
+	pod2man ../gateway/rn2ncid.pl $@
 
 wc2ncid.1:
 	pod2man ../gateway/wc2ncid.pl $@

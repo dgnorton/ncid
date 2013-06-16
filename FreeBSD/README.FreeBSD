@@ -13,7 +13,9 @@ FreeBSD rc scripts:
     ncid-yac.rc       - rc file for ncid with ncid-yac output module
     ncidd.rc          - rc file for ncidd
     ncid2ncid.rc      - rc file for ncid2ncid
+    rn2ncid.rc        - rc file for rn2ncid
     sip2ncid.rc       - rc file for sip2ncid
+    wc2ncid.rc        - rc file for wc2ncid
     yac2ncid.rc       - rc file for yac2ncid
 
 See Doc/INSTALL-FreeBSD for install instructions

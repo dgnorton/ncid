@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# PROVIDE: rn2ncid
+# REQUIRE: NETWORKING ncidd
+
+#
+# Add the following lines to /etc/rc.conf to enable rn2ncid:
+#
+#rn2ncid_enable="YES"
+#
+rn2ncid_enable="${rn2ncid_enable-NO}"
+
+. /etc/rc.subr
+
+rcvar=`set_rcvar`
+extra_commands="condrestart"
+
+name=rn2ncid
+pidfile="/var/run/${name}.pid"
+
+command=/usr/local/sbin/$name
+command_args="--pidfile /var/run/${name}.pid &"
+command_interpreter=perl
+
+load_rc_config $name
+
+case $1 in
+    condrestart)
+        run_rc_command "stop" && run_rc_command "start"
+        ;;
+    *)
+        run_rc_command "$1"
+        ;;
+esac

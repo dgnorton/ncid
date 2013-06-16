@@ -1,6 +1,6 @@
 Ubuntu Install
 
-Last edited: Wed Mar 20, 2013
+Last edited: Wed Jun 5, 2013
 
 Sections:
 
@@ -37,8 +37,8 @@ INSTALL or UPGRADE:
       wget -q -O - http://archive.getdeb.net/getdeb-archive.key \
         | sudo apt-key add -
       sudo sh -c \
-        'echo "deb http://archive.getdeb.net/ubuntu precise-getdeb apps"' \
-        >> /etc/apt/sources.list
+        "echo 'deb http://archive.getdeb.net/ubuntu precise-getdeb apps' \
+        >> /etc/apt/sources.list"
 
     - Update the apt cache:
       sudo apt-get update
@@ -51,6 +51,15 @@ INSTALL or UPGRADE:
 
     - Install any optional output modules wanted:
       sudo apt-get install ncid-<module>
+
+    IMPORTANT:
+        - the repository install usually makes all servers start
+          at boot, this will cause problems when the systen is
+          rebooted.  Disable any servers you are not using:
+            * sudo update-rc.d sip2ncid disable
+            * sudo update-rc.d wc2ncid disable
+            * sudo update-rc.d rn2ncid disable
+            * sudo update-rc.d yum2ncid disable
 
     If the latest packages are not available at the repository:
 
@@ -75,7 +84,7 @@ INSTALL or UPGRADE:
         * Install any optional modules:
           sudo gdebi ncid-<module-<version>_all.deb
       Notes:
-        <version> would be something like: 0.86-0ubuntu1
+        <version> would be something like: 0.87-1
         <module> would be a module name like: kpopup, mythtc, samba
 
     - Install or Upgrade the packages using gdebi-gtk (GUI):
@@ -150,7 +159,7 @@ FIRST STARTUP:
 START/STOP/STATUS:
 
     Use the invoke-rc.d command to start any of the daemons.  The invoke-rc.d
-    commands are: start, stop, restart, reload, and status.  The client
+    actions are: start, stop, restart, reload, and status.  The client
     can also be started using the output module name instead of ncid.
     All output modules can be run at the same time.
 

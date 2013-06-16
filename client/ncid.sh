@@ -2,22 +2,21 @@
 
 # ncid - Network Caller-ID client
 
-# Copyright (c) 2001-2012
-# by John L. Chmielewski <jlc@users.sourceforge.net>
+# Copyright (c) 2005-2013
+#  by John L. Chmielewski <jlc@users.sourceforge.net>
 
-# ncid is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 
-# ncid is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # START OF LOCAL MODIFICATION SECTION
 # set TCLSH variable, FreeBSD will call it something like tclsh8.4 \
@@ -109,6 +108,7 @@ set autoSave            "off"
 set oldAutoSave         "off"
 set Begin               0
 set End                 0
+set msgType            ""
 
 if {[file exists $ConfigFile]} {
     catch {source $ConfigFile}
@@ -145,7 +145,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
 
 set Author \
 "
-Copyright (C) 2001-2012
+Copyright (C) 2001-2013
 John L. Chmielewski
 http://ncid.sourceforge.net
 "
@@ -154,6 +154,17 @@ set About \
 "
 $VersionInfo
 $Author
+"
+
+set labList \
+"
+CID:  Caller ID - incoming call
+OUT:  Out       - outgoing call
+HUP:  Hangup    - blacklisted call hangup
+BLK:  Blocked   - blacklisted call blocked
+PID:  Phone ID  - Caller ID of a call to a smart phone
+MSG:  Message   - message from a user or NCID
+NOT:  Notice    - Notice of a smart phone message
 "
 
 # display error message and exit
@@ -266,6 +277,7 @@ proc getCID {} {
     global Verbose
     global VersionInfo
     global lineLabel
+    global msgType
     global call
     global type
     global display_line_num
@@ -303,13 +315,16 @@ proc getCID {} {
                 update idletasks
                 displayCID "$VersionInfo\n$dataBlock" 1
                 }
-        } else {
-            if {[string match 300* $dataBlock]} {
-                # NCID server sent end of log message
-                if !$NoGUI {
-                    .vh delete 1.0 6.0
-                    .vh yview moveto 1.0
-                    .vh configure -state disabled
+        } elseif {[string match 300* $dataBlock]} {
+            # NCID server sent end of log message
+            if !$NoGUI {
+                .vh delete 1.0 6.0
+                .vh yview moveto 1.0
+                .vh configure -state disabled
+                if {[lindex [.vh yview] 0] + [lindex [.vh yview] 1] == 1.0} {
+                    grid remove .ys
+                } else {
+                    grid .ys
                 }
                 set doingLog 0
                 regsub {300 (.*)} $dataBlock {\1} dataBlock
@@ -323,8 +338,8 @@ proc getCID {} {
         }
 
         if {[set type [checkType $dataBlock]]} {
-            if {$type == 5} {
-                # CIDINFO (5) line
+            if {$type == 3} {
+                # CIDINFO line
                 set ringinfo [getField RING $dataBlock]
                 # must use $call($lineinfo) instead of $cid
                 set lineinfo [getField LINE $dataBlock]
@@ -344,9 +359,10 @@ proc getCID {} {
                     doWakeup
                     set wakened 1
                 }
-            } elseif {$type == 4 || $type == 7} {
-                # MSG (4), MSGLOG (7)
-                regsub {MSGL*O*G*: (.*)} $dataBlock {\1} msg
+            } elseif {$type == 4 || $type == 5} {
+                # MSG (4), NOT (4), MSGLOG (5), NOTLOG (5)
+                regsub {(^...).*} $dataBlock {\1} msgType
+                regsub {[A-Z]+: (.*)} $dataBlock {\1} msg
                 displayLog "$msg" 1
                 if {$type == 4} {
                     if {!$NoGUI} {
@@ -355,18 +371,18 @@ proc getCID {} {
                     }
                     if {$Program != ""} {
                         sendMSG $msg
-                        doVerbose "Sent $Program: $msg" 1
+                        doVerbose "Sent $Program $msgType: $msg" 1
                     }
                 }
-            } elseif {$type < 4} {
-                # CID (1), HUP (2), OUT (3)
+            } elseif {$type == 1 || $type == 2} {
+                # CID (1), OUT (1), HUP (2), BLK (2), PID (2)
                 if {$WakeUp} {
                     if {!$wakened} {
                         doWakeup
                     } else {set wakened 0}
                 }
                 set cid [formatCID $dataBlock]
-                array set call "$lineLabel [list $cid]"
+                if {$type == 1} {array set call "$lineLabel [list $cid]"}
                 # display log
                 # $cid set above, no need for $call($lineLabel)
                 displayLog $cid 0
@@ -381,8 +397,8 @@ proc getCID {} {
                     sendCID $cid
                     doVerbose "Sent $Program: $cid" 1
                 }
-            } elseif {$type > 7} {
-                # CIDLOG (8), HUPLOG (9), OUTLOG (10)
+            } elseif {$type == 6} {
+                # CIDLOG, HUPLOG, OUTLOG, BLKLOG, PIDLOG
                 set cid [formatCID $dataBlock]
                 array set call "$lineLabel [list $cid]"
                 # display log
@@ -440,15 +456,21 @@ proc checkType {dataBlock} {
     set rtn 0
     # Determine line type
     if [string match CID:* $dataBlock] {set rtn 1
+    } elseif [string match OUT:* $dataBlock] {set rtn 1
     } elseif [string match HUP:* $dataBlock] {set rtn 2
-    } elseif [string match OUT:* $dataBlock] {set rtn 3
+    } elseif [string match BLK:* $dataBlock] {set rtn 2
+    } elseif [string match PID:* $dataBlock] {set rtn 2
+    } elseif [string match CIDINFO:* $dataBlock] {set rtn 3
     } elseif [string match MSG:* $dataBlock] {set rtn 4
-    } elseif [string match CIDINFO:* $dataBlock] {set rtn 5
-    } elseif [string match LOG:* $dataBlock] {set rtn 6
-    } elseif [string match MSGLOG:* $dataBlock] {set rtn 7
-    } elseif [string match CIDLOG:* $dataBlock] {set rtn 8
-    } elseif [string match HUPLOG:* $dataBlock] {set rtn 9
-    } elseif [string match OUTLOG:* $dataBlock] {set rtn 10}
+    } elseif [string match NOT:* $dataBlock] {set rtn 4
+    } elseif [string match MSGLOG:* $dataBlock] {set rtn 5
+    } elseif [string match NOTLOG:* $dataBlock] {set rtn 5
+    } elseif [string match CIDLOG:* $dataBlock] {set rtn 6
+    } elseif [string match HUPLOG:* $dataBlock] {set rtn 6
+    } elseif [string match OUTLOG:* $dataBlock] {set rtn 6
+    } elseif [string match BLKLOG:* $dataBlock] {set rtn 6
+    } elseif [string match PIDLOG:* $dataBlock] {set rtn 6
+    } elseif [string match LOG:* $dataBlock] {set rtn 7}
     doVerbose "Assigned type $rtn for $dataBlock" 6
     return $rtn
 }
@@ -683,17 +705,18 @@ proc sendMSG {msg} {
     global Program
     global TivoFlag
     global ExecSh
+    global msgType
 
     if $TivoFlag {
       # send "$msg\n"
       catch {exec [lindex $Program 0] << "$msg\n" > @stdout} oops
     } else {
-      # send "\n\n\n$msg\n\nMSG\n"
+      # send "\n\n\n$msg\n\n$msgType\n"
       # not: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n$cidtype\n"
       if $ExecSh {
-        catch {exec sh -c $Program << "\n\n\n$msg\n\nMSG\n" > @stdout} oops
+        catch {exec sh -c $Program << "\n\n\n$msg\n\n$msgType\n" > @stdout} oops
       } else {
-        catch {exec $Program << "\n\n\n$msg\n\nMSG\n" > @stdout} oops
+        catch {exec $Program << "\n\n\n$msg\n\n$msgType\n" > @stdout} oops
       }
     }
 }
@@ -715,6 +738,7 @@ proc displayCID {cid ismsg} {
 proc displayLog {cid ismsg} {
     global Program
     global NoGUI
+    global msgType
     global display_line_num maxNumberWidth doingLog
     
     if $NoGUI {
@@ -730,7 +754,7 @@ proc displayLog {cid ismsg} {
         incr display_line_num
         if {! $doingLog} {.vh configure -state normal}
         if $ismsg {
-            .vh insert end "\nMSG: " purple $cid blue
+            .vh insert end "\n$msgType: " purple $cid blue
         } else {
             set ciddate [lindex $cid 0]
             set cidtime [lindex $cid 1]
@@ -749,6 +773,9 @@ proc displayLog {cid ismsg} {
             }
             .vh yview moveto 1.0
             .vh configure -state disabled
+            if {[lindex [.vh yview] 0] + [lindex [.vh yview] 1] == 1.0} {
+                grid .ys
+            }
         }
     }
 }
@@ -986,6 +1013,7 @@ proc makeWindow {} {
 
     # create Help menu item
     $m.help add command -label About -command aboutPopup
+    $m.help add command -label "Line Labels" -command labInfo
 
     # create and place: CID history scroll window
     text .vh -width 57 -height 4 -yscrollcommand ".ys set" \
@@ -1038,6 +1066,13 @@ proc makeWindow {} {
         regsub {(\d+x\d+)\+(\d+)\+(\d+)} $temp {\1 at x=\2 y=\3} temp
         puts "Window geometry set to: $temp"
     }
+    bind . <Configure> {
+            if {[lindex [.vh yview] 0] + [lindex [.vh yview] 1] == 1.0} {
+                grid remove .ys
+            } else {
+                grid .ys
+            }
+    }
 }
 
 proc aboutPopup {} {
@@ -1053,6 +1088,21 @@ proc aboutPopup {} {
     option add *Dialog.msg.wrapLength 9i
     option add *Dialog.msg.font "Helvetica 14"
     tk_messageBox -message $About -type ok -title About
+}
+
+proc labInfo {} {
+    global labList
+    global Logo
+
+    if [file exists $Logo] {
+        image create photo ncid -file $Logo
+        option add *Dialog.msg.image ncid
+        option add *Dialog.msg.compound top
+    }
+
+    option add *Dialog.msg.wrapLength 9i
+    option add *Dialog.msg.font FixedFontM
+    tk_messageBox -message $labList -type ok -title "Line Labels"
 }
 
 proc clearLog {} {
@@ -1083,6 +1133,10 @@ proc write_rc_file {regexpr command} {
     global rcfile
 
     if [file exists $rcfile] {
+        if [file isdirectory $rcfile] {
+            doVerbose "Unable to save data to $rcfile because it is a directory" 1
+            return
+        }
         set id [open $rcfile]
         set data [read $id]
         close $id
@@ -1225,7 +1279,7 @@ proc logClock {widget} {
     for {set line 0} {1} {incr line} {
         set temp [$widget dump -text "1.0 + $line l" "1.0 + $line l lineend"]
         if {$temp eq ""} {break}
-        if {![regexp {^(CID|HUP|OUT)} [lindex $temp 1]]} {continue}
+        if {![regexp {^(?:CID|HUP|OUT)} [lindex $temp 1]]} {continue}
         set time [lindex $temp 7]
         set start [lindex $temp 8]
         set stop [lindex $temp 11]

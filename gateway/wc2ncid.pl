@@ -1,21 +1,23 @@
 #!/usr/bin/perl
 
-# Copyright (c) 2012 by John L. Chmielewski <jlc@users.sourceforge.net>
-#                       Todd Andrews <tandrews@users.sourceforge.net>
+# wc2ncid - Whozz Calling device to NCID server gateway
 
-# wc2ncid is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# any later version.
+# Copyright (c) 2005-2013
+#  by John L. Chmielewski <jlc@users.sourceforge.net>
+#     Todd Andrews <tandrews@users.sourceforge.net>
 
-# wc2ncid is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use strict;
 use warnings;
@@ -53,9 +55,11 @@ my $setwc;
 my $defaultTO = 0.2;
 my $timeout = $defaultTO;
 my $selectTO = undef;
-my $nciddelay = 30;
+my $delay = 30;
+my $Delay = undef;
 my $bcsock;
-my $logfile = "/var/log/wc2ncid.log";
+my $logfile = basename($0, '.pl');
+   $logfile = "/var/log/" . $logfile . ".log";
 my ($logfileMode, $logfileModeEnglish);
 my $logfileAppend;
 my $logfileOverwrite;
@@ -99,6 +103,7 @@ my ($result) = GetOptions("ncidhost|n=s" => \$ncidhost,
                "logfile-append|l=s" => \$logfileAppend,
                "logfile-overwrite|L=s" => \$logfileOverwrite,
                "debug|D" => \$debug,
+               "delay|d" => \$Delay,
                "help|h" => \$help,
                "man|m" => \$man,
                "verbose|v=i" => \$Verbose,
@@ -112,6 +117,11 @@ die "$prog $VERSION\n" if $version;
 pod2usage(-verbose => 1, -exitval => 0) if $help;
 pod2usage(-verbose => 2, -exitval => 0) if $man;
 
+if ($test) {
+    $debug = 1;
+    $verbose = 3;
+}
+
 # reading configuration file after command line processing
 # is necessary because the command line can change the
 # location of the configuration file
@@ -122,22 +132,18 @@ if (defined $cfg) {
     $verbose = $config{'default.verbose'};
     $ncidaddr = $config{'default.ncidaddr'};
     $ncidport = $config{'default.ncidport'};
-    $nciddelay = $config{'default.nciddelay'};
+    $delay = $config{'default.delay'};
     @wcaddr = $cfg->param('default.wcaddr');
 }
 
 # these command line values override the configuration file values
+$delay = $Delay if $Delay;
 $ncidport = $1 if $ncidhost =~ s/:(\d+)//;
 $ncidaddr = $ncidhost if $ncidhost;
 $verbose = $Verbose if defined $Verbose;
 if (@wchost) {
     @wchost = split(/,/,join(',',@wchost));
     @wcaddr = @wchost;
-}
-
-if ($test) {
-    $debug = 1;
-    $verbose = 3;
 }
 
 $logfileMode = ">>"; # default to append
@@ -163,16 +169,22 @@ if (open(LOGFILE, "$logfileMode$logfile")) {
 logMsg(1, "Started: $date\n");
 
 # log command line and any options on separate lines
-  my $cl = "Command line: " . $0;
-  for my $arg (@save_argv) {
-        if ( '-' eq substr($arg, 0, 1)) {
-           logMsg(1, "$cl\n");
-           $cl = "              $arg";
-        } else {
-           $cl = $cl . " " . $arg;
-        }
-  }
-  logMsg(1, "$cl\n");
+my $cl = "Command line: " . $0;
+for my $arg (@save_argv) {
+    if ( '-' eq substr($arg, 0, 1)) {
+        logMsg(1, "$cl\n");
+        $cl = "              $arg";
+    } else {
+        $cl = $cl . " " . $arg;
+    }
+}
+logMsg(1, "$cl\n");
+
+if ($fileopen) {logMsg(1, "Logfile: $logfileModeEnglish $logfile\n");}
+else {logMsg(1, "Could not open logfile: $logfile\n");}
+
+if (defined $cfg) {logMsg(1, "Processed config file: $ConfigFile\n");}
+else {logMsg(1, "Config file not found: $ConfigFile\n");}
 
 logMsg(1, "Gateway: $prog version $VERSION\n");
 logMsg(1, "Verbose level: $verbose\n");
@@ -180,13 +192,7 @@ logMsg(1, "Debug mode\n") if ($debug);
 
 if ($test) { logMsg(1, "Test mode\nNot using NCID host\n"); }
 
-if ($fileopen) {logMsg(1, "Logfile: $logfileModeEnglish $logfile\n");}
-else {logMsg(1, "Could not open logfile: $logfile\n");}
-
 &doPID;
-
-if (defined $cfg) {logMsg(1, "Processed config file: $ConfigFile\n");}
-else {logMsg(1, "Config file not found: $ConfigFile\n");}
 
 $SIG{'HUP'}  = 'sigHandle';
 $SIG{'INT'}  = 'sigHandle';
@@ -235,9 +241,9 @@ while (1) {
           $ncidline = <$ncidsock>;
           if (!defined $ncidline) {
             $select->remove($ncidsock);
-            $selectTO = $nciddelay;
+            $selectTO = $delay;
             logMsg(1, "NCID server at $ncidaddr:$ncidport disconnected\n");
-            logMsg(1, "Trying to reconnect every $nciddelay seconds\n");
+            logMsg(1, "Trying to reconnect every $delay seconds\n");
           }
           else {logMsg(5, $ncidline);}
         }
@@ -976,12 +982,22 @@ sub logMsg {
     print LOGFILE $message if $fileopen && $verbose >= $level;
 }
 
+sub cleanup() {
+    close($ncidsock) if $ncidsock;
+    close($wcsock) if $wcsock;
+    close($bcsock) if $bcsock;
+    if ($pid) {
+        unlink($pidfile);
+        logMsg(1, "Removed $pidfile\n");
+    }
+}
+
 sub sigHandle {
     my $sig = shift;
+    cleanup();
     my $date = strftime("%m/%d/%Y %H:%M:%S", localtime);
     logMsg(1, "\nTerminated $date: Caught SIG$sig\n");
     close(LOGFILE);
-    if ($pid) {unlink($pidfile);}
     exit(0);
 }
 
@@ -993,10 +1009,7 @@ sub sigIgnore {
 
 sub errorExit {
     logMsg(1, "@_");
-    if ($pid) {
-        unlink($pidfile);
-        logMsg(1, "Removed $pidfile\n");
-    }
+    cleanup();
     my $date = strftime("%m/%d/%Y %H:%M:%S", localtime);
     logMsg(1, "\nTerminated: $date\n");
     close(LOGFILE);
@@ -1010,6 +1023,7 @@ wc2ncid - Whozz Calling device to NCID server gateway
 =head1 SYNOPSIS
 
 wc2ncid [--debug|-D]
+        [--delay|-h <seconds>]
         [--help|-h]
         [--logfile-append|-l <filename>]
         [--logfile-overwrite|-L <filename>]
@@ -1061,17 +1075,24 @@ Input must be <address> or <address1,address2,etc>.
 
 Default: 192.168.0.90
 
+=item -d <seconds>, --delay <seconds>
+
+If the connection to the NCID server is lost,
+try every <delay> seconds to reconnect.
+
+Default: 30
+
 =item -D, --debug
 
 Debug mode, displays all messages that go into the log file.  Use this option to run interactively.
 
 =item -h, --help
 
-Prints the help message and exits.
+Displays the help message and exits.
 
 =item -m, --man
 
-Prints the manual page and exits.
+Displays the manual page and exits.
 
 =item -C, --configfile=<filename>
 
@@ -1139,7 +1160,7 @@ Displays the version.
 
 =head1 EXAMPLES
 
-=over 2
+=over 4
 
 =item Start wc2ncid, set IP address to 192.168.1.90 from command
 line, set the beginning line number automatically, and set the
@@ -1154,6 +1175,14 @@ wc2ncid -tv5
 =back
 
 =head1 REQUIREMENTS
+
+=over
+
+=item At least one Whozz Calling Ethernet Link device
+
+http://www.callerid.com
+
+=back
 
 perl 5.6 or higher,
 perl(Config::Simple),

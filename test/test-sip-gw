@@ -1,14 +1,14 @@
 #!/usr/bin/perl -w
 
 # Created on Sat Jan 11, 2013 by Steve Limkemann
-# Last updated on Sun Jan 12, 2013 by sl
+# Last updated on Sun Apr 21, 2013
 
 use strict;
 use Socket;
 
 my ($testfile, $response, $wait, $datagram);
 
-$testfile = (shift or "testSIPgw.data");
+$testfile = (shift or "test-sip-gw.data");
 
 my $proto = getprotobyname ('udp');
 my $port = 20000; 

@@ -1,7 +1,7 @@
 # ncidd alias errors test file
 
 # checks various alias errors
-# start ncidd with debugging enabled: ncidd -DA aliasfile
+# start ncidd with debugging enabled: ncidd -DA aliasfile.errors
 
 alias name =
 alias 123456789

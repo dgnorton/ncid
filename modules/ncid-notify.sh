@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 # ncid-notify
 # usage: ncid --no-gui --program ncid-notify
 
-# Last modified: Fri Oct 12, 2012
+# Last modified: Wed May 29, 2013
 
 # sends a NCID notification to a iOS device or a Android device
 
@@ -31,12 +31,6 @@
 # if input is from a message
 # the message is in place of NAME:
 # input: \n\n\n<MESSAGE>\n\nMSG\n
-
-# $CIDTYPE is one of:
-#   CID: incoming call
-#   OUT: outgoing call
-#   HUP: blacklisted hangup
-#   MSG: message instead of a call
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-notify.conf
@@ -66,7 +60,7 @@ notify_priority=0
 notify_clock="12"
 
 # default call types to send notification
-notify_types="CID OUT HUP MSG"
+notify_types="CID"
 
 # default 'application', 'event' and 'notification'
 # by service
@@ -175,7 +169,8 @@ do
         case $i in
             CID) CIDDESC="Incoming Call";;
             OUT) CIDDESC="Outgoing Call";;
-            HUP) CIDDESC="Blacklist Hangup";;
+            HUP) CIDDESC="Blacklisted Call Hangup";;
+            BLK) CIDDESC="Blacklisted Call Blocked";;
             MSG) CIDDESC="Message";
 		         CIDDATE=`date '+%m/%d/%Y'`;
 		         CIDTIME=`date '+%H:%M'`;;

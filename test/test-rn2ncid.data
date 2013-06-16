@@ -1,0 +1,52 @@
+# In this file you must specify a period on a line all by itself because
+# Remote Notifier allows multiple line messages and the test-rn2ncid script
+# needs a way to determine the end of a multi-line message.
+
+# calls -- leading '1' digit
+
+v2/73450F6E7CD9d5c0/8bd9d2208b4e44/RING/13045559180/Carrie Swanson - Home (13045559180)
+.
+
+v2/ff47bb81d4832e1f/942e55f0eece37/RING/12815555454/Home - Custom (12815555454)
+.
+
+v2/ab31299d071240d2/8ba23ec3967b8f/RING/15035557481/Alex Wine, (PoBox) - Home (15035557481)
+.
+
+# messages
+
+v2/73450F6E7CD9d5c0/8bda230248c4fb/BATTERY/17/Charging, remaining charge: 17%
+.
+
+v2/73450F6E7CD9d5c0/8ba26527d87ed2/SMS/+19075552693/SMS from +19075552693: hellow world sms from google - smsbot@example.com
+.
+
+v2/73450F6E7CD9d5c0/4811a9ec58d8d/PING//Test notification
+.
+
+v2/1c43bb56fc715c05/95568e19a4c288/SMS/mail@nowhere.com/SMS from mail@nowhere.com: 
+
+NCID TYPE: CID
+NAME: Matt Helm
+NMBR: 352-555-4321
+TIME: 11:12
+DATE: 05/03/2013
+LINE: SPY
+
+.
+# Calls -- no leading '1' digit
+
+v2/bc1Cb14be6be05b6/4cfcff36828f4/PING//Test notification
+.
+
+v2/bc1Cb14be6be05b6/95298bbb635597/BATTERY/98/NOT charging, remaining charge: 98%
+.
+
+v2/bc1Cb14be6be05b6/952930bcbc7b67/SMS/smsbot@example.com/SMS from smsbot@example:
+
+Make my day...
+.
+
+v2/bc1Cb14be6be05b6/95293f9a387928/RING/2125554571/Matthew Bender - Home (2125554571)
+.
+

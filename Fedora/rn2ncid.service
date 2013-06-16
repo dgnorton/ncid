@@ -1,0 +1,12 @@
+[Unit]
+Description=Android smart phone app 'Remote Notifier' to NCID gateway
+After=ncidd.service
+
+[Service]
+Type=simple
+Environment=prog=rn2ncid
+PIDFile=/var/run/rn2ncid.pid
+ExecStart=/usr/bin/rn2ncid --pidfile /var/run/${prog}.pid
+
+[Install]
+WantedBy=multi-user.target

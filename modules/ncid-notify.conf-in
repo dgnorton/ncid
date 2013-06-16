@@ -1,6 +1,6 @@
 # ncid-notify.conf - ncid-notify configuration file
 
-# Last Modified: Fri Oct 18, 2012
+# Last Modified: Wed May 29, 2013
 
 # Uncomment, comment. or give variables a different value
 
@@ -9,15 +9,23 @@
 #   OUT: outgoing call
 #   HUP: blacklisted hangup
 #   MSG: message instead of a call
+#   PID: Caller ID from a smart phone
+#   NOT: notice of a smart phone message
 #
-# All types: "CID OUT HUP MSG"
+# Never use PID or NOT as they come from the phone
+# all types: "CID OUT HUP BLK MSG"
 
-# If you want to send notification only when a ring count is reached,
-# configure ring by creating a "ncid_notify" variable in ncid.conf
+# IMPORTANT:
+#       - if "MSG" is added to PageTypes and you are using the rn2ncid
+#         gateway, you must configure "reject" in the rn2ncid.conf file
+#         to avoid sending the message back to NCID
+#
+#       - if you want to send notification only when a ring count is reached,
+#         configure ring by creating a "ncid_notify" variable in ncid.conf
 
 # $CIDTYPE's to process
-# default: "CID OUT HUP MSG"
-notify_types="CID OUT HUP MSG"
+# default: "CID OUT HUP BLK MSG"
+notify_types="CID OUT HUP BLK MSG"
 
 # API key is required
 # For Prowl, get it free by registering at http://www.prowlapp.com

@@ -146,10 +146,11 @@ FIRST STARTUP:
     SERVER
     ======
     
-    Under Mac OS X 10.4 and later, the mechanism used to start NCID server processes
-    is 'launchd' and requires 'plist' files in /Library/LaunchDaemons. Appropriate
-    plist files for the NCID server processes are created automatically when NCID is
-    installed, however, they must be manually activated.
+    Under Mac OS X 10.4 and later, the mechanism used to start the NCID
+    server processes is 'launchd' and requires 'plist' files in
+    /Library/LaunchDaemons. Appropriate plist files for the NCID server
+    processes are created automatically when NCID is installed, however,
+    they must be manually activated.
     
     Once activated, no action is typically required as the plist files are 
     configured to automatically start each time the system boots.
@@ -172,7 +173,8 @@ FIRST STARTUP:
     command line utility.
 
     You should only activate the NCID servers and client modules you need. 
-    Activating will also start the process immediately; there is no need to reboot.
+    Activating will also start the process immediately; there is no need
+    to reboot.
 
     The syntax for stopping the daemons is the same as starting them, except
     you use the 'unload' command instead of the 'load' command. Doing an unload

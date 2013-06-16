@@ -1,0 +1,45 @@
+#!/usr/bin/perl -w
+
+# Copyright (c) 2012 by John L. Chmielewski <jlc@users.sourceforge.net>
+#                       Todd Andrews <tandrews@users.sourceforge.net>
+#
+# This script sends 'Remote Notifier for Android' test lines to the
+# rn2ncid gateway.
+#
+# The way to test rn2ncid without ncid and ncidd
+# ./test-rn2ncid
+# ../gateway/rn2ncid -t
+
+($testfile = shift) || ($testfile = "test-rn2ncid.data");
+
+$| = 1;
+
+open(TESTFILE, $testfile) || die "Could not open $testfile\n";
+
+print "Launch rn2ncid gateway in test mode:\n";
+print "    ../gateway/rn2ncid -t\n\n";
+
+print "Then press <ENTER> multiple times to send different\n";
+print "'Remote Notifier for Android' test lines to rn2ncid.\n";
+
+my $line;
+while (<TESTFILE>) {
+    if (/^#/) {next;}
+    if (/\w.*/) {
+      $line = $_;
+      # read all lines up to but excluding a line with only a "."
+      while (<TESTFILE>) {
+          chomp;
+          if ($_ eq ".") {last;}
+          $line = "$line$_\n";
+      }
+      open(OUTPUT, '| nc -4 localhost 10600') || die "Could not open netcat\n";
+      select(OUTPUT);
+      print STDOUT $line;
+      print $line;
+      close(OUTPUT);
+    }
+    else { my $response = <STDIN>; }
+}
+
+exit 0;

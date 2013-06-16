@@ -1,5 +1,11 @@
 NCID - Network CallerID
 
+File last changed: Sat May 18, 2013
+
+NCID is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License located
+in a file called doc/LICENSE.
+
 Web Site: http://ncid.sourceforge.net
 
 NCID Features: http://ncid.sourceforge.net/ncid/ncid.html
@@ -7,8 +13,6 @@ NCID Features: http://ncid.sourceforge.net/ncid/ncid.html
 Man Pages: http://ncid.sourceforge.net/man/man.html
 
 Software Development Kit: http://ncid.sourceforge.net/NCID-SDK.odt
-
-File last changed: Tue Feb 12, 2013
 
 Directories:
     attic:       obsolete programs and files
@@ -37,13 +41,13 @@ The NCID package contains:
     - client output modules and a configuration script for them
     - a Network CallerID hangup client: ncidhangup
     - A NCID to NCID gateway: ncid2ncid
+    - A Android smart phone app 'Remote Notifier' to NCID gateway: rn2ncid
     - A SIP Invite Gateway: sip2ncid
       sip2ncid runs on Linux/UNIX/Windows/Mac OSX/Cygwin
     - A Whozz Calling Ethernet Link device gateway: wc2ncid
       wc2ncid is a Perl program and runs on Linux/UNIX/Windows/Mac OSX/Cygwin
     - A YAC to NCID gateway: yac2ncid (requires a yac server to input CID)
       yac2ncid runs on Linux/UNIX/Cygwin/Mac
-    - A Whozz Calling Ethernet Link Device to NCID Gateway: wc2ncid
     - tools to work with the CID log and alias files: ncidtools
       ncidtools runs on Linux/UNIX/Mac OSX/Cygwin/TiVo (requires Perl)
     - a log rotate module
@@ -75,8 +79,10 @@ The NCID package has the following features:
     - Handles outgoing or hangup calls from gateways that support them.
     - Shares the modem for outgoing calls.
     - Supports CID devices like NetCallerID
-    - Supports VoIP using SIP
-    - Supports outgoing calls if the SIP gateway supports it
+    - Supports VoIP using a SIP gateway: sip2ncid
+    - Supports outgoing calls if SIP supports it
+    - Supports multiple POTS lines if using the rn2ncid gateway
+      instead of modems.
     - Allows multiple clients and gateways.
     - Does Name/Number/Line aliases, so the display can be customized.
       For example: "Wireless Caller" becomes "John on Cell".
@@ -87,7 +93,6 @@ The NCID package has the following features:
       or Cygwin.
     - Supports Distinctive Ring
     - Supports Multiline (1 POTS and 1 or Gateways)
-    - VoIP supports requires a SIP Gateway
     - Supports a remote modem using a YAC Gateway
     - Send important error messages to the clients.
     - Send a message received from a client to all connected clients.
@@ -112,7 +117,10 @@ The NCID package has the following features:
     - Displays the Caller ID log file in the call history window.
     - Displays the current Caller ID when a call is received.
     - Displays outgoing calls if they are supported by the server
-    - Displays auto hangup on calls if supported by the server
+    - Displays call hangup if supported by the server
+    - Displays call blocked if supported by a gateway
+    - Displays Caller ID from a smart phone
+    - Displays a notice of a smart phone message
     - Displays messages received from the server.
     - Supports Distinctive Ring and multiple telephone lines.
     - Supports output modules to customize its output and to send NCID
@@ -123,7 +131,19 @@ The NCID package has the following features:
     - Runs on Windows, Linux, UNIX, and Macintosh OS X.
     - Documented protocol
 
-    CID Gateway Features sip2ncid
+    NCID Gateway Features (ncid2ncid)
+    - Forwards Caller ID information and messages from selected NCID
+      (sending) servers to a selected NCID (receiving) server
+    - Handles up to 3 sending NCID servers
+    - Documented protocol
+
+    Remote Notifier Gateway Features (rn2ncid)
+    - Forwards Caller ID information and messages from a smart phone
+    - Each smart phone has a 4 hex digit identifier
+    - can have multiple rn2ncid gateways
+    - Documented protocol
+
+    SIP Gateway Features (sip2ncid)
     - Receives Caller ID information from SIP Invite
     - Creates a CID Message and sends it to the NCID server
     - indicates call answered or not answered
@@ -132,13 +152,7 @@ The NCID package has the following features:
     - can have multiple sip2ncid gateways, each monitoring VoIP hardware
     - Documented protocol
 
-    NCID Gateway Features (ncid2ncid)
-    - Forwards Caller ID information and messages from selected NCID
-      (sending) servers to a selected NCID (receiving) server
-    - Handles up to 3 sending NCID servers
-    - Documented protocol
-
-    CID Gateway Features (wc2ncid)
+    Whozz Calling Gateway Features (wc2ncid)
     - Handles multiple Whozz Calling Ethernet link devices
     - Receives Caller ID or outgoing call information
     - Creates a NCID Message and sends it to the NCID server
@@ -180,6 +194,9 @@ Overview of the modules are in the man page: ncid-modules.7
 Instructions for using ncid2ncid are in the man page: ncid2ncid.1
 Instructions for configuring ncid2ncid are in the man page: ncid2ncid.conf.5
 
+Instructions for using rn2ncid are in the man page: rn2ncid.1
+Instructions for configuring rn2ncid are in the man page: rn2ncid.conf.5
+
 Instructions for using sip2ncid are in the man page: sip2ncid.8
 Instructions for configuring sip2ncid are in the man page: sip2ncid.conf.5
 
@@ -215,10 +232,7 @@ The distributed configuration files are:
     ncid-skel.conf
     ncid-yac.conf
     ncid2ncid.conf
+    rn2ncid.conf
     sip2ncid.conf
     wc2ncid.conf
     yac2ncid.conf
-
-NCID is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License located
-in a file called doc/LICENSE.

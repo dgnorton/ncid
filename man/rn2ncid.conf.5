@@ -1,0 +1,113 @@
+.\" %W% %G%
+.TH RN2NCID.CONF 5
+.SH NAME
+.B rn2ncid.conf
+- rn2ncid configuration file
+.SH DESCRIPTION
+The \fIrn2ncid.conf\fR file contains the configuration information for
+\fIrn2ncid\fR.
+.PP
+The \fIrn2ncid.conf\fR file understands 3 types of lines:
+.TP
+.B blank line
+ignored
+.TP
+.B comment line, beginning with '#'
+ignored
+.TP
+.B VARIABLE = VALUE
+VALUE can contain spaces if it is between quotes.
+.PP
+See \fIrn2ncid.conf\fR for all default values.
+.SH VARIABLES
+.TP
+.B verbose = \fIlevel\fR
+Level is in the range 1-9. Not all verbose levels are used.
+.TP
+.B ncidaddr = \fIhost address\fR
+The NCID server host address can be an IP address or a resolvable host name.
+.TP
+.B ncidport = \fIport\fR
+The NCID server port number.
+.TP
+.B delay = \fIseconds\fR
+If the connection to the NCID server is lost, this specifies the number
+of seconds between reconnection attempts.
+.TP
+.B cellport = \fIport\fR
+The listen port as specified in the Remote Notifier application.
+.TP
+.B reject = \fIfrom address[,from address][,from address]...\fR
+SMS and MMS messages usually have a 'from' address and depending on 
+the carrier this could be a number or an email address. Specify a comma
+separated list of addresses that will NOT be transmitted by the NCID 
+server to all listening NCID clients. This is used to prevent endless 
+loops which could result in excessively high data or text charges
+by your cell phone carrier.
+.PP
+Remote Notifier sends the 'from' address in its 'data' (fifth) field.
+See NOTES below.
+.PP
+An example of an endless loop would be:
+.RS 5
+.IP - 3
+cell phone gets SMS
+.IP - 3
+Remote Notifier sends out the SMS
+.IP - 3
+rn2ncid gets the SMS and sends it to the NCID server as 'MSG'
+.IP - 3
+the ncid-page module gets this 'MSG' and forwards it back to the cell phone
+.IP - 3
+cell phone gets the 'MSG' as an SMS
+.IP - 3
+cycle repeats forever
+.RE
+.PP
+To prevent this endless loop, suppose you have ncid-page.conf
+configured to send SMS messages to your cell 'from' your email
+address of: johndoe@yahoo.com
+.PP
+.PP
+You might want to set 'reject' to be:
+.PP
+.PP
+.RS 3
+reject = johndoe@yahoo.com
+.RE
+.SH NOTES
+Remote Notifier sends six pieces of information:
+.RS 5
+.IP - 3
+(1) version (e.g., 'v2')
+.IP - 3
+(2) unique device id in hex
+.IP - 3
+(3) unique notification id in hex
+.IP - 3
+(4) event type (BATTERY, PING, SMS, etc.)
+.IP - 3
+(5) data (terse information)
+.IP - 3
+(6) event contents (verbose free-form text, can be multi-line)
+.RE
+.SH EXAMPLES
+Set the NCID server IP address:
+.PP
+.RS 3
+ncidaddr = 192.168.1.20
+.RE
+.PP
+Set the Remote Notifier listen port
+.PP
+.RS 3
+cellport = 10600
+.RE
+.PP
+Reject SMS/MMS messages to manage text blocking
+.PP
+.RS 3
+reject = 9999
+.RE
+.SH SEE ALSO
+rn2ncid.1

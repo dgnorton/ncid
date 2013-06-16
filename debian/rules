@@ -65,12 +65,13 @@ binary-arch:    checkroot build
 	rm -fr debian/tmp-ncid/usr/share/pixmaps debian/tmp-ncid/etc/ncid/conf.d
 	install -m 644 debian/changelog debian/tmp-ncid/$(docdir)/changelog.Debian
 	cp -a README VERSION doc debian/README.Debian \
-          server/README.server gateway/README.Gateways \
+          server/README.server gateway/README.gateways \
           logrotate/README.logrotate tools/README.tools \
                    debian/tmp-ncid/$(docdir)
 	rm -f debian/tmp-ncid/$(docdir)/doc/CHANGES
 	dpkg-shlibdeps debian/tmp-ncid/usr/sbin/ncidd \
                    debian/tmp-ncid/usr/bin/ncid2ncid \
+                   debian/tmp-ncid/usr/bin/rn2ncid \
                    debian/tmp-ncid/usr/sbin/sip2ncid \
                    debian/tmp-ncid/usr/bin/wc2ncid
 

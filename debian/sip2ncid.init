@@ -1,10 +1,10 @@
 #! /bin/sh
 ### BEGIN INIT INFO
 # Provides:          sip2ncid
-# Required-Start:    $local_fs $remote_fs
+# Required-Start:    $local_fs $remote_fs ncidd
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
-# Default-Stop:      S 0 1 6
+# Default-Stop:      0 1 6
 # Short-Description: NCID SIP Gateway
 # Description:       The sip2ncid gateway collects Caller ID data from SIP
 #                    Invite packets

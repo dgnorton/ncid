@@ -1,6 +1,6 @@
 # ncid-speak.conf - ncid-speak configuration file
 
-# Last Modified: Sat Oct 20, 2012
+# Last Modified: Wed May 29, 2013
 
 # Uncomment, comment. or give variables a different value
 
@@ -9,8 +9,10 @@
 #   OUT: outgoing call
 #   HUP: blacklisted hangup
 #   MSG: message instead of a call
+#   PID: Caller ID from a smart phone
+#   NOT: notice of a smart phone message
 #
-# All types: "CID OUT HUP MSG"
+# All types: "CID OUT HUP BLK MSG PID NOT"
 
 # $CIDTYPE's to process
 # default: "CID"
@@ -35,3 +37,17 @@ SpeakTimes=1
 
 # delay between speaking
 SpeakDelay=2
+
+# Length of area code.
+#
+# If non-zero, a name value of "NO NAME" will be replaced with
+# the string "Area Code " followed by the requested number of
+# area code digits separated by spaces.
+#
+# If set to the number of digits in phone number, a name value
+# of "NO NAME" will be replaced with the digits of the phone
+# number separated by spaces.
+#
+# A leading "1" for the CID number is always ignored.
+# Default value = 3
+AreaCodeLength=0

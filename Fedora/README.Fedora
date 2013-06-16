@@ -12,10 +12,12 @@ Fedora systemd service files:
   ncid-speak.service     - service file for ncid using ncid-speak module
   ncid-yac.service       - service file for ncid using ncid-yac module
   ncid2ncid.service      - service file for ncid2ncid
+  rn2ncid.service        - service file for rn2ncid
   sip2ncid.service       - service file for sip2ncid
+  wc2ncid.service        - service file for wc2ncid
   yac2ncid.service       - service file for yac2ncid
 
-Fedora service files (obsolete):
+Fedora init service files (obsolete):
 
   ncid-initmodem.init - service file for ncid with ncid-initmodem output module
   ncid-mythtv.init    - service file for ncid with ncid-mythtv output module
@@ -24,7 +26,9 @@ Fedora service files (obsolete):
   ncid-speak.init     - service file for ncid with ncid-speak output module
   ncid-yac.init       - service file for ncid with ncid-yac output module
   ncid2ncid.init      - service file for ncid2ncid
+  rn2ncid.init        - service file for rn2ncid
   sip2ncid.init       - service file for sip2ncid
+  wc2ncid.init        - service file for wc2ncid
   yac2ncid.init       - service file for yac2ncid
 
 See Doc/INSTALL-Fedora for install instructions

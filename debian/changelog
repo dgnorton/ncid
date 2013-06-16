@@ -1,8 +1,16 @@
+ncid (0.87-1) Ubuntu-13.04 raspian; urgency=low
+
+  * Removed "S" from the default stop in the init scripts.
+  * added gateway: rn2ncid
+  * rn2ncid.init, sip2ncid.init, wc2ncid.init, yac2ncid.init: start after ncidd
+
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Tue, 28 May 2013 21:48:00 -0400
+
 ncid (0.86-2) Ubuntu-12.10 raspian; urgency=low
 
   * added a "curl" requirement in "control" for the ncid-client package
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri, 2r9Mar 2013 18:44:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri, 29 Mar 2013 18:44:00 -0400
 
 ncid (0.86-1) Ubuntu-12.10 raspian; urgency=low
 
@@ -10,7 +18,7 @@ ncid (0.86-1) Ubuntu-12.10 raspian; urgency=low
   * updated rules
   * changed i386 in the control file to any
   * added ${perl:Depends} to controlfile
-  * added gateway: wc2ncid.pl
+  * added gateway: wc2ncid
   * added modules: ncid-alert ncid-wakeup
   * removed gateway: ncidsip
   * updated postrm, prerm

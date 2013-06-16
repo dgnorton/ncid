@@ -1,38 +1,38 @@
 NCID distributions:
 
     sourceforge:
-        NCID source package:           ncid-0.86-src.tar.gz
+        NCID source package:           ncid-0.87-src.tar.gz
 
-        Cygwin 32 bit Windows package: ncid-0.86-cygwin.tgz
+        Cygwin 32 bit Windows package: ncid-0.87-cygwin.tgz
 
-        TiVo Series1 package:          ncid-0.86-ppc-tivo.tgz
-        TiVo Series 2-3 package:       ncid-0.86-mips-tivo.tgz
+        TiVo Series1 package:          ncid-0.87-ppc-tivo.tgz
+        TiVo Series 2-3 package:       ncid-0.87-mips-tivo.tgz
 
-        Ubuntu 32 bit packages:        ncid_0.86-1_i386.deb
-                                       ncid-client_0.86-1_all.deb
-                                       ncid-kpopup_0.86-1_all.deb
-                                       ncid-mythtv_0.86-1_all.deb
-                                       ncid-samba_0.86-1_all.deb
-                                       ncid-speak_0.86-1_all.deb
+        Ubuntu 64 bit package:         ncid_0.87-1_amd64.deb
+        Ubuntu no-arch packages:       ncid-client_0.87-1_all.deb
+                                       ncid-kpopup_0.87-1_all.deb
+                                       ncid-mythtv_0.87-1_all.deb
+                                       ncid-samba_0.87-1_all.deb
+                                       ncid-speak_0.87-1_all.deb
 
-        Windows client installer:      ncid-0.86-client_setup.exe
+        Windows client installer:      ncid-0.87-client_setup.exe
 
       These may also be distributed:
 
-        Fedora 64 bit packages:        ncid-0.86-1.fc14.x86_64.rpm
-                                       ncid-client-0.86-1.fc15.noarch.rpm
-                                       ncid-kpopup-0.86-1.fc15.noarch.rpm
-                                       ncid-mythtv-0.86-1.fc15.noarch.rpm
-                                       ncid-samba-0.86-1.fc15.noarch.rpm
-                                       ncid-speak-0.86-1.fc15.noarch.rpm
+        Fedora 64 bit package:         ncid-0.87-1.fc14.x86_64.rpm
+        Fedora no-arch packages:       ncid-client-0.87-1.fc15.noarch.rpm
+                                       ncid-kpopup-0.87-1.fc15.noarch.rpm
+                                       ncid-mythtv-0.87-1.fc15.noarch.rpm
+                                       ncid-samba-0.87-1.fc15.noarch.rpm
+                                       ncid-speak-0.87-1.fc15.noarch.rpm
 
-        Macintosh 32 bit OS X package: ncid-0.86-mac-osx.tgz
+        Macintosh 64 bit OS X package: ncid-0.87-mac-osx.tgz
 
-        FreeBSD 32 bit package:        ncid-0.86-freebsd.tgz
+        FreeBSD 32 bit package:        ncid-0.87-freebsd.tgz
 
         Debian packages:               Ubuntu packages should install as-is
 
-        Raspberry Pi packages:         ncid_0.86-1_armhf.deb
+        Raspberry Pi packages:         ncid_0.87-1_armhf.deb
                                        other packages are the same as Ubuntu
 
     Fedora packages:
@@ -42,12 +42,12 @@ NCID distributions:
         Normally you only need to install the ncid & ncid-client rpm packages.
         The yum list command will show you the packages available:
             yum list ncid\*
-        If the above does not show version 0.86:
+        If the above does not show version 0.87:
             yum --enablerepo=rawhide list ncid\*
         If the rawhide repo is not installed:
             yum install fedora-release-rawhide
         If you need to build packages for your specific OS release:
-            rpmbuild -tb ncid-0.86-src.tar.gz
+            rpmbuild -tb ncid-0.87-src.tar.gz
 
     RPM based OS packages (includes Fedora, Redhat, CentOS, etc):
     (If a dependency can't be resolved, you should try rebuilding packages)
@@ -58,13 +58,13 @@ NCID distributions:
             ncid-MODULE RPM Package  - optional client output modules
           - Install or Upgrade the packages using yum
             * Install the NCID server and gateways:
-              sudo yum install ncid-<version>.fc17.x86_64.rpm
+              sudo yum install ncid-<version>.fc17.x87_64.rpm
             * Install the client package and default modules:
-              sudo yum install ncid-client-<version>.fc17.x86_64.rpm
+              sudo yum install ncid-client-<version>.fc17.x87_64.rpm
             * Install any optional modules wanted:
-              sudo gdebi ncid-<module-<version>.fc17.x86_64.rpm
+              sudo gdebi ncid-<module-<version>.fc17.x87_64.rpm
           Notes:
-            <version> would be something like: 0.86-1
+            <version> would be something like: 0.87-1
             <module> would be a module name like: kpopup, mythtv, samba
 
     Macintosh OS X package:
@@ -82,8 +82,8 @@ NCID distributions:
           wget -q -O - http://archive.getdeb.net/getdeb-archive.key \
             | sudo apt-key add -
           sudo sh -c \
-            echo "deb http://archive.getdeb.net/ubuntu precise-getdeb apps" \
-            >> /etc/apt/sources.list
+            "echo 'deb http://archive.getdeb.net/ubuntu precise-getdeb apps' \
+            >> /etc/apt/sources.list"
         Update the apt cache:
           sudo apt-get update
         List the available packages:
@@ -115,21 +115,22 @@ NCID distributions:
             * Install gdebi if needed:
               sudo apt-get install gdebi    
             * Install the NCID server and gateways:
-              sudo gdebi ncid-<version>_armhf.deb
+              sudo gdebi ncid-<version>_<processor>.deb
             * Install the client package and default modules:
               sudo gdebi ncid-client-<version>_all.deb
             * Install any optional modules wanted:
               sudo gdebi ncid-<module-<version>_all.deb
           Notes:
-            <version> would be something like: 0.86-1
+            <version> would be something like: 0.87-1
+            <processor> would be something like: i386, armhf
             <module> would be a module name like: kpopup, mythtv, samba
 
         If you need to build a package for your specific OS or release, the
         build-essential, fakeroot, & libpcap packages must be installed:
             sudo apt-get build-essential fakeroot libpcap0.8-dev
-            tar -xzf ncid-0.86-src.tar.gz
-            mv ncid ncid-0.86
-            cd ncid-0.86
+            tar -xzf ncid-0.87-src.tar.gz
+            mv ncid ncid-0.87
+            cd ncid-0.87
             fakeroot debian/rules build
             fakeroot debian/rules binary
             fakeroot debian/rules clean
@@ -139,125 +140,51 @@ Specific distribution Changes:
     Cygwin:
 
     Fedora, Redhat, and RPM based systems:
-        - Top level Makefile has redhat and redhat-install targets.
-          It is for systems that still use init scripts like
-          Enterprise Linux, CentOS, or an old version of Fedora.
-        - removed ncidsip.init and ncidsip.service
-        - added wc2ncid.init and wc2ncid.service
-        - added a reload feature to ncidd for systemd
 
     FreeBSD:
-        - removed ncidsip.rc
-        - added wc2ncid.rc
 
     Mac OS X:
-        - removed net.sourceforge.ncid-gui.plist
-        - added net.sourceforge.wc2ncid.plist
-        - added ncid-gui.command
-        - added fix-combobox
-        - updated INSTALL-Mac
 
-    Raspberry Pi (Raspbian): new
-
-    Ubuntu:
-        - removed ncidsip.init
-        - added wc2ncid.init
-        - removed 0ubuntu1 from the package versions so the building
-          package code in the source is more universal
+    Ubuntu, Raspbian (Raspberry Pi), Debian based systems:
+        - corrrect the default stop run levels in the init scripts
+        - init scripts: start gateways after the server is started
 
     TiVo:
-        - added an ncid-fly comment in the startncid script
 
     Windows:
-        - updated INSTALL-Win
 
 NCID Server Changes:
 
     ncidd:
-        - added code to always send a 300 message.
-        - added a partial match for an alias using "if"
-        - added code to add "NONAME" when cidnomane is set
-        - the Maximum size of the alias, blacklist, and
-          whitelist files were increased from 200 to 500 entries
-        - added a new cidcall.log line, "END:", for a gateway end-
-          of-call.  It includes call start and end extended times.
-        - added new call type called BLK for blocked calls
 
-    ncidd.conf:
-        - added "cidnoname"
-          Set this to 1 if the CID received does not include a name.
-          The server will send the call when the date, time, and number
-          are received instead of waiting for the second ring.
+        - added two new line tags: PID and NOT
+        - changed the cidnoname option so it will output as soon
+          as all the information is received instead of at a ring
+        - fixed verbose output so it will output a CALL line with
+          no cidcall.log file.
 
 NCID Gateway Changes:
 
     ncid2ncid:
 
     sip2ncid:
-        - modified to support the new CALLINFO line sent to
-          the server so it can generate an END line in cidcall.log
-        - fixed the code that is used to determine incoming and
-          outgoing calls for systems that do not support REGISTRATION
-          packets
-        - fixed the end-of-call that generates BYE
 
     yac2ncid:
 
     wc2ncid:
-        - new, uses the Whozz Calling Ethernet Link hardware
-          see http://callerid.com
 
-    ncidsip: removed but still in source in attic/
+    rn2ncid: new - sends spart phone Caller ID and message notices to NCID
 
 NCID Client Changes:
 
     ncid:
-        - fonts used depend on platform and OS
-        - new option to resize the GUI
-        - new items to save GUI size and GUI size & location
-        - new menu called Preferences with a menu item to
-          bring up a font window to select a fixed font name, the font 
-          size, and an option to make it bold. It also contains two menu 
-          items to set the display time in either 12 or 24 hour format.
-        - new wakeup variable to call ncid-wakeup
-          to wake up a monitor on an X-window system
-        - removed options "--raw | -R" and "--classic-display| -C"
-        - new "--help | -h" option and "--version | -V" options
-        - added ability to wrap lines in GUI history window
-          configured by WrapLines in ncid.conf
-        - added ability to call an external program on each ring if
-          using a modem that indicates each ring
-        - Changed verbose option to "--verbose | -v" option
-        - added more verbose statements
-
-    ncid.conf:
-        - removed the "raw" and "classic" sections
-        - new wakeup configuration option
-        - new WrapLines configuration section
+        - added two new line tags: PID and NOT
+        - added a help menu item called "Line Labels"
 
 NCID Client Module Changes:
 
-    ncid-alert: new
-    ncid-wakeup: new
-
 NCID tool changes:
 
-    cidalias: improved code and also looks for aliases in the blacklist
-              file, added documentation
-
-    cidcall: improved code and updated to handle "END:" lines in the
-             cidcall.log file, added documentation
-
-    cidupdate: improved code, added documentation
-
-    wct: new, a tool to interact with Whozz Calling Ethernet Link devices
-
 Documentation Changes:
+    Updated license file and license information in header files and scripts.
 
-    ncid.1, ncidd.alias.5, ncidd.conf.5, ncid-*.1: updated
-    cidalias.1, cidcall.1, cidupdate.1: removed
-    ncidtools.7, ncid-alert.1, wc2ncid.1, wc2ncid.conf.5, wct.1: new
-
-    all INSTALL documents updated, and some were improved
-
-    INSTALL-RPi: new

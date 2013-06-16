@@ -3,7 +3,7 @@
 # ncid-initmodem
 # usage: ncid --no-gui --program ncid-initmodem
 
-# Last modified: Fri Oct 12, 2012
+# Last modified: Wed May 29, 2013
 
 # reinitialize a modem to handle Caller ID if CIDNMBR=RING
 # this indicates modem droped out of Caller ID mode.  Do
@@ -21,12 +21,6 @@
 # if input is from a message
 # the message is in place of NAME:
 # input: \n\n\n<MESSAGE>\n\nMSG\n
-
-# $CIDTYPE is one of:
-#   CID: incoming call
-#   OUT: outgoing call
-#   HUP: blacklisted hangup
-#   MSG: message instead of a call
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-initmodem.conf

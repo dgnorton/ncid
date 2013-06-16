@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 # ncid-speak
 # usage: ncid --no-gui --program ncid-speak
 
-# Last modified: Fri Oct 12, 2012
+# Last modified: Wed May 29, 2013
 
 # Announce the Caller ID
 # Requires festival
@@ -20,12 +20,6 @@
 # the message is in place of NAME:
 # input: \n\n\n<MESSAGE>\n\nMSG\n
 
-# $CIDTYPE is one of:
-#   CID: incoming call
-#   OUT: outgoing call
-#   HUP: blacklisted hangup
-#   MSG: message instead of a call
-
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-speak.conf
 
@@ -34,7 +28,8 @@ SpeakThis='$CIDNAME'
 SpeakInput="echo $SpeakThis | festival --tts"
 SpeakTimes=1
 SpeakDelay=2
-SpeakTypes="CID OUT HUP MSG"
+SpeakTypes="CID MSG PID NOT"
+AreaCodeLength=3
 
 [ -f $ConfigFile ] && . $ConfigFile
 
@@ -54,7 +49,23 @@ done
 # Exit if $CIDTYPE not found
 [ -z "$found" ] && exit 0
 
-if [ "$CIDTYPE" = "MSG" ]
+if [ "$CIDTYPE" = "CID" ] && [ "$CIDNAME" = "NO NAME" ] && [ $AreaCodeLength -ne 0 ]
+then
+    CIDNMBR=`echo $CIDNMBR |sed 's/[^0-9]//g; s/^1//'`
+    length=$((${#CIDNMBR}-AreaCodeLength))
+    if [ $length -le 0 ]
+    then
+        if [ ${#CIDNMBR} -gt 1 ]
+        then
+            CIDNAME=`echo $CIDNMBR |sed 's/./ &/g'`
+        fi
+    else
+        CIDNAME="Area Code"`echo $CIDNMBR | eval "sed -e 's/.\{$length\}\$//; s/./ &/g'"`
+    fi
+fi
+echo "Name: $CIDNAME" > /tmp/ncid_debug
+
+if [ "$CIDTYPE" = "MSG" -o "$CIDTYPE" = "NOT" ]
 then
     SpeakThis=$CIDNAME
 else

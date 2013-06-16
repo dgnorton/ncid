@@ -1,5 +1,6 @@
 PLIST   = net.sourceforge.ncidd.plist \
           net.sourceforge.ncid2ncid.plist \
+          net.sourceforge.rn2ncid.plist \
           net.sourceforge.sip2ncid.plist \
           net.sourceforge.wc2ncid.plist \
           net.sourceforge.yac2ncid.plist \
@@ -38,12 +39,7 @@ SITE    = fix-combobox
 
 default: $(PLIST) $(SITE)
 
-install: install-doc install-plist install-command
-
-install-doc: $(DOC) $(SITE)
-	@if ! test -d $(DOCDIR); then mkdir -p $(DOCDIR); fi
-	install -m 644 $(DOC) $(DOCDIR)
-	install -m 755 $(SITE) $(DOCDIR)
+install: install-plist install-command install-doc
 
 install-plist: $(PLIST)
 	@if test ! -d $(LAUNCHD); then mkdir -p $(LAUNCHD); fi
@@ -52,6 +48,11 @@ install-plist: $(PLIST)
 install-command: $(COMMAND)
 	@if test ! -d $(APPDIR); then mkdir -p $(APPDIR); fi
 	@install -m 755 $(COMMAND) $(APPDIR)
+
+install-doc: $(DOC) $(SITE)
+	@if ! test -d $(DOCDIR); then mkdir -p $(DOCDIR); fi
+	install -m 644 $(DOC) $(DOCDIR)
+	install -m 755 $(SITE) $(DOCDIR)
 
 clean:
 

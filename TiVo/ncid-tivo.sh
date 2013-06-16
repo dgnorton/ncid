@@ -4,7 +4,7 @@
 # Usage: ncid --no-gui --program ncid-tivo
 # Usage: tivoncid
 
-# Last modified: Fri Oct 12, 2012
+# Last modified: Sun Apr 14, 2013
 
 # TiVo Display
 # Requires a TiVo
@@ -69,9 +69,9 @@ else
     if [ -z "$CIDLINE" ]
     then
         # no line indicator
-        echo -e "$CIDNAME $CIDNMBR\n" | $TivoOSD $TivoOpt
+        echo -e "$CIDNAME\n$CIDNMBR\n" | $TivoOSD $TivoOpt
     else
-        echo -e "$CIDNAME $CIDNMBR\n$CIDLINE\n" | $TivoOSD $TivoOpt
+        echo -e "$CIDNAME $CIDNMBR\n$CIDTYPE $CIDLINE\n" | $TivoOSD $TivoOpt
     fi
 fi
 

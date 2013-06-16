@@ -20,7 +20,7 @@ set -e
 case "$1" in
     remove|deconfigure)
         [ -h /usr/doc/ncid ] && rm -f /usr/doc/ncid
-        for script in ncidd sip2ncid yac2ncid ncid2ncid wc2ncid
+        for script in ncidd ncid2ncid rn2ncid sip2ncid wc2ncid yac2ncid
         do
             invoke-rc.d $script stop
             update-rc.d -f $script remove

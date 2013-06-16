@@ -1,12 +1,12 @@
 /*
- * sip2ncid - Inject CID info by snooping SIP invites
+ * sip2ncid.c - This file is part of sip2ncid.
  *
- * Copyright (c) 2007-2012
- *  by John L. Chmielewski <jlc@users.sourceforge.net>
+ * Copyright (c) 2005-2013
+ * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
- * sip2ncid is free software; you can redistribute it and/or modify
+ * sip2ncid is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
  * sip2ncid is distributed in the hope that it will be useful,
@@ -15,8 +15,7 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * along with sip2ncid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "sip2ncid.h"
@@ -704,8 +703,10 @@ void processPackets(u_char *args,
              *   SIP/2.0 NMBR Ringing
              *   SIP/2.0 NMBR Request Terminated
              *   SIP/2.0 183 Session Progress
+             *   SIP/2.0 401 Unauthorized
              *   SIP/2.0 407 Proxy Authentication Required
              *   SIP/2.0 487 Request Cancelled
+             *   SIP/2.0 487 Request Terminated
              */
             if (strmatch(sipbuf, CSEQ, INVITE))
             {
@@ -806,7 +807,6 @@ void processPackets(u_char *args,
                     if (outcall)
                     {
                         /* Outgoing Call */
-                        //jlc line = fromnumber + strlen(fromnumber) - 4;
                         line = lineLabel(fromnumber);
                         number = tonumber;
                         name = NONAME;
@@ -815,7 +815,6 @@ void processPackets(u_char *args,
                     else
                     {
                         /* Incoming Call */
-                        //jlc line = tonumber + strlen(tonumber) - 4;
                         line = lineLabel(tonumber);
                         number = fromnumber;
                         type = CALLIN;
@@ -971,6 +970,19 @@ void processPackets(u_char *args,
 
                 /* Remove Call-ID it */
                 (void) rmCallID(callid);
+            }
+
+            /*
+             * Look for SIP/2 Unauthorized line
+             *  SIP/2.0 401 Unauthorized
+             *  CSeq: NMBR REGISTER
+             */
+            else if (strmatch(sipbuf, SIPVER, UNAUTHORIZED))
+            {
+                /*
+                 * Skip this packet, otherwize it is considered
+                 * a REGISTER packet.
+                 */
             }
 
             /*

@@ -101,7 +101,7 @@ MFLAGS  = -W -Wmissing-declarations \
 
 # Documentation for FreeBSD, Mac, and TiVo
 DOC     = doc/[A-HJ-V]* doc/INSTALL \
-          server/README.server gateway/README.Gateways \
+          server/README.server gateway/README.gateways \
           client/README.client modules/README.modules
 
 default:
@@ -238,7 +238,7 @@ tivo-s2:
 tivo-hack-install:
 	$(MAKE) install-server install-client \
             install-modules install-gateway install-tivo setmod=TiVo
-	mkdir -p $(DOCDIR)/man
+	@if ! test -d $(DOCDIR)/man; then mkdir -p $(DOCDIR)/man; fi
 	install -m 644 $(DOC) doc/INSTALL-TiVo $(DOCDIR)
 	install -m 644 man/*.txt $(DOCDIR)/man
 
@@ -265,7 +265,7 @@ freebsd:
 
 freebsd-install:
 	$(MAKE) install-base MAN=$(prefix)/man
-	mkdir -p $(DOCDIR)
+	@if ! test -d $(DOCDIR); then mkdir -p $(DOCDIR); fi
 	install -m 644 $(DOC) doc/INSTALL-FreeBSD $(DOCDIR)
 	cd FreeBSD; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
@@ -300,7 +300,7 @@ mac:
             MFLAGS="-mmacosx-version-min=10.4" STRIP=
 
 mac-install:
-	mkdir -p $(DOCDIR)
+	@if ! test -d $(DOCDIR); then mkdir -p $(DOCDIR); fi
 	install -m 644 $(DOC) doc/INSTALL-Mac $(DOCDIR)
 	$(MAKE) install-base install-mac MAN=$(MAN)
 
@@ -317,7 +317,7 @@ cygwin-install:
             SBIN=$(prefix)/bin \
             settag="set noserial" \
             TTYPORT=$(DEV)/com1
-	mkdir -p $(DOCDIR)
+	@if ! test -d $(DOCDIR); then mkdir -p $(DOCDIR); fi
 	install -m 644 $(DOC) doc/INSTALL-Cygwin doc/INSTALL-Win  $(DOCDIR)
 
 install-base: install-server install-client install-man \

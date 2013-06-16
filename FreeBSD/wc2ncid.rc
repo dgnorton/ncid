@@ -12,21 +12,14 @@ wc2ncid_enable="${wc2ncid_enable-NO}"
 
 . /etc/rc.subr
 
-name=wc2ncid
 rcvar=`set_rcvar`
 extra_commands="condrestart"
 
+name=wc2ncid
 pidfile="/var/run/${name}.pid"
 
-ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/wc2ncid.conf
-
-# source config file
-[ -f $ConfigFile ] && . $ConfigFile
-args="--pidfile /var/run/${name}.pid $opts"
-
 command=/usr/local/sbin/$name
-command_args="$args &"
+command_args="--pidfile /var/run/${name}.pid &"
 command_interpreter=perl
 
 load_rc_config $name

@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: ncid
 Architecture: any
-Depends: ${shlibs:Depends}, libpcap0.8, perl, ${perl:Depends} libconfig-simple-perl
+Depends: ${shlibs:Depends}, libpcap0.8, perl, libconfig-simple-perl
 Description: NCID (Network Caller ID) server, client, and gateways
  NCID is Caller ID (CID) distributed over a network to a variety of
  devices and computers. NCID includes a server, gateways, a client,

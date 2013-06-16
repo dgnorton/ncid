@@ -5,7 +5,7 @@
 
 # Created by Randy L. Rasmussen on Thu Dec 20, 2007
 
-# Last modified: Fri Oct 12, 2012
+# Last modified: Wed May 29, 2013
 
 # Display a popup caption and speak the caller id
 # Requires kdialog (for popup) and festival (to speak)
@@ -18,12 +18,6 @@
 # if input is from a message
 # the message is in place of NAME:
 # input: \n\n\n<MESSAGE>\n\nMSG\n
-
-# $CIDTYPE is one of:
-#   CID: incoming call
-#   OUT: outgoing call
-#   HUP: blacklisted hangup
-#   MSG: message instead of a call
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-kpopup.conf
@@ -57,8 +51,11 @@ do
         case $CIDTYPE in
             CID) title="Incoming Call:";;
             OUT) title="Outgoing Call:";;
-            HUP) title="Auto Hangup:";;
+            HUP) title="Blacklisted Call Hangup:";;
+            BLK) title="Blacklisted Call Blocked:";;
             MSG) title="Message:";;
+            PID) title="Caller ID from a smart phone:";;
+            NOT) title="Notice of a smart phone message:";;
               *) title="Unknown Call Type: ($CIDTYPE)";;
         esac
         found=1
@@ -69,7 +66,7 @@ done
 # Exit if $CIDTYPE not found
 [ -z "$found" ] && exit 0
 
-if [ "$CIDTYPE" = "MSG" ]
+if [ "$CIDTYPE" = "MSG" -o "$CIDTYPE" = "NOT" ]
 then
     $kdialog --geometry $kpopup_geo --title "$title" --passivepopup \
          "$CIDNAME" $kpopup_timeout &

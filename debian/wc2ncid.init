@@ -1,10 +1,10 @@
 #! /bin/sh
 ### BEGIN INIT INFO
 # Provides:          wc2ncid
-# Required-Start:    $local_fs $remote_fs
+# Required-Start:    $local_fs $remote_fs ncidd
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
-# Default-Stop:      S 0 1 6
+# Default-Stop:      0 1 6
 # Short-Description: NCID Whozz Calling Ethernet Link gateway (using Perl)
 # Description:       Caller ID from Whozz Calling Ethernet Link devices
 ### END INIT INFO
@@ -17,23 +17,16 @@
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
 DESC="Network Caller ID SIP Gateway"
 NAME=wc2ncid
-DAEMON=/usr/sbin/$NAME
+DAEMON=/usr/bin/$NAME
 PIDFILE=/var/run/$NAME.pid
 DAEMON_ARGS="--pidfile /var/run/$NAME.pid"
 SCRIPTNAME=/etc/init.d/$NAME
-
-ConfigDir=/usr/local/etc/ncid
-ConfigFile=$ConfigDir/wc2ncid.conf
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
 
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
-
-# source config file
-[ -f $ConfigFile ] && . $ConfigFile
-[ -n "$opts" ] && DAEMON_ARGS="$opts"
 
 # Load the VERBOSE setting and other rcS variables
 [ -f /etc/default/rcS ] && . /etc/default/rcS

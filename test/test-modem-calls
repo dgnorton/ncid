@@ -7,8 +7,8 @@
 # This script simulates a TTY connection and sends modem CallerID data to NCIDD
 # The initstr or initcid variable in ncidd.conf must not be ""
 # The way to test ncid and ncidd
-# ./TestMdmcalls
-# ./testserver ../server/ncidd -D
+# ./test-modem-calls
+# ./test-server ../server/ncidd -D
 # ../client/ncid 3334
 #
 use strict;
@@ -16,7 +16,7 @@ use IO::Socket;
 
 #Open the testfile
 my $testfile;
-($testfile = shift) || ($testfile = "TestMdmcalls.data");
+($testfile = shift) || ($testfile = "test-modem-calls.data");
 open(TESTFILE, $testfile) || die "Could not open $testfile\n";
 
 #Obtain an ephemeral socket
@@ -41,7 +41,7 @@ vec($BitMask,fileno(NEWSOCK),1)=1;
 #prompt for NCIDD connection
 print "The initstr or initcid variable in ncidd.conf must not be NULL\n";
 print "Connect server to port 3334 and tty ./vmodem0 for test:\n";
-print "    ./testserver ../server/ncidd -D\n\n";
+print "    ./test-server ../server/ncidd -D\n\n";
 print "Then press <ENTER> multiple times to send different caller data\n\n";
 
 #Send the "OK" in response to AT commands

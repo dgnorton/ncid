@@ -1,5 +1,85 @@
 ncid - Network CallerID
 
+Version 0.87
+    - README: updated
+    - Makefile: added test: $(DOCDIR) does not exist, create it
+    - All GPL license headers in files were updated to GPL 3
+    - client/ncid.sh: logClock{} changed {^(CID|HUP|OUT)} to {^(?:CID|HUP|OUT)}
+                      added "Line Labels" in help menu and labInfo {}
+                      checkTypes() added new types and changed type numbers
+                      getCID(): added new types and changed if statements
+                                for new Type numbers
+    - debian/Makefile: updated
+    - debian/README.Debian: updated
+    - debian/*.init: removed "S" from default STOP
+    - debian/wc2ncid.init: removed configuration stuff, changed sbin to sbin
+    - debian/yac2ncid.init: removed configuration stuff, changed sbin to sbin
+    - debian/rn2ncid.init: new
+    - doc/INSTALL-Ubuntu: updated
+    - doc/INSTALL-Raspbian: updated
+    - doc/LICENSE: updated to GPL 3
+    - doc/Setup-rn2ncid: new
+    - doc/Verbose-rn2ncid: new
+    - Fedora/Makefile: updated
+    - Fedora/README.Fedora: updated
+    - Fedora/rn2ncid.init: new
+    - Fedora/rn2ncid.service: new
+    - FreeBSD/Makefile: updated
+    - FreeBSD/README.FreeBSD: updated
+    - FreeBSD/rn2ncid.rc: new
+    - gateway/Makefile: added $(EXTRA_CFLAGS) to CFLAGS definition
+    - gateway/README.Gateways: renamed to README.gateways and updated
+    - gateway/*.[ch]: updated license in headers
+    - gateway/*.pl: updated license in comments
+    - gateway/sip2ncid.h: added UNAUTHORIZED define
+    - gateway/sip2ncid.c: processPackets() added UNAUTHORIZED section
+    - gateway/wc2ncid.conf: - improved comment wording
+                            - changed nciddelay to delay
+    - gateway/wc2ncid.pl: - moved test mode just after Command Line Processing
+                          - moved logfile and config file messages to
+                            after start message
+                          - added cleanup(), called by errorExit() & sigHandle()
+                          - added delay option to pod documentation wording,
+                            improved some pod wording
+                          - changed $nciddelay to $delay, added $Delay,
+                            added --delay|-d option
+    - gateway/rn2ncid.pl: new
+    - gateway/rn2ncid.config: new
+    - Mac/Makefile: updated
+    - Mac/README.Mac: updated
+    - Mac/net.sourceforge.rn2ncid.plist: new
+    - man/Makefile: updated
+    - man/ncid-*.1: updated
+    - man/ncid.1: updated
+    - man/ncid.conf.5: updated
+    - man/ncidd.8: updated
+    - man/yac2ncid.1: updated
+    - man/rn2ncid.conf.5: new
+    - modules/ncid-*.sh: updated
+    - modules/ncid-*.conf: updated
+    - modules/ncid-notify.sh: changed line one from /bin/sh to /bin/bash
+                              minor changes to verbose output and comments
+    - modules/ncid-speak.sh: added "AreaCodeLength" code to speak the area
+                             code instead or "NO NAME" or entire number
+    - modules/ncid-speak.conf-in: added "AreaCodeLength" and comments
+    - server/ncidd.c: writeLog() - moved "logMsg(LEVEL3, msgbuf);" to start
+                      formatCID() - moved cidnoname test inside
+                                    if (!(cid.status & CIDNMBR))
+                                 - added PID:
+                      added BLKLINE, NOTLINE, PIDLINE to *lineTags[]
+                      doPoll: - added code for a NOT: message
+    - server/ncidd.h: added defines for PID, PIDLINE, NOTLINE, CALLPID
+    - test/README.test: updated
+    - test/*: renamed test programs and test data
+    - test/test-rn2ncid: new
+    - test/test-rn2ncid.data: new
+    - TiVo/ncid-tivo.sh:  if no line label, display $CIDNAME/$CIDNMBR
+                          else display "$CIDNAME $CIDNMBR/$CIDTYPE $CIDLINE"
+
+Version 0.86.1
+    - debian/changelog: updated
+    - debian/control: for package ncid-client added "curl" to Depends
+
 Version 0.86
     - README: updated
               added redhat: and redhat-install:

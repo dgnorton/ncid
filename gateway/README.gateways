@@ -7,6 +7,8 @@ ncid2ncid      - NCID gateway: receives CID information and messages
                  from 1 or more NCID servers and send them to a NCID
                  server
 ncid2ncid.conf - configuration file for ncid2ncid
+rn2ncid        - Android smart phone app 'Remote Notifier'to NCID gateway
+rn2ncid.conf   - configuration file for rn2ncid
 sip2ncid       - SIP gateway: receives CID information from SIP Invite
                  packets and sends it as a CID line to the NCID server
 sip2ncid.conf  - configuration file for sip2ncid

@@ -1,6 +1,6 @@
-# Used to generate notifications on Notify My Android (NMA) for screen capture
+# Used to generate notifications using module ncid-notify for screen capture
 # To fit clickable URL on the width of Android G2 phone, use notify_url=http://callerr.com/
-# ./TestGWcalls TestGWcalls-notify.data
+# ./test-gw-calls test-gw-calls-screenshot.data
 
 MSG: Clothes are ready in the laundry room!
 

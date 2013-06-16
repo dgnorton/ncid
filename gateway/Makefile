@@ -4,12 +4,12 @@ PROG        = $(PROG1) $(PROG2)
 SRC1        = $(PROG1).c config.c
 SRC2        = $(PROG2).c
 SRC         = $(SRC1) $(SRC2)
-CONF        = $(PROG1).conf ncid2ncid.conf yac2ncid.conf wc2ncid.conf
+CONF        = $(PROG1).conf ncid2ncid.conf yac2ncid.conf wc2ncid.conf rn2ncid.conf
 HEADER1     = $(PROG1).h config.h
 HEADER2     = $(PROG2).h
 HEADER      = $(HEADER1) $(HEADER2)
 SOURCE      = $(SRC) $(CONF) $(HEADER)
-PLSOURCE    = wc2ncid.pl
+PLSOURCE    = wc2ncid.pl rn2ncid.pl
 SHSOURCE    = yac2ncid.sh
 FILES       = README.gateways Makefile $(SOURCE ) $(PLSOURCE) $(SHSOURCE)
 
@@ -51,7 +51,7 @@ DEFINE2     = -DCONFIG=\"$(CONFFILE2)\" \
 
 MFLAGS      = -W -Wmissing-declarations
 
-CFLAGS      = -O2 -I. -I.. $(MFLAGS)
+CFLAGS      = -O2 -I. -I.. $(MFLAGS) $(EXTRA_CFLAGS)
 
 STRIP       = -s
 LDFLAGS     = $(STRIP)
@@ -130,6 +130,10 @@ install-etc: $(CONF)
 	@if test -f $(CONFDIR)/$(PROG2).conf; \
 		then install -m 644 $(PROG2).conf $(CONFDIR)/$(PROG2).conf.new; \
 		else install -m 644 $(PROG2).conf $(CONFDIR); \
+	fi
+	@if test -f $(CONFDIR)/rn2ncid.conf; \
+		then install -m 644 rn2ncid.conf $(CONFDIR)/rn2ncid.conf.new; \
+		else install -m 644 rn2ncid.conf $(CONFDIR); \
 	fi
 	@if test -f $(CONFDIR)/wc2ncid.conf; \
 		then install -m 644 wc2ncid.conf $(CONFDIR)/wc2ncid.conf.new; \

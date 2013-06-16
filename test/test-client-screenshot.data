@@ -1,7 +1,7 @@
-# Last updated: Mon Feb 6, 2013
+# Last updated: Thu Apr 4, 2013
 #
 #   USAGE:
-#       ./testclient client-display.data
+#       ./test-client test-client-screenshot.data
 #
 #       (if displaying on ncid in GUI mode)
 #       ../client/ncid 3334
@@ -14,7 +14,7 @@
 #
 # See README.test for more information on usage.
 #
-200 NCID Client Test Server
+200 server: NCID Test Client
 300 Call log not sent
 
 OUT: *DATE*07142012*TIME*0905*LINE*VOIP*NMBR*14075551212*MESG*NONE*NAME*NO NAME*

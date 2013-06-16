@@ -25,7 +25,7 @@ case "$1" in
     purge|remove)
     ;;
     upgrade)
-        for script in wc2ncid sip2ncid yac2ncid ncid2ncid ncidd
+        for script in ncidd ncid2ncid rn2ncid sip2ncid wc2ncid yac2ncid
         do
             pgrep -f $script > /dev/null 2>&1 && invoke-rc.d $script restart
         done

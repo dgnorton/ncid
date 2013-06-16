@@ -3,7 +3,7 @@
 # ncid-yac
 # usage: ncid --no-gui --program ncid-yac
 
-# Last modified: Fri Oct 12, 2012
+# Last modified: Wed May 29, 2013
 
 # NCID to YAC Clients
 # Requires a YAC Client
@@ -17,15 +17,9 @@
 # the message is in place of NAME:
 # input: \n\n\n<MESSAGE>\n\nMSG\n
 
-# $CIDTYPE is one of:
-#   CID: incoming call
-#   OUT: outgoing call
-#   HUP: blacklisted hangup
-#   MSG: message instead of a call
-
 YACPORT=10629
 YACLIST=127.0.0.1
-YACTYPES="CID OUT HUP MSG"
+YACTYPES="CID OUT HUP BLK MSG PID NOT"
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-yac.conf
@@ -50,9 +44,9 @@ done
 
 for YACCLIENT in ${YACLIST}
 do
-    if [ "$CIDTYPE" = "MSG" ]
+    if [ "$CIDTYPE" = "MSG"-o "$CIDTYPE" = "NOT" ]
     then
-        # Display Message
+        # Display Message or Notice
         echo -n "$CIDNAME" | nc -w1 $YACCLIENT $YACPORT
     else
         # Display Caller ID information

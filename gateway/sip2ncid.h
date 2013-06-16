@@ -1,20 +1,21 @@
 /*
- * Copyright (c) 2007-2012
- * by  John L. Chmielewski <jlc@cfl.rr.com>
+ * sip2ncid.h - This file is part of sip2ncid.
  *
- * sip2ncid.h is free software; you can redistribute it and/or modify
+ * Copyright (c) 2005-2013
+ * by John L. Chmielewski <jlc@users.sourceforge.net>
+ *
+ * sip2ncid is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
- * sip2ncid.h is distributed in the hope that it will be useful,
+ * sip2ncid is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * along with sip2ncid.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdio.h>
@@ -119,6 +120,7 @@ Options: [-C configfile      | --config configfile]\n\
 #define OUTCALL     "Call-ID: call-"
 #define CONTACT     "Contact:"
 #define PROXY       "Proxy-Authenticate:"
+#define UNAUTHORIZED "Unauthorized"
 #define AGENT       "User-Agent:"
 #define SERVER      "Server:"
 #define MESSAGES    "Message-Waiting:"

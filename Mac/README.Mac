@@ -8,6 +8,7 @@ Mac OSX plist scripts:
 
 net.sourceforge.ncidd.plist          - ncidd server
 net.sourceforge.ncid2ncid.plist      - ncid2ncid gateway
+net.sourceforge.rn2ncid.plist        - rn2ncid gateway
 net.sourceforge.sip2ncid.plist       - sip2ncid gateway
 net.sourceforge.wc2ncid.plist        - wc2ncid gateway
 net.sourceforge.yac2ncid.plist       - yac2ncid gateway

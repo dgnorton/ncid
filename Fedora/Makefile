@@ -1,5 +1,6 @@
 INIT        = ncidd.init \
               ncid2ncid.init \
+              rn2ncid.init \
               sip2ncid.init \
               wc2ncid.init \
               yac2ncid.init \
@@ -12,6 +13,7 @@ INIT        = ncidd.init \
               ncid-initmodem.init
 SERVICE     = ncidd.service \
               ncid2ncid.service \
+              rn2ncid.service \
               sip2ncid.service \
               wc2ncid.service \
               yac2ncid.service \

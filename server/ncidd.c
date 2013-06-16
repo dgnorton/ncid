@@ -1,24 +1,21 @@
 /*
- * ncidd - Network Caller ID Daemon
+ * ncidd.c - This file is part of ncidd.
  *
- * Copyright (c) 2002-2013
- * by John L. Chmielewski <//jlc@users.sourceforge.net>
+ * Copyright (c) 2005-2013
+ * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
- * This file is part of ncidd, a caller-id program for your TiVo.
- *
- * ncidd is free software; you can redistribute it and/or modify
+ * ncidd is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * ncidd is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * along with ncidd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "ncidd.h"
@@ -82,6 +79,8 @@ char *lineTags[] =
     OUTLINE,
     HUPLINE,
     BLKLINE,
+    PIDLINE,
+    NOTLINE,
     ENDLINE,
     "NULL"
 };
@@ -1445,6 +1444,19 @@ void doPoll(int events, int mainsock)
                 writeLog(cidlog, buf);
                 writeClients(mainsock, buf);
               }
+              else if (strncmp(buf, NOTLINE, strlen(NOTLINE)) == 0)
+              {
+                /*
+                 * Found a NOT: (remote notification) line from a cell phone
+                 * Write notice to cidlog and all clients
+                 */
+
+                sprintf(msgbuf, "Gateway (sd %d) sent a notice.\n",
+                        polld[pos].fd);
+                logMsg(LEVEL3, msgbuf);
+                writeLog(cidlog, buf);
+                writeClients(mainsock, buf);
+              }
               else
               {
                 /*
@@ -1513,10 +1525,18 @@ void formatCID(int mainsock, char *buf)
     time_t t;
 
     /*
-     * All Caller ID information is between the 1st and 2nd ring
+     * At a RING
      *
-     * if RING is indicated, clear any Caller ID info received,
-     * if NUMBER is not received
+     * US systems send Caller ID between the 1st and 2nd ring
+     * Some non-US systems send Caller ID before 1st ring.
+     *
+     * If NAME, NUMBER, or DATE and TIME is not received, provide
+     * the missing information.
+     *
+     * If generate Caller ID set and Caller ID not received, generate
+     * a generic Caller ID at RING 2.
+     *
+     * Clear Caller ID info between rings.
      */
     if (strncmp(buf, "RING", 4) == 0)
     {
@@ -1579,8 +1599,8 @@ void formatCID(int mainsock, char *buf)
         else if (gencid && cidsent == 0 && ring == 2 )
         {
             /*
-             * gencid = 1: generate a Caller ID if non received
-             * gencid = 0: do not generate a Caller ID if non received
+             * gencid = 1: generate a Caller ID if it is not received
+             * gencid = 0: do not generate a Caller ID
              *
              * CID information always received between before RING 2
              * no CID information received, so create one.
@@ -1597,22 +1617,10 @@ void formatCID(int mainsock, char *buf)
         else
         {
             /*
-             * At a RING
-             * CID not here yet, already processed, or is incomplete
+             * CID not here yet or already processed
              * Make sure status is clear
              */
-            if (cidnoname && ring == 1)
-            {
-                /*
-                 * CIDNAME optional on some systems
-                 * if ncidd.conf set cidnoname then set
-                 * cid.cidname to NONAME to get response
-                 * before ring 2
-                 */
-                cid.status = CIDNAME;
-                strncpy(cid.cidname, NONAME, CIDSIZE - 1);
-            }
-            else cid.status = 0;
+            cid.status = 0;
             return;
         }
     }
@@ -1632,7 +1640,7 @@ void formatCID(int mainsock, char *buf)
         /*
          * Found a NetCallerID box, or a Gateway
          * All information received on one line
-         * The Gateway creates a CID Message Line
+         * The Gateway creates a CID, HUP, OUT, PID Message Line
          * The Gateway contains a LINE and a CALL field
          * The NetCallerID box does not have a LINE or CALL field
          */
@@ -1671,34 +1679,29 @@ void formatCID(int mainsock, char *buf)
                 cid.status |= CIDDATE;
             }
         }
+
+        /*
+         * this field is only from a Gateway
+         * will be either CALLIN, CALLOUT, CALLHUP, CALLBLK, CALLPID
+         */
         if ((ptr = strstr(buf, CALLOUT)))
         {
-            /*
-             * this field is only from a Gateway
-             * will be either CALLIN, CALLOUT, CALLHUP, or CALLBLK
-             * only interested in CALLOUT
-             */
-             calltype = OUT; /* this is a outgoing call */
+             calltype = OUT; /* this is a outgoing call*/
             
         }
         else if ((ptr = strstr(buf, CALLHUP)))
         {
-            /*
-             * this field is only from a Gateway
-             * will be either CALLIN, CALLOUT, CALLHUP, or CALLBLK
-             * only interested in CALLHUP
-             */
-            calltype = HUP; /* this is a call hungup by a gateway */
+            calltype = HUP; /* this is a blacklisted call hangup*/
         }
         else if ((ptr = strstr(buf, CALLBLK)))
         {
-            /*
-             * this field is only from a Gateway
-             * will be either CALLIN, CALLOUT, CALLHUP, or CALLBLK
-             * only interested in CALLBLK
-             */
-            calltype = BLK; /* this is a call hungup by a gateway */
+            calltype = BLK; /* this is a blocked call */
         }
+        else if ((ptr = strstr(buf, CALLPID)))
+        {
+            calltype = PID; /* this is a call from a smart phone */
+        }
+
         if ((ptr = strstr(buf, "LINE")))
         {
             /* this field is only from a Gateway */
@@ -1710,6 +1713,7 @@ void formatCID(int mainsock, char *buf)
                 if (ptr) *ptr = 0;
             }
         }
+
         if ((ptr = strstr(buf, "NMBR")))
         {
             if (*(ptr + 5) == '.') strncpy(cid.cidnmbr, NONUMB, CIDSIZE - 1);
@@ -1722,6 +1726,7 @@ void formatCID(int mainsock, char *buf)
             }
             cid.status |= CIDNMBR;
         }
+
         if ((ptr = strstr(buf, "NAME")))
         {
             if (*(ptr + 5) == '+') strncpy(cid.cidname, NONAME, CIDSIZE - 1);
@@ -1772,6 +1777,17 @@ void formatCID(int mainsock, char *buf)
             builtinAlias(cid.cidnmbr, ptr);
             cid.status |= CIDNMBR;
             cidsent = 0;
+        }
+        if (cidnoname)
+        {
+            /*
+             * CIDNAME optional on some systems
+             * if ncidd.conf set cidnoname then set
+             * cid.cidname to NONAME to get response
+             * before ring 2
+             */
+            cid.status |= CIDNAME;
+            strncpy(cid.cidname, NONAME, CIDSIZE - 1);
         }
     }
     /*
@@ -1838,6 +1854,9 @@ void formatCID(int mainsock, char *buf)
                 break;
             case BLK:
                 linelabel = BLKLINE;
+                break;
+            case PID:
+                linelabel = PIDLINE;
                 break;
             default: /* should not happen */
                 linelabel = CIDLINE;
@@ -2028,6 +2047,9 @@ void writeLog(char *logf, char *logbuf)
     int logfd, ret;
     char msgbuf[BUFSIZ];
 
+    /* write to server log */
+    logMsg(LEVEL3, msgbuf);
+
     if ((logfd = open(logf, O_WRONLY | O_APPEND)) < 0)
     {
         sprintf(msgbuf, "%s: %s\n", logf, strerror(errno));
@@ -2039,9 +2061,6 @@ void writeLog(char *logf, char *logbuf)
         sprintf(msgbuf, "%s\n", logbuf);
         ret = write(logfd, msgbuf, strlen(msgbuf));
         close(logfd);
-
-        /* log to server log */
-        logMsg(LEVEL3, msgbuf);
     }
 }
 

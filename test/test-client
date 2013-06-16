@@ -6,7 +6,7 @@
 
 use Socket;
 
-($testfile = shift) || ($testfile = "testclient.data");
+($testfile = shift) || ($testfile = "test-client.data");
 
 $server_port = 3334;
 socket(SERVER, PF_INET, SOCK_STREAM, getprotobyname('tcp'));
@@ -40,3 +40,4 @@ while (<TESTFILE>) {
 close(CLIENT);
 
 exit 0;
+

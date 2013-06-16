@@ -1,0 +1,97 @@
+How to setup rn2ncid to use the Remote Notifier for Android app to
+receive calls and messages to a smart phone.
+
+Last edited on Thu May 30, 2013
+
+Sections:
+
+    REQUIREMENT:
+    TESTING
+    START/STOP/RESTART/STATUS/AUTOSTART:
+
+REQUIREMENT:
+
+    The smart phone needs to be running Remote Notifier for Android from:
+    https://play.google.com/store/apps/details?id=org.damazio.notifier&hl=en
+
+    The android-notifier project is located at
+    https://code.google.com/p/android-notifier/
+
+    Install it and configure for the address of the computer running
+    the NCID server.  You do not need to install the Remote Notifier client.
+
+CONFIGURATION:
+
+    The ncidd server defaults to using a modem to get Caller ID.  If
+    you have a standard telephone line (POTS) modem configured, you
+    you can keep the modem and use the rn2ncid gateway.
+
+
+    If you do not use a modem and you are not using another gateway,
+    you need to configure ncidd by changing one line in ncidd.conf.
+
+        Change the line: # set noserial = 1
+                 To: set noserial = 1
+
+    This tells ncidd to run without a serial device or modem connected.
+    Once you change ncidd.conf, you must start/restart ncidd to read it.
+
+    Normally rn2ncid does not need to be configured unless you are using
+    ncid-page or ncid-notify to send calls to your smart phone.  In that
+    case you need to edit the reject line at the end of the rn2ncid.conf file.
+    You need to put in the address for the ncidd server.  For example, if mail
+    sends the message and the computer is mycomputer.dyndns.org:
+
+    Edit rn2ncid.conf line: reject =
+
+        Change the line: reject =
+                 to: reject = mail@mycomputerr.dyndns.org
+
+TESTING:
+
+    If this is the first time you set rn2ncid up, you should test rn2ncid
+    without connecting it to the ncidd server.
+
+        rn2ncid --test
+
+    The above command puts rn2ncid in test and debug modes at verbose level 3.
+    It will display verbose statements on the terminal, ending with
+    "Listening at port 10600".  It should show configured options.
+    Test mode prevents rn2ncid from connecting with ncidd.
+
+    If rn2ncid terminates you should be able to see why and fix it.
+
+        print a detailed usage message: rn2ncid --help
+        print the manual page:          rn2ncid --man
+
+    On your smart phone bring up "Remote Notifier" and choose
+    "Send test notification".  rn2ncid should show something like this:
+
+        NOT: PHONE 0123: PING Test notification
+
+    (Note: 0123 is the phone ID and will be different for your phone.)
+    
+    You may want to restart rn2ncid in debug mode so it will connect to ncidd:
+
+        rn2ncid -Dv3
+
+    Do the "Send test notification" again and it should be sent to the server
+    and its clients.  If you do not get a "NOT" (short for "NOTIFY") message 
+    sent to the server, you should instead get an error message saying what
+    is wrong.
+
+    If you had Caller ID sent to a client, setup is complete.
+
+START/STOP/RESTART/STATUS/AUTOSTART:
+
+    Normally rn2ncid is started using the provided init, service, rc, or
+    plist script for your OS. For more information, refer to the INSTALL
+    document for your OS.  If none is provided you need to start rn2ncid
+    manually:
+
+        sudo rn2ncid &
+
+    You can also set it up to start at boot, along with ncidd.  If any options
+    are needed, add them to /etc/ncid/rn2ncid.conf.
+
+    If rn2ncid did not work, you should have enough information to ask for help.

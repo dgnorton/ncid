@@ -1,6 +1,6 @@
 Fedora Install
 
-Last edited: Mon Mar 11, 2013
+Last edited: Fri May 3, 2013
 
 Sections:
 
@@ -39,6 +39,7 @@ INSTALL or UPGRADE:
         sudo yum list ncid\*
 
         - the most recent versions may be here:
+        sudo yum install fedora-release-rawhide
         sudo yum --enablerepo=rawhide list ncid\*
 
         - Download the server and client packages:

@@ -1,6 +1,6 @@
 Raspberry Pi Install using Raspbian OS (http://www.raspbian.org/)
 
-Last edited: Wed Mar 20, 2013
+Last edited: Sun Apr 21, 2013
 
 Sections:
 
@@ -48,6 +48,10 @@ INSTALL or UPGRADE:
           ncid DEB Package
           ncid-client DEB Package - client and default output modules
 
+      For example, to download ncid and ncid-client version 0.87
+      wget http://sourceforge.net/projects/ncid/files/ncid/0.87/ncid_0.87-1_armhf.deb
+      wget http://sourceforge.net/projects/ncid/files/ncid/0.87/ncid_0.87-1_all.deb
+
     - Download any optional output modules wanted:
           ncid-MODULE DEB Package  - optional client output modules
 
@@ -74,7 +78,7 @@ INSTALL or UPGRADE:
         * Install any optional modules wanted:
           sudo gdebi ncid-<module-<version>_all.deb
 	  Notes:
-        <version> would be something like: 0.86-0ubuntu1
+        <version> would be something like: 0.87-1
         <module> would be a module name like: kpopup, mythtc, samba
 
    

@@ -1,4 +1,4 @@
-RCF     = ncidd.rc ncid2ncid.rc sip2ncid.rc wc2ncid.rc \
+RCF     = ncidd.rc ncid2ncid.rc rn2ncid.rc sip2ncid.rc wc2ncid.rc \
           yac2ncid.rc ncid-mythtv.rc ncid-notify.rc ncid-page.rc \
           ncid-samba.rc ncid-speak.rc ncid-yac.rc ncid-initmodem.rc
 DOC     = README.FreeBSD

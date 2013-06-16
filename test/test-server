@@ -6,8 +6,6 @@
 # script runs ncidd in debug  or Mac OS X Launchd mode on port 3334
 # for testing a server or a client
 
-# To run ncidd in 
-
 usage(){
     echo "Usage: `basename $0` {<path>/ncidd} {-D|--osx-launchd} [-nciddOption(s)]"
     exit 0
