@@ -1,9 +1,9 @@
-Last edited on mon Oct 1, 2012 
+Last edited on Tue Aug 20, 2013 
 
 Any omissions are entirely my fault.  Please notify me for
 any corrections.
 
-John L. Chmielewski:
+John L. Chmielewski <jlc@users.sourceforge.net>
     Designed, developed, and wrote most of the programs.
 
 Mark Salyzyn:
@@ -45,7 +45,7 @@ Roger Knobber
     Provided patch for strdate() in ncidd.c to fix null pointer in
     gettimeofday() in version 0.61.
 
-Rich West
+Rich West <wesmoc@users.sourceforge.net>
     Helps maintain the ncid-mythtv module
     Provided a NSIS script to for a basic installer for the ncid
     windows client.
@@ -55,7 +55,7 @@ Clayton O'Neill
     Added the ability to inject CID from clients
     Contributed the ncid-sipinject program which was renamed ncidsip
 
-David LaPorte
+David LaPorte <dlaPorte@users.sourceforge.net>
     Improved ncidsip to work with a missing name and to detect outgoing
     calls that also have a SIP REGISTER packet so they are not treated
     as incoming calls.
@@ -69,7 +69,7 @@ Randy <randyr505@gmail.com>
 
 Jonathan Wolf
     Hacked ncid to provide ring indication when Caller ID not available.
-    His hack was not used, but his feature was added to ncid.
+    His hack was not used, but his feature was added to ncidd.
 
 littlepepper@users.sourceforge.net
     Provided the MacOSX init string for the imac.
