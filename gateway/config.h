@@ -57,9 +57,9 @@ struct setword
     int max;
 };
 
-void perror();
+void perror(), doSet(), configError();
 char *getWord();
-int findWord(), doConf(), doSet(), configError();
+int findWord(), doConf();
 
 extern void errorExit();
 extern int debug, verbose, delay;

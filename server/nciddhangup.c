@@ -196,8 +196,8 @@ int hangupCall()
             ret = ttyfd;
             ttyfd = 0;
         }
-        else if (ret = fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0)
-                 & ~O_NDELAY) < 0)
+        else if ((ret = fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0)
+                 & ~O_NDELAY)) < 0)
         {
             sprintf(msgbuf, "Modem: %s\n", strerror(errno));
             logMsg(LEVEL1, msgbuf);

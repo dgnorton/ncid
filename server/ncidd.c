@@ -2005,7 +2005,7 @@ void formatCID(int mainsock, char *buf)
     }
     else if (strncmp(buf, "DATE", 4) == 0)
     {
-        if (ptr = strchr(buf, '=')) ++ptr;
+        if ((ptr = strchr(buf, '='))) ++ptr;
         else ptr = buf + 7; /* this should never happen */
         if (*ptr == ' ') ++ptr;
         strncpy(cid.ciddate, ptr, CIDSIZE - 1);
@@ -2018,7 +2018,7 @@ void formatCID(int mainsock, char *buf)
     }
     else if (strncmp(buf, "TIME", 4) == 0)
     {
-        if (ptr = strchr(buf, '=')) ++ptr;
+        if ((ptr = strchr(buf, '='))) ++ptr;
         else ptr = buf + 7; /* this should never happen */
         if (*ptr == ' ') ++ptr;
         strncpy(cid.cidtime, ptr, CIDSIZE - 1);
@@ -2128,7 +2128,7 @@ void formatCID(int mainsock, char *buf)
         if (hangup)
         {
             /* hangup phone if on blacklist but not whitelist */
-            if (hup = doHangup(cid.cidname, cid.cidnmbr)) linelabel = HUPLINE;
+            if ((hup = doHangup(cid.cidname, cid.cidnmbr))) linelabel = HUPLINE;
         }
 
         sprintf(cidbuf, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",

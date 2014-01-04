@@ -77,13 +77,13 @@ int doConf()
  *        set word = value
  */
 
-int doSet(char *inptr, int lc)
+void doSet(char *inptr, int lc)
 {
     int num;
     char word[BUFSIZ], msgbuf[BUFSIZ];
 
     /* process configuration parameters */
-    while (inptr = getWord(inptr, word, lc))
+    while ((inptr = getWord(inptr, word, lc)))
     {
         if (word[0] == '#')    break; /* rest of line is comment */
 
@@ -155,7 +155,7 @@ int findWord(char *wdptr)
     return -1;
 }
 
-int configError(int lc, char *word, char *mesg)
+void configError(int lc, char *word, char *mesg)
 {
     if (*word != 0)
     {
@@ -176,7 +176,7 @@ char *getWord(char *inptr, char *wdptr, int lc)
     if (inptr == 0) return 0;
 
     while (*inptr && isspace(*inptr)) inptr++;
-    if (endptr = strchr(inptr, '\n')) *endptr = 0;
+    if ((endptr = strchr(inptr, '\n'))) *endptr = 0;
     if (*inptr == 0) return 0;
     *wdptr = 0;
 

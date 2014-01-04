@@ -268,7 +268,7 @@ int getOptions(int argc, char *argv[])
                 listdevs = 1;
                 break;
             case 'n': /* [host][:port] must contain host or port or both */
-                if (ptr = index(optarg, (int) ':'))
+                if ((ptr = index(optarg, (int) ':')))
                 {
                     if ((ncidport = atoi(ptr + 1)) == 0)
                         errorExit(-101, "Invalid port number", optarg);
@@ -284,7 +284,7 @@ int getOptions(int argc, char *argv[])
                 }
                 break;
             case 's':
-                if (ptr = index(optarg, (int) ':'))
+                if ((ptr = index(optarg, (int) ':')))
                 {
                     if ((sipport = atoi(ptr + 1)) == 0)
                         errorExit(-101, "Invalid port number", optarg);
@@ -514,7 +514,7 @@ int pcapListDevs()
         }
 
         /* If using WinPcap, path elements use '\' instead of '/' */
-        while (ptr = index(alldevsp->name, (int) '\\')) *ptr = '/';
+        while ((ptr = index(alldevsp->name, (int) '\\'))) *ptr = '/';
 
         fprintf(stdout, "%s : %s\n", alldevsp->name, desc);
         alldevsp = alldevsp->next;
@@ -840,7 +840,7 @@ void processPackets(u_char *args,
                 getCallID(sipbuf, callid, sizeof(callid), CANCEL);
 
                 /* If Call-ID not found, return */
-                if (pos = findCallID(callid) == -1) return;
+                if ((pos = findCallID(callid)) == -1) return;
 
                 /*
                  * Get calling number from a "From:" line
@@ -912,7 +912,7 @@ void processPackets(u_char *args,
                 getCallID(sipbuf, callid, sizeof(callid), BYE);
 
                 /* If Call-ID not found, return */
-                if (pos = findCallID(callid) == -1) return;
+                if ((pos = findCallID(callid)) == -1) return;
 
                 /*
                  * Get calling number from a "To:" or "From:" line
@@ -1205,7 +1205,7 @@ char *strmatch(char *strbuf, char *fword, char *eword)
 {
     char *ptr;
 
-    if (ptr = strstr(strbuf, fword))
+    if ((ptr = strstr(strbuf, fword)))
     {
         /* skip over part of word matched */
         ptr += strlen(fword);

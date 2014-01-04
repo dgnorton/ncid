@@ -94,7 +94,7 @@ WISH         = wish
 TCLSH        = tclsh
 
 # local additions to CFLAGS
-MFLAGS  = -Wmissing-declarations -Wunused-variable
+MFLAGS  = -Wmissing-declarations -Wunused-variable -Wparentheses -Wreturn-type
 
 # Documentation for FreeBSD, Mac, and TiVo
 DOC     = doc/NCID_Documentation.md doc/ncid-1.jpg doc/README.docdir \

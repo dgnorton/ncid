@@ -144,7 +144,8 @@ int doAlias()
     if (!errorStatus && alias[0].type)
     {
 	
-	    for (i = 0; i < ALIASSIZE && alias[i].type; ++i);
+	    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+        ;
         sprintf(msgbuf, "Alias Entries: %d/%d\n",
                 i, ALIASSIZE);
         logMsg(LEVEL1, msgbuf);

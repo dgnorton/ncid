@@ -37,9 +37,9 @@ int doPID(), getOptions(), addPoll(), socketConnect();
 void cleanup(), errorExit(), logMsg(), sigdetect();
 char *strdate(), *inet_ntoa(), *strmatch();
 
-void perror();
+void perror(), doSet(), configError();
 char *getWord();
-int findWord(), doConf(), doSet(), configError();
+int findWord(), doConf();
 
 #ifndef __CYGWIN__
     extern char *strsignal();
@@ -369,7 +369,7 @@ int main(int argc, char *argv[])
                                  * if port is made nonblocking
                                  */
                                 ret = send(tosd, rcvbuf, strlen(rcvbuf), 0);
-                                if (ptr = index(rcvbuf, (int) '\r'))
+                                if ((ptr = index(rcvbuf, (int) '\r')))
                                 {
                                     /* found \r, remove it */
                                     *ptr++ ='\n';
@@ -438,7 +438,7 @@ int getOptions(int argc, char *argv[])
                 ++OSXlaunchd;
                 break;
             case 'f': /* [host][:port] must contain host or port or both */
-                if (ptr = index(optarg, (int) ':'))
+                if ((ptr = index(optarg, (int) ':')))
                 {
                     if ((ns[1].port = atoi(ptr + 1)) == 0)
                         errorExit(-101, "Invalid port number", optarg);
@@ -458,7 +458,7 @@ int getOptions(int argc, char *argv[])
                 fprintf(stderr, USAGE, name);
                 exit(0);
             case 't': /* [host][:port] must contain host or port or both */
-                if (ptr = index(optarg, (int) ':'))
+                if ((ptr = index(optarg, (int) ':')))
                 {
                     if ((ns[0].port = atoi(ptr + 1)) == 0)
                         errorExit(-101, "Invalid port number", optarg);
@@ -798,13 +798,13 @@ int doConf()
  *        set word = value
  */
 
-int doSet(char *inptr, int lc)
+void doSet(char *inptr, int lc)
 {
     int num;
     char word[BUFSIZ], msgbuf[BUFSIZ];
 
     /* process configuration parameters */
-    while (inptr = getWord(inptr, word, lc))
+    while ((inptr = getWord(inptr, word, lc)))
     {
         if (word[0] == '#')    break; /* rest of line is comment */
 
@@ -876,7 +876,7 @@ int findWord(char *wdptr)
     return -1;
 }
 
-int configError(int lc, char *word, char *mesg)
+void configError(int lc, char *word, char *mesg)
 {
     if (*word != 0)
     {
@@ -897,7 +897,7 @@ char *getWord(char *inptr, char *wdptr, int lc)
     if (inptr == 0) return 0;
 
     while (*inptr && isspace(*inptr)) inptr++;
-    if (endptr = strchr(inptr, '\n')) *endptr = 0;
+    if ((endptr = strchr(inptr, '\n'))) *endptr = 0;
     if (*inptr == 0) return 0;
     *wdptr = 0;
 
