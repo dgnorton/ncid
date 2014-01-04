@@ -1,7 +1,9 @@
 SHSCRIPT  = ncidrotate.sh
 ETCCONF   = ncidrotate.conf
 LOGCONF   = ncid.logrotate
-MANSRC    = ncidrotate.1
+MANSRC1   = ncidrotate.1
+MANSRC5   = ncidrotate.conf.5
+MANSRC    = $(MANSRC1) $(MANSRC5)
 FILES     = README.logrotate Makefile \
             $(SHSCRIPT) $(ETCCONF) $(LOGCONF) $(MANSRC)
 
@@ -18,6 +20,7 @@ MOD       = $(SHARE)/ncid
 MAN       = $(SHARE)/man
 
 MAN1      = $(MAN)/man1
+MAN5      = $(MAN)/man5
 
 ROTATE  = $(LOGCONF:.logrotate=)
 SCRIPTS = $(SHSCRIPT:.sh=)
@@ -41,10 +44,13 @@ install-logrotate: $(ROTATE)
 	@if test ! -d $(ROTATEDIR); then mkdir -p $(ROTATEDIR); fi
 	install -m 644 ncid $(ROTATEDIR)
 
-install-man: $(MANSOURCE)
+install-man: $(MANSRC1) $(MANSRC5)
 	@if ! test -d $(MAN1); then mkdir -p $(MAN1); fi
-	cd $(MAN1); rm -f $(MANSRC)
-	install -m 644 $(MANSRC) $(MAN1)
+	cd $(MAN1); rm -f $(MANSRC1)
+	install -m 644 $(MANSRC1) $(MAN1)
+	@if ! test -d $(MAN5); then mkdir -p $(MAN5); fi
+	cd $(MAN5); rm -f $(MANSRC5)
+	install -m 644 $(MANSRC5) $(MAN5)
 
 clean:
 

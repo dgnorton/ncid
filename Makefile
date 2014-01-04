@@ -17,9 +17,6 @@
 # make ubuntu            - builds for Ubuntu (includes init.d/ files)     #
 # make ubuntu-install    - installs in /usr, /etc, and /var               #
 #                                                                         #
-# make mandir            - builds man text and html files                 #
-#                          (no install for the *.txt and *.html files)    #
-#                                                                         #
 # make tivo-mips         - builds for a mips TiVo in /usr/local or prefix #
 #                          can also prefix and prefix[234]                #
 # make tivo-install      - installs in /usr/local                         #
@@ -47,7 +44,7 @@
 ###########################################################################
 
 subdirs      = server client gateway modules logrotate tools man test \
-               debian Fedora FreeBSD Mac TiVo
+               doc debian Fedora FreeBSD Mac TiVo
 
 Version := $(shell sed 's/.* //; 1q' VERSION)
 
@@ -97,12 +94,14 @@ WISH         = wish
 TCLSH        = tclsh
 
 # local additions to CFLAGS
-MFLAGS  = -W -Wmissing-declarations \
+MFLAGS  = -Wmissing-declarations -Wunused-variable
 
 # Documentation for FreeBSD, Mac, and TiVo
-DOC     = doc/[A-HJ-V]* doc/INSTALL \
-          server/README.server gateway/README.gateways \
-          client/README.client modules/README.modules
+DOC     = doc/NCID_Documentation.md doc/ncid-1.jpg doc/README.docdir \
+          doc/ReleaseNotes attic/README.attic \
+          server/README.server gateway/README.gateways test/README.test \
+          client/README.client modules/README.modules tools/README.tools \
+          logrotate/README.logrotate
 
 default:
 	@echo "make requires an argument, see top of Makefile for description:"
@@ -130,7 +129,7 @@ default:
 	@echo "    make cygwin             # builds for windows using Cygwin"
 	@echo "    make cygwin-install     # installs in /usr/local"
 
-local-base: serverdir clientdir moduledir gatewaydir tooldir
+local-base: serverdir clientdir moduledir gatewaydir tooldir docdir mandir
 
 local: local-base logrotatedir
 
@@ -188,8 +187,12 @@ logrotatedir:
 	cd logrotate; $(MAKE) logrotate prefix=$(prefix) prefix2=$(prefix2) \
                       prefix3=$(prefix3)
 
+docdir:
+	cd doc; $(MAKE) doc prefix=$(prefix) prefix2=$(prefix2) \
+                      prefix3=$(prefix3)
+
 mandir:
-	cd man; $(MAKE) all prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
+	cd man; $(MAKE) man prefix=$(prefix) prefix2=$(prefix2) MAN=$(MAN)
 
 package:
 	$(MAKE) local prefix=/usr prefix2=
@@ -219,7 +222,7 @@ ubuntu-install:
 	$(MAKE) install install-ubuntu prefix=/usr prefix2=
 
 tivo-s1:
-	$(MAKE) tivo-ppc mandir prefix=/var/hack
+	$(MAKE) tivo-ppc prefix=/var/hack
 
 tivo-ppc:
 	$(MAKE) local-base tivodir \
@@ -233,14 +236,15 @@ tivo-ppc:
 			setmod="TiVo" OSDCLIENT=tivocid
 
 tivo-s2:
-	$(MAKE) tivo-mips mandir prefix=/var/hack
+	$(MAKE) tivo-mips prefix=/var/hack
 
 tivo-hack-install:
 	$(MAKE) install-server install-client \
             install-modules install-gateway install-tivo setmod=TiVo
 	@if ! test -d $(DOCDIR)/man; then mkdir -p $(DOCDIR)/man; fi
-	install -m 644 $(DOC) doc/INSTALL-TiVo $(DOCDIR)
-	install -m 644 man/*.txt $(DOCDIR)/man
+	install -m 644 $(DOC) $(DOCDIR)
+	cd man; make index html
+	install -m 644 man/*.html $(DOCDIR)/man
 
 tivo-mips:
 	$(MAKE) local tivodir fedoradir \
@@ -266,7 +270,7 @@ freebsd:
 freebsd-install:
 	$(MAKE) install-base MAN=$(prefix)/man
 	@if ! test -d $(DOCDIR); then mkdir -p $(DOCDIR); fi
-	install -m 644 $(DOC) doc/INSTALL-FreeBSD $(DOCDIR)
+	install -m 644 $(DOC) $(DOCDIR)
 	cd FreeBSD; \
 	$(MAKE) install prefix=$(prefix) prefix2=$(prefix2) prefix3=$(prefix3) \
             MAN=$(prefix)/man
@@ -301,7 +305,7 @@ mac:
 
 mac-install:
 	@if ! test -d $(DOCDIR); then mkdir -p $(DOCDIR); fi
-	install -m 644 $(DOC) doc/INSTALL-Mac $(DOCDIR)
+	install -m 644 $(DOC) $(DOCDIR)
 	$(MAKE) install-base install-mac MAN=$(MAN)
 
 cygwin:
@@ -318,7 +322,7 @@ cygwin-install:
             settag="set noserial" \
             TTYPORT=$(DEV)/com1
 	@if ! test -d $(DOCDIR); then mkdir -p $(DOCDIR); fi
-	install -m 644 $(DOC) doc/INSTALL-Cygwin doc/INSTALL-Win  $(DOCDIR)
+	install -m 644 $(DOC) $(DOCDIR)
 
 install-base: install-server install-client install-man \
          install-modules install-gateway install-tools

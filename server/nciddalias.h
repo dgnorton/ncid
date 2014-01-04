@@ -1,7 +1,7 @@
 /*
  * nciddalias.h - This file is part of ncidd.
  *
- * Copyright (c) 2005-2013
+ * Copyright (c) 2005-2014
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd is free software: you can redistribute it and/or modify
@@ -56,3 +56,4 @@ struct alias
 extern char *name, *cidalias;
 extern char *cpy2mem();
 extern void builtinAlias(), userAlias(), rmaliases();
+extern int  findAlias();

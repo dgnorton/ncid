@@ -66,7 +66,7 @@ DEFINES      = -DCIDCONF=\"$(CONF)\" \
                -DLOCKFILE=\"$(LOCKFILE)\"
 
 # local additions to CFLAGS
-MFLAGS       = -W -Wmissing-declarations
+MFLAGS       = -Wmissing-declarations -Wunused-variable
 
 CFLAGS       = -O2 -I. -I.. $(DEFINES) $(MFLAGS) $(EXTRA_CFLAGS)
 

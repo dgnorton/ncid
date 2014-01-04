@@ -49,7 +49,7 @@ the \fIncid.conf\fR file.  The user can resize the window, but
 there is a minimum size restriction.
 .PP
 The history window displays one line per call or message.  Each
-line line starts with a call label.  There are three types of
+line line starts with a call label.  There are seven types of
 calls and a message that can be displayed:
 .PP
 .PD 0
@@ -63,8 +63,17 @@ Outgoing Call
 .B HUP:
 Blacklisted Call Hangup
 .TP
+.B BLK:
+Blacklisted Call Block
+.TP
+.B PID:
+CID from a smart phone
+.TP
 .B MSG:
 User or NCID message
+.TP
+.B NOT:
+Message from a smart phone
 .PD
 .PP
 The \fBncid\fR client

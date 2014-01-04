@@ -1,7 +1,7 @@
 /*
  * ncidd.h - This file is part of ncidd.
  *
- * Copyright (c) 2005-2013
+ * Copyright (c) 2005-2014
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd is free software: you can redistribute it and/or modify
@@ -76,7 +76,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
          [-P pidfile    | --pidfile <file>]\n\
          [-p portnumber | --port <portnumber>]\n\
          [-S ttyspeed   | --ttyspeed <ttyspeed>]\n\
-         [-s datatype   | --send cidlog|cidinfo|cidout]\n\
+         [-s datatype   | --send cidlog|cidinfo]\n\
          [-T 0/1        | --sttyclocal 0/1]\n\
          [-t ttyport    | --ttyport <ttyport>]\n\
          [-V            | --version]\n\
@@ -113,10 +113,19 @@ Options: [-A aliasfile  | --alias <file>]\n\
 
 /* server messages */
 #define ANNOUNCE    "200 Server:"
-#define LOGEND      "300 End of call log"
-#define NOLOG       "300 No Call log"
-#define NOLOGSENT   "300 Call log not sent"
-#define EMPTYLOG    "300 Call log empty"
+#define LOGEND      "250 End of call log"
+#define NOLOGSENT   "251 Call log not sent"
+#define EMPTYLOG    "252 Call log empty"
+#define NOLOG       "253 No Call log"
+#define ENDSTARTUP  "300 End of server startup"
+#define BEGIN_DATA  "400 Start of data requiring an OK" CRLF
+#define BEGIN_DATA1 "401 Start of data requiring ACCEPT or REJECT" CRLF
+#define BEGIN_DATA2 "402 Start of data requiring no response" CRLF
+#define BEGIN_DATA3 "403 Start of INFO: data" CRLF
+#define END_DATA    "410 End of data" CRLF
+#define END_RESP    "411 End of response" CRLF
+
+#define NOCHANGES   "no changes"
 
 /* server warning messages */
 #define LOGMSG      "MSG: Call Log too big: (%lu > %lu) bytes%s"
@@ -162,6 +171,23 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define ENDLINE     "END: "
 #define PIDLINE     "PID: "
 #define NOTLINE     "NOT: "
+#define REQLINE     "REQ: "
+#define RELOAD      "RELOAD"    /* reload alias, blacklist & whitelist files */
+#define UPDATE      "UPDATE"    /* update current CID call log file          */
+#define UPDATES     "UPDATES"   /* update all of the CID call log files      */
+#define REREAD      "REREAD"    /* reread current CID call log file          */
+#define WRKLINE     "WRK: "
+#define INFOLINE    "INFO: "
+#define RESPLINE    "RESP: "
+#define ACPT_LOG    "ACCEPT LOG"
+#define ACPT_LOGS   "ACCEPT LOGS"
+#define RJCT_LOG    "REJECT LOG"
+#define RJCT_LOGS   "REJECT LOGS"
+#define OPTION      "OPT: "
+#define BLK_LST     "black"
+#define ALIAS_LST   "alias"
+#define WHT_LST     "white"
+#define INFO_REQ    "INFO"
 
 #define IN          0
 #define OUT         1
@@ -229,7 +255,7 @@ enum
 
 extern char *ttyport, *TTYspeed;
 extern char *initstr, *initcid;
-extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile;
+extern char *cidlog, *datalog, *lineid, *lockfile, *pidfile, *fnptr;
 extern int setcid, port, clocal, ttyspeed, ttyfd, hangup;
 extern int sendlog, sendinfo, ignore1, cidnoname;
 extern int nomodem, noserial, gencid, verbose;

@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Config File
 
-# File last changed: Sat Feb 16, 2013
+# File last changed: Wed Jan 1, 2014
 
 ################################
 # Definitions and Line formats #
@@ -229,6 +229,8 @@ send cidinfo
 # initstr is required if noserial is set to 0 and nomodem is set to 0
 # or hangup is set to 1
 
+# see http://www.modemhelp.org for help with init strings
+
 # The default modem initialization is: "AT Z S0=0 E1 V1 Q0"
 # set initstr = "ATE1V1Q0"
 #
@@ -258,6 +260,7 @@ send cidinfo
 #   Reported Ring Codes: RING A, RING B, RING C
 # Rockwell/Conexant chipset: AT-SDR=7
 #   Reported Ring Codes: RING 1, RING 2, RING 3
+#   Also reported DROF/DRON messages instead of ring codes
 # Lucent/Agere chipset: AT+VDR=1,0
 #   Reported DROF/DRON messages: DRON=5 DROF=11, DRON=5 DROF=34
 #
@@ -278,6 +281,11 @@ send cidinfo
 # CID init string to skip sending any CID string to modem
 # Useful if NCID is used only as a visual call indicator
 # set initcid = ""
+#
+# CID string for the Conexant Systems (Rockwell) when using
+# Distinctive Ring and missing calls that give a DDN_NMBR
+# instead of NMBR:
+# set initcid = "AT+VDR=1,0;E1V1Q0S24=0"
 
 #################
 # TiVo Settings #

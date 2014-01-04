@@ -1,0 +1,30 @@
+Documentation HELP for NCID
+
+The MD files are markdown text.
+
+Usage:
+    make         - builds the HTML files from the MD files
+    make install - does nothing
+
+Requirements:
+    markdown - required to bulid HTML files from the MD fiiles
+
+    The markdown command line program can be obtained from
+    http://daringfireball.net/projects/markdown/
+
+The .md documentation can be converted into other formats using:
+
+    pandoc  - http://johnmacfarlane.net/pandoc/
+    calibre - http://calibre-ebook.com/
+
+The Makefile is used to create html files.
+The .html files can be converted to another format line .epub
+
+Documentation.html is the index.
+
+prefix  - default: /usr/local:            $(prefix)/bin and $(prefix)/sbin
+prefix2 - default: prefix2 = $(prefix1):  $(prefix2)/etc
+prefix3 - default: "":                    $(prefix)/var
+
+prefix2 controls where to look for the config file,
+(the default is /usr/local)

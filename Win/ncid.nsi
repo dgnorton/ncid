@@ -13,7 +13,7 @@
 ;Application
 
 	!define NAME            ncid
-	!define VERSION         0.87
+	!define VERSION         0.88
 	!define PROG            "${NAME}.exe"
 	!define LICENSE_FILE    "LICENSE.txt"
 	!define WEB_PAGE        "http://ncid.sourceforge.net"
@@ -187,11 +187,9 @@ Section "${NAME} (Required)" Sec${NAME}
 	File "${PROG}"
 	File "ncidconf.txt"
 	File "README.txt"
-	File "ncid.1.txt"
 	File "ncid.1.htm"
-	File "ncid.conf.5.txt"
 	File "ncid.conf.5.htm"
-	File "Install-Win.txt"
+	File "NCID_Documentation.md"
 	File "ncid.gif"
 	
 	; Write the installation path into the registry

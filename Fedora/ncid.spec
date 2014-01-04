@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.87
+Version:    0.88
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -101,14 +101,15 @@ rm -fr $RPM_BUILD_DIR/%{name}
 
 %files
 %defattr(-,root,root)
-%doc README VERSION doc/[A-HJ-U]* doc/INSTALL doc/INSTALL-Fedora
-%doc doc/Verbose-ncidd doc/Verbose-sip2ncid doc/Verbose-ncid2ncid
-%doc doc/Verbose-wc2ncid
+%doc README VERSION doc/LICENSE doc/Makefile doc/NCID-SDK.odt
+%doc doc/NCID_Documentation.md doc/ncid-1.jpg doc/README.docdir
+%doc doc/ReleaseNotes man/README.mandir Fedora/README.Fedora
 %doc server/README.server gateway/README.gateways attic/README.attic
-%doc logrotate/README.logrotate tools/README.tools Fedora/README.Fedora
+%doc logrotate/README.logrotate tools/README.tools
 %{_bindir}/cidcall
 %{_bindir}/cidalias
 %{_bindir}/cidupdate
+%{_bindir}/ncidutil
 %{_bindir}/ncid2ncid
 %{_bindir}/rn2ncid
 %{_bindir}/wc2ncid
@@ -140,6 +141,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %{_mandir}/man1/cidalias.1*
 %{_mandir}/man1/cidcall.1*
 %{_mandir}/man1/cidupdate.1*
+%{_mandir}/man1/ncidutil.1*
 %{_mandir}/man1/ncid2ncid.1*
 %{_mandir}/man1/rn2ncid.1*
 %{_mandir}/man1/wc2ncid.1*
@@ -163,7 +165,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %files client
 %defattr(-,root,root)
 %doc README VERSION client/README.client modules/README.modules
-%doc doc/Verbose-ncid
+%doc doc/README.docdir doc/Makefile doc/Verbose.md
 %{_bindir}/ncid
 %dir %{_datadir}/ncid
 %dir /etc/ncid/conf.d
@@ -335,6 +337,9 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+
+* Wed Nov 20 2013 John Chmielewski <jlc@users.sourceforge.net> 0.88-1
+- changed documentation files in doc/
 
 * Thu May 23 2013 John Chmielewski <jlc@users.sourceforge.net> 0.87-1
 - Updated lincese file and GNU license headers in files

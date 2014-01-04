@@ -1,7 +1,7 @@
 /*
  * nciddhangup.c - This file is part of ncidd.
  *
- * Copyright (c) 2005-2013
+ * Copyright (c) 2005-2014
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 char *blacklist = BLACKLIST, *blklist[LISTSIZE];
 char *whitelist = WHITELIST, *whtlist[LISTSIZE];
 
-int doList(), nextEntry(), onList(), hangupCall(), doHangup();
+int doList(), nextEntry(), onList(), hangupCall(), doHangup(), onBlackWhite();
 
 void addEntry(), rmEntries();
 
@@ -50,11 +50,12 @@ int doList(char *filename, char **list)
         logMsg(LEVEL1, msgbuf);
         return 1;
     }
+        fnptr = filename;
 
     /* read each line of file, one line at a time */
     for (lc = 1; fgets(input, BUFSIZ, fp) != NULL; lc++)
     {
-        inptr = getWord(input, word, lc);
+        inptr = getWord(fnptr, input, word, lc);
 
         /* line containing only <NL> or is a comment line*/
         if (inptr == 0 || word[0] == '#') continue;
@@ -99,7 +100,7 @@ void addEntry(char *inptr, char *wdptr, int lc, char **list)
         list[cnt] = mem;
         
     }
-    while ((inptr = getWord(inptr, wdptr, lc)) != 0);
+    while ((inptr = getWord(fnptr, inptr, wdptr, lc)) != 0);
 }
 
 int nextEntry(int lc, char **list)
@@ -141,9 +142,9 @@ void rmEntries(char **list)
 
 int doHangup(char *namep, char *nmbrp)
 {
-    if (onList(namep, nmbrp, blklist))
+    if (onList(namep, nmbrp, blklist, 0))
     {
-        if (!onList(namep, nmbrp, whtlist))
+        if (!onList(namep, nmbrp, whtlist, 0))
         {
             /* a blacklist match must not also be a whitelist match */
             if (!hangupCall()) return 1;
@@ -252,14 +253,20 @@ return ret;
 }
 
 /*
- * compare blacklist or whitelist strings to name and number
+ * Compare blacklist or whitelist strings to name and number
  *
- * return = 1  if match
- * return = 0  if no match
+ * If "flag" is zero, log a match message if verbose level is 3
+ *   Return = 1  if the number or matches
+ *   Return = 0  if no match
+ *
+ * If "flag" is one, never log a match message
+ *   Return = 3  if the number matches
+ *   Return = 1  if the name matches
+ *   Return = 0  if no match
  */
-int onList(char *namep, char *nmbrp, char **list)
+int onList(char *namep, char *nmbrp, char **list, int flag)
 {
-    int ret = 1, i;
+    int ret = 1, i, nbrMatch = 0;
 	char msgbuf[BUFSIZ], *ptr;
 
     for (i = 0; list[i] && i < LISTSIZE; ++i)
@@ -269,16 +276,18 @@ int onList(char *namep, char *nmbrp, char **list)
             /* must match at start of string */
             ptr = list[i], ++ptr;
             if (!(ret = strncmp(ptr, namep, strlen(ptr)))) break;
-            if (!(ret = strncmp(ptr, nmbrp, strlen(ptr)))) break;
+            if (!(ret = strncmp(ptr, nmbrp, strlen(ptr)))) { nbrMatch = 2; break; }
         }
         else
         {
             /* can match anywhere in string */
             if (strstr(namep, list[i])) { ret = 0; break; }
-            if (strstr(nmbrp, list[i])) { ret = 0; break; }
+            if (strstr(nmbrp, list[i])) { ret = 0; nbrMatch = 2; break; }
         }
     }
 
+    if (flag)
+        return (!ret) + nbrMatch;
     if (!ret)
     {
         sprintf(msgbuf, "%s Match #%.2d: %s    number: %s    name: %s\n",
@@ -288,4 +297,32 @@ int onList(char *namep, char *nmbrp, char **list)
     }
 
     return !ret;
+}
+
+/*
+ * Check for a name or a number being in the black or white list
+ *
+ * Return = 0  if not on either list
+ * Return = 1  if name is on the blacklist and not on the whitelist
+ * Return = 5  if number is on the blacklist and not on the whitelist
+ * Return = 2  if name is on the whitelist; may or may not be on the blacklist
+ * Return = 6  if number is on the whitelist; may or may not be on the blacklist
+ *
+ * Bits 0 and 1:
+ *      0 - On neither list
+ *      1 - Name or number on blacklist
+ *      2 - Name or number on whitelist
+ *
+ * Bit 2:
+ *      0 - Name is on the list
+ *      1 - Number is on the list
+ */
+int onBlackWhite (char *namep, char *nmbrp) {
+    int ret;
+
+    if ((ret = onList (namep, nmbrp, whtlist, 1)))
+        return 2 * ret;
+    if ((ret = onList (namep, nmbrp, blklist, 1)))
+        return 2 * ret - 1;
+    return 0;
 }

@@ -1,7 +1,7 @@
 /*
  * nciddconf.c - This file is part of ncidd.
  *
- * Copyright (c) 2005-2013
+ * Copyright (c) 2005-2014
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd is free software: you can redistribute it and/or modify
@@ -77,11 +77,12 @@ int doConf()
         logMsg(LEVEL1, buf);
         return 0;
     }
+        fnptr = cidconf;
 
     /* read each line of file, one line at a time */
     for (lc = 1; fgets(input, BUFSIZ, fp) != NULL; lc++)
     {
-        inptr = getWord(input, word, lc);
+        inptr = getWord(fnptr, input, word, lc);
 
         /* line containing only <NL> or is a comment line*/
         if (inptr == 0 || word[0] == '#') continue;
@@ -116,7 +117,7 @@ void doSet(char *inptr, int lc)
     char word[BUFSIZ], buf[BUFSIZ];
 
     /* process configuration parameters */
-    while ((inptr = getWord(inptr, word, lc)))
+    while ((inptr = getWord(fnptr, inptr, word, lc)))
     {
         if (word[0] == '#')    break; /* rest of line is comment */
 
@@ -131,7 +132,7 @@ void doSet(char *inptr, int lc)
             break;
         }
 
-        if (!(inptr = getWord(inptr, word, lc)))
+        if (!(inptr = getWord(fnptr, inptr, word, lc)))
         {
             configError(cidconf, lc, word, ERREQA);
             break;
@@ -143,7 +144,7 @@ void doSet(char *inptr, int lc)
             break;
         }
 
-        if (!(inptr = getWord(inptr, word, lc)))
+        if (!(inptr = getWord(fnptr, inptr, word, lc)))
         {
             configError(cidconf, lc, word, ERRARG);
             break;
@@ -204,7 +205,7 @@ void doSend(char *inptr, int lc)
     char word[BUFSIZ];
 
     /* process configuration parameters */
-    while ((inptr = getWord(inptr, word, lc)))
+    while ((inptr = getWord(fnptr, inptr, word, lc)))
     {
         if (word[0] == '#')    break; /* rest of line is comment */
 
@@ -243,7 +244,7 @@ void configError(char *file, int lc, char *word, char *mesg)
  * everything between double quotes, or '='
  */
 
-char *getWord(char *inptr, char *wdptr, int lc)
+char *getWord(char *nameptr, char *inptr, char *wdptr, int lc)
 {
     char *endptr;
 
@@ -259,7 +260,7 @@ char *getWord(char *inptr, char *wdptr, int lc)
         ++inptr;
         if ((endptr = strchr(inptr, '"')) == NULL)
         {
-            configError(cidconf, lc, "\"", ERRMISS);
+            configError(nameptr, lc, "\"", ERRMISS);
             return 0;
         }
         while (*inptr && inptr != endptr) *wdptr++ = *inptr++;

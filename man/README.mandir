@@ -1,0 +1,39 @@
+Man pages for the NCID programs.
+
+Usage:
+    make         - builds missing man pages from Perl scripts.
+    make install - installs the man pages
+
+    Manual builds, not accessable from the top Makefile:
+
+    make html    - builds html files from the man pages
+    make all     - includes man pages from LCDncid and OUT2OSD
+                   (The source directories must be present)
+
+Requirements:
+    pod2man  - required for the normal build
+    man2html - required if building html files from the man pages
+    markdown - required if building a html file from man.md
+
+    The markdown command line program can be obtained from
+    http://daringfireball.net/projects/markdown/
+
+    The "pod2man" command line program is used to create man pages
+    from the Perl scripts in the gateway/ and tools/ directories.
+
+    The "markdown" command line program is used to create a man.html
+    file from the man.md file.
+
+The man.html is the index page for the html man pages.
+
+The *.html documentation can be converted into other formats using:
+
+    pandoc  - http://johnmacfarlane.net/pandoc/
+    calibre - http://calibre-ebook.com/
+
+prefix  - default: /usr/local:            $(prefix)/bin and $(prefix)/sbin
+prefix2 - default: prefix2 = $(prefix1):  $(prefix2)/etc
+prefix3 - default: "":                    $(prefix)/var
+
+prefix2 controls where to look for the config file,
+(the default is /usr/local)

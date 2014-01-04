@@ -2,7 +2,7 @@
 
 # ncid - Network Caller-ID client
 
-# Copyright (c) 2005-2013
+# Copyright (c) 2005-2014
 #  by John L. Chmielewski <jlc@users.sourceforge.net>
 
 # This program is free software: you can redistribute it and/or modify
@@ -109,6 +109,12 @@ set oldAutoSave         "off"
 set Begin               0
 set End                 0
 set msgType            ""
+set waitMsg             0
+set mod_menu            0
+set multi               0
+
+### global variables that are read from the server
+set hangup              0
 
 if {[file exists $ConfigFile]} {
     catch {source $ConfigFile}
@@ -145,7 +151,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
 
 set Author \
 "
-Copyright (C) 2001-2013
+Copyright (C) 2001-2014
 John L. Chmielewski
 http://ncid.sourceforge.net
 "
@@ -162,9 +168,36 @@ CID:  Caller ID - incoming call
 OUT:  Out       - outgoing call
 HUP:  Hangup    - blacklisted call hangup
 BLK:  Blocked   - blacklisted call blocked
-PID:  Phone ID  - Caller ID of a call to a smart phone
+PID:  Phone ID  - Caller ID from a smart phone
 MSG:  Message   - message from a user or NCID
 NOT:  Notice    - Notice of a smart phone message
+"
+
+set serverHelp \
+"
+The \"Reload alias \[BL & WL\] files\" menu item: reloads the
+alias file. If the hangup feature was enabled in ncidd.conf
+it reloads the alias, blacklist (BL), and whitelist files (WL).
+
+The hangup feature also adds the blacklist and whitelist
+menu entries.
+
+To add/modify/delete an alias or add/remove an entry from the
+blacklist or whitelist, you need to highlight the line in the
+history file.
+
+Once a line is highlited, you can remove the highlite by clicking
+outside the history window and outside the message input area.
+
+Once you modify an alias, you must:
+
+    Reload the alias file
+    Update the current log or all logs
+    Reread call log
+
+Once you modify the Blacklist or Whitelist file, you must:
+
+    Reload the alias, blacklist, and whitelist files
 "
 
 # display error message and exit
@@ -281,8 +314,9 @@ proc getCID {} {
     global call
     global type
     global display_line_num
-    global WakeUp
-    global wakened targetTime doingLog Begin End
+    global WakeUp busyIndicator
+    global wakened targetTime doingLog Begin End remote_status waitMsg
+    global hangup mod_menu argument
 
     set msg {CID connection closed}
     set cnt 0
@@ -301,6 +335,7 @@ proc getCID {} {
 
         if {[string match 200* $dataBlock]} {
             # output NCID server connect message
+            doVerbose $dataBlock 1
             set Begin [clock clicks -milliseconds]
             regsub {200 (.*)} $dataBlock {\1} dataBlock
             if {$Program != ""} {doVerbose "$VersionInfo\n$dataBlock" 1}
@@ -315,8 +350,8 @@ proc getCID {} {
                 update idletasks
                 displayCID "$VersionInfo\n$dataBlock" 1
                 }
-        } elseif {[string match 300* $dataBlock]} {
-            # NCID server sent end of log message
+        } elseif {[string match {25[0-3]*} $dataBlock]} {
+            # NCID server sent log message
             if !$NoGUI {
                 .vh delete 1.0 6.0
                 .vh yview moveto 1.0
@@ -326,17 +361,179 @@ proc getCID {} {
                 } else {
                     grid .ys
                 }
-                set doingLog 0
-                regsub {300 (.*)} $dataBlock {\1} dataBlock
-                if {[regexp {End of call log} $dataBlock]} {
-                    doVerbose "Message: $dataBlock - $display_line_num lines" 1
-                } else {doVerbose "Message: $dataBlock" 1}
-                set End [clock clicks -milliseconds]
-                set elapsed [expr $End - $Begin]
-                doVerbose "$display_line_num entries in $elapsed milliseconds" 4
             }
-        }
+            set doingLog 0
+            if {[regexp {250} $dataBlock]} {
+                doVerbose "$dataBlock - $display_line_num lines" 1
+            } else {doVerbose "$dataBlock" 1}
+            set End [clock clicks -milliseconds]
+            set elapsed [expr $End - $Begin]
+            doVerbose "$display_line_num entries in $elapsed milliseconds" 4
+        } elseif {[string match 300* $dataBlock]} {
+            # NCID server sent end of startup message
+            doVerbose $dataBlock 1
+            if {!$NoGUI && $hangup == 0} {
+                remove .menubar.server 1
+            }
+            continue
+        } elseif {[string match 400* $dataBlock]} {
+            # NCID server has sent text to be displayed
+            toplevel .reply
+            wm title .reply "Server's Response"
+            grid [text .reply.text -yscrollcommand ".reply.ys set" -setgrid 1 \
+                     -height 8 -width 70] -pady 10 -padx 10 -sticky nesw
+            grid [scrollbar .reply.ys -command ".reply.text yview"] \
+                    -column 1 -row 0 -sticky ns -pady 10 -padx 5
+            grid [button .reply.btn -text "OK" -command {destroy .reply}] \
+                    -pady 10 -columnspan 2
+            grid columnconfigure .reply 0 -weight 1
+            grid rowconfigure .reply 0 -weight 1
+            wm minsize .reply 25 4
+            bind .reply <Configure> {
+                if {[lindex [.reply.text yview] 0] + [lindex [.reply.text yview] 1] == 1.0} {
+                    grid remove .reply.ys
+                } else {
+                    grid .reply.ys
+                }
+            }
+            modal {.reply}
+            continue;
+        } elseif {[string match 401* $dataBlock]} {
+            # NCID server has sent text to be displayed, must ACCEPT or REJECT
+            toplevel .reply
+            wm title .reply "Server's Response"
+            grid [text .reply.text -yscrollcommand ".reply.ys set" -setgrid 1 \
+                    -height 8 -width 70] -pady 10 -padx 10 -sticky nesw
+            .reply.text insert 1.0 "\n\n\tUpdating call logs"
+            .reply.text configure -state disabled
+            grid [scrollbar .reply.ys -command ".reply.text yview"] \
+                    -column 1 -row 0 -sticky ns -pady 10 -padx 5
+            grid [frame .reply.fr]  -pady 10 -padx 10 -columnspan 2 -row 1
+            button .reply.accept_btn -text "Accept" -state disabled -command {
+                    global multi
 
+                    if {$multi} {
+                        set temp "S"
+                    } else {
+                        set temp ""
+                    }
+                    puts $Socket "WRK: ACCEPT LOG$temp"
+                    flush $Socket
+                    destroy .reply
+                    }
+            button .reply.reject_btn -text "Reject" -state disabled -command {
+                    global multi
+
+                    if {$multi} {
+                        set temp "S"
+                    } else {
+                        set temp ""
+                    }
+                    puts $Socket "WRK: REJECT LOG$temp"
+                    flush $Socket
+                    destroy .reply
+                    }
+            grid .reply.accept_btn .reply.reject_btn -in .reply.fr -padx 25
+            grid columnconfigure .reply 0 -weight 1
+            grid rowconfigure .reply 0 -weight 1
+            wm minsize .reply 40 5
+            bind .reply <Configure> {
+                if {[lindex [.reply.text yview] 0] + [lindex [.reply.text yview] 1] == 1.0} {
+                    grid remove .reply.ys
+                } else {
+                    grid .reply.ys
+                }
+            }
+            set busyIndicator [showBusy 1000 "." .reply.text]
+            set waitMsg 1
+            modal {.reply}
+            continue;
+        } elseif {[string match 402* $dataBlock]} {
+            set remote_status ""
+        } elseif {[string match 403* $dataBlock]} {
+            set mod_menu 1
+        } elseif {[string match 410* $dataBlock]} {
+            .reply.text configure -state normal
+            .reply.text delete end-1chars
+            .reply.text configure -state disabled
+            .reply.text see end
+            catch {
+                if {[lindex [.reply.text yview] 0] + [lindex [.reply.text yview] 1] == 1.0} {
+                    grid remove .reply.ys
+                } else {
+                    grid .reply.ys
+                }
+            }
+            catch {
+                .reply.accept_btn configure -state normal
+                .reply.reject_btn configure -state normal
+            }
+            continue
+        } elseif {[string match 411* $dataBlock]} {
+            if {$mod_menu} {
+                set mod_menu 0
+                continue
+            }
+            if {[string length $remote_status] < 4} {
+                set remote_status "Done."
+            }
+            .confirm.close configure -state active
+        } elseif {[string match INFO:* $dataBlock]} {
+            if {$mod_menu} {
+                set menu .menubar.server
+                set temp [split $dataBlock " "]
+                set fileType [lindex $temp 1]
+                set argument [lindex $temp 2]
+                switch $fileType {
+                    alias {
+                        if {$argument eq ""} {
+                            $menu entryconfigure Add*Alias* -state normal
+                            $menu entryconfigure Modify* -state disabled
+                        } else {
+                            $menu entryconfigure Add*Alias* -state disabled
+                            $menu entryconfigure Modify* -state normal
+                        }
+                    }
+                    black {
+                        $menu entryconfigure Add*Black* -state disabled
+                        $menu entryconfigure Add*White* -state normal
+                        $menu entryconfigure Remove*Black* -state normal
+                        $menu entryconfigure Remove*White* -state disabled
+                    }
+                    white {
+                        $menu entryconfigure Add*Black* -state disabled
+                        $menu entryconfigure Add*White* -state disabled
+                        $menu entryconfigure Remove*Black* -state disabled
+                        $menu entryconfigure Remove*White* -state normal
+                    }
+                    neither {
+                        if {$hangup} {
+                            $menu entryconfigure Add*Black* -state normal
+                            $menu entryconfigure Add*White* -state disabled
+                            $menu entryconfigure Remove*Black* -state disabled
+                            $menu entryconfigure Remove*White* -state disabled
+                        }
+                    }
+                }
+                continue;
+            }
+            .reply.text configure -state normal
+            if {$waitMsg} {
+                set waitMsg 0
+                after cancel $busyIndicator
+                .reply.text delete 1.0 end
+            }
+            .reply.text insert end [string range [append dataBlock " \n"] 6 end]
+            .reply.text configure -state disabled
+            continue
+        } elseif {[string match RESP:* $dataBlock]} {
+            append remote_status [string range $dataBlock 6 end]
+            continue
+        } elseif {[string match OPT:* $dataBlock]} {
+            set option [string trim [string range $dataBlock 5 end]]
+            doVerbose "Set $option to 1" 1
+            set $option 1
+        }
         if {[set type [checkType $dataBlock]]} {
             if {$type == 3} {
                 # CIDINFO line
@@ -412,6 +609,22 @@ proc getCID {} {
             }
         }
     }
+}
+
+proc showBusy {delay text widget} {
+    global busyIndicator afterDelay afterText afterWidget
+    
+    $widget configure -state normal
+    $widget insert end $text
+    $widget configure -state disabled
+    set afterDelay $delay
+    set afterText $text
+    set afterWidget $widget
+    set rtn [ after $delay {
+            set busyIndicator [showBusy $afterDelay $afterText $afterWidget]
+            }
+            ]
+    
 }
 
 proc doWakeup {} {
@@ -825,6 +1038,7 @@ proc getArg {} {
     global Version
     global WrapLines
 
+    set showUsage 0;
     for {set cnt 0} {$cnt < $argc} {incr cnt} {
         set optarg [lindex $argv [expr $cnt + 1]]
         switch -regexp -- [set opt [lindex $argv $cnt]] {
@@ -852,7 +1066,7 @@ proc getArg {} {
                 } else {exitMsg 4 "Invalid $opt argument: $optarg\n$Usage\n"}
             }
             {^-h$} -
-            {^--help$} {exitMsg 1 "$Usage\n"}
+            {^--help$} {set showUsage 1}
             {^-M$} -
             {^--message$} {set MsgFlag 1; # obsolete, can be removed}
             {^-P$} -
@@ -902,6 +1116,9 @@ proc getArg {} {
             default {exitMsg 5 "Unknown option: $opt\n$Usage\n"}
         }
     }
+    if {$showUsage} {
+        exitMsg 1 "$Usage\n"
+    }
 }
 
 proc do_nothing {} {
@@ -912,6 +1129,7 @@ proc makeWindow {} {
     global env
     global rcfile Verbose WrapLines
     global fontList clock oldClock autoSave oldAutoSave m maxNumberWidth NoOne
+    global hangup
 
     doVerbose "Platform: $::tcl_platform(platform)\nOS: $::tcl_platform(os)" 1
     switch $::tcl_platform(platform) {
@@ -930,7 +1148,7 @@ proc makeWindow {} {
       }
     }
 
-    if [file exists $rcfile] {
+    if [expr [file exists $rcfile] && [file isfile $rcfile]] {
         set id [open $rcfile]
         set data [read $id]
         close $id
@@ -985,9 +1203,11 @@ proc makeWindow {} {
     set m .menubar
     menu $m.file
     menu $m.file.auto
+    menu $m.server
     menu $m.prefs
     menu $m.help
     $m add cascade -menu $m.file -label File -underline 0
+    $m add cascade -menu $m.server -label Server -underline 0
     $m add cascade -menu $m.prefs -label Preferences -underline 0
     $m add cascade -menu $m.help -label Help -underline 0
 
@@ -1005,6 +1225,62 @@ proc makeWindow {} {
     $m.file.auto add radiobutton -label "Size & Position" -variable autoSave -value "both" -command {logAuto $m.file}
     $m.file.auto add radiobutton -label "Off" -variable autoSave -value "off" -command {logAuto $m.file}
 
+    # create Server menu items
+    $m.server add command -label "Reload alias \[BL & WL\] files" -command {
+                Disable $m
+                puts $Socket "REQ: RELOAD"
+                flush $Socket
+            }
+    $m.server add command -label "Update current call log" -command {
+                global multi
+
+                Disable $m
+                puts $Socket "REQ: UPDATE"
+                flush $Socket
+                set multi 0
+            }
+    $m.server add command -label "Update all call logs" -command {
+                global multi
+
+                Disable $m
+                puts $Socket "REQ: UPDATES"
+                flush $Socket
+                set multi 1
+            }
+    $m.server add command -label "Reread call log" -command {
+                global display_line_num
+                set display_line_num 0
+                .vh configure -state normal
+                .vh delete 1.0 end
+                set doingLog 1
+                .vh insert 1.0 "\n\n\t\tReading the call log\n\n"
+                Disable $m
+                puts $Socket "REQ: REREAD"
+                flush $Socket
+            }
+    $m.server add separator
+    $m.server add command -label "Add to Blacklist (BL)" -state disabled -command {
+                DoList black add "[.vh dump -text sel.first sel.last]" ""
+            }
+    $m.server add command -label "Remove from Blacklist" -state disabled -command {
+                global argument
+                DoList black remove "[.vh dump -text sel.first sel.last]" $argument
+            }
+    $m.server add command -label "Add to Whitelist (WL)" -state disabled -command {
+                DoList white add "[.vh dump -text sel.first sel.last]" ""
+            }
+    $m.server add command -label "Remove from Whitelist" -state disabled -command {
+                global argument
+                DoList white remove "[.vh dump -text sel.first sel.last]" $argument
+            }
+    $m.server add separator
+    $m.server add command -label "Add to Alias List" -state disabled -command {
+                DoList alias add "[.vh dump -text sel.first sel.last]" ""
+            }
+    $m.server add command -label "Modify Alias" -state disabled -command {
+                DoList alias modify "[.vh dump -text sel.first sel.last]" ""
+            }
+
     # create Preferences menu items
     $m.prefs add command -label "Font..." -command {changeFont}
     $m.prefs add separator
@@ -1014,6 +1290,7 @@ proc makeWindow {} {
     # create Help menu item
     $m.help add command -label About -command aboutPopup
     $m.help add command -label "Line Labels" -command labInfo
+    $m.help add command -label "Server Menu" -command serverInfo
 
     # create and place: CID history scroll window
     text .vh -width 57 -height 4 -yscrollcommand ".ys set" \
@@ -1027,7 +1304,7 @@ proc makeWindow {} {
     grid .fr -row 2 -columnspan 2
     label .ml -text "Send Message: " -height 1 -font {FixedFontM} -fg blue
     text .im -width 25 -height 1 -font {FixedFontM} -fg red
-    grid .ml .im -in .fr -sticky ew
+    grid .ml .im -in .fr
 
     # create and place: call and server message display
     label .md -textvariable Txt -font {FixedFontM} -fg blue -height 2
@@ -1073,6 +1350,165 @@ proc makeWindow {} {
                 grid .ys
             }
     }
+    bind .fr  <Button-1> {
+        Disable $m
+    }
+    bind .ml  <Button-1> {
+        Disable $m
+    }
+    bind .md  <Button-1> {
+        Disable $m
+    }
+    bind .vh <ButtonRelease-1> {
+        .vh tag remove sel 1.0 end
+        set first [.vh index @%x,%ylinestart]
+        set last [.vh index @%x,%ylineend]
+        .vh tag add sel $first $last
+        .vh mark unset anchor
+        .vh mark unset tk::anchor1
+        .vh mark set insert 1.0
+        .vh mark set current 1.0
+        set dataDump [.vh dump -text $first $last]
+        set dataDump1 [.vh dump $first $last]
+        set type [string trimright [lindex $dataDump 1]]
+        set number [string trimright [lindex $dataDump 13]]
+        set name [string trimright [lindex $dataDump 16]]
+        set selected [.vh get $first $last]
+        set number [regsub -all -- {-} $number ""]
+        if {$type ne "MSG:" && $type ne "NOT:"} {
+            puts $Socket "REQ: INFO $number&&$name"
+            flush $Socket
+        } else {Disable $m}
+        break
+    }
+}
+
+proc Disable {menu} {
+    .vh tag remove sel 1.0 end
+    set last [$menu.server index last]
+    set found 0
+    for {set index 0} {$index <= $last} {incr index} {
+        set type [$menu.server type $index]
+        if {! $found && $type eq "separator"} {
+            set found 1
+            continue
+        }
+        if {$found && $type ne "separator"} {
+            $menu.server entryconfigure $index -state disabled
+        }
+    }
+}
+
+proc remove {menu block} {
+    set last [$menu index last]
+    set found [expr $block == 0 ? 1 : 0]
+    for {set index 0} {$index <= $last} {incr index} {
+        set type [$menu type $index]
+        if {$found} {
+            $menu delete $index
+            set index [expr $index - 1]
+            if {$type eq "separator"} {
+                break
+            }
+        } elseif {$type eq "separator"} {
+            set block [expr $block - 1]
+            set found [expr $block == 0 ? 1 : 0]
+            continue
+        }
+    }
+}
+
+proc DoList {list action entry which} {
+    global entry_ action_ list_ remote_status replace_ comment_
+    set comment_ ""
+    
+    set entry [list [string trim [lindex $entry 13]] [string trim [lindex $entry 16]]]
+    set entry_ [lindex $entry 0]
+    toplevel .confirm
+    wm title .confirm "Confirmation"
+    wm resizable .confirm 0 0
+    if {[lindex $entry 1] eq "NO NAME"} {
+        set entry [lreplace $entry 1 1]
+    }
+    set action_ $action
+    set list_ $list
+    if {$list eq "black" || $list eq "white"} {
+        if {$action eq "add"} {
+            set _entry [join $entry "\" or \""]
+        } elseif {$which eq "name"} {
+            set entry_ [set _entry [lindex $entry 1]]
+            set entry ""
+        } else {
+            set entry_ [set _entry [lindex $entry 0]]
+            set entry ""
+        }
+        set _action [string toupper $action 0 0]
+        set prep [expr {$action} eq "{add}" ? "{to}" : "{from}"]
+        grid [label .confirm.lab -text "$_action \"$_entry\"\n$prep the server's ${list}list"] \
+                -columnspan 2 -padx 12 -pady 10
+        if {[llength $entry] == 2} {
+            grid [radiobutton .confirm.rb1 -text [lindex $entry 0] -variable entry_ \
+                    -value [lindex $entry 0]] -pady 5 -columnspan 2
+            grid [radiobutton .confirm.rb2 -text [lindex $entry 1] -variable entry_ \
+                    -value [lindex $entry 1]] -pady 5 -columnspan 2
+            set row 3
+        } else {
+            set row 1
+        }
+        if {$action eq "add"} {
+            grid [label .confirm.lab1 -text "Comment:"] -sticky w
+            grid [entry .confirm.entry -textvariable comment_] -sticky ew -columnspan 2 -padx 8
+            set row [expr $row + 2]
+        }
+    } elseif {$action eq "modify"} {
+        set temp [lindex $entry 0]
+        set temp1 [lindex $entry 1]
+        set replace_ $temp1
+        grid [label .confirm.lab -text "Change the association of $temp\nfrom $temp1 to the\nvalue entered below for future calls."] \
+                -columnspan 2 -padx 12 -pady 10
+        grid [entry .confirm.entry -textvariable replace_] -columnspan 2 -padx 12 -pady 10
+        .confirm.entry selection range 0 end
+        focus .confirm.entry
+        set row 2
+    } else {
+        set replace_ ""
+        grid [label .confirm.lab -text "Associate  the value entered below\nwith $entry for future calls."] \
+                -columnspan 2 -padx 12 -pady 10
+        grid [entry .confirm.entry -textvariable replace_] -columnspan 2 -padx 12 -pady 10
+        focus .confirm.entry
+        set row 2
+    }
+    grid [frame .confirm.fr] -pady 10 -columnspan 2 -row $row
+    incr row
+    grid [label .confirm.fr.lab1 -text "Status:"] -padx 3
+    grid [label .confirm.fr.lab2 -textvariable remote_status] -column 1 -row 0 -padx 3
+    grid [button .confirm.cancel -text "Cancel" -command {destroy .confirm}] \
+             -pady 10
+    if {$list eq "alias"} {
+        grid [button .confirm.ok -text "Apply" -command {doit $action_ $list_ [list $entry_ $replace_] ""}] \
+                 -pady 10 -row $row -column 1
+    } else {
+        grid [button .confirm.ok -text "Apply" -command {doit $action_ $list_ $entry_ $comment_}] \
+                 -pady 10 -row $row -column 1
+    }
+    incr row
+    grid [button .confirm.close -text "Close"  -command {
+            Disable .menubar
+            destroy .confirm} \
+             -state disabled ] -columnspan 2 -row $row -pady 10
+    grid remove .confirm.close
+    set remote_status "Waiting for user action..."
+    modal {.confirm}
+}
+
+proc doit {action list entry comment} {
+    global Socket  remote_status
+
+    set remote_status "Working ..."
+    grid forget .confirm.cancel .confirm.ok
+    grid .confirm.close
+    puts $Socket "REQ: $list $action \"$entry\" \"$comment\""
+    flush $Socket
 }
 
 proc aboutPopup {} {
@@ -1103,6 +1539,21 @@ proc labInfo {} {
     option add *Dialog.msg.wrapLength 9i
     option add *Dialog.msg.font FixedFontM
     tk_messageBox -message $labList -type ok -title "Line Labels"
+}
+
+proc serverInfo {} {
+    global serverHelp
+    global Logo
+
+    if [file exists $Logo] {
+        image create photo ncid -file $Logo
+        option add *Dialog.msg.image ncid
+        option add *Dialog.msg.compound top
+    }
+
+    option add *Dialog.msg.wrapLength 9i
+    option add *Dialog.msg.font FixedFontM
+    tk_messageBox -message $serverHelp -type ok -title "Server Menu"
 }
 
 proc clearLog {} {
@@ -1249,11 +1700,7 @@ proc changeFont {} {
         }
     }
 
-    grab .f
-    wm transient .f .
-    wm protocol .f WM_DELETE_WINDOW {grab release .f; destroy .f}
-    raise .f
-    tkwait window .f
+    modal {.f}
 
     font delete SelectionFontH
     font delete SelectionFontM
@@ -1420,6 +1867,15 @@ proc scanFonts {} {
     set fontList [lsort -dictionary $fontList]
     write_rc_file "fontList " "set fontList \"$fontList\""
 }
+
+proc modal {window} {
+    grab $window
+    wm transient $window .
+    wm protocol $window WM_DELETE_$window {grab release $window; destroy $window}
+    raise $window
+    tkwait window $window
+}
+
 
 # This is the default, except when using freewrap or on the TiVo
 if {[catch {encoding system utf-8} msg]} {

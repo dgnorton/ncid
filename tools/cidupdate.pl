@@ -32,13 +32,15 @@
 #   - Modified to work either from the command line or when executed by
 #     the NCID server on behalf of the user via the NCID client.
 #   - Added the ability to update all of the CID call logs.
+# modified by John L. Chmielewski on Fri Nov 15, 2013
+#   - fixed a couple of problems
 
 use strict;
 use warnings;
 use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case_always);
 
-my ($alias, $cidlog, $help, $man);
+my ($alias, $cidlog, $help, $man, $changed);
 my $newcidlog;
 my (@aliases, %hash);
 my ($type, $from, $to, $value, $mod_time, $logType);
@@ -152,10 +154,6 @@ foreach $cidlog (@log_files) {
                         }
                     }
                 }
-                if (not $found and $name ne 'NO NAME') {
-                    record_change ("5 Changed $name to NO NAME for $number", $cidlog);
-                    $name = 'NO NAME';
-                }
             }
             printf(NEWCIDLOG
                 "$logType*DATE*$date*TIME*$time*LINE*$line*NMBR*$number*MESG*$mesg*NAME*$name*\n");
@@ -170,19 +168,21 @@ foreach $cidlog (@log_files) {
     utime $mod_time, $mod_time, $newcidlog;
 }
 report_changes ();
-if (-t STDIN) {
-    print "\nreject or accept changes? (R/a): ";
-    my $resp = <STDIN>;
-    chomp $resp;
-    $resp = 'r' unless $resp;
-    if (substr ((lc $resp), 0, 1) eq 'r') {
-        remove_new ();
-        print "\nUpdates to CID call logs have been discarded\n\n";
-    } else {
-        use_new ();
-        print "\nChanges have been made to the CID log files\n\n";
+if ($changed) {
+    if ( -t STDIN) {
+        print "\nreject or accept changes? (R/a): ";
+        my $resp = <STDIN>;
+        chomp $resp;
+        $resp = 'r' unless $resp;
+        if (substr ((lc $resp), 0, 1) eq 'r') {
+            remove_new ();
+            print "\nUpdates to CID call logs have been discarded\n\n";
+        } else {
+            use_new ();
+            print "\nChanges have been made to the CID log files\n\n";
+        }
     }
-}
+} else {remove_new ();}
 
 {
     my (%files, @files, %changes, @changes);
@@ -202,7 +202,8 @@ if (-t STDIN) {
         print "\n" if -t STDIN;
         foreach (@files) {
             ($temp1, $temp2) = $files{$_} == 1 ? ('was', ''): ('were', 's');
-            $files{$_} = 'no' if $files{$_} == 0;
+            if ($files{$_} == 0) {$files{$_} = 'no';}
+            else {$changed = 1;}
             print "There $temp1 $files{$_} change$temp2 to $_\n";
         }
         print "\n";

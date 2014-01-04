@@ -1,7 +1,7 @@
 /*
  * nciddhangup.h - This file is part of ncidd.
  *
- * Copyright (c) 2005-2013
+ * Copyright (c) 2005-2014
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd is free software: you can redistribute it and/or modify
@@ -35,5 +35,5 @@
 #define ERRLIST     "list too large"
 
 extern char *blacklist, *whitelist, *blklist[], *whtlist[];
-extern int doList(), doHangup();
+extern int doList(), doHangup(), onBlackWhite();
 extern void rmEntries();

@@ -1,38 +1,38 @@
 NCID distributions:
 
     sourceforge:
-        NCID source package:           ncid-0.87-src.tar.gz
+        NCID source package:           ncid-0.88-src.tar.gz
 
-        Cygwin 32 bit Windows package: ncid-0.87-cygwin.tgz
+        Cygwin 32 bit Windows package: ncid-0.88-cygwin.tgz
 
-        TiVo Series1 package:          ncid-0.87-ppc-tivo.tgz
-        TiVo Series 2-3 package:       ncid-0.87-mips-tivo.tgz
+        TiVo Series1 package:          ncid-0.88-ppc-tivo.tgz
+        TiVo Series 2-3 package:       ncid-0.88-mips-tivo.tgz
 
-        Ubuntu 64 bit package:         ncid_0.87-1_amd64.deb
-        Ubuntu no-arch packages:       ncid-client_0.87-1_all.deb
-                                       ncid-kpopup_0.87-1_all.deb
-                                       ncid-mythtv_0.87-1_all.deb
-                                       ncid-samba_0.87-1_all.deb
-                                       ncid-speak_0.87-1_all.deb
+        Ubuntu 64 bit package:         ncid_0.88-1_amd64.deb
+        Ubuntu no-arch packages:       ncid-client_0.88-1_all.deb
+                                       ncid-kpopup_0.88-1_all.deb
+                                       ncid-mythtv_0.88-1_all.deb
+                                       ncid-samba_0.88-1_all.deb
+                                       ncid-speak_0.88-1_all.deb
 
-        Windows client installer:      ncid-0.87-client_setup.exe
+        Windows client installer:      ncid-0.88-client_setup.exe
 
       These may also be distributed:
 
-        Fedora 64 bit package:         ncid-0.87-1.fc14.x86_64.rpm
-        Fedora no-arch packages:       ncid-client-0.87-1.fc15.noarch.rpm
-                                       ncid-kpopup-0.87-1.fc15.noarch.rpm
-                                       ncid-mythtv-0.87-1.fc15.noarch.rpm
-                                       ncid-samba-0.87-1.fc15.noarch.rpm
-                                       ncid-speak-0.87-1.fc15.noarch.rpm
+        Fedora 64 bit package:         ncid-0.88-1.fc14.x86_64.rpm
+        Fedora no-arch packages:       ncid-client-0.88-1.fc15.noarch.rpm
+                                       ncid-kpopup-0.88-1.fc15.noarch.rpm
+                                       ncid-mythtv-0.88-1.fc15.noarch.rpm
+                                       ncid-samba-0.88-1.fc15.noarch.rpm
+                                       ncid-speak-0.88-1.fc15.noarch.rpm
 
-        Macintosh 64 bit OS X package: ncid-0.87-mac-osx.tgz
+        Macintosh 64 bit OS X package: ncid-0.88-mac-osx.tgz
 
-        FreeBSD 32 bit package:        ncid-0.87-freebsd.tgz
+        FreeBSD 32 bit package:        ncid-0.88-freebsd.tgz
 
         Debian packages:               Ubuntu packages should install as-is
 
-        Raspberry Pi packages:         ncid_0.87-1_armhf.deb
+        Raspberry Pi packages:         ncid_0.88-1_armhf.deb
                                        other packages are the same as Ubuntu
 
     Fedora packages:
@@ -42,12 +42,12 @@ NCID distributions:
         Normally you only need to install the ncid & ncid-client rpm packages.
         The yum list command will show you the packages available:
             yum list ncid\*
-        If the above does not show version 0.87:
+        If the above does not show version 0.88:
             yum --enablerepo=rawhide list ncid\*
         If the rawhide repo is not installed:
             yum install fedora-release-rawhide
         If you need to build packages for your specific OS release:
-            rpmbuild -tb ncid-0.87-src.tar.gz
+            rpmbuild -tb ncid-0.88-src.tar.gz
 
     RPM based OS packages (includes Fedora, Redhat, CentOS, etc):
     (If a dependency can't be resolved, you should try rebuilding packages)
@@ -64,7 +64,7 @@ NCID distributions:
             * Install any optional modules wanted:
               sudo gdebi ncid-<module-<version>.fc17.x87_64.rpm
           Notes:
-            <version> would be something like: 0.87-1
+            <version> would be something like: 0.88-1
             <module> would be a module name like: kpopup, mythtv, samba
 
     Macintosh OS X package:
@@ -121,16 +121,16 @@ NCID distributions:
             * Install any optional modules wanted:
               sudo gdebi ncid-<module-<version>_all.deb
           Notes:
-            <version> would be something like: 0.87-1
+            <version> would be something like: 0.88-1
             <processor> would be something like: i386, armhf
             <module> would be a module name like: kpopup, mythtv, samba
 
         If you need to build a package for your specific OS or release, the
         build-essential, fakeroot, & libpcap packages must be installed:
             sudo apt-get build-essential fakeroot libpcap0.8-dev
-            tar -xzf ncid-0.87-src.tar.gz
-            mv ncid ncid-0.87
-            cd ncid-0.87
+            tar -xzf ncid-0.88-src.tar.gz
+            mv ncid ncid-0.88
+            cd ncid-0.88
             fakeroot debian/rules build
             fakeroot debian/rules binary
             fakeroot debian/rules clean
@@ -146,8 +146,6 @@ Specific distribution Changes:
     Mac OS X:
 
     Ubuntu, Raspbian (Raspberry Pi), Debian based systems:
-        - corrrect the default stop run levels in the init scripts
-        - init scripts: start gateways after the server is started
 
     TiVo:
 
@@ -156,12 +154,9 @@ Specific distribution Changes:
 NCID Server Changes:
 
     ncidd:
-
-        - added two new line tags: PID and NOT
-        - changed the cidnoname option so it will output as soon
-          as all the information is received instead of at a ring
-        - fixed verbose output so it will output a CALL line with
-          no cidcall.log file.
+        - Added code to allow client to modify the call log, the alias
+          file, the blacklist file, and the whitelist file by calling
+          cidupdate and cidutil.
 
 NCID Gateway Changes:
 
@@ -178,13 +173,15 @@ NCID Gateway Changes:
 NCID Client Changes:
 
     ncid:
-        - added two new line tags: PID and NOT
-        - added a help menu item called "Line Labels"
+        - Added code and new menu items to send changes to the server for
+          the log file, alias file, blacklist file, and whitelist file.
 
 NCID Client Module Changes:
 
 NCID tool changes:
+        - added ncidutil.pl for use by the server
+        - fixed bug in cidupdate.pl related to "NO NAME"
 
 Documentation Changes:
-    Updated license file and license information in header files and scripts.
+    Changed text files in doc/ to markdown text
 

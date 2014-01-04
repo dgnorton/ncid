@@ -104,6 +104,14 @@ The NCID package has the following features:
       number is in the blacklist file but not in a whitelist file.
     - Reloads the alias, blacklist, and whitelist files when it receives
       a SIGHUP signal.
+    - accepts the following jobs from its clients:
+      * add, modify, or remove aliases from the ncid.alias file using
+        the ncidutil script
+      * add or remove entries from the ncidd.blacklist and ncidd.whitelist
+        files using the ncidutil script
+      * update the cidcall.log file using the cidupdate script
+      * resend cidcall.log and if the hangup option is enabled resent
+        the ncidd.blacklist and ncidd.whitelist files
     - Documented protocol
 
     Client Features (ncid):
@@ -128,6 +136,12 @@ The NCID package has the following features:
     - Can call a output module on a specific ring count or hangup indicator
     - Can send a message to all active clients using the server
     - Multiple clients allowed, usually each with a different output module.
+    - can send jobs to the server:
+      * modify the alias, blacklist or whitelist files
+      * update the call log with the new aliases
+      * resent the call log
+      * reload the alias file and if hangup option enabled, reload the
+        blacklist and whitelist files
     - Runs on Windows, Linux, UNIX, and Macintosh OS X.
     - Documented protocol
 

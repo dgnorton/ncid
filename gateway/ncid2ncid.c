@@ -81,9 +81,8 @@ char *lineType[] = {"CID: ", "CIDINFO: ", "OUT: ", "HUP: ", "MSG: ", ""};
 int main(int argc, char *argv[])
 {
     int    argind, events, pos, i, ret, errnum;
-    int    sd = 0, tosd = 0, fromsd1 = 0, fromsd2 = 0, fromsd3 = 0;
+    int    sd = 0, tosd = 0;
     char   msgbuf[BUFSIZ], rcvbuf[BUFSIZ], tmp[100], *ptr;
-    struct stat statbuf;
 
     /* global containing name of program */
     name = strrchr(argv[0], (int) '/');
@@ -413,7 +412,6 @@ int main(int argc, char *argv[])
 int getOptions(int argc, char *argv[])
 {
     int c, num;
-    int digit_optind = 0;
     int option_index = 0;
     char *ptr;
     static struct option long_options[] = {
@@ -620,9 +618,8 @@ int doPID()
  */
 int socketConnect(int fatal, int pos)
 {
-    int sd = 0, ret, i;
+    int sd = 0, i;
 	char msgbuf[BUFSIZ];
-	struct sockaddr_in sin;
 	struct sockaddr_in pin;
 
     /*

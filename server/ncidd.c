@@ -1,7 +1,7 @@
 /*
  * ncidd.c - This file is part of ncidd.
  *
- * Copyright (c) 2005-2013
+ * Copyright (c) 2005-2014
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd is free software: you can redistribute it and/or modify
@@ -27,14 +27,14 @@ char *ttyport = TTYPORT;
 char *initstr = INITSTR;
 char *initcid = INITCID1;
 char *logfile = LOGFILE;
-char *pidfile;
+char *pidfile, *fnptr;
 char *lineid  = ONELINE;
 char *lockfile, *name;
 char *TTYspeed;
 int ttyspeed = TTYSPEED;
 int port = PORT;
 int debug, conferr, setcid, locked, sendlog, sendinfo, calltype, cidnoname;
-int ttyfd, pollpos, pollevents;
+int ttyfd, pollpos, pollevents, update_call_log = 0;
 int ring, ringwait, lastring, clocal, nomodem, noserial, gencid = 1;
 int cidsent, verbose = 1, hangup, ignore1, OSXlaunchd;
 long unsigned int cidlogmax = LOGMAX;
@@ -91,7 +91,8 @@ char *strdate();
 #endif
 
 void exit(), finish(), free(), reload(), ignore(), doPoll(), formatCID(),
-     writeClients(), writeLog(), sendLog(), sendInfo(), logMsg(), cleanup();
+     writeClients(), writeLog(), sendLog(), sendInfo(), logMsg(), cleanup(),
+     update_cidcall_log();
 
 int getOptions(), doConf(), errorExit(), doAlias(), doTTY(), CheckForLockfile(),
     addPoll(), tcpOpen(), doModem(), initModem(), gettimeofday(), doPID(),
@@ -130,7 +131,7 @@ int main(int argc, char *argv[])
     }
 
     /* open or create logfile */
-    logptr = fopen(logfile, "a");
+    logptr = fopen(logfile, "a+");
     errnum = errno;
 
     sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(WITHSEP),
@@ -411,6 +412,9 @@ int main(int argc, char *argv[])
     /* reload files on SIGHUP */
     signal(SIGHUP, reload);
 
+    /* replace CID call log file on SIGUSR1 */
+    signal (SIGUSR1, update_cidcall_log);
+
     /*
      * Create a pid file
      */
@@ -463,6 +467,15 @@ int main(int argc, char *argv[])
                             ringwait = 0;
                             lastring = ring;
                         }
+                    }
+                }
+                if (update_call_log)
+                {
+                    update_call_log = 0;
+                    sprintf (msgbuf, "%s.new", cidlog);
+                    if (access (msgbuf, F_OK) == 0)
+                    {
+                        rename (msgbuf, cidlog);
                     }
                 }
                 /* if no serial port, skip TTY code */
@@ -849,7 +862,7 @@ int doModem()
 int initModem(char *ptr, int maxtry)
 {
     int num, size, try, ret = 2;
-    char buf[BUFSIZ], *bufp;
+    char buf[BUFSIZ];
     char msgbuf[BUFSIZ];
 
     /* send string to modem */
@@ -975,7 +988,7 @@ void doPoll(int events, int mainsock)
 {
   int num, pos, sd = 0, ret, cnt = 0;
   char buf[BUFSIZ], msgbuf[BUFSIZ];
-  char *sptr, *eptr, *ptr, *label;
+  char *sptr, *eptr, *label;
 
   /*
    * Poll is configured for POLLIN and POLLPRI events
@@ -1141,7 +1154,16 @@ void doPoll(int events, int mainsock)
               sprintf(msgbuf, "Client %d from %s connected.\n", sd, ipaddr[sd]);
               logMsg(LEVEL3, msgbuf);
             }
+            if (hangup)
+            { 
+              sprintf (msgbuf, OPTION "hangup" CRLF);
+              ret = write (sd, msgbuf, strlen(msgbuf));
+            }
           }
+          /* End of startup messages */
+          sprintf(msgbuf, "%s%s", ENDSTARTUP, CRLF);
+          ret = write(sd, msgbuf, strlen(msgbuf));
+          logMsg(LEVEL3, msgbuf);
         }
       }
       else
@@ -1456,6 +1478,247 @@ void doPoll(int events, int mainsock)
                 logMsg(LEVEL3, msgbuf);
                 writeLog(cidlog, buf);
                 writeClients(mainsock, buf);
+              }
+              else if (strncmp (buf, REQLINE, strlen(REQLINE)) == 0)
+              {
+                /* 
+                 * Found a REQ: line
+                 * Perform the requested action and send a response
+                 * back to the client
+                 */
+                 logMsg(LEVEL2, buf);
+                 if (strncmp (buf + strlen(REQLINE), RELOAD,
+                              strlen (RELOAD)) == 0)
+                 {
+                    long position = 0;
+
+                    if (logptr) {
+                        position = ftell (logptr);
+                    }
+                    reload (1);
+                    if (logptr)
+                    {
+                       *buf = 0;
+                       cnt = 0;
+                       fseek (logptr, position, SEEK_SET);
+                       while (fgets (msgbuf, sizeof (msgbuf), logptr) != 0)
+                       {
+                           cnt += sizeof (INFOLINE) + strlen (msgbuf);
+                           if ((unsigned)cnt >= sizeof (buf) - 2) break;
+                           strcat (buf, INFOLINE);
+                           strcat (buf, msgbuf);
+                       }
+                    }
+                    else
+                    {
+                       strcpy (buf, INFOLINE "Alias, blacklist and whitelist files have been read" CRLF);
+                    }
+                    ret = write (polld[pos].fd, BEGIN_DATA, strlen (BEGIN_DATA));
+                    ret = write (polld[pos].fd, buf, strlen(buf));
+                    ret = write (polld[pos].fd, END_DATA, strlen (END_DATA));
+                 }
+                 else if (strncmp (buf + strlen(REQLINE), UPDATE, strlen (UPDATE)) == 0)
+                 {
+                    FILE        *respHandle;
+                    char        *multi = "", *ignore;
+
+                    if (strstr (buf + strlen(REQLINE), UPDATES))
+                        multi = "--multi";
+                    sprintf (msgbuf, "cidupdate -a %s -c %s %s < /dev/null",
+                             cidalias, cidlog, multi);
+                    respHandle = popen (msgbuf, "r");
+                    strcat(msgbuf, "\n");
+                    logMsg(LEVEL2, msgbuf);
+                    strcpy (msgbuf, INFOLINE);
+                    ptr = msgbuf + sizeof (INFOLINE) - 1;
+                    cnt = sizeof (msgbuf) - sizeof (INFOLINE);
+                    ignore = fgets (ptr, cnt, respHandle);
+                    if (strstr(msgbuf, NOCHANGES))
+                    {
+                        /* There were no changes to the call log */
+                        ret = write (polld[pos].fd, BEGIN_DATA,
+                                     strlen (BEGIN_DATA));
+                    }
+                    else
+                    {
+                        /* There were changes to the call log */
+                        ret = write (polld[pos].fd, BEGIN_DATA1,
+                                     strlen (BEGIN_DATA1));
+                    }
+                    ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                    while (fgets (ptr, cnt, respHandle))
+                    {
+                        ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                    }
+                    ret = write (polld[pos].fd, END_DATA, strlen (END_DATA));
+                    pclose (respHandle);
+                 }
+                 else if (strncmp (buf + strlen(REQLINE), REREAD, strlen (REREAD)) == 0)
+                 {
+                    sendLog (polld[pos].fd, buf);
+                 }
+                 else 
+                 {
+                    char *filename = "", *ptr, *type = "";
+
+                    ptr = buf + strlen(REQLINE);
+                    if (strncmp (ptr, BLK_LST , strlen(BLK_LST)) == 0)
+                    {
+                       filename = blacklist;
+                       ptr += strlen(BLK_LST);
+                       type = "Blacklist";
+                    }
+                    else if (strncmp (ptr, ALIAS_LST , strlen(ALIAS_LST)) == 0)
+                    {
+                       filename = cidalias;
+                       ptr += strlen(ALIAS_LST);
+                       type = "Alias";
+                    }
+                    else if (strncmp (ptr, WHT_LST , strlen(WHT_LST)) == 0)
+                    {
+                       filename = whitelist;
+                       ptr += strlen(WHT_LST);
+                       type = "Whitelist";
+                    }
+                    else if (strncmp (ptr, INFO_REQ, strlen(INFO_REQ)) == 0)
+                    {
+                       char  name[CIDSIZE], number[CIDSIZE], *temp;
+                       int   which;
+
+                        ptr += strlen(INFO_REQ) + 1;
+                        *strchr (ptr, '&') = 0;
+                        strncpy (number, ptr, CIDSIZE-1);
+                        number[CIDSIZE-1] = 0;
+                        ptr += strlen (number) + 2;
+                        strncpy (name, ptr, CIDSIZE-1);
+                        name[CIDSIZE-1] = 0;
+                        which = findAlias (name, number);
+                        switch (which)
+                        {
+                            case NMBRNAME:
+                                temp = NMBRNAME_TXT;
+                                break;
+                            case NMBRONLY:
+                                temp = NMBRONLY_TXT;
+                                break;
+                            case NMBRDEP:
+                                temp = NMBRDEP_TXT;
+                                break;
+                            case NAMEONLY:
+                                temp = NAMEONLY_TXT;
+                                break;
+                            case NAMEDEP:
+                                temp = NAMEDEP_TXT;
+                                break;
+                            default:
+                                temp = "";
+                                break;
+                        }
+                        ret = write (polld[pos].fd, BEGIN_DATA3,
+                                     strlen (BEGIN_DATA3));
+                        sprintf (msgbuf, INFOLINE "alias %s\n", temp);
+                        logMsg(LEVEL2, msgbuf);
+                        ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+
+                        which = onBlackWhite (name, number);
+                        switch (which)
+                        {
+                            case 0:
+                                temp = "neither";
+                                break;
+                            case 1:
+                                temp = "black name";
+                                break;
+                            case 2:
+                                temp = "white name";
+                                break;
+                            case 5:
+                                temp = "black number";
+                                break;
+                            case 6:
+                                temp = "white number";
+                                break;
+                            default:
+                                temp = "";
+                                break;
+                        }
+                        sprintf (msgbuf, INFOLINE "%s\n" END_RESP, temp);
+                        logMsg(LEVEL2, msgbuf);
+                        ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+
+                        filename = "Dummy";
+                        *ptr = 0;
+                    }
+                    if (strlen (filename) < 3)
+                    {
+                        *strchr (ptr, ' ') = 0;
+                        sprintf (msgbuf,
+                                 "Unable to handle %s request - Ignored.\n",
+                                 ptr);
+                        logMsg(LEVEL1, msgbuf);
+                    }
+                    else if (strlen (ptr) > 4)
+                    {
+                        FILE        *respHandle;
+
+                        ptr++;
+                        sprintf (msgbuf, "ncidutil \"%s\" %s %s 2>&1",
+                                 filename, type, ptr);
+                        respHandle = popen (msgbuf, "r");
+                        strcat(msgbuf, "\n");
+                        logMsg(LEVEL2, msgbuf);
+                        ret = write (polld[pos].fd, BEGIN_DATA2,
+                                     strlen (BEGIN_DATA2));
+                        strcpy(msgbuf, RESPLINE);
+                        ptr = msgbuf + sizeof (RESPLINE) - 1;
+                        cnt = sizeof (msgbuf) - sizeof (RESPLINE);
+                        while (fgets (ptr, cnt, respHandle))
+                        {
+                            ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                            logMsg(LEVEL2, msgbuf);
+                        }
+                        ret = write (polld[pos].fd, END_RESP, strlen (END_RESP));
+                        pclose (respHandle);
+                    }
+                 }
+              }
+              else if (strncmp (buf, WRKLINE, strlen(WRKLINE)) == 0)
+              {
+                /* 
+                 * Found a WRK: line
+                 * Perform the requested work on behalf of the client
+                 */
+                 logMsg(LEVEL2, buf);
+                 if (strncmp (buf + strlen(WRKLINE), ACPT_LOG,
+                     strlen (ACPT_LOG)) == 0)
+                 {
+                    if (strstr (buf + strlen(WRKLINE), ACPT_LOGS)) {
+                        sprintf (msgbuf,
+                                 "for f in %s.*[0-9]; do mv $f.new $f; done",
+                                 cidlog);
+                        ret = system (msgbuf);
+                        strcat(msgbuf, "\n");
+                        logMsg(LEVEL2, msgbuf);
+                    }
+                    sprintf (msgbuf, "mv %s.new %s", cidlog, cidlog);
+                    ret = system (msgbuf);
+                    strcat(msgbuf, "\n");
+                    logMsg(LEVEL2, msgbuf);
+                 }
+                 else if (strncmp (buf + strlen(WRKLINE), RJCT_LOG,
+                          strlen (RJCT_LOG)) == 0)
+                 {
+                    if (strstr (buf + strlen(WRKLINE), RJCT_LOGS)) {
+                        sprintf (msgbuf, "rm %s.*.new",cidlog);
+                        ret = system (msgbuf);
+                        strcat(msgbuf, "\n");
+                        logMsg(LEVEL2, msgbuf);
+                    }
+                    sprintf (msgbuf, "rm %s.new", cidlog);
+                    ret = system (msgbuf);
+                    strcat(msgbuf, "\n");
+                    logMsg(LEVEL2, msgbuf);
+                 }
               }
               else
               {
@@ -1925,7 +2188,7 @@ void writeClients(int mainsock, char *inbuf)
 void sendLog(int sd, char *logbuf)
 {
     struct stat statbuf;
-    char **ptr, *iptr, *optr, input[BUFSIZ], msgbuf[BUFSIZ], buf[BUFSIZ];
+    char **ptr, *iptr, *optr, input[BUFSIZ], msgbuf[BUFSIZ];
     FILE *fp;
     int ret, len;
 
@@ -2048,6 +2311,7 @@ void writeLog(char *logf, char *logbuf)
     char msgbuf[BUFSIZ];
 
     /* write to server log */
+    sprintf(msgbuf, "%s\n", logbuf);
     logMsg(LEVEL3, msgbuf);
 
     if ((logfd = open(logf, O_WRONLY | O_APPEND)) < 0)
@@ -2074,7 +2338,7 @@ void writeLog(char *logf, char *logbuf)
 
 void sendInfo(int mainsock)
 {
-    char buf[BUFSIZ], *ptr;
+    char buf[BUFSIZ];
 
     userAlias("", "", infoline);
     sprintf(buf, "%s%s%s%s%d%s%s%s",CIDINFO, LINE, infoline, \
@@ -2299,8 +2563,8 @@ void reload(int sig)
     char msgbuf[BUFSIZ];
 
     sprintf(msgbuf,
-      "Received Signal %d: %s\nReloading alias %s: %s\n", sig,
-      strsignal(sig), hangup ? ", blacklist, and whitelist files" : "file",
+      "Received Signal %d: %s\nReloading alias%s: %s\n", sig,
+      strsignal(sig), hangup ? ", blacklist, and whitelist files" : " file",
       strdate(WITHSEP));
     logMsg(LEVEL1, msgbuf);
 
@@ -2330,6 +2594,27 @@ void reload(int sig)
     if (doList(blacklist, blklist) || doList(whitelist, whtlist))
          errorExit(-114, 0, 0);
     }
+}
+
+/*
+ * new CID call log signal
+ *
+ * replace cidcall.log file with cidcall.log.new
+ */
+void update_cidcall_log (int sig)
+{
+    char msgbuf[BUFSIZ];
+
+    sprintf (msgbuf,
+      "Received Signal %d: %s\nReplacing %s with %s.new: %s\n", sig,
+      strsignal(sig), cidlog, cidlog, strdate(WITHSEP));
+    logMsg(LEVEL1, msgbuf);
+    /*
+     * can't replace log file now because it may be in the process of
+     * being written to.  Set the flag value so that it can be updated
+     * when it is safe to do so.
+     */
+    update_call_log = 1;
 }
 
 /* ignored signals */

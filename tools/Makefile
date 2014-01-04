@@ -1,4 +1,4 @@
-PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl wct.pl
+PLSOURCE	= cidcall.pl cidalias.pl cidupdate.pl wct.pl ncidutil.pl
 SHSOURCE	= 
 ETCFILE     =
 FILES		= Makefile $(PLSOURCE) $(SHSOURCE) $(MANSRC)

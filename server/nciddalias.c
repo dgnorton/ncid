@@ -1,7 +1,7 @@
 /*
  * nciddalias.c - This file is part of ncidd.
  *
- * Copyright (c) 2005-2013
+ * Copyright (c) 2005-2014
  * by John L. Chmielewski <jlc@users.sourceforge.net>
  *
  * ncidd is free software: you can redistribute it and/or modify
@@ -24,10 +24,7 @@ char *cidalias = CIDALIAS;
 
 struct alias alias[ALIASSIZE];
 
-extern int errorStatus;
-extern char *getWord();
-
-int doAlias(), nextAlias();
+int doAlias(), nextAlias(), findAlias();
 char *cpy2mem();
 void builtinAlias(), userAlias(), getAlias(), setAlias(), rmaliases();
 
@@ -126,11 +123,12 @@ int doAlias()
         logMsg(LEVEL1, msgbuf);
         return 0;
     }
+        fnptr = cidalias;
 
     /* read each line of file, one line at a time */
     for (lc = 1; fgets(input, BUFSIZ, fp) != NULL; lc++)
     {
-        inptr = getWord(input, word, lc);
+        inptr = getWord(fnptr, input, word, lc);
 
         /* line containing only <NL> or is a comment line*/
         if (inptr == 0 || word[0] == '#') continue;
@@ -238,7 +236,7 @@ void getAlias(char *inptr, int lc)
 {
     char word[BUFSIZ];
 
-    inptr = getWord(inptr, word, lc);
+    inptr = getWord(fnptr, inptr, word, lc);
 
     if (word[0] == '#') return; /* rest of line is comment */
 
@@ -254,16 +252,16 @@ void setAlias(char *inptr, int lc, char *wdptr, int type)
     char *mem = 0;
 
     if ((cnt = nextAlias(lc)) < 0) return;
-    if (type == NMBRNAME || (inptr = getWord(inptr, wdptr, lc)))
+    if (type == NMBRNAME || (inptr = getWord(fnptr, inptr, wdptr, lc)))
     {
         mem = cpy2mem(wdptr, mem);
         if (strlen(mem) > CIDSIZE) configError(cidalias, lc, wdptr, ERRLONG);
         alias[cnt].from = mem;
-        if ((inptr = getWord(inptr, wdptr, lc)))
+        if ((inptr = getWord(fnptr, inptr, wdptr, lc)))
         {
             if (*wdptr == '=')
             {
-                if ((inptr = getWord(inptr, wdptr, lc)))
+                if ((inptr = getWord(fnptr, inptr, wdptr, lc)))
                 {
                     mem = cpy2mem(wdptr, mem);
                     if (strlen(mem) > CIDSIZE)
@@ -272,11 +270,11 @@ void setAlias(char *inptr, int lc, char *wdptr, int type)
                     if (type == NMBRNAME) alias[cnt].type = type;
                     else
                     {
-                        if ((inptr = getWord(inptr, wdptr, lc)))
+                        if ((inptr = getWord(fnptr, inptr, wdptr, lc)))
                         {
                                if (strcmp(wdptr, "if"))
                                 configError(cidalias, lc, wdptr, ERRIF);
-                            else if ((inptr = getWord(inptr, wdptr, lc)))
+                            else if ((inptr = getWord(fnptr, inptr, wdptr, lc)))
                             {
                                 mem = cpy2mem(wdptr, mem);
                                 if (strlen(mem) > CIDSIZE)
@@ -329,4 +327,20 @@ void rmaliases()
         if (alias[i].to) free(alias[i].to);
         if (alias[i].depend) free(alias[i].depend);
     }
+}
+
+int findAlias (char *name, char *number) {
+    int i;
+
+    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+    {
+        if (alias[i].to)
+        {
+            if (strcmp (alias[i].to, number) == 0)
+                return alias[i].type;
+            if (strcmp (alias[i].to, name) == 0)
+                return alias[i].type;
+        }
+    }
+    return 0;
 }

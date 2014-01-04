@@ -1,3 +1,11 @@
+ncid (0.88-1) Ubuntu-13.10 raspian; urgency=low
+
+  * rules: added test/README.test doc/NCID_Documentation.md doc/Makefile
+  *        doc/README.docdir man/man.docdir
+  *        removed dpkg-shlibdeps: debian/tmp-ncid/usr/bin/rn2ncid
+  *                                debian/tmp-ncid/usr/bin/wc2ncid
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri, 3 Jan 2014 19:06:00 -0400
+
 ncid (0.87-1) Ubuntu-13.04 raspian; urgency=low
 
   * Removed "S" from the default stop in the init scripts.

@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
 {
     int argind, i, errnum = 0;
     char msgbuf[BUFSIZ];
-    struct stat statbuf;
 
     /* global containing name of program */
     name = strrchr(argv[0], (int) '/');
@@ -217,7 +216,6 @@ int main(int argc, char *argv[])
 int getOptions(int argc, char *argv[])
 {
     int c, num;
-    int digit_optind = 0;
     int option_index = 0;
     char *ptr;
     static struct option long_options[] = {
@@ -438,7 +436,6 @@ int doPID()
 void socketConnect(int fatal)
 {
 	char msgbuf[BUFSIZ];
-	struct sockaddr_in sin;
 	struct sockaddr_in pin;
 
     /*
@@ -550,9 +547,6 @@ void processPackets(u_char *args,
          tonumber[CIDSIZ], fromnumber[CIDSIZ], callid[CIDSIZ],
          toname[CIDSIZ], fromname[CIDSIZ];
     char *line, *number, *name, *type, *ptr;
-
-    struct tm *tm;
-    struct timeval tv;
 
     alarm(PKTWAIT); /* reset SIP packet timeout alarm */
     if (msgsent & 0x1)
@@ -1358,12 +1352,9 @@ int rmCallID(char *callid)
 
 void doPCAP()
 {
-    int i, pcapret, retval;
+    int pcapret, retval;
     char errbuf[PCAP_ERRBUF_SIZE], msgbuf[BUFSIZ], filter_exp[BUFSIZ];
     char warnmsg[BUFSIZ];
-    const u_char *packet;
-    struct pcap_pkthdr hdr;     /* pcap.h                    */
-    struct ether_header *eptr;  /* net/ethernet.h            */
     struct bpf_program fp;      /* hold compiled program     */
     bpf_u_int32 maskp;          /* subnet mask               */
     bpf_u_int32 netp;           /* ip                        */
