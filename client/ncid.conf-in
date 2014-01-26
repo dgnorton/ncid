@@ -76,10 +76,11 @@ set WrapLines   "none"
 set Country     "US"
 
 # if Country = "US" then NoOne is used for the number display format
+# NoOne requires that the "ignore1" server option be set
 # if NoOne = 0, number display format is 1-xxx-xxx-xxxx
 # if NoOne = 1, number display format is xxx-xxx-xxxx
-# Default: 1
-set NoOne       1
+# Default: 0
+set NoOne       0
 
 # Disable the "Close Window" button.  When disabled use the menu Item
 # "File/Exit" to terminate program

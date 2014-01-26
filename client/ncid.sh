@@ -95,7 +95,7 @@ set AltDate     0
 set ProgDir     /usr/local/share/ncid
 set ProgName    ""
 set Country     "US"
-set NoOne       1
+set NoOne       0
 set DateSepar   "/"
 set WrapLines   "char"
 
@@ -115,6 +115,7 @@ set multi               0
 
 ### global variables that are read from the server
 set hangup              0
+set ignore1             0
 
 if {[file exists $ConfigFile]} {
     catch {source $ConfigFile}
@@ -253,7 +254,10 @@ proc retryConnect {} {
     global Host
     global Port
     global NoGUI
+    global hangup ignore1
 
+    set hangup  0
+    set ignore1 0
     if $NoGUI {after cancel retryConnect}
     connectCID $Host $Port
 }
@@ -316,7 +320,7 @@ proc getCID {} {
     global display_line_num
     global WakeUp busyIndicator
     global wakened targetTime doingLog Begin End remote_status waitMsg
-    global hangup mod_menu argument
+    global hangup mod_menu argument aliasType ignore1
 
     set msg {CID connection closed}
     set cnt 0
@@ -378,6 +382,7 @@ proc getCID {} {
             continue
         } elseif {[string match 400* $dataBlock]} {
             # NCID server has sent text to be displayed
+            doVerbose $dataBlock 1
             toplevel .reply
             wm title .reply "Server's Response"
             grid [text .reply.text -yscrollcommand ".reply.ys set" -setgrid 1 \
@@ -400,6 +405,7 @@ proc getCID {} {
             continue;
         } elseif {[string match 401* $dataBlock]} {
             # NCID server has sent text to be displayed, must ACCEPT or REJECT
+            doVerbose $dataBlock 1
             toplevel .reply
             wm title .reply "Server's Response"
             grid [text .reply.text -yscrollcommand ".reply.ys set" -setgrid 1 \
@@ -449,10 +455,13 @@ proc getCID {} {
             modal {.reply}
             continue;
         } elseif {[string match 402* $dataBlock]} {
+            doVerbose $dataBlock 1
             set remote_status ""
         } elseif {[string match 403* $dataBlock]} {
+            doVerbose $dataBlock 1
             set mod_menu 1
         } elseif {[string match 410* $dataBlock]} {
+            doVerbose $dataBlock 1
             .reply.text configure -state normal
             .reply.text delete end-1chars
             .reply.text configure -state disabled
@@ -470,6 +479,7 @@ proc getCID {} {
             }
             continue
         } elseif {[string match 411* $dataBlock]} {
+            doVerbose $dataBlock 1
             if {$mod_menu} {
                 set mod_menu 0
                 continue
@@ -479,6 +489,7 @@ proc getCID {} {
             }
             .confirm.close configure -state active
         } elseif {[string match INFO:* $dataBlock]} {
+            doVerbose $dataBlock 1
             if {$mod_menu} {
                 set menu .menubar.server
                 set temp [split $dataBlock " "]
@@ -486,7 +497,8 @@ proc getCID {} {
                 set argument [lindex $temp 2]
                 switch $fileType {
                     alias {
-                        if {$argument eq ""} {
+                        set aliasType $argument
+                        if {$argument eq "NOALIAS"} {
                             $menu entryconfigure Add*Alias* -state normal
                             $menu entryconfigure Modify* -state disabled
                         } else {
@@ -527,10 +539,12 @@ proc getCID {} {
             .reply.text configure -state disabled
             continue
         } elseif {[string match RESP:* $dataBlock]} {
+            doVerbose $dataBlock 1
             append remote_status [string range $dataBlock 6 end]
             continue
         } elseif {[string match OPT:* $dataBlock]} {
             set option [string trim [string range $dataBlock 5 end]]
+            doVerbose $dataBlock 1
             doVerbose "Set $option to 1" 1
             set $option 1
         }
@@ -1378,6 +1392,7 @@ proc makeWindow {} {
         if {$type ne "MSG:" && $type ne "NOT:"} {
             puts $Socket "REQ: INFO $number&&$name"
             flush $Socket
+            doVerbose "REQ: INFO $number&&$name" 1
         } else {Disable $m}
         break
     }
@@ -1419,10 +1434,12 @@ proc remove {menu block} {
 }
 
 proc DoList {list action entry which} {
-    global entry_ action_ list_ remote_status replace_ comment_
+    global entry_ action_ list_ remote_status replace_ comment_ name_
+    global aliasType ignore1
     set comment_ ""
     
     set entry [list [string trim [lindex $entry 13]] [string trim [lindex $entry 16]]]
+    if {$ignore1} {regsub {1-(.*)} $entry {\1} entry}
     set entry_ [lindex $entry 0]
     toplevel .confirm
     wm title .confirm "Confirmation"
@@ -1432,6 +1449,7 @@ proc DoList {list action entry which} {
     }
     set action_ $action
     set list_ $list
+    set name_ [lindex $entry 1]
     if {$list eq "black" || $list eq "white"} {
         if {$action eq "add"} {
             set _entry [join $entry "\" or \""]
@@ -1485,7 +1503,8 @@ proc DoList {list action entry which} {
     grid [button .confirm.cancel -text "Cancel" -command {destroy .confirm}] \
              -pady 10
     if {$list eq "alias"} {
-        grid [button .confirm.ok -text "Apply" -command {doit $action_ $list_ [list $entry_ $replace_] ""}] \
+        if {$aliasType eq "NOALIAS"} { set aliasType "NAMEDEP" } 
+        grid [button .confirm.ok -text "Apply" -command {doit $action_ $list_ $entry_&&$replace_ "$aliasType&&$name_"}] \
                  -pady 10 -row $row -column 1
     } else {
         grid [button .confirm.ok -text "Apply" -command {doit $action_ $list_ $entry_ $comment_}] \
@@ -1501,14 +1520,15 @@ proc DoList {list action entry which} {
     modal {.confirm}
 }
 
-proc doit {action list entry comment} {
+proc doit {action list entry extra} {
     global Socket  remote_status
 
     set remote_status "Working ..."
     grid forget .confirm.cancel .confirm.ok
     grid .confirm.close
-    puts $Socket "REQ: $list $action \"$entry\" \"$comment\""
+    puts $Socket "REQ: $list $action \"$entry\" \"$extra\""
     flush $Socket
+    doVerbose "REQ: $list $action \"$entry\" \"$extra\"" 1
 }
 
 proc aboutPopup {} {
@@ -1909,6 +1929,9 @@ if {$Country != "US" && $Country != "SE" && $Country != "NONE" && \
     exitMsg 7 "Country Code \"$Country\" is not supported.Please change it."
 }
 doVerbose "Country Code: $Country" 1
+if {$NoOne} {
+    doVerbose "Ignore leading 1" 1
+} else {doVerbose "Using leading 1" 1}
 if {$DateSepar != "/" && $DateSepar != "-" && $DateSepar != "."} {
     exitMsg 7 "Date separator \"$DateSepar\" is not supported. Please change it."
 }
