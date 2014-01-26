@@ -63,7 +63,8 @@ DEFINES      = -DCIDCONF=\"$(CONF)\" \
                -DDATALOG=\"$(DATALOG)\" \
                -DLOGFILE=\"$(LOGFILE)\" \
                -DPIDFILE=\"$(PIDFILE)\" \
-               -DLOCKFILE=\"$(LOCKFILE)\"
+               -DLOCKFILE=\"$(LOCKFILE)\" \
+               -DPROGDIR=\"$(BIN)\"
 
 # local additions to CFLAGS
 MFLAGS       = -Wmissing-declarations -Wunused-variable

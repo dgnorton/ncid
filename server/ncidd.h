@@ -103,6 +103,9 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #ifndef LOCKFILE
 #define LOCKFILE    "/var/lock/LCK.."
 #endif
+#ifndef PROGDIR
+#define PROGDIR     "/usr/bin"
+#endif
 
 #define STDOUT      1
 #define CHARWAIT    2       /* deciseconds */
@@ -118,14 +121,17 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define EMPTYLOG    "252 Call log empty"
 #define NOLOG       "253 No Call log"
 #define ENDSTARTUP  "300 End of server startup"
-#define BEGIN_DATA  "400 Start of data requiring an OK" CRLF
-#define BEGIN_DATA1 "401 Start of data requiring ACCEPT or REJECT" CRLF
-#define BEGIN_DATA2 "402 Start of data requiring no response" CRLF
-#define BEGIN_DATA3 "403 Start of INFO: data" CRLF
-#define END_DATA    "410 End of data" CRLF
-#define END_RESP    "411 End of response" CRLF
+#define BEGIN_DATA  "400 Start of data requiring OK"
+#define BEGIN_DATA1 "401 Start of data requiring ACCEPT or REJECT"
+#define BEGIN_DATA2 "402 Start of data showing status of handled request"
+#define BEGIN_DATA3 "403 Start of data defining permitted requests"
+#define END_DATA    "410 End of data"
+#define END_RESP    "411 End of response"
 
 #define NOCHANGES   "no changes"
+#define DENIED      "denied"
+#define NCIDUPDATE  "/cidupdate -a %s -c %s %s %s < /dev/null 2>&1"
+#define NCIDUTIL    "/ncidutil %s \"%s\" %s %s 2>&1"
 
 /* server warning messages */
 #define LOGMSG      "MSG: Call Log too big: (%lu > %lu) bytes%s"
@@ -161,6 +167,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define WLMSG       "Calls in the whitelist file will not be terminated"
 #define IGNORE1     "Leading 1 from a call must not be in an alias definition"
 #define INCLUDE1    "Leading 1 from a call required in an alias definition"
+#define RELOADED    "Alias, blacklist and whitelist files have been read"
 
 #define CIDLINE     "CID: "
 #define MSGLINE     "MSG: "

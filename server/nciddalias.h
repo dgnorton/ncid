@@ -39,6 +39,7 @@
 #define NAMEONLY_TXT "NAMEONLY"
 #define NAMEDEP_TXT  "NAMEDEP"
 #define LINEONLY_TXT "LINEONLY"
+#define NOALIAS_TXT  "NOALIAS"
 
 #define ERRIF        "missing 'if' before word:"
 #define ERRLONG      "word is too long:"

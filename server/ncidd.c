@@ -987,7 +987,7 @@ int addPoll(int pollfd)
 void doPoll(int events, int mainsock)
 {
   int num, pos, sd = 0, ret, cnt = 0;
-  char buf[BUFSIZ], msgbuf[BUFSIZ];
+  char buf[BUFSIZ], tmpbuf[BUFSIZ], msgbuf[BUFSIZ];
   char *sptr, *eptr, *label;
 
   /*
@@ -1157,6 +1157,11 @@ void doPoll(int events, int mainsock)
             if (hangup)
             { 
               sprintf (msgbuf, OPTION "hangup" CRLF);
+              ret = write (sd, msgbuf, strlen(msgbuf));
+            }
+            if (ignore1)
+            { 
+              sprintf (msgbuf, OPTION "ignore1" CRLF);
               ret = write (sd, msgbuf, strlen(msgbuf));
             }
           }
@@ -1486,9 +1491,9 @@ void doPoll(int events, int mainsock)
                  * Perform the requested action and send a response
                  * back to the client
                  */
-                 logMsg(LEVEL2, buf);
-                 if (strncmp (buf + strlen(REQLINE), RELOAD,
-                              strlen (RELOAD)) == 0)
+                 strcat(strcpy(msgbuf, buf), NL);
+                 logMsg(LEVEL2, msgbuf);
+                 if (strstr(buf, RELOAD))
                  {
                     long position = 0;
 
@@ -1501,66 +1506,81 @@ void doPoll(int events, int mainsock)
                        *buf = 0;
                        cnt = 0;
                        fseek (logptr, position, SEEK_SET);
-                       while (fgets (msgbuf, sizeof (msgbuf), logptr) != 0)
+                       while (fgets (tmpbuf, sizeof (tmpbuf), logptr) != 0)
                        {
-                           cnt += sizeof (INFOLINE) + strlen (msgbuf);
+                           cnt += sizeof (INFOLINE) + strlen (tmpbuf);
                            if ((unsigned)cnt >= sizeof (buf) - 2) break;
                            strcat (buf, INFOLINE);
-                           strcat (buf, msgbuf);
+                           strcat (buf, tmpbuf);
                        }
                     }
                     else
                     {
-                       strcpy (buf, INFOLINE "Alias, blacklist and whitelist files have been read" CRLF);
+                       strcpy (buf, INFOLINE RELOADED NL);
                     }
-                    ret = write (polld[pos].fd, BEGIN_DATA, strlen (BEGIN_DATA));
+                    ret = write (polld[pos].fd, BEGIN_DATA CRLF,
+                                 strlen (BEGIN_DATA CRLF));
+                    logMsg(LEVEL2, BEGIN_DATA NL);
                     ret = write (polld[pos].fd, buf, strlen(buf));
-                    ret = write (polld[pos].fd, END_DATA, strlen (END_DATA));
+                    logMsg(LEVEL2, buf);
+                    ret = write (polld[pos].fd, END_DATA CRLF,
+                                 strlen (END_DATA CRLF));
+                    logMsg(LEVEL2, END_DATA NL);
                  }
-                 else if (strncmp (buf + strlen(REQLINE), UPDATE, strlen (UPDATE)) == 0)
+                 else if (strstr (buf, UPDATE))
                  {
+                   /* can be UPDATE or UPDATES */
                     FILE        *respHandle;
-                    char        *multi = "", *ignore;
+                    char        *multi = "", *noone = "", *ignore;
 
-                    if (strstr (buf + strlen(REQLINE), UPDATES))
-                        multi = "--multi";
-                    sprintf (msgbuf, "cidupdate -a %s -c %s %s < /dev/null",
-                             cidalias, cidlog, multi);
-                    respHandle = popen (msgbuf, "r");
-                    strcat(msgbuf, "\n");
-                    logMsg(LEVEL2, msgbuf);
+                    if (strstr (buf, UPDATES)) multi = "--multi";
+                    if (ignore1) noone = "--ignore1";
+                    sprintf (tmpbuf, PROGDIR NCIDUPDATE,
+                             cidalias, cidlog, multi, noone);
+                    respHandle = popen (tmpbuf, "r");
+                    strcat(tmpbuf, "\n");
+                    logMsg(LEVEL2, tmpbuf);
                     strcpy (msgbuf, INFOLINE);
                     ptr = msgbuf + sizeof (INFOLINE) - 1;
                     cnt = sizeof (msgbuf) - sizeof (INFOLINE);
                     ignore = fgets (ptr, cnt, respHandle);
-                    if (strstr(msgbuf, NOCHANGES))
+                    if (strstr(msgbuf, NOCHANGES) || strstr(msgbuf, DENIED))
                     {
                         /* There were no changes to the call log */
-                        ret = write (polld[pos].fd, BEGIN_DATA,
-                                     strlen (BEGIN_DATA));
+                        ret = write (polld[pos].fd, BEGIN_DATA CRLF,
+                                     strlen (BEGIN_DATA CRLF));
+                        logMsg(LEVEL2, BEGIN_DATA NL);
+                        ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                        logMsg(LEVEL2, msgbuf);
                     }
                     else
                     {
                         /* There were changes to the call log */
-                        ret = write (polld[pos].fd, BEGIN_DATA1,
-                                     strlen (BEGIN_DATA1));
-                    }
-                    ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
-                    while (fgets (ptr, cnt, respHandle))
-                    {
+                        ret = write (polld[pos].fd, BEGIN_DATA1 CRLF,
+                                     strlen (BEGIN_DATA1 CRLF));
+                        logMsg(LEVEL2, BEGIN_DATA1 NL);
                         ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                        logMsg(LEVEL2, msgbuf);
+                        while (fgets (ptr, cnt, respHandle))
+                        {
+                            ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                            logMsg(LEVEL2, msgbuf);
+                        }
                     }
-                    ret = write (polld[pos].fd, END_DATA, strlen (END_DATA));
+                    ret = write (polld[pos].fd, END_DATA CRLF,
+                                 strlen (END_DATA CRLF));
                     pclose (respHandle);
+                    logMsg(LEVEL2, END_DATA NL);
                  }
-                 else if (strncmp (buf + strlen(REQLINE), REREAD, strlen (REREAD)) == 0)
+                 else if (strstr (buf, REREAD))
                  {
                     sendLog (polld[pos].fd, buf);
                  }
                  else 
                  {
-                    char *filename = "", *ptr, *type = "";
+                    char *filename = "", *ptr, *type = "", multi[BUFSIZ];
 
+                    multi[0] = '\0';
                     ptr = buf + strlen(REQLINE);
                     if (strncmp (ptr, BLK_LST , strlen(BLK_LST)) == 0)
                     {
@@ -1573,6 +1593,8 @@ void doPoll(int events, int mainsock)
                        filename = cidalias;
                        ptr += strlen(ALIAS_LST);
                        type = "Alias";
+                       if (hangup) sprintf
+                           (multi, "--multi \"%s %s\"", blacklist, whitelist);
                     }
                     else if (strncmp (ptr, WHT_LST , strlen(WHT_LST)) == 0)
                     {
@@ -1582,16 +1604,27 @@ void doPoll(int events, int mainsock)
                     }
                     else if (strncmp (ptr, INFO_REQ, strlen(INFO_REQ)) == 0)
                     {
+                       /* found a REQ: INFO line */
                        char  name[CIDSIZE], number[CIDSIZE], *temp;
                        int   which;
 
-                        ptr += strlen(INFO_REQ) + 1;
-                        *strchr (ptr, '&') = 0;
-                        strncpy (number, ptr, CIDSIZE-1);
-                        number[CIDSIZE-1] = 0;
-                        ptr += strlen (number) + 2;
-                        strncpy (name, ptr, CIDSIZE-1);
-                        name[CIDSIZE-1] = 0;
+                        /* all this in case thr REQ: line is not complete */
+                        if (strlen(ptr) < (strlen(INFO_REQ) + 1))
+                          number[0] = name[0] = 0;
+                        else
+                        {
+                          ptr += strlen(INFO_REQ) + 1;
+                          if ((temp = strchr(ptr, '&'))) *temp = 0;
+                          strncpy (number, ptr, CIDSIZE-1);
+                          number[CIDSIZE-1] = 0;
+                          if (temp)
+                          {
+                            ptr += strlen (number) + 2;
+                            strncpy (name, ptr, CIDSIZE-1);
+                            name[CIDSIZE-1] = 0;
+                          }
+                          else name[0] = 0;
+                        }
                         which = findAlias (name, number);
                         switch (which)
                         {
@@ -1611,11 +1644,12 @@ void doPoll(int events, int mainsock)
                                 temp = NAMEDEP_TXT;
                                 break;
                             default:
-                                temp = "";
+                                temp = NOALIAS_TXT;
                                 break;
                         }
-                        ret = write (polld[pos].fd, BEGIN_DATA3,
-                                     strlen (BEGIN_DATA3));
+                        ret = write (polld[pos].fd, BEGIN_DATA3 CRLF,
+                                     strlen (BEGIN_DATA3 CRLF));
+                        logMsg(LEVEL2, BEGIN_DATA3 NL);
                         sprintf (msgbuf, INFOLINE "alias %s\n", temp);
                         logMsg(LEVEL2, msgbuf);
                         ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
@@ -1642,16 +1676,20 @@ void doPoll(int events, int mainsock)
                                 temp = "";
                                 break;
                         }
-                        sprintf (msgbuf, INFOLINE "%s\n" END_RESP, temp);
-                        logMsg(LEVEL2, msgbuf);
+                        sprintf (msgbuf, INFOLINE "%s\n" END_RESP CRLF, temp);
                         ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                        sprintf (msgbuf, INFOLINE "%s\n" END_RESP NL, temp);
+                        logMsg(LEVEL2, msgbuf);
 
-                        filename = "Dummy";
+                        if (number[0] == 0 || name[0] == 0) filename = "X";
+                        else filename = "Dummy";
                         *ptr = 0;
                     }
                     if (strlen (filename) < 3)
                     {
-                        *strchr (ptr, ' ') = 0;
+                        char *temp;
+
+                        if ((temp = strchr(ptr, ' '))) *temp = 0;
                         sprintf (msgbuf,
                                  "Unable to handle %s request - Ignored.\n",
                                  ptr);
@@ -1662,13 +1700,14 @@ void doPoll(int events, int mainsock)
                         FILE        *respHandle;
 
                         ptr++;
-                        sprintf (msgbuf, "ncidutil \"%s\" %s %s 2>&1",
-                                 filename, type, ptr);
-                        respHandle = popen (msgbuf, "r");
-                        strcat(msgbuf, "\n");
-                        logMsg(LEVEL2, msgbuf);
-                        ret = write (polld[pos].fd, BEGIN_DATA2,
-                                     strlen (BEGIN_DATA2));
+                        sprintf (tmpbuf, PROGDIR NCIDUTIL,
+                                 multi, filename, type, ptr);
+                        respHandle = popen (tmpbuf, "r");
+                        strcat(tmpbuf, "\n");
+                        logMsg(LEVEL2, tmpbuf);
+                        ret = write (polld[pos].fd, BEGIN_DATA2 CRLF,
+                                     strlen (BEGIN_DATA2 CRLF));
+                        logMsg(LEVEL2, BEGIN_DATA2 NL);
                         strcpy(msgbuf, RESPLINE);
                         ptr = msgbuf + sizeof (RESPLINE) - 1;
                         cnt = sizeof (msgbuf) - sizeof (RESPLINE);
@@ -1677,8 +1716,10 @@ void doPoll(int events, int mainsock)
                             ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
                             logMsg(LEVEL2, msgbuf);
                         }
-                        ret = write (polld[pos].fd, END_RESP, strlen (END_RESP));
+                        ret = write (polld[pos].fd, END_RESP CRLF,
+                                     strlen (END_RESP CRLF));
                         pclose (respHandle);
+                        logMsg(LEVEL2, END_RESP NL);
                     }
                  }
               }
@@ -1688,7 +1729,8 @@ void doPoll(int events, int mainsock)
                  * Found a WRK: line
                  * Perform the requested work on behalf of the client
                  */
-                 logMsg(LEVEL2, buf);
+                 strcat(strcpy(msgbuf, buf), NL);
+                 logMsg(LEVEL2, msgbuf);
                  if (strncmp (buf + strlen(WRKLINE), ACPT_LOG,
                      strlen (ACPT_LOG)) == 0)
                  {
