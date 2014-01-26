@@ -13,6 +13,8 @@
 #   - improved code, improved display, and added blacklist feature
 # modified by jlc on Sat Jan 19, 2013
 #   - improved code, added long options, and added pod documentation
+# modified by jlc on Wed Jan 8, 2014
+#   - improved code, added whitelist feature, changed relust printing
 
 use strict;
 use warnings;
@@ -20,8 +22,13 @@ use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case_always);
 
 my ($help, $man, $raw);
-my ($alias, $blacklist, $name, $number, $from, $to);
-my (@multiples, %blacklisted, $line, $nbr, $index, $action, $lastAction);
+my ($alias, $blacklist, $whitelist, $name, $number, $from, $to);
+my (@multiples, $line, $nbr, $index, $action, $lastAction);
+my %listed = (bl => 0, wl => 0);
+my $blwl = "bl";
+my ($ret, $listfile, @list_files);
+
+my $ALIAS = "/etc/ncid/ncidd.alias";
 
 Getopt::Long::Configure ("bundling");
 my ($result) = GetOptions(
@@ -32,36 +39,26 @@ my ($result) = GetOptions(
 pod2usage(-verbose => 1, -exitval => 0) if $help;
 pod2usage(-verbose => 2, -exitval => 0) if $man;
 
-($alias = shift) || ($alias = "/etc/ncid/ncidd.alias");
+($alias = shift) || ($alias = $ALIAS);
 ($blacklist = $alias) =~ s/(alias)$/blacklist/;
+($whitelist = $alias) =~ s/(alias)$/whitelist/;
 
-
-if (not $raw and open (BLACKFILE, $blacklist)) {
-    while (<BLACKFILE>) {
-        next if /^#/;
-        chomp;
-        next if $_ eq  '';
-        s /\s*#.*//;
-        if (/^^?[^'"]/) {
-            @multiples = split /\s+/, $_;
-            foreach my $item (@multiples) {
-                $blacklisted{$item} = ($item =~ s/^\^// ? 2 : 1);
-            }
-        } else {
-            $_ = substr $_, 1, -1;
-            $blacklisted{$_} = s/^\^// ? 2 : 1;
-        }
-    }
+@list_files = ($blacklist, $whitelist);
+foreach my $file (@list_files)
+{
+    $listfile = $file;
+    &doList;
+    $blwl = "wl";
 }
 
 open(ALIASFILE, $alias) || die "Could not open $alias\n";
 
 while (<ALIASFILE>) {
+    next if (/^\s*#/ || /^$/);
     $line = $number = $name = $nbr = undef;
     if (/^\s*alias/) {
         if ($raw) {print;}
-        elsif (/NAME/) {
-
+        elsif (/alias NAME/) {
             if (/\s+if\s+\d+\s*$/) {
                 # alias NAME __ = "___" if (phone number)
                 ($name, $number) = /.*=\s+"?([^"]*)"?\s+if\s+(\d+)/;
@@ -87,7 +84,7 @@ while (<ALIASFILE>) {
                 $line = "Change name from: $from To: $to\n";
                 $name = $to;
             }
-        } elsif (/NMBR/) {
+        } elsif (/alias NMBR/) {
             if (/\s+if\s+/) {
                 ($number, $name) = /.*=\s+(\d+)\s+if\s+"?([^"]*)"?/;
                 ($nbr = $number) =~ s/(\d{3})(\d{3})(\d{4})\s*$/($1)$2-$3/;
@@ -101,34 +98,52 @@ while (<ALIASFILE>) {
                 }
                 $line = "Change number from: $from To: $to\n";
             }
+        } elsif (/alias LINE/) {
+                ($from, $to) = /.*LINE\s+"?([^"]*)"?\s+=\s+"?([^"]*)"?/;
+                chomp $to;
+                $line = "Change line from: $from To: $to\n";
+                $name = $to;
         } else {
-            ($from, $to) = /alias\s+"?([^"]*)"?\s+=\s+"?([^"]*)"?/;
+            ($from, $to) = /\s+"?([^"]*)"?\s+=\s+"?([^"]*)"?/;
             chomp $to;
-            $number = $to;
-            $from =~ s/\d?(\d\d\d)(\d\d\d)(\d\d\d\d)/($1)$2-$3/;
-            $to =~ s/\d?(\d\d\d)(\d\d\d)(\d\d\d\d)/($1)$2-$3/;
             $line = "Change: $from To: $to\n";
+            $name = $to;
+        }
+        if (defined $name) {
+            if (!defined $ret && ($listed{$name}{"bl"} || $listed{$name}{"wl"})) {
+             print "\n"
+            };
+            undef $ret;
+            print "Alias:     $line";
+            if ($listed{$name}{"bl"}) { print "BlackList: $name\n" }
+            if ($listed{$name}{"wl"}) { print "WhiteList: $name\n" }
+            if ($listed{$name}{"bl"} || $listed{$name}{"wl"}) {
+                print "\n";
+                $ret = 1;
+            };
         }
     }
-    next unless $line;
-    if (defined $name and exists $blacklisted{$name}) {
-        $action = 'Hangup';
-    } elsif (defined $number and exists $blacklisted{$number}) {
-        $action = 'Hangup';
-    } else {
-        $action = 'Alias ';
-        foreach my $key (keys %blacklisted) {
-            $index = defined $name ? index $name, $key : -1;
-            $index = index $number, $key if $index == -1 and defined $number;
-            next if $index == -1;
-            next if $blacklisted{$key} == 2 && $index;
-            $action = 'Hangup';
-            last;
+}
+
+sub doList {
+
+    if (not $raw and open (LISTFILE, $listfile)) {
+        while (<LISTFILE>) {
+        next if (/^\s*#/ || /^\s*$/);
+            chomp;
+            s /\s*#.*//;
+            if (/^^?[^'"]/) {
+                @multiples = split /\s+/, $_;
+                foreach my $item (@multiples) {
+                    $listed{$item}{$blwl} = 1;
+                }
+            } else {
+                $_ = substr $_, 1, -1;
+                $listed{$_}{$blwl} = 1;
+            }
         }
     }
-    print "\n" if defined $lastAction and $action ne $lastAction;
-    print "$action $line";
-    $lastAction = $action;
+    close(LISTFILE);
 }
 
 =head1 NAME
@@ -144,8 +159,14 @@ cidalias [--help|-h]
 
 =head1 DESCRIPTION
 
-The cidalias script displays aliases in the alias file and in the
-blacklist file.
+The cidalias script displays aliases in the alias file.  If there are
+any aliases in the blacklist and whitelist files, it will display the
+alias names.
+
+The blacklist and whitelist files must be in the same directory as the
+alias file.  If the location of the alias file is changed on the command
+line, the the path to the alias file is also used as the path to the
+blacklist and whitelist files.
 
 =head2 Options
 
@@ -173,9 +194,18 @@ Default: Format the alias file
 
 =item aliasfile
 
-The NCID alias file.
+The NCID alias file.  The path given for the alias file is
+also applied to the blacklist and whitelist files.
 
-Default: /etc/ncid/ncidd.alias & /etc/ncid/ncidd.blacklist
+=over 7
+
+=item Defaults:
+
+/etc/ncid/ncidd.alias,
+/etc/ncid/ncidd.blacklist,
+/etc/ncid/ncidd.whitelist
+
+=back
 
 =back
 

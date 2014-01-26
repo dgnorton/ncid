@@ -3,10 +3,11 @@
 # cidupdate - update Caller ID call log file or files using the
 # current alias file.
 #
-# Copyright (c) 2002-2013 by
+# Copyright (c) 2002-2014 by
 #   Aron Green,
 #   John L. Chmielewski <jlc@users.sourceforge.net> and
 #   Steve Limkemann
+#   Chris Lenderman
 #
 # Created by Aron Green on Mon Nov 25, 2002
 #   - Based on cidlog and cidalias
@@ -32,8 +33,10 @@
 #   - Modified to work either from the command line or when executed by
 #     the NCID server on behalf of the user via the NCID client.
 #   - Added the ability to update all of the CID call logs.
-# modified by John L. Chmielewski on Fri Nov 15, 2013
-#   - fixed a couple of problems
+# modified by Chris Lenderman on Mon Jan 6, 2014
+#   - added OUT PID BLK types, replaced printf with print
+# modified by John L. Chmielewski on Fri Jan 24, 2014
+#   - fixed a couple of problems, added --multi, and --ignore1
 
 use strict;
 use warnings;
@@ -43,7 +46,7 @@ use Getopt::Long qw(:config no_ignore_case_always);
 my ($alias, $cidlog, $help, $man, $changed);
 my $newcidlog;
 my (@aliases, %hash);
-my ($type, $from, $to, $value, $mod_time, $logType);
+my ($type, $from, $to, $value, $mod_time, $logType, $ignore1);
 my ($date, $time, $line, $number, $mesg, $name, @log_files);
 my ($partialNumber, $length, $newValue, $multiple, $found);
 
@@ -56,16 +59,18 @@ my ($result) = GetOptions(
     'man|m'         => \$man,
     'aliasfile|a=s' => \$alias,
     'cidlog|c=s'    => \$cidlog,
-    'multi'         => \$multiple
+    'multi'         => \$multiple,
+    'ignore1'         => \$ignore1
  ) || pod2usage(2);
 pod2usage(-verbose => 1, -exitval => 0) if $help;
 pod2usage(-verbose => 2, -exitval => 0) if $man;
 
-$alias = $ALIAS if !$alias;
-$cidlog = $CIDLOG if !$cidlog;
+$alias = $ALIAS if !defined $alias;
+$cidlog = $CIDLOG if !defined $cidlog;
 
 @log_files = glob "$cidlog*";
-@log_files = grep {/^$cidlog\.?\d*$/o} @log_files;
+die "Could not open $cidlog: $!\n" if $#log_files == -1;
+
 $#log_files = 0 unless $multiple;
 
 open(ALIASFILE, $alias) || die "Could not open $alias: $!\n";
@@ -109,14 +114,15 @@ foreach $cidlog (@log_files) {
     open(NEWCIDLOG, ">$newcidlog") || die "Could not open $newcidlog: $!\n";
 
     while (<CIDLOG>) {
-        if (/CID|EXTRA|HUP/) {
+        if (/CID|HUP|OUT|PID|BLK/) {
             ($logType, $date, $time, $line, $number, $mesg, $name) =
                     (split /\*/) [0, 2, 4, 6, 8, 10, 12];
 
             if ($number eq 'RING') {
-                printf(NEWCIDLOG);
+                print NEWCIDLOG;
                 next;
             }
+            $number =~ s/^1// if $ignore1;
             if (exists $hash{$number}) {
                 if ($hash{$number}[0] eq 'NAME') {
                     if ($hash{$number}[1] ne $name) {
@@ -155,10 +161,10 @@ foreach $cidlog (@log_files) {
                     }
                 }
             }
-            printf(NEWCIDLOG
-                "$logType*DATE*$date*TIME*$time*LINE*$line*NMBR*$number*MESG*$mesg*NAME*$name*\n");
+            print NEWCIDLOG
+                "$logType*DATE*$date*TIME*$time*LINE*$line*NMBR*$number*MESG*$mesg*NAME*$name*\n";
         } else {
-            printf(NEWCIDLOG);
+            print NEWCIDLOG;
         }
     }
     no_change ($cidlog);
@@ -250,6 +256,7 @@ cidupdate -  update aliases in the NCID call file
 cidupdate [--help|-h]
           [--man|-m]
           [--multi]
+          [--ignore1]
           [--aliasfile|-a <aliasfile>]
           [--cidlog|-c <cidlog>]
 
@@ -257,9 +264,14 @@ cidupdate [--help|-h]
 
 The cidupdate script updates the current call log file
 (cidcall.log) using the entires found in the alias file
-(ncidd.alias).  All of the the call log files (cidcall.log,
-cidcall.log.1, cidcall.log.2, etc.) are updated instead if
-the --multi option is present.
+(ncidd.alias).
+
+If the "--multi" option is present, all of the the call log files
+(cidcall.log, cidcall.log.1, cidcall.log.2, etc.) are updated.
+
+If the  "--ignore1" option is present, all call file numbers will
+have the leading 1, if any, ignored for a comparison to an alias
+number.
 
 
 =head2 Options
@@ -277,6 +289,11 @@ Prints the manual page and exits
 =item --multi
 
 Updates all of the call log files
+
+=item --ignore1
+
+Ignores a leading 1 in a call file number.
+Required when the ignore1 server option is set.
 
 =item -a <aliasfile>, --aliasfile <aliasfile>
 
