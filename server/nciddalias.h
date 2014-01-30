@@ -55,6 +55,5 @@ struct alias
 };
 
 extern char *name, *cidalias;
-extern char *cpy2mem();
+extern char *cpy2mem(), *findAlias();
 extern void builtinAlias(), userAlias(), rmaliases();
-extern int  findAlias();

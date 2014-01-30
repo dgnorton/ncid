@@ -203,14 +203,15 @@ ncidutil [options] <arguments>
 The ncidutil script is designed to be called by the NCID server in
 response to client requests.  Five arguments are required.
 
-The ncidutil script can add, modify or remove a "if" type alias from
-the alias file.  If a alias is modified and if the hangup option of
-the server is enabled, ncidutil will modify the alias if it is also
-in either or both of the blacklist and whitelist files.
+The ncidutil script can add, modify or remove a an alias from the
+alias file.  If an alias is modified or removed and if the hangup
+option of the server is enabled, ncidutil will add or remove the
+alias entry in the blacklist and/or whitelist files.
 
-If the "--multi" option is given, ncidutil can add or remove entries
-from the blacklist and whitelist files.  The entry can be a alias from
-the alias file.
+The "--multi" option is used to determine if the blacklist and
+whitelist files should be search for an alias or if a entry
+should be added or removed from the files.  The entry can be
+a alias in the alias file.
 
 =head2 Options
 

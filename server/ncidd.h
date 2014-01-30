@@ -120,7 +120,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define NOLOGSENT   "251 Call log not sent"
 #define EMPTYLOG    "252 Call log empty"
 #define NOLOG       "253 No Call log"
-#define ENDSTARTUP  "300 End of server startup"
+#define ENDSTARTUP  "300 End of connection startup"
 #define BEGIN_DATA  "400 Start of data requiring OK"
 #define BEGIN_DATA1 "401 Start of data requiring ACCEPT or REJECT"
 #define BEGIN_DATA2 "402 Start of data showing status of handled request"

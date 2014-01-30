@@ -317,7 +317,8 @@ int onList(char *namep, char *nmbrp, char **list, int flag)
  *      0 - Name is on the list
  *      1 - Number is on the list
  */
-int onBlackWhite (char *namep, char *nmbrp) {
+int onBlackWhite (char *namep, char *nmbrp)
+{
     int ret;
 
     if ((ret = onList (namep, nmbrp, whtlist, 1)))

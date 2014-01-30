@@ -1158,11 +1158,15 @@ void doPoll(int events, int mainsock)
             { 
               sprintf (msgbuf, OPTION "hangup" CRLF);
               ret = write (sd, msgbuf, strlen(msgbuf));
+              sprintf(msgbuf, "Sent 'hangup' option to client\n");
+              logMsg(LEVEL3, msgbuf);
             }
             if (ignore1)
             { 
               sprintf (msgbuf, OPTION "ignore1" CRLF);
               ret = write (sd, msgbuf, strlen(msgbuf));
+              sprintf(msgbuf, "Sent 'ignore1' option to client\n");
+              logMsg(LEVEL3, msgbuf);
             }
           }
           /* End of startup messages */
@@ -1625,28 +1629,7 @@ void doPoll(int events, int mainsock)
                           }
                           else name[0] = 0;
                         }
-                        which = findAlias (name, number);
-                        switch (which)
-                        {
-                            case NMBRNAME:
-                                temp = NMBRNAME_TXT;
-                                break;
-                            case NMBRONLY:
-                                temp = NMBRONLY_TXT;
-                                break;
-                            case NMBRDEP:
-                                temp = NMBRDEP_TXT;
-                                break;
-                            case NAMEONLY:
-                                temp = NAMEONLY_TXT;
-                                break;
-                            case NAMEDEP:
-                                temp = NAMEDEP_TXT;
-                                break;
-                            default:
-                                temp = NOALIAS_TXT;
-                                break;
-                        }
+                        temp = findAlias (name, number);
                         ret = write (polld[pos].fd, BEGIN_DATA3 CRLF,
                                      strlen (BEGIN_DATA3 CRLF));
                         logMsg(LEVEL2, BEGIN_DATA3 NL);

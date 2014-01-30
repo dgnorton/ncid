@@ -266,13 +266,11 @@ The cidupdate script updates the current call log file
 (cidcall.log) using the entires found in the alias file
 (ncidd.alias).
 
-If the "--multi" option is present, all of the the call log files
-(cidcall.log, cidcall.log.1, cidcall.log.2, etc.) are updated.
+If the "--multi" option is present, the current cidcall.log file
+and previous ones are updated.
 
-If the  "--ignore1" option is present, all call file numbers will
-have the leading 1, if any, ignored for a comparison to an alias
-number.
-
+If the  "--ignore1" option is present, all numbers in the call file
+will have the leading 1 ignored, if any, to match an alias number.
 
 =head2 Options
 

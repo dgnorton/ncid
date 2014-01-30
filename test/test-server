@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Created by John L. Chmielewski on Sun June 11, 2006
-# Last modified by jlc on Sun Sep 23, 2012
+# Last modified by jlc on Sun Jan 20, 2014
 
 # script runs ncidd in debug  or Mac OS X Launchd mode on port 3334
 # for testing a server or a client
@@ -20,18 +20,18 @@ MODE="$2"
 shift
 shift
 
-touch T-data.log T-alias
+touch T-data
 
 [ -f T-conf ] || \
 {
 # create test configuration file
 cat << EOF > T-conf
 set verbose = 3
-set cidlog = T-call.log
-set datalog = T-data.log
+set cidlog = T-call
+set datalog = T-data
 set cidalias = T-alias
-set blacklist = T-blacklist
-set whitelist = T-whitelist
+set blacklist = T-black
+set whitelist = T-white
 set pidfile = T-pid
 set ttyport = vmodem0
 set port = 3334
@@ -40,23 +40,30 @@ send cidinfo
 EOF
 }
 
-[ -f T-blacklist ] || \
+[ -f T-call ] || \
 {
-# create test blacklist file
-cat << EOF > T-blacklist
-PRIVATE
-1999
-EOF
+    # create test call log from running call log
+    cp /var/log/cidcall.log T-call
 }
 
-[ -f T-whitelist ] || \
+[ -f T-alias ] || \
 {
-# create test whitelist file
-cat << EOF > T-whitelist
-19995551212
-EOF
+    # create test alias file from default alias file
+    cp ../server/ncidd.alias T-alias
+}
+
+[ -f T-black ] || \
+{
+    # create test blacklist file from default blacklist file
+    cp ../server/ncidd.blacklist T-black
+}
+
+[ -f T-white ] || \
+{
+    # create test whitelist file from default whitelist file
+    cp ../server/ncidd.whitelist T-white
 }
 
 # default server command line
 # command lines options can be added
-$NCID $MODE -C T-conf -L T-logfile $*
+$NCID $MODE -C T-conf -L T-log $*

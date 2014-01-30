@@ -24,8 +24,8 @@ char *cidalias = CIDALIAS;
 
 struct alias alias[ALIASSIZE];
 
-int doAlias(), nextAlias(), findAlias();
-char *cpy2mem();
+int doAlias(), nextAlias();
+char *cpy2mem(), *findAlias();
 void builtinAlias(), userAlias(), getAlias(), setAlias(), rmaliases();
 
 /*
@@ -330,18 +330,23 @@ void rmaliases()
     }
 }
 
-int findAlias (char *name, char *number) {
+char *findAlias (char *name, char *number) {
     int i;
+    char *ret;
 
+    ret = NOALIAS_TXT;
     for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
     {
-        if (alias[i].to)
+        if (strcmp (alias[i].to, number) == 0)
         {
-            if (strcmp (alias[i].to, number) == 0)
-                return alias[i].type;
-            if (strcmp (alias[i].to, name) == 0)
-                return alias[i].type;
+            ret = alias[i].type_txt;
+            break;
+        }
+        if (strcmp (alias[i].to, name) == 0)
+        {
+            ret = alias[i].type_txt;
+            break;
         }
     }
-    return 0;
+    return ret;
 }

@@ -112,6 +112,7 @@ set msgType            ""
 set waitMsg             0
 set mod_menu            0
 set multi               0
+set mdisabled           0
 
 ### global variables that are read from the server
 set hangup              0
@@ -171,33 +172,44 @@ HUP:  Hangup    - blacklisted call hangup
 BLK:  Blocked   - blacklisted call blocked
 PID:  Phone ID  - Caller ID from a smart phone
 MSG:  Message   - message from a user or NCID
-NOT:  Notice    - Notice of a smart phone message
+NOT:  Notice    - a smart phone message notice
 "
 
 set serverHelp \
 "
-The \"Reload alias \[BL & WL\] files\" menu item: reloads the
-alias file. If the hangup feature was enabled in ncidd.conf
-it reloads the alias, blacklist (BL), and whitelist files (WL).
+\"Reload alias file\" menu entry:
+    Server reloads its Alias file
 
-The hangup feature also adds the blacklist and whitelist
-menu entries.
+If the hangup feature was enabled in the server ncidd.conf
+file, the above menu entry item becomes:
 
-To add/modify/delete an alias or add/remove an entry from the
-blacklist or whitelist, you need to highlight the line in the
-history file.
+\"Reload alias and list files\" menu entry:
+    Server reloads its Alias, Blacklist, and Whitelist files.
 
-Once a line is highlited, you can remove the highlite by clicking
-outside the history window and outside the message input area.
+\"Update current call log\" menu entry:
+    Server replaces items in its cidcall.log file with aliases
+    in its ncidd.alias file.
+
+\"Update all call logs\" menu entry:
+    Server replaces items in its current cidcall.log file and
+    previous ones with files with aliases in its ncidd.alias file.
+
+\"Reread call log\" menu entry:
+    Server resends the cidcall.log file.
+
+Selecting a line in the history window with a supported alias
+type will enable an alias menu entry.  The hangup option also
+adds the blacklist and whitelist menu entries.
+
+You can remove a line selection by clicking below the history
+window and outside the message input area.
 
 Once you modify an alias, you must:
-
     Reload the alias file
     Update the current log or all logs
     Reread call log
 
 Once you modify the Blacklist or Whitelist file, you must:
-
     Reload the alias, blacklist, and whitelist files
 "
 
@@ -254,11 +266,8 @@ proc retryConnect {} {
     global Host
     global Port
     global NoGUI
-    global hangup ignore1
 
-    set hangup  0
-    set ignore1 0
-    if $NoGUI {after cancel retryConnect}
+    if $NoGUI { after cancel retryConnect }
     connectCID $Host $Port
 }
 
@@ -316,11 +325,11 @@ proc getCID {} {
     global lineLabel
     global msgType
     global call
-    global type
+    global label
     global display_line_num
     global WakeUp busyIndicator
     global wakened targetTime doingLog Begin End remote_status waitMsg
-    global hangup mod_menu argument aliasType ignore1
+    global hangup mod_menu argument aliasType ignore1 mdisabled
 
     set msg {CID connection closed}
     set cnt 0
@@ -329,11 +338,33 @@ proc getCID {} {
             # remove event handler
             fileevent $Socket readable ""
             close $Socket
+            if !$NoGUI {
+                set menu .menubar.server
+                if $hangup {
+                    $menu entryconfigure Reload* -label "Reload alias file"
+                    remove .menubar.server 2
+                }
+                set hangup  0
+                set ignore1 0
+                $menu entryconfigure Reload* -state disabled
+                $menu entryconfigure Update*current* -state disabled
+                $menu entryconfigure Update*all*call* -state disabled
+                $menu entryconfigure Reread* -state disabled
+                set mdisabled 1
+            }
             set Try [expr $Try + 1]
             errorMsg "$Host:$Port - $msg\n"
             return
         }
         set Try 0
+        if {$mdisabled} {
+            set menu .menubar.server
+            $menu entryconfigure Reload* -state normal
+            $menu entryconfigure Update*current* -state normal
+            $menu entryconfigure Update*all*call* -state normal
+            $menu entryconfigure Reread* -state normal
+            set mdisabled 0
+        }
         # get rid of non-printable characters at start/end of string
         set dataBlock [string trim $dataBlock]
 
@@ -376,8 +407,8 @@ proc getCID {} {
         } elseif {[string match 300* $dataBlock]} {
             # NCID server sent end of startup message
             doVerbose $dataBlock 1
-            if {!$NoGUI && $hangup == 0} {
-                remove .menubar.server 1
+            if {!$NoGUI && $hangup} {
+                addMenuItem
             }
             continue
         } elseif {[string match 400* $dataBlock]} {
@@ -498,12 +529,17 @@ proc getCID {} {
                 switch $fileType {
                     alias {
                         set aliasType $argument
-                        if {$argument eq "NOALIAS"} {
+                        if {$aliasType eq "NOALIAS"} {
                             $menu entryconfigure Add*Alias* -state normal
                             $menu entryconfigure Modify* -state disabled
-                        } else {
+                        } elseif {$aliasType eq "NAMEDEP"} {
                             $menu entryconfigure Add*Alias* -state disabled
                             $menu entryconfigure Modify* -state normal
+                        } else {
+                            # unsupported alias type
+                            $menu entryconfigure Add*Alias* -state disabled
+                            $menu entryconfigure Modify* -state disabled
+                            doVerbose "Unsupported alias type: $aliasType" 1
                         }
                     }
                     black {
@@ -548,8 +584,8 @@ proc getCID {} {
             doVerbose "Set $option to 1" 1
             set $option 1
         }
-        if {[set type [checkType $dataBlock]]} {
-            if {$type == 3} {
+        if {[set label [checkType $dataBlock]]} {
+            if {$label == 3} {
                 # CIDINFO line
                 set ringinfo [getField RING $dataBlock]
                 # must use $call($lineinfo) instead of $cid
@@ -570,12 +606,12 @@ proc getCID {} {
                     doWakeup
                     set wakened 1
                 }
-            } elseif {$type == 4 || $type == 5} {
+            } elseif {$label == 4 || $label == 5} {
                 # MSG (4), NOT (4), MSGLOG (5), NOTLOG (5)
                 regsub {(^...).*} $dataBlock {\1} msgType
                 regsub {[A-Z]+: (.*)} $dataBlock {\1} msg
                 displayLog "$msg" 1
-                if {$type == 4} {
+                if {$label == 4} {
                     if {!$NoGUI} {
                         displayCID "$msg\n" 1
                         doPopup
@@ -585,7 +621,7 @@ proc getCID {} {
                         doVerbose "Sent $Program $msgType: $msg" 1
                     }
                 }
-            } elseif {$type == 1 || $type == 2} {
+            } elseif {$label == 1 || $label == 2} {
                 # CID (1), OUT (1), HUP (2), BLK (2), PID (2)
                 if {$WakeUp} {
                     if {!$wakened} {
@@ -593,7 +629,7 @@ proc getCID {} {
                     } else {set wakened 0}
                 }
                 set cid [formatCID $dataBlock]
-                if {$type == 1} {array set call "$lineLabel [list $cid]"}
+                if {$label == 1} {array set call "$lineLabel [list $cid]"}
                 # display log
                 # $cid set above, no need for $call($lineLabel)
                 displayLog $cid 0
@@ -608,7 +644,7 @@ proc getCID {} {
                     sendCID $cid
                     doVerbose "Sent $Program: $cid" 1
                 }
-            } elseif {$type == 6} {
+            } elseif {$label == 6} {
                 # CIDLOG, HUPLOG, OUTLOG, BLKLOG, PIDLOG
                 set cid [formatCID $dataBlock]
                 array set call "$lineLabel [list $cid]"
@@ -681,7 +717,7 @@ proc doPopup {} {
 
 proc checkType {dataBlock} {
     set rtn 0
-    # Determine line type
+    # Determine label type
     if [string match CID:* $dataBlock] {set rtn 1
     } elseif [string match OUT:* $dataBlock] {set rtn 1
     } elseif [string match HUP:* $dataBlock] {set rtn 2
@@ -708,7 +744,7 @@ proc formatCID {dataBlock} {
     global NoOne
     global DateSepar
     global lineLabel
-    global type
+    global label
     global AltDate
     global clock
 
@@ -1014,11 +1050,11 @@ proc connectCID {Host Port} {
     global NoGUI
 
     # open socket to server
-    if {[catch {set Socket [socket -async $Host $Port]} msg]} {
+    if {[catch {set Socket [socket $Host $Port]} msg]} {
         set Try [expr $Try + 1]
         errorMsg "$Host:$Port - $msg\n"
     } else {
-        # set socket to binary I/O and non-blocking
+        # set socket to non-blocking
         fconfigure $Socket -blocking 0 
         # get response from server as an event
         fileevent $Socket readable getCID
@@ -1240,7 +1276,7 @@ proc makeWindow {} {
     $m.file.auto add radiobutton -label "Off" -variable autoSave -value "off" -command {logAuto $m.file}
 
     # create Server menu items
-    $m.server add command -label "Reload alias \[BL & WL\] files" -command {
+    $m.server add command -label "Reload alias file" -command {
                 Disable $m
                 puts $Socket "REQ: RELOAD"
                 flush $Socket
@@ -1273,25 +1309,10 @@ proc makeWindow {} {
                 flush $Socket
             }
     $m.server add separator
-    $m.server add command -label "Add to Blacklist (BL)" -state disabled -command {
-                DoList black add "[.vh dump -text sel.first sel.last]" ""
-            }
-    $m.server add command -label "Remove from Blacklist" -state disabled -command {
-                global argument
-                DoList black remove "[.vh dump -text sel.first sel.last]" $argument
-            }
-    $m.server add command -label "Add to Whitelist (WL)" -state disabled -command {
-                DoList white add "[.vh dump -text sel.first sel.last]" ""
-            }
-    $m.server add command -label "Remove from Whitelist" -state disabled -command {
-                global argument
-                DoList white remove "[.vh dump -text sel.first sel.last]" $argument
-            }
-    $m.server add separator
-    $m.server add command -label "Add to Alias List" -state disabled -command {
+    $m.server add command -label "Add to Alias File" -state disabled -command {
                 DoList alias add "[.vh dump -text sel.first sel.last]" ""
             }
-    $m.server add command -label "Modify Alias" -state disabled -command {
+    $m.server add command -label "Modify or Remove Alias" -state disabled -command {
                 DoList alias modify "[.vh dump -text sel.first sel.last]" ""
             }
 
@@ -1384,18 +1405,47 @@ proc makeWindow {} {
         .vh mark set current 1.0
         set dataDump [.vh dump -text $first $last]
         set dataDump1 [.vh dump $first $last]
-        set type [string trimright [lindex $dataDump 1]]
+        set label [string trimright [lindex $dataDump 1]]
         set number [string trimright [lindex $dataDump 13]]
         set name [string trimright [lindex $dataDump 16]]
         set selected [.vh get $first $last]
-        set number [regsub -all -- {-} $number ""]
-        if {$type ne "MSG:" && $type ne "NOT:"} {
-            puts $Socket "REQ: INFO $number&&$name"
-            flush $Socket
-            doVerbose "REQ: INFO $number&&$name" 1
-        } else {Disable $m}
+        if {[regexp {[0-9]+-} $number]} {
+            set number [regsub -all -- {-} $number ""]
+        }
+        if {$label eq "MSG:" || $label eq "NOT:"} {
+            doVerbose "$label unsupported line label" 1
+            set menu .menubar.server
+            $menu entryconfigure Add*Alias* -state disabled
+            $menu entryconfigure Modify* -state disabled
+        } else {
+            if {!$Try} {
+                puts $Socket "REQ: INFO $number&&$name"
+                flush $Socket
+                doVerbose "REQ: INFO $number&&$name" 1
+            } else { doVerbose "Server not connected for a REQ: INFO" 1}
+        }
         break
     }
+}
+
+proc addMenuItem {} {
+    set menu .menubar.server
+    $menu add separator
+    $menu add command -label "Add to Blacklist File" -state disabled -command {
+                DoList black add "[.vh dump -text sel.first sel.last]" ""
+            }
+    $menu add command -label "Remove from Blacklist File" -state disabled -command {
+                global argument
+                DoList black remove "[.vh dump -text sel.first sel.last]" $argument
+            }
+    $menu add command -label "Add to Whitelist File" -state disabled -command {
+                DoList white add "[.vh dump -text sel.first sel.last]" ""
+            }
+    $menu add command -label "Remove from Whitelist File" -state disabled -command {
+                global argument
+                DoList white remove "[.vh dump -text sel.first sel.last]" $argument
+            }
+    $menu entryconfigure Reload* -label "Reload alias and list files"
 }
 
 proc Disable {menu} {
@@ -1521,8 +1571,13 @@ proc DoList {list action entry which} {
 }
 
 proc doit {action list entry extra} {
-    global Socket  remote_status
+    global Socket  remote_status Try
 
+    if {$Try} {
+        set remote_status "Server not connected ..."
+        doVerbose "Server not connected for a REQ:" 1
+        return
+    }
     set remote_status "Working ..."
     grid forget .confirm.cancel .confirm.ok
     grid .confirm.close
@@ -1558,7 +1613,7 @@ proc labInfo {} {
 
     option add *Dialog.msg.wrapLength 9i
     option add *Dialog.msg.font FixedFontM
-    tk_messageBox -message $labList -type ok -title "Line Labels"
+    tk_messageBox -message $labList -type ok -title "Line Label Descriptions"
 }
 
 proc serverInfo {} {
@@ -1573,7 +1628,7 @@ proc serverInfo {} {
 
     option add *Dialog.msg.wrapLength 9i
     option add *Dialog.msg.font FixedFontM
-    tk_messageBox -message $serverHelp -type ok -title "Server Menu"
+    tk_messageBox -message $serverHelp -type ok -title "Server Menu Help"
 }
 
 proc clearLog {} {
