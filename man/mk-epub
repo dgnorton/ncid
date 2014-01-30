@@ -1,0 +1,15 @@
+#! /bin/sh
+
+# create the man pages epub
+# requires: calibre
+
+make allhtml
+
+# ebook-convert input_file output_file [options]
+
+ebook-convert man.html man.epub \
+    --title "NCID Man Pages" \
+    --authors "John L Chmielewski" \
+    --cover ncid.gif \
+    --tags "Man Pages" \
+    --language English

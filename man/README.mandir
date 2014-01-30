@@ -12,8 +12,9 @@ Usage:
 
 Requirements:
     pod2man  - required for the normal build
-    man2html - required if building html files from the man pages
-    markdown - required if building a html file from man.md
+    man2html - required to build the html files from the man pages
+    markdown - required if build a html file from man.md
+    calibre  - required to build the epub book
 
     The markdown command line program can be obtained from
     http://daringfireball.net/projects/markdown/

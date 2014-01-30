@@ -32,6 +32,9 @@ MAN8     = $(MAN)/man8
 
 man: $(MANSRC)
 
+epub: allhtml
+	sh mk-epub
+
 html: man index $(MANSRC1:.1=.1.html) $(MANSRC5:.5=.5.html) $(MANSRC7:.7=.7.html) $(MANSRC8:.8=.8.html) $(PERLMAN1:.1=.1.html)
 	man2html -M man.html ../logrotate/ncidrotate.1 > ncidrotate.1.html
 	man2html -M man.html ../logrotate/ncidrotate.conf.5 > ncidrotate.conf.5.html
@@ -109,7 +112,7 @@ dirs:
 clean:
 
 clobber: clean
-	rm -f txt *.man *.txt *.html
+	rm -f txt *.man *.txt *.html *.epub
 	rm -f *.zip *.tar.gz *.tgz
 	rm -f $(PERLMAN1) $(IMAGE) $(MANMD)
 

@@ -7,8 +7,8 @@ Version 0.88
     - README: - updated
     - client/ncid.sh:
                 - added server menu and code to make changes to the
-                  alias, blacklist, and whitelist files using the
-                  server
+                  alias, blacklist, and whitelist files using the server
+                - added new verbose statements
     - doc/Makefile: new
           README.doc: new
           *: except for CHANGES, LICENSE, and ReleaseNotes, all text

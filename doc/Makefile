@@ -44,6 +44,9 @@ html: $(MD)
 	else echo markdown is required to convert .md files into .html files; \
 	echo see README.docdir for more information; fi
 
+epub: $(MD)
+	sh mk-epub
+
 $(HTML): $(MD)
 
 htmlfiles: $(DOCS:.md=.html)
@@ -51,7 +54,7 @@ htmlfiles: $(DOCS:.md=.html)
 clean:
 
 clobber: clean
-	rm -f NCID_Documentation.md *.html *.bak
+	rm -f NCID_Documentation.md *.epub *.html *.bak
 
 distclean: clobber
 

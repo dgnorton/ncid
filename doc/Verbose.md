@@ -1,4 +1,4 @@
-Last edited: Mon Dec 30, 2013 
+Last edited: Sun Jan 26, 2014 
 
 ## <a name="verbose_top"></a>Verbose Levels
 
@@ -54,6 +54,8 @@ Last edited: Mon Dec 30, 2013
    indicate if phone line label not found  
    show message sent to module  
    show CID data sent to module  
+   show unsupported line labels
+   show unsupported alias types
    display popup message
 
 ### <a name="verbose_ncid2ncid"></a>ncid2ncid gateway verbose levels
@@ -153,13 +155,16 @@ Last edited: Mon Dec 30, 2013
    show CID line
 
 > LEVEL2:
->> indicate network client hung up  
+>> show lines that start with a 3 digit numbe
+   indicate network client hung up  
    indicate device or modem returned no data
    show line sent to cidupdate
    show line sent to ncidutil
-   show INFO lines
-   show WRK lines
-   show RESP lines
+   show OPT lines
+   show REQ: lines
+   show INFO: lines
+   show WRK: lines
+   show RESP: lines
 
 > LEVEL1:
 >> show started with date and time  

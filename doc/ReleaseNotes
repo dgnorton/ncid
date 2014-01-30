@@ -156,7 +156,7 @@ NCID Server Changes:
     ncidd:
         - Added code to allow client to modify the call log, the alias
           file, the blacklist file, and the whitelist file by calling
-          cidupdate and cidutil.
+          the cidupdate and cidutil scripts.
 
 NCID Gateway Changes:
 
@@ -168,20 +168,24 @@ NCID Gateway Changes:
 
     wc2ncid:
 
-    rn2ncid: new - sends spart phone Caller ID and message notices to NCID
+    rn2ncid:
 
 NCID Client Changes:
 
     ncid:
         - Added code and new menu items to send changes to the server for
           the log file, alias file, blacklist file, and whitelist file.
+        - changed default for "ignore1" from on to off.
 
 NCID Client Module Changes:
 
 NCID tool changes:
-        - added ncidutil.pl for use by the server
-        - fixed bug in cidupdate.pl related to "NO NAME"
+        - ncidutil: new, for use by the server
+        - cidupdate.pl: fixed bug in cidupdate.pl related to "NO NAME"
+                        added the "--multi"  and the "--ignore1" options
 
 Documentation Changes:
-    Changed text files in doc/ to markdown text
-
+    - Changed text files in doc/ to markdown text
+    - all markdown files combine into Documentation.md
+    - ncidutil.1: new
+    - cidupdate.1, ncid.1: updated

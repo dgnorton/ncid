@@ -30,10 +30,11 @@ Set ncid to use the page output module:
 	set ProgName     \fIncid-page\fR
 .RE
 .PP
-Set ncid to format its number output for the US to include the 1.
-The display will be 1-XXX-XXX-XXXX instead of XXX-XXX-XXXX:
+Set ncid to format its number output for the US to not include the 1.
+This option requires the \fBignore1\fR server option to also be set.
+The display will be XXX-XXX-XXXX instead of 1-XXX-XXX-XXXX:
 .RS 0
-    set NoOne       0
+    set NoOne       1
 .RE
 .PP
 Set ncid to format its number output display for Sweden.

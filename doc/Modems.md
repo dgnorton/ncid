@@ -1,4 +1,4 @@
-Last edited: Mon Dec 30, 2013
+Last edited: Sat Jan 18, 2014
 
 ## <a name="modems_top"></a>Modems
 
@@ -44,20 +44,20 @@ Last edited: Mon Dec 30, 2013
   to the default port /dev/modem, simply uncomment the appropriate *ttyport*
   line:
 
->> The default tty port:  
-   **/dev/modem**
+>>     The default tty port:
+>>         /dev/modem
 
->> Default Mac OS X internal modem:  
-   **set ttyport = /dev/cu.modem**
+>>     Default Mac OS X internal modem:
+>>         set ttyport = /dev/cu.modem
 
->> Mac OS X USB modem (DualComm, Zoom):  
-   **set ttyport = /dev/cu.usbmodem24680241**
+>>     Mac OS X USB modem (DualComm, Zoom):
+>>         set ttyport = /dev/cu.usbmodem24680241
 
->> Linux Serial Port 0:  
-   **set ttyport = /dev/ttyS0**
+>>     Linux Serial Port 0:
+>>         set ttyport = /dev/ttyS0
 
->> Linux USB modem 0:  
-   **set ttyport = /dev/ttyACM0**
+>>     Linux USB modem 0:
+>>         set ttyport = /dev/ttyACM0
 
 ### <a name="modems_dr"></a>Distinctive Ring (DR)
 
@@ -70,19 +70,19 @@ Last edited: Mon Dec 30, 2013
   
 > The AT command to enable DR depends on the modem chipset:
 > <pre>
-<b><u>Chipset</u>                <u>Command</u>    
+<b><u>Chipset</u>                <u>Command</u></b>
 3Com/USR/TI            ATS41=1
 Rockwell/Conexant      AT-SDR=7
 Lucent/Agere           AT+VDR=1,0
-</pre></b>
+</pre>
 
 > Each chipset reports DR differently:
 
 >> 3Com reports ring <u>codes</u>:
->>> RING A, RING B, RING C.<br>
+>>>       RING A, RING B, RING C
 
 >>Rockwell reports ring <u>codes</u>:
->>> RING 1, RING 2, RING 3.<br>
+>>>       RING 1, RING 2, RING 3
 
 >> Lucent reports the actual ring <u>cadence</u>
    (the duration of the ringing and the

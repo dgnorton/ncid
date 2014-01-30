@@ -3,9 +3,10 @@
 
 <center>![NCID](ncid-1.jpg)</center>
 
-<center>Author: The NCID Project</center>  
-<center>Last Edited: Tue Dec 31, 2013</center>
-<center>Copyright: 2013</center>
+<center>Copyright: 2014</center>
+<center>Author: John L Chmielewski</center>  
+
+<center>Wed Jan 29, 2014</center>
 
 NCID documentation includes information on how to get started,
 information on configuring modems, information on configuring

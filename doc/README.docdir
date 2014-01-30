@@ -8,6 +8,7 @@ Usage:
 
 Requirements:
     markdown - required to bulid HTML files from the MD fiiles
+    calibre  - required to build the epub books
 
     The markdown command line program can be obtained from
     http://daringfireball.net/projects/markdown/

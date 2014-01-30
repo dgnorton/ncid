@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# create the NCID Documentation epub
+# requires: calibre
+
+make NCID_Documentation.md
+
+#calibredb add \
+#   --title "NCID Documentation" \
+#   --author "John L Chmielewski" \
+#   --cover ncid-1.jpg \
+#   --tags "user manual" \
+#   NCID_Documentation.md
+
+# ebook-convert input_file output_file [options]
+
+ebook-convert NCID_Documentation.md NCID_Documentation.epub \
+    --title "NCID Documentation" \
+    --authors "John L Chmielewski" \
+    --cover ncid-1.jpg \
+    --tags "setup, admin" \
+    --language English
+
+ebook-convert NCID-SDK.odt NCID-SDK.epub \
+    --title "NCID SDK" \
+    --authors "John L Chmielewski" \
+    --cover ncid-1.jpg \
+    --tags "SDK" \
+    --language English

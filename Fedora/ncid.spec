@@ -9,7 +9,7 @@ Url:        http://ncid.sourceforge.net
 Source0:    http://sourceforge.net/projects/ncid/files/ncid/%{version}/%{name}-%{version}-src.tar.gz
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires: libpcap-devel
+BuildRequires: libpcap-devel man2html
 
 %global _hardened_build 1
 
@@ -358,7 +358,7 @@ fi
 - new tool (wct), new man pages: ncidtools.7 ncidgateways.7
 - Removed ncidsip and related ncidsip files
 
-* Fri Oct 18 2012 John Chmielewski <jlc@users.sourceforge.net> 0.85-1
+* Thu Oct 18 2012 John Chmielewski <jlc@users.sourceforge.net> 0.85-1
 - Added ncidd.whitelist ncid-notify ncid-notify.service
 - Added ncidd.whitelist.5 ncid-notify.1 ncid-modules.7
 - Added Verbose-ncid to client
@@ -374,7 +374,7 @@ fi
 - Removed /usr/share/ncid/ncid-tivo
 - Removed ncid-tivo.1
 
-* Tue Mar 17 2011 John Chmielewski <jlc@users.sourceforge.net> 0.82-1
+* Thu Mar 17 2011 John Chmielewski <jlc@users.sourceforge.net> 0.82-1
 - New release
 
 * Sat Feb 26 2011 John Chmielewski <jlc@users.sourceforge.net> 0.81-1
