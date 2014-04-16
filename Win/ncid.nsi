@@ -1,4 +1,4 @@
-;NCIDpop Windows Client installer
+;NCID Windows Client installer
 ;Written by Rich West 01/27/2006
 ;Updated by Lyman Epp 02/11/2006
 ;Updated by John Chmielewski 1/5/2013
@@ -13,7 +13,7 @@
 ;Application
 
 	!define NAME            ncid
-	!define VERSION         0.88
+	!define VERSION         0.89
 	!define PROG            "${NAME}.exe"
 	!define LICENSE_FILE    "LICENSE.txt"
 	!define WEB_PAGE        "http://ncid.sourceforge.net"

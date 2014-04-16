@@ -3,7 +3,8 @@
 # ncid - Network Caller-ID client
 
 # Copyright (c) 2005-2014
-#  by John L. Chmielewski <jlc@users.sourceforge.net>
+#  John L. Chmielewski <jlc@users.sourceforge.net>
+#  Steve Limkemann
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -108,11 +109,13 @@ set autoSave            "off"
 set oldAutoSave         "off"
 set Begin               0
 set End                 0
-set msgType            ""
 set waitMsg             0
 set mod_menu            0
 set multi               0
 set mdisabled           0
+set aliasTypes          "NAMEDEP NMBRDEP NAMEONLY NMBRONLY NMBRNAME LINEONLY"
+set aliasList           ""
+set lineLabelWidth      9
 
 ### global variables that are read from the server
 set hangup              0
@@ -154,6 +157,7 @@ set Usage       {Usage:   ncid  [OPTS] [ARGS]
 set Author \
 "
 Copyright (C) 2001-2014
+
 John L. Chmielewski
 http://ncid.sourceforge.net
 "
@@ -323,13 +327,13 @@ proc getCID {} {
     global Verbose
     global VersionInfo
     global lineLabel
-    global msgType
     global call
     global label
     global display_line_num
     global WakeUp busyIndicator
     global wakened targetTime doingLog Begin End remote_status waitMsg
-    global hangup mod_menu argument aliasType ignore1 mdisabled
+    global hangup mod_menu argument ignore1 mdisabled
+    global CIDaliasType LineAliasType
 
     set msg {CID connection closed}
     set cnt 0
@@ -375,7 +379,7 @@ proc getCID {} {
             regsub {200 (.*)} $dataBlock {\1} dataBlock
             if {$Program != ""} {doVerbose "$VersionInfo\n$dataBlock" 1}
             if $NoGUI { 
-               displayLog "$VersionInfo\n$dataBlock" 1
+               puts "$VersionInfo\n$dataBlock"
                set targetTime 0
             } else {
                 set targetTime [expr [clock clicks -milliseconds] + 500]
@@ -526,21 +530,11 @@ proc getCID {} {
                 set temp [split $dataBlock " "]
                 set fileType [lindex $temp 1]
                 set argument [lindex $temp 2]
+                set LineAliasType [lindex $temp 3]
                 switch $fileType {
                     alias {
-                        set aliasType $argument
-                        if {$aliasType eq "NOALIAS"} {
-                            $menu entryconfigure Add*Alias* -state normal
-                            $menu entryconfigure Modify* -state disabled
-                        } elseif {$aliasType eq "NAMEDEP"} {
-                            $menu entryconfigure Add*Alias* -state disabled
-                            $menu entryconfigure Modify* -state normal
-                        } else {
-                            # unsupported alias type
-                            $menu entryconfigure Add*Alias* -state disabled
-                            $menu entryconfigure Modify* -state disabled
-                            doVerbose "Unsupported alias type: $aliasType" 1
-                        }
+                        set CIDaliasType $argument
+                        $menu entryconfigure Add*Alias* -state normal
                     }
                     black {
                         $menu entryconfigure Add*Black* -state disabled
@@ -608,17 +602,16 @@ proc getCID {} {
                 }
             } elseif {$label == 4 || $label == 5} {
                 # MSG (4), NOT (4), MSGLOG (5), NOTLOG (5)
-                regsub {(^...).*} $dataBlock {\1} msgType
-                regsub {[A-Z]+: (.*)} $dataBlock {\1} msg
-                displayLog "$msg" 1
+                set msg [formatMSG $dataBlock]
+                displayLog $msg 1
                 if {$label == 4} {
                     if {!$NoGUI} {
-                        displayCID "$msg\n" 1
+                        displayCID "[lindex $msg 6]\n" 1
                         doPopup
                     }
                     if {$Program != ""} {
                         sendMSG $msg
-                        doVerbose "Sent $Program $msgType: $msg" 1
+                        doVerbose "Sent $Program $msg" 1
                     }
                 }
             } elseif {$label == 1 || $label == 2} {
@@ -734,22 +727,124 @@ proc checkType {dataBlock} {
     } elseif [string match BLKLOG:* $dataBlock] {set rtn 6
     } elseif [string match PIDLOG:* $dataBlock] {set rtn 6
     } elseif [string match LOG:* $dataBlock] {set rtn 7}
-    doVerbose "Assigned type $rtn for $dataBlock" 6
+    doVerbose "Assigned type $rtn for $dataBlock" 5
     return $rtn
 }
 
 # must be sure the line passed checkType
 proc formatCID {dataBlock} {
-    global Country
-    global NoOne
-    global DateSepar
-    global lineLabel
-    global label
-    global AltDate
-    global clock
+    global lineLabel lineLabelWidth
 
     set cidname [getField NAME $dataBlock]
-    set cidnumber [getField NU*MBE*R $dataBlock]
+    set cidnumber [formatNMBR $dataBlock]
+    set ciddate [formatDATE $dataBlock]
+    set cidtime [formatTIME $dataBlock]
+    set cidline ""
+    if [string match {*\*LINE\**} $dataBlock] {
+        set cidline [formatLINE $dataBlock]
+    }
+    # set default line indicator, should not be needed anymore
+    if {$cidline == ""} {
+        set cidline "-"
+        for {set x 0} {$x < $lineLabelWidth} {incr x} {
+            set cidline "$cidline "
+        }
+    }
+    # create call line label
+    regsub { *$} $cidline {} lineLabel
+    # make default line indicator a blank
+    regsub {^-( *)$} $cidline {\1 } cidline
+    # set type of call
+    if {![regsub {(\w+)LOG:.*} $dataBlock {\1} cidtype]} {
+        regsub {(\w+):.*} $dataBlock {\1} cidtype
+    }
+
+    set cidmisc ""
+    return [list $ciddate $cidtime $cidnumber $cidname $cidline $cidtype $cidmisc]
+}
+
+proc formatMSG {dataBlock} {
+
+if {![regsub {(\w+)LOG:.*} $dataBlock {\1} msgtype]} {
+        regsub {(\w+):.*} $dataBlock {\1} msgtype
+    }
+
+    if {[regexp {\*\*\*DATE} $dataBlock]} {
+        set msgdate [formatDATE $dataBlock]
+        set msgtime [formatTIME $dataBlock]
+        set msgname [formatNAME $dataBlock]
+        set msgnmbr [formatNMBR $dataBlock]
+        set msgline [formatLINE $dataBlock]
+        regsub {\w+: (.*)\*\*\*DATE.*} $dataBlock {\1\2} message
+        set message [list $msgdate $msgtime $msgnmbr $msgname $msgline $msgtype $message]
+    } else {
+        regsub {\w+: (.*)} $dataBlock {\1} message
+        set message [list {} {} {} {} {} $msgtype $message]
+    }
+
+    return $message
+}
+
+proc formatLINE {dataBlock} {
+    global lineLabelWidth
+
+    set cidline [getField LINE $dataBlock]
+    set cidline [format "%-${lineLabelWidth}s " [lindex $cidline]]
+    return $cidline
+}
+
+proc formatDATE {dataBlock} {
+    global AltDate DateSepar
+
+    set ciddate [getField DATE $dataBlock]
+    # slash (/) is the default date separator
+    if {$AltDate} {
+        # Date format: DDMMYY or DDMM
+        if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
+            $ciddate {\2/\1/\3} ciddate]} {
+            regsub {([0-9][0-9])([0-9][0-9].*)} $ciddate {\2/\1} ciddate
+        }
+    } else {
+        # Date format: MMDDYY or MMDD
+        if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
+            $ciddate {\1/\2/\3} ciddate]} {
+            regsub {([0-9][0-9])([0-9][0-9].*)} $ciddate {\1/\2} ciddate
+        }
+    }
+    if {$DateSepar == "-"} {
+        # set hyphen (-) as date separator
+        regsub -all {/} $ciddate - ciddate
+    } elseif {$DateSepar == "."} {
+        # set period (.) as date separator
+        regsub -all {/} $ciddate . ciddate
+    }
+    return $ciddate
+}
+
+proc formatTIME {dataBlock} {
+    global clock
+
+    set cidtime [getField TIME $dataBlock]
+    if ([regexp {(\d{2})(\d{2})} $cidtime time hours minutes]) {
+        if {$clock == 24} {
+            set cidtime "$hours:$minutes"
+        } else {
+        set cidtime [convertTo12 $hours $minutes]
+        }
+    }
+    return $cidtime
+}
+
+proc formatNAME {dataBlock} {
+    set cidname [getField NAME $dataBlock]
+    set cidname [format "%-18s " [lindex $cidname]]
+    return $cidname
+}
+
+proc formatNMBR {dataBlock} {
+    global Country NoOne maxNumberWidth
+
+    set cidnumber [getField NMBR $dataBlock]
     if {$Country  == "US"} {
     # https://en.wikipedia.org/wiki/North_American_Numbering_Plan
         if {![regsub \
@@ -858,52 +953,9 @@ proc formatCID {dataBlock} {
         }
       }
     }
+    set cidnumber [format "%-${maxNumberWidth}s " $cidnumber]
 
-    set ciddate [getField DATE $dataBlock]
-    # slash (/) is the default date separator
-    if {$AltDate} {
-        # Date format: DDMMYY or DDMM
-        if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
-            $ciddate {\2/\1/\3} ciddate]} {
-            regsub {([0-9][0-9])([0-9][0-9].*)} $ciddate {\2/\1} ciddate
-        }
-    } else {
-        # Date format: MMDDYY or MMDD
-        if {![regsub {([0-9][0-9])([0-9][0-9])([0-9][0-9][0-9][0-9])} \
-            $ciddate {\1/\2/\3} ciddate]} {
-            regsub {([0-9][0-9])([0-9][0-9].*)} $ciddate {\1/\2} ciddate
-        }
-    }
-    if {$DateSepar == "-"} {
-        # set hyphen (-) as date separator
-        regsub -all {/} $ciddate - ciddate
-    } elseif {$DateSepar == "."} {
-        # set period (.) as date separator
-        regsub -all {/} $ciddate . ciddate
-    }
-    set cidtime [getField TIME $dataBlock]
-    regexp {(\d{2})(\d{2})} $cidtime time hours minutes
-    if {$clock == 24} {
-        set cidtime "$hours:$minutes"
-    } else {
-       set cidtime [convertTo12 $hours $minutes]
-    }
-    set cidline ""
-    if [string match {*\*LINE\**} $dataBlock] {
-        set cidline [getField LINE $dataBlock]
-    }
-    # set default line indicator, if needed
-    if {$cidline == ""} {set cidline -}
-    # create call line label
-    set lineLabel $cidline
-    # make default line indicator a blank
-    regsub {[-]} $cidline {} cidline
-    # set type of call
-    if {![regsub {(\w+)LOG:.*} $dataBlock {\1} cidtype]} {
-        regsub {(\w+):.*} $dataBlock {\1} cidtype
-    }
-
-    return [list $ciddate $cidtime $cidnumber $cidname $cidline $cidtype]
+    return $cidnumber
 }
 
 proc convertTo12 {hours minutes} {
@@ -938,7 +990,7 @@ proc getField {dataString dataBlock} {
 }
 
 # pass the CID information to an external program
-# Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype\n"
+# Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype $cidmisc\n"
 proc sendCID {cid} {
     global Program
     global TivoFlag
@@ -954,81 +1006,91 @@ proc sendCID {cid} {
         # pass DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
         if $ExecSh {
           catch {exec sh -c $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n > @stdout" &} oops
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n[lindex $cid 6]\n > @stdout" &} oops
         } else {
           catch {exec $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n > @stdout" &} oops
+            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n[lindex $cid 6]\n > @stdout" &} oops
         }
       }
 }
 
-# pass the MSG information to an external program
-# Input: "$msg"
+# pass the message to an external program
+# input: "$msgdate\n$msgtime\n$msgnumber\n$msgname\n$msgline\n$msgtype\n$msg\n"
 proc sendMSG {msg} {
-    global Program
-    global TivoFlag
-    global ExecSh
-    global msgType
+  global Program
+  global TivoFlag
+  global ExecSh
 
-    if $TivoFlag {
-      # send "$msg\n"
-      catch {exec [lindex $Program 0] << "$msg\n" > @stdout} oops
+  if $TivoFlag {
+    # send "$msg\n"
+    catch {exec [lindex $Program 0] << "[lindex $msg 6\n" > @stdout} oops
+  } else {
+    # send "\n\n\n$msg\n\n$msgtype\n"
+    if $ExecSh {
+      catch {exec sh -c $Program << \
+        "[lindex $msg 0]\n[lindex $msg 1]\n[lindex $msg 2]\n[lindex $msg 6]\n[lindex $msg 4]\n[lindex $msg 5]\n[lindex $msg 3]\n > @stdout" &} oops
     } else {
-      # send "\n\n\n$msg\n\n$msgType\n"
-      # not: "$ciddate\n$cidtime\n$cidnumber\n$cidname\n$cidline\n$cidtype\n"
-      if $ExecSh {
-        catch {exec sh -c $Program << "\n\n\n$msg\n\n$msgType\n" > @stdout} oops
-      } else {
-        catch {exec $Program << "\n\n\n$msg\n\n$msgType\n" > @stdout} oops
-      }
+      catch {exec $Program << \
+        "[lindex $msg 0]\n[lindex $msg 1]\n[lindex $msg 2]\n[lindex $msg 6]\n[lindex $msg 4]\n[lindex $msg 5]\n[lindex $msg 3]\n > @stdout" &} oops
     }
+  }
 }
 
 # display CID information or message
 # Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype\n"
-#        "mesage line"
+#        "$msgdate $msgtime $msgnumber $msgname $msgline $msgtype mesage line"
 # ismsg = 0 for CID and 1 for message
 proc displayCID {cid ismsg} {
     global Txt
 
-    if {$ismsg} { set Txt $cid
-    } else { set Txt "[lindex $cid 3]\n[lindex $cid 2]" }
+    if {$ismsg} {
+        set Txt $cid
+    } else {
+        set Txt "[lindex $cid 3]\n[lindex $cid 2]"
+    }
 }
 
 # display Call Log
 # Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype\n"
-# Input: "message"
+# Input: "$msgdate $msgtime $msgnumber $msgname $msgline $msgtype message"
 proc displayLog {cid ismsg} {
     global Program
     global NoGUI
-    global msgType
-    global display_line_num maxNumberWidth doingLog
+    global display_line_num doingLog
     
     if $NoGUI {
         if {$Program == ""} {
             if $ismsg {
-                puts $cid
+                if {[lindex $cid 1] eq {}} {
+                    puts "[lindex $cid 5]: [lindex $cid 6]"
+                } else {
+                    puts "[lindex $cid 5]: [lindex $cid 0]  [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3] [lindex $cid 6]"
+                }
             } else {
-                puts "[lindex $cid 0] [lindex $cid 1]  [lindex $cid 5] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
+                puts "[lindex $cid 5]: [lindex $cid 0]  [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
             }
         }
         incr display_line_num
     } else {
         incr display_line_num
         if {! $doingLog} {.vh configure -state normal}
-        if $ismsg {
-            .vh insert end "\n$msgType: " purple $cid blue
+        if {[lindex $cid 1] eq {}} {
+            .vh insert end "\n[lindex $cid 5]: " purple [lindex $cid 6] black
         } else {
             set ciddate [lindex $cid 0]
             set cidtime [lindex $cid 1]
-            set cidnmbr [format "%-${maxNumberWidth}s " [lindex $cid 2]]
+            set cidnmbr [lindex $cid 2]
             set cidname [lindex $cid 3]
-            set cidline [format "%-4s " [lindex $cid 4]]
+            set cidline [lindex $cid 4]
             set cidtype [lindex $cid 5]
 
             .vh insert end "\n$cidtype: " purple "$ciddate " \
-                    blue "$cidtime " red $cidline purple $cidnmbr blue \
+                    blue "$cidtime " red "$cidline " purple "$cidnmbr " blue \
                     "$cidname" red
+
+            if $ismsg {
+                .vh insert end [lindex $cid 6] black
+            }
         }
         if {! $doingLog} {
             if {$display_line_num == 1} {
@@ -1058,7 +1120,7 @@ proc connectCID {Host Port} {
         fconfigure $Socket -blocking 0 
         # get response from server as an event
         fileevent $Socket readable getCID
-        if $NoGUI { displayLog "Connected to $Host:$Port" 1
+        if $NoGUI { puts "Connected to $Host:$Port"
         } else {
             clearLog
             displayCID "Connected to\n$Host:$Port" 1
@@ -1178,8 +1240,9 @@ proc makeWindow {} {
     global ExitOn
     global env
     global rcfile Verbose WrapLines
-    global fontList clock oldClock autoSave oldAutoSave m maxNumberWidth NoOne
+    global fontList clock oldClock autoSave oldAutoSave m
     global hangup
+    global nameREQ nmbrREQ lineREQ
 
     doVerbose "Platform: $::tcl_platform(platform)\nOS: $::tcl_platform(os)" 1
     switch $::tcl_platform(platform) {
@@ -1309,11 +1372,8 @@ proc makeWindow {} {
                 flush $Socket
             }
     $m.server add separator
-    $m.server add command -label "Add to Alias File" -state disabled -command {
-                DoList alias add "[.vh dump -text sel.first sel.last]" ""
-            }
-    $m.server add command -label "Modify or Remove Alias" -state disabled -command {
-                DoList alias modify "[.vh dump -text sel.first sel.last]" ""
+    $m.server add command -label "Add Modify Remove Alias in Alias File" -state disabled -command {
+                DoList alias "" ""
             }
 
     # create Preferences menu items
@@ -1328,7 +1388,7 @@ proc makeWindow {} {
     $m.help add command -label "Server Menu" -command serverInfo
 
     # create and place: CID history scroll window
-    text .vh -width 57 -height 4 -yscrollcommand ".ys set" \
+    text .vh -width 68 -height 4 -yscrollcommand ".ys set" \
         -state disabled -font {FixedFontH} -setgrid 1 -wrap $WrapLines
     scrollbar .ys -command ".vh yview"
     grid .vh -row 1 -sticky nsew -padx 2 -pady 2
@@ -1338,7 +1398,7 @@ proc makeWindow {} {
     frame .fr
     grid .fr -row 2 -columnspan 2
     label .ml -text "Send Message: " -height 1 -font {FixedFontM} -fg blue
-    text .im -width 25 -height 1 -font {FixedFontM} -fg red
+    text .im -width 40 -height 1 -font {FixedFontM} -fg red
     grid .ml .im -in .fr
 
     # create and place: call and server message display
@@ -1365,7 +1425,6 @@ proc makeWindow {} {
     .vh tag configure blue -foreground blue
     .vh tag configure red -foreground red
     .vh tag configure purple -foreground purple
-    if $NoOne {set maxNumberWidth 12} else {set maxNumberWidth 14}
 
     if {$Verbose >= 4} {
         set temp "[font configure FixedFontH]"
@@ -1405,23 +1464,27 @@ proc makeWindow {} {
         .vh mark set current 1.0
         set dataDump [.vh dump -text $first $last]
         set dataDump1 [.vh dump $first $last]
-        set label [string trimright [lindex $dataDump 1]]
-        set number [string trimright [lindex $dataDump 13]]
-        set name [string trimright [lindex $dataDump 16]]
+        set select_label [string trimright [lindex $dataDump 1]]
+        set lineREQ [string trimright [lindex $dataDump 10]]
+        set nmbrREQ [string trimright [lindex $dataDump 13]]
+        set nameREQ [string trimright [lindex $dataDump 16]]
         set selected [.vh get $first $last]
-        if {[regexp {[0-9]+-} $number]} {
-            set number [regsub -all -- {-} $number ""]
+        if {[regexp {[0-9]+-} $nmbrREQ]} {
+            set nmbrREQ [regsub -all -- {-} $nmbrREQ ""]
         }
-        if {$label eq "MSG:" || $label eq "NOT:"} {
-            doVerbose "$label unsupported line label" 1
+        if {$select_label eq "MSG:" || $select_label eq "NOT:"} {
+            doVerbose "$select_label unsupported line label" 1
             set menu .menubar.server
             $menu entryconfigure Add*Alias* -state disabled
-            $menu entryconfigure Modify* -state disabled
+            if {!$NoGUI && $hangup} {
+                $menu entryconfigure *Blacklist* -state disabled
+                $menu entryconfigure *Whitelist* -state disabled
+            }
         } else {
             if {!$Try} {
-                puts $Socket "REQ: INFO $number&&$name"
+                puts $Socket "REQ: INFO $nmbrREQ&&$nameREQ&&$lineREQ"
                 flush $Socket
-                doVerbose "REQ: INFO $number&&$name" 1
+                doVerbose "REQ: INFO $nmbrREQ&&$nameREQ&&$lineREQ" 1
             } else { doVerbose "Server not connected for a REQ: INFO" 1}
         }
         break
@@ -1432,18 +1495,18 @@ proc addMenuItem {} {
     set menu .menubar.server
     $menu add separator
     $menu add command -label "Add to Blacklist File" -state disabled -command {
-                DoList black add "[.vh dump -text sel.first sel.last]" ""
+                DoList black add ""
             }
     $menu add command -label "Remove from Blacklist File" -state disabled -command {
                 global argument
-                DoList black remove "[.vh dump -text sel.first sel.last]" $argument
+                DoList black remove $argument
             }
     $menu add command -label "Add to Whitelist File" -state disabled -command {
-                DoList white add "[.vh dump -text sel.first sel.last]" ""
+                DoList white add ""
             }
     $menu add command -label "Remove from Whitelist File" -state disabled -command {
                 global argument
-                DoList white remove "[.vh dump -text sel.first sel.last]" $argument
+                DoList white remove $argument
             }
     $menu entryconfigure Reload* -label "Reload alias and list files"
 }
@@ -1483,24 +1546,29 @@ proc remove {menu block} {
     }
 }
 
-proc DoList {list action entry which} {
-    global entry_ action_ list_ remote_status replace_ comment_ name_
-    global aliasType ignore1
-    set comment_ ""
-    
-    set entry [list [string trim [lindex $entry 13]] [string trim [lindex $entry 16]]]
-    if {$ignore1} {regsub {1-(.*)} $entry {\1} entry}
-    set entry_ [lindex $entry 0]
+proc DoList {list action which} {
+    global entry_ action_ list_ remote_status replace_ comment_
+    global aliasList aliasTypes CIDaliasType LineAliasType SelAliasType
+    global ignore1 nameREQ nmbrREQ lineREQ name_ nmbr_ line_
+
     toplevel .confirm
     wm title .confirm "Confirmation"
     wm resizable .confirm 0 0
-    if {[lindex $entry 1] eq "NO NAME"} {
-        set entry [lreplace $entry 1 1]
-    }
     set action_ $action
     set list_ $list
-    set name_ [lindex $entry 1]
+    set comment_ ""
+    set name_ $nameREQ
+    set line_ $lineREQ
+    if {$ignore1} {regsub {1(.*)} $nmbrREQ {\1} nmbrREQ}
+    set nmbr_ $nmbrREQ
+
     if {$list eq "black" || $list eq "white"} {
+        set entry [list "$nmbrREQ" "$nameREQ"]
+        set entry_ [lindex $entry 0]
+        if {[lindex $entry 1] eq "NO NAME" || $name_ eq $nmbr_} {
+            set entry [lreplace $entry 1 1]
+        }
+
         if {$action eq "add"} {
             set _entry [join $entry "\" or \""]
         } elseif {$which eq "name"} {
@@ -1528,23 +1596,75 @@ proc DoList {list action entry which} {
             grid [entry .confirm.entry -textvariable comment_] -sticky ew -columnspan 2 -padx 8
             set row [expr $row + 2]
         }
-    } elseif {$action eq "modify"} {
-        set temp [lindex $entry 0]
-        set temp1 [lindex $entry 1]
-        set replace_ $temp1
-        grid [label .confirm.lab -text "Change the association of $temp\nfrom $temp1 to the\nvalue entered below for future calls."] \
-                -columnspan 2 -padx 12 -pady 10
-        grid [entry .confirm.entry -textvariable replace_] -columnspan 2 -padx 12 -pady 10
-        .confirm.entry selection range 0 end
-        focus .confirm.entry
-        set row 2
     } else {
-        set replace_ ""
-        grid [label .confirm.lab -text "Associate  the value entered below\nwith $entry for future calls."] \
-                -columnspan 2 -padx 12 -pady 10
-        grid [entry .confirm.entry -textvariable replace_] -columnspan 2 -padx 12 -pady 10
-        focus .confirm.entry
-        set row 2
+        grid [label .confirm.list -text "NAME: $name_\nNMBR: $nmbrREQ\nLINE: $lineREQ\n\nChoose the alias type:"] -columnspan 2 -padx 12 -pady 10
+        grid [listbox .confirm.lb -listvariable aliasList -selectmode single -height 0 -width 0] -columnspan 2
+        if {$CIDaliasType eq "NOALIAS"} {
+            set aliasList $aliasTypes
+            set action_ "add"
+            set replace_ ""
+        } else {
+            set aliasList "$CIDaliasType LINEONLY"
+            set action_ "modify"
+            set replace_ $name_
+        }
+        .confirm.lb selection set 0
+        .confirm.lb curselection
+         grid [label .confirm.lab -text "Replace NAME: $name_\nif NMBR: $nmbr_\nwith ALIAS entered below."] \
+         -columnspan 2 -padx 12 -pady 10
+         grid [entry .confirm.entry -textvariable replace_] -columnspan 2 -padx 12 -pady 10
+         # .confirm.entry selection range 0 end
+         focus .confirm.entry
+         set row 4
+        set SelAliasType [.confirm.lb get [.confirm.lb curselection]]
+    }
+    bind all <<ListboxSelect>> {
+        set SelAliasType [.confirm.lb get [.confirm.lb curselection]]
+        set name_ $nameREQ
+        set nmbr_ $nameREQ
+        switch $SelAliasType {
+            NAMEDEP {
+                set replace_ $name_
+                .confirm.lab configure -text "Replace NAME: $name_\nif NMBR: $nmbr_\nwith ALIAS entered below."
+            }
+            NMBRDEP {
+                set replace_ $nmbr_
+                .confirm.lab configure -text "Replace NMBR: $nmbr_\nif NAME: $name_\nwith ALIAS entered below."
+            }
+            NAMEONLY {
+                set replace_ $name_
+                .confirm.lab configure -text "Replace NAME: $name_\nwith ALIAS entered below."
+            }
+            NMBRONLY {
+                set replace_ $nmbr_
+                .confirm.lab configure -text "Replace NMBR: $nmbr_\nwith ALIAS entered below."
+            }
+            NMBRNAME {
+                set replace_ ""
+                .confirm.lab configure -text "Replace NAME: $name_\nand NMBR: $nmbr_\nwith ALIAS entered below."
+            }
+            LINEONLY {
+                set name_ $line_
+                set nmbr_ ""
+                set replace_ $line_
+                .confirm.lab configure -text "Replace LINE: $name_\nwith ALIAS entered below."
+            }
+        }
+        if {$SelAliasType eq "LINEONLY"} {
+            if {$LineAliasType eq "NOALIAS"} {
+                set replace_ ""
+                set action_ "add"
+            } else {
+                set action_ "modify"
+            }
+        } else {
+            if {$CIDaliasType eq "NOALIAS"} {
+                set replace_ ""
+                set action_ "add"
+            } else {
+                set action_ "modify"
+            }
+        }
     }
     grid [frame .confirm.fr] -pady 10 -columnspan 2 -row $row
     incr row
@@ -1553,9 +1673,7 @@ proc DoList {list action entry which} {
     grid [button .confirm.cancel -text "Cancel" -command {destroy .confirm}] \
              -pady 10
     if {$list eq "alias"} {
-        if {$aliasType eq "NOALIAS"} { set aliasType "NAMEDEP" } 
-        grid [button .confirm.ok -text "Apply" -command {doit $action_ $list_ $entry_&&$replace_ "$aliasType&&$name_"}] \
-                 -pady 10 -row $row -column 1
+        grid [button .confirm.ok -text "Apply" -command {doit $action_ $list_ $nmbr_&&$replace_ "$SelAliasType&&$name_"}] -pady 10 -row $row -column 1
     } else {
         grid [button .confirm.ok -text "Apply" -command {doit $action_ $list_ $entry_ $comment_}] \
                  -pady 10 -row $row -column 1
@@ -1801,7 +1919,11 @@ proc logClock {widget} {
     for {set line 0} {1} {incr line} {
         set temp [$widget dump -text "1.0 + $line l" "1.0 + $line l lineend"]
         if {$temp eq ""} {break}
-        if {![regexp {^(?:CID|HUP|OUT)} [lindex $temp 1]]} {continue}
+        if {![regexp {^(?:CID|HUP|OUT|PID|NOT|MSG)} [lindex $temp 1]]} {
+            continue
+        }
+        # MSG lines may have no date or time, if so the llength is 8
+        if {[llength $temp] < 10} {continue}
         set time [lindex $temp 7]
         set start [lindex $temp 8]
         set stop [lindex $temp 11]
@@ -1964,6 +2086,13 @@ doVerbose "Verbose Level: $Verbose" 1
 doVerbose "Config file: $ConfigFile" 1
 doVerbose "Delay between reconnect tries to the server: $Delay (seconds)" 1
 
+if {$NoOne} {
+    set maxNumberWidth 12
+    doVerbose "Ignore leading 1" 1
+} else {
+    set maxNumberWidth 14
+    doVerbose "Using leading 1" 1
+}
 
  if {!$NoGUI} {
     package require tile
@@ -1984,9 +2113,6 @@ if {$Country != "US" && $Country != "SE" && $Country != "NONE" && \
     exitMsg 7 "Country Code \"$Country\" is not supported.Please change it."
 }
 doVerbose "Country Code: $Country" 1
-if {$NoOne} {
-    doVerbose "Ignore leading 1" 1
-} else {doVerbose "Using leading 1" 1}
 if {$DateSepar != "/" && $DateSepar != "-" && $DateSepar != "."} {
     exitMsg 7 "Date separator \"$DateSepar\" is not supported. Please change it."
 }

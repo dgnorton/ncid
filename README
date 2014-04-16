@@ -1,6 +1,6 @@
 NCID - Network CallerID
 
-File last changed: Sat May 18, 2013
+File last changed: Fri Apr 11, 2014
 
 NCID is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License located
@@ -39,7 +39,6 @@ The NCID package contains:
     - a Network CallerID client: ncid
       ncid runs on Linux/TiVo/UNIX/Windows/Mac OSX/Cygwin (requires tcl/tk)
     - client output modules and a configuration script for them
-    - a Network CallerID hangup client: ncidhangup
     - A NCID to NCID gateway: ncid2ncid
     - A Android smart phone app 'Remote Notifier' to NCID gateway: rn2ncid
     - A SIP Invite Gateway: sip2ncid
@@ -112,6 +111,7 @@ The NCID package has the following features:
       * update the cidcall.log file using the cidupdate script
       * resend cidcall.log and if the hangup option is enabled resent
         the ncidd.blacklist and ncidd.whitelist files
+      * enable supported options requested by a client
     - Documented protocol
 
     Client Features (ncid):
@@ -142,6 +142,7 @@ The NCID package has the following features:
       * resent the call log
       * reload the alias file and if hangup option enabled, reload the
         blacklist and whitelist files
+      * request a supported server option
     - Runs on Windows, Linux, UNIX, and Macintosh OS X.
     - Documented protocol
 

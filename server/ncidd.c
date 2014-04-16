@@ -34,18 +34,22 @@ char *TTYspeed;
 int ttyspeed = TTYSPEED;
 int port = PORT;
 int debug, conferr, setcid, locked, sendlog, sendinfo, calltype, cidnoname;
-int ttyfd, pollpos, pollevents, update_call_log = 0;
+int ttyfd, mainsock, pollpos, pollevents, update_call_log = 0;
 int ring, ringwait, lastring, clocal, nomodem, noserial, gencid = 1;
 int cidsent, verbose = 1, hangup, ignore1, OSXlaunchd;
 long unsigned int cidlogmax = LOGMAX;
 pid_t pid;
 
-char ipaddr[CONNECTIONS][25];
+char tmpIPaddr[MAXIPADDR];
+char IPaddr[MAXCONNECT][MAXIPADDR];
 char infoline[CIDSIZE] = ONELINE;
 
-struct pollfd polld[CONNECTIONS + 2];
+struct pollfd polld[MAXCONNECT];
 struct termios otty, rtty, ntty;
 FILE *logptr;
+
+/* ack[pos] is for same client/gateway as in polld[pos] */
+int ack[MAXCONNECT]; /* only for clients */
 
 struct cid
 {
@@ -57,6 +61,15 @@ struct cid
     char cidmesg[CIDSIZE];
     char cidline[CIDSIZE];
 } cid = {0, "", "", "", "", NOMESG, ONELINE};
+
+struct mesg
+{
+    char date[CIDSIZE];
+    char time[CIDSIZE];
+    char nmbr[CIDSIZE];
+    char name[CIDSIZE];
+    char line[CIDSIZE];
+} mesg;
 
 struct end
 {
@@ -71,7 +84,7 @@ struct end
     char  name[CIDSIZE];
 } endcall;
 
-/* All line labels, new types must be added */
+/* All line labels of interest to a client, new types must be added */
 char *lineTags[] =
 {
     CIDLINE,
@@ -92,7 +105,7 @@ char *strdate();
 
 void exit(), finish(), free(), reload(), ignore(), doPoll(), formatCID(),
      writeClients(), writeLog(), sendLog(), sendInfo(), logMsg(), cleanup(),
-     update_cidcall_log();
+     update_cidcall_log(), getINFO(), getField();
 
 int getOptions(), doConf(), errorExit(), doAlias(), doTTY(), CheckForLockfile(),
     addPoll(), tcpOpen(), doModem(), initModem(), gettimeofday(), doPID(),
@@ -100,7 +113,7 @@ int getOptions(), doConf(), errorExit(), doAlias(), doTTY(), CheckForLockfile(),
 
 int main(int argc, char *argv[])
 {
-    int events, mainsock, argind, i, fd, errnum;
+    int events, argind, i, fd, errnum, ret;
     char *ptr;
     struct stat statbuf;
     char msgbuf[BUFSIZ];
@@ -198,6 +211,12 @@ int main(int argc, char *argv[])
         }
 
     /*
+     * indicate location of helper scripts
+     */
+    sprintf(msgbuf, "Helper tools:\n    %s\n    %s\n", NCIDUPDATE, NCIDUTIL);
+    logMsg(LEVEL1, msgbuf);
+
+    /*
      * read alias file, if present, exit on any errors
      */
     if (doAlias()) errorExit(-109, 0, 0);
@@ -258,6 +277,10 @@ int main(int argc, char *argv[])
      */
     strncpy(cid.cidline, lineid, CIDSIZE - 1);
     strncpy(infoline, lineid, CIDSIZE - 1);
+
+    sprintf(msgbuf, "Maximum number of clients/gateways: %d\n",
+            noserial ? MAXCLIENTS + 1 : MAXCLIENTS);
+    logMsg(LEVEL1, msgbuf);
 
     sprintf(msgbuf, "Telephone Line Identifier: %s\n", lineid);
     logMsg(LEVEL1, msgbuf);
@@ -373,14 +396,16 @@ int main(int argc, char *argv[])
 
     if (hangup)
     {
+        sprintf(msgbuf, "Hangup option set %s on a blacklisted call\n",
+        hangup == 1 ? "hangup" : "answer as a FAX then hangup");
+        logMsg(LEVEL1, msgbuf);
         if (noserial)
         {
             (void) close(ttyfd);
             ttyfd = 0;
-            sprintf(msgbuf,
-                "Modem port closed, modem only used to terminate calls\n");
+            sprintf(msgbuf, "Modem only used to terminate calls\n");
         }
-        else sprintf(msgbuf, "Modem used to terminate calls on blacklist\n");
+        else sprintf(msgbuf, "Modem used for CID and to terminate calls\n");
         logMsg(LEVEL1, msgbuf);
     }
 
@@ -432,14 +457,16 @@ int main(int argc, char *argv[])
         }
 
     /* initialize server socket */
-    if ((mainsock = tcpOpen(port)) < 0) errorExit(-1, "socket", 0);
+    if ((mainsock = tcpOpen()) < 0) errorExit(-1, "socket", 0);
 
-    addPoll(mainsock);
+    ret = addPoll(mainsock);
+    sprintf(msgbuf,"NCID connection socket is sd %d pos %d\n", mainsock, ret);
+    logMsg(LEVEL3, msgbuf);
 
     /* Read and display data */
     while (1)
     {
-        switch (events = poll(polld, CONNECTIONS + 2, TIMEOUT))
+        switch (events = poll(polld, MAXCONNECT, TIMEOUT))
         {
             case -1:    /* error */
                 if (errno != EINTR) /* No error for SIGHUP */
@@ -459,7 +486,7 @@ int main(int argc, char *argv[])
                         {
                             /* ringing stopped */
                             ring = lastring = ringwait = cidsent = 0;
-                            sendInfo(mainsock);
+                            sendInfo();
                         }
                         else
                         {
@@ -494,6 +521,7 @@ int main(int argc, char *argv[])
                             polld[pollpos].events = polld[pollpos].revents = 0;
                             polld[pollpos].fd = 0;
                             close(ttyfd);
+                            ttyfd = 0;
                             sprintf(msgbuf, "TTY in use: releasing modem %s\n",
                                 strdate(WITHSEP));
                             logMsg(LEVEL1, msgbuf);
@@ -513,7 +541,7 @@ int main(int argc, char *argv[])
                             sprintf(msgbuf,
                                 "%sCannot init TTY, Terminated %s",
                                 MSGLINE, strdate(WITHSEP));
-                            writeClients(mainsock, msgbuf);
+                            writeClients(msgbuf);
                             tcsetattr(ttyfd, TCSANOW, &otty);
                             errorExit(-111, "Fatal", "Cannot init TTY");
                         }
@@ -525,7 +553,7 @@ int main(int argc, char *argv[])
                 }
                 break;
             default:    /* 1 or more events */
-                doPoll(events, mainsock);
+                doPoll(events);
                 break;
         }
     }
@@ -591,7 +619,7 @@ int getOptions(int argc, char *argv[])
             case 'H':
                 hangup = atoi(optarg);
                 if (strlen(optarg) != 1 ||
-                    (!(hangup == 0 && *optarg == '0') && hangup != 1))
+                    (!(hangup == 0 && *optarg == '0') && hangup > 2))
                     errorExit(-107, "Invalid number", optarg);
                 if ((num = findWord("hangup")) >= 0) setword[num].type = 0;
                 break;
@@ -727,7 +755,10 @@ int getOptions(int argc, char *argv[])
 int openTTY()
 {
     if ((ttyfd = open(ttyport, O_RDWR | O_NOCTTY | O_NDELAY)) < 0)
-         return -1;
+    {
+        ttyfd = 0; 
+        return -1;
+    }
     if (fcntl(ttyfd, F_SETFL, fcntl(ttyfd, F_GETFL, 0) & ~O_NDELAY) < 0)
         return -1;
 
@@ -919,7 +950,7 @@ int initModem(char *ptr, int maxtry)
     return ret;
 }
 
-int tcpOpen(int mainsock)
+int tcpOpen()
 {
     int     sd, ret, optval;
     static struct  sockaddr_in bind_addr;
@@ -929,7 +960,7 @@ int tcpOpen(int mainsock)
     bind_addr.sin_family = PF_INET;
     bind_addr.sin_addr.s_addr = 0;    /*  0.0.0.0  ==  this host  */
     memset(bind_addr.sin_zero, 0, 8);
-    bind_addr.sin_port = htons(mainsock);
+    bind_addr.sin_port = htons(port);
     if ((sd = socket(PF_INET, SOCK_STREAM, 0)) < 0)
         return sd;
     if((ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
@@ -943,7 +974,7 @@ int tcpOpen(int mainsock)
         close(sd);
         return ret;
     }
-    if ((ret = listen(sd, CONNECTIONS)) < 0)
+    if ((ret = listen(sd, MAXCONNECT)) < 0)
     {
         close(sd);
         return ret;
@@ -951,30 +982,27 @@ int tcpOpen(int mainsock)
     return sd;
 }
 
-int  tcpAccept(int sock)
+int  tcpAccept()
 {
     int sd;
-    char *ptr;
 
     struct  sockaddr_in sa;
     unsigned int sa_len = sizeof(sa);
 
-    if ((sd = accept(sock, (struct sockaddr *) &sa, &sa_len)) != -1)
-    {
-        ptr = ipaddr[sd];
-        strcpy(ptr, inet_ntoa(sa.sin_addr));
-    }
+    if ((sd = accept(mainsock, (struct sockaddr *) &sa, &sa_len)) != -1)
+        strcpy(tmpIPaddr, inet_ntoa(sa.sin_addr));
 
     return sd;
 }
 
 int addPoll(int pollfd)
 {
-    int added, pos;
+    int added = 0, pos;
 
-    for (added = pos = 0; pos < CONNECTIONS + 2; ++pos)
+    for (added = pos = 0; pos < MAXCONNECT; ++pos)
     {
         if (polld[pos].fd) continue;
+        ack[pos] = 0;
         polld[pos].revents = 0;
         polld[pos].fd = pollfd;
         polld[pos].events = (POLLIN | POLLPRI);
@@ -984,7 +1012,7 @@ int addPoll(int pollfd)
     return added ? pos : -1;
 }
 
-void doPoll(int events, int mainsock)
+void doPoll(int events)
 {
   int num, pos, sd = 0, ret, cnt = 0;
   char buf[BUFSIZ], tmpbuf[BUFSIZ], msgbuf[BUFSIZ];
@@ -996,13 +1024,13 @@ void doPoll(int events, int mainsock)
    * Poll is not configured for the POLLOUT event
    */
 
-  for (pos = 0; events && pos < CONNECTIONS + 2; ++pos)
+  for (pos = 0; events && pos < MAXCONNECT; ++pos)
   {
     if (!polld[pos].revents) continue; /* no events */
 
     /* log event flags */
     sprintf(msgbuf, "polld[%d].revents: 0x%X, fd: %d\n",
-      pos, polld[pos].revents, polld[pos].fd);
+            pos, polld[pos].revents, polld[pos].fd);
     logMsg(LEVEL9, msgbuf);
 
     if (polld[pos].revents & POLLHUP) /* Hung up */
@@ -1010,12 +1038,12 @@ void doPoll(int events, int mainsock)
       if (!noserial && polld[pos].fd == ttyfd)
       {
         sprintf(buf, "%sSerial device Hung Up, Terminated  %s",
-          MSGLINE, strdate(WITHSEP));
-        writeClients(mainsock, buf);
+                MSGLINE, strdate(WITHSEP));
+        writeClients(buf);
         errorExit(-112, "Fatal", "Serial device hung up");
       }
-      sprintf(msgbuf, "Hung Up, sd: %d\n", polld[pos].fd);
-        logMsg(LEVEL2, msgbuf);
+      sprintf(msgbuf, "Client %d pos %d Hung Up\n", polld[pos].fd, pos);
+      logMsg(LEVEL2, msgbuf);
       close(polld[pos].fd);
       polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
     }
@@ -1025,8 +1053,8 @@ void doPoll(int events, int mainsock)
       if (!noserial && polld[pos].fd == ttyfd)
       {
         sprintf(buf, "%sSerial device error, Terminated  %s",
-          MSGLINE, strdate(WITHSEP));
-        writeClients(mainsock, buf);
+                MSGLINE, strdate(WITHSEP));
+        writeClients(buf);
         errorExit(-112, "Fatal", "Serial device error");
       }
         sprintf(msgbuf, "Poll Error, closed client %d.\n", polld[pos].fd);
@@ -1040,12 +1068,11 @@ void doPoll(int events, int mainsock)
     if (!noserial && polld[pos].fd == ttyfd)
       {
         sprintf(buf, "%sInvalid Request from Serial device, Terminated  %s",
-          MSGLINE, strdate(WITHSEP));
-        writeClients(mainsock, buf);
+                MSGLINE, strdate(WITHSEP));
+        writeClients(buf);
         errorExit(-112, "Fatal", "Invalid Request from Serial device");
       }
-      sprintf(msgbuf, "Removed client %d, invalid request.\n",
-        polld[pos].fd);
+      sprintf(msgbuf, "Removed client %d, invalid request.\n", polld[pos].fd);
       logMsg(LEVEL1, msgbuf);
       polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
     }
@@ -1053,7 +1080,7 @@ void doPoll(int events, int mainsock)
     if (polld[pos].revents & POLLOUT) /* Write Event */
     {
       sprintf(msgbuf, "Removed client %d, write event not configured.\n",
-        polld[pos].fd);
+              polld[pos].fd);
       logMsg(LEVEL1, msgbuf);
       polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
     }
@@ -1085,7 +1112,7 @@ void doPoll(int events, int mainsock)
               sprintf(buf,
                       "%sSerial device %d returns no data, Terminated  %s",
                 MSGLINE, ttyfd, strdate(WITHSEP));
-              writeClients(mainsock, buf);
+              writeClients(buf);
               errorExit(-112, "Fatal", "Serial device returns no data");
             }
           }
@@ -1105,16 +1132,16 @@ void doPoll(int events, int mainsock)
             if ((ptr = strchr(buf, '\n'))) *ptr = '\0';
 
             writeLog(datalog, buf);
-            formatCID(mainsock, buf);
+            formatCID(buf);
           }
         }
       }
       else if (polld[pos].fd == mainsock)
       {
         /* TCP/IP Client Connection */
-        if ((sd = tcpAccept(mainsock)) < 0)
+        if ((sd = tcpAccept()) < 0)
         {
-          sprintf(msgbuf, "Connect Error: %s, sd: %d\n", strerror(errno), sd);
+          sprintf(msgbuf, "Connect Error: %s\n", strerror(errno));
           logMsg(LEVEL1, msgbuf);
         }
         else
@@ -1132,47 +1159,62 @@ void doPoll(int events, int mainsock)
           {
             sprintf(buf, "%s %s %s%s", ANNOUNCE, name, VERSION, CRLF);
             ret = write(sd, buf, strlen(buf));
-            if (addPoll(sd) < 0)
+            if ((ret = addPoll(sd)) < 0)
             {
-              sprintf(msgbuf, "%s\n", TOOMSG);
+              sprintf(msgbuf, "Client trying to connect.\n");
               logMsg(LEVEL1, msgbuf);
-              sprintf(buf, "%s: %d%s", TOOMSG, CONNECTIONS, CRLF);
+              sprintf(msgbuf, NOLOGSENT NL);
+              logMsg(LEVEL1, msgbuf);
+              sprintf(msgbuf, TOOMSG, noserial ? MAXCLIENTS + 1 : MAXCLIENTS,
+                      strdate(WITHSEP), NL);
+              logMsg(LEVEL1, msgbuf);
+              sprintf(buf, NOLOGSENT CRLF);
+              ret = write(sd, buf, strlen(buf));
+              sprintf(buf, TOOMSG, noserial ? MAXCLIENTS + 1 :MAXCLIENTS,
+                      strdate(WITHSEP), CRLF);
               ret = write(sd, buf, strlen(buf));
               close(sd);
             }
-            if (sendlog)
-            {
-              /* Client connect message in sendLog() */
-              sendLog(sd, buf);
-            }
             else
             {
-              /* Client connected, CID log not sent */
-              sprintf(msgbuf, "%s%s", NOLOGSENT, CRLF);
+              /* ret is pos in polld for the added sd */
+              strcpy(IPaddr[ret], tmpIPaddr);
+              sprintf(msgbuf, "Client %d pos %d from %s connected.\n", sd,
+                      ret, IPaddr[ret]);
+              logMsg(LEVEL3, msgbuf);
+              if (sendlog)
+              {
+                sendLog(sd, buf);
+              }
+              else
+              {
+                /* CID log not sent */
+                sprintf(msgbuf, "%s%s", NOLOGSENT, CRLF);
+                ret = write(sd, msgbuf, strlen(msgbuf));
+                sprintf(msgbuf, "Call log not sent: %s\n", cidlog);
+                logMsg(LEVEL3, msgbuf);
+              }
+              if (hangup)
+              { 
+                sprintf (msgbuf, OPTLINE "hangup" CRLF);
+                ret = write (sd, msgbuf, strlen(msgbuf));
+                sprintf(msgbuf, "Sent 'hangup' option to client\n");
+                logMsg(LEVEL3, msgbuf);
+              }
+              if (ignore1)
+              { 
+                sprintf (msgbuf, OPTLINE "ignore1" CRLF);
+                ret = write (sd, msgbuf, strlen(msgbuf));
+                sprintf(msgbuf, "Sent 'ignore1' option to client\n");
+                logMsg(LEVEL3, msgbuf);
+              }
+              /* End of startup messages */
+              sprintf(msgbuf, "%s%s", ENDSTARTUP, CRLF);
               ret = write(sd, msgbuf, strlen(msgbuf));
-              logMsg(LEVEL3, msgbuf);
-              sprintf(msgbuf, "Client %d from %s connected.\n", sd, ipaddr[sd]);
-              logMsg(LEVEL3, msgbuf);
-            }
-            if (hangup)
-            { 
-              sprintf (msgbuf, OPTION "hangup" CRLF);
-              ret = write (sd, msgbuf, strlen(msgbuf));
-              sprintf(msgbuf, "Sent 'hangup' option to client\n");
-              logMsg(LEVEL3, msgbuf);
-            }
-            if (ignore1)
-            { 
-              sprintf (msgbuf, OPTION "ignore1" CRLF);
-              ret = write (sd, msgbuf, strlen(msgbuf));
-              sprintf(msgbuf, "Sent 'ignore1' option to client\n");
+              sprintf(msgbuf, "%s%s", ENDSTARTUP, NL);
               logMsg(LEVEL3, msgbuf);
             }
           }
-          /* End of startup messages */
-          sprintf(msgbuf, "%s%s", ENDSTARTUP, CRLF);
-          ret = write(sd, msgbuf, strlen(msgbuf));
-          logMsg(LEVEL3, msgbuf);
         }
       }
       else
@@ -1181,26 +1223,24 @@ void doPoll(int events, int mainsock)
         {
           if ((num = read(polld[pos].fd, buf, BUFSIZ-1)) < 0)
           {
-            sprintf(msgbuf, "Client %d read error (%d): %s\n", polld[pos].fd,
-                    errno, strerror(errno));
+            sprintf(msgbuf, "Client %d pos %d read error %d: %s\n",
+                    polld[pos].fd, pos, errno, strerror(errno));
             logMsg(LEVEL1, msgbuf);
             if (errno != EAGAIN)
             {
-                sprintf(msgbuf, "Client %d removed.\n", polld[pos].fd);
+                sprintf(msgbuf, "Client %d pos %d removed.\n", polld[pos].fd, pos);
                 logMsg(LEVEL1, msgbuf);
                 close(polld[pos].fd);
                 polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
             }
-            logMsg(LEVEL1, msgbuf);
           }
           /* read will return 0 for a disconnect */
-          if (num == 0)
+          else if (num == 0)
           {
             /* TCP/IP Client End Connection */
-            sprintf(msgbuf, "Client %d disconnected.\n", polld[pos].fd);
-              logMsg(LEVEL3, msgbuf);
+            sprintf(msgbuf, "Client %d pos %d disconnected.\n", polld[pos].fd, pos);
+            logMsg(LEVEL3, msgbuf);
             close(polld[pos].fd);
-            *ipaddr[sd] = '\0';
             polld[pos].fd = polld[pos].events = polld[pos].revents = 0;
           }
           else
@@ -1248,7 +1288,14 @@ void doPoll(int events, int mainsock)
                 logMsg(LEVEL3, msgbuf);
 
                 writeLog(datalog, buf);
-                formatCID(mainsock, buf + strlen(CALL));
+                if (ack[pos])
+                {
+                    sprintf(msgbuf, "%s%s%s", ACKLINE, buf, CRLF);
+                    ret = write(polld[pos].fd, msgbuf, strlen (msgbuf));
+                    sprintf(msgbuf, "(sd %d) %s%s%s", polld[pos].fd, ACKLINE, buf, NL);
+                    logMsg(LEVEL3, msgbuf);
+                }
+                formatCID(buf + strlen(CALL));
               }
               else if (strncmp(buf, CALLINFO, strlen(CALLINFO)) == 0)
               {
@@ -1273,14 +1320,14 @@ void doPoll(int events, int mainsock)
                 {
                     strcpy(endcall.htype, CANCEL);
                     ring = -1;
-                    sendInfo(mainsock);
+                    sendInfo();
                     ring = 0;
                 }
                 else if (strstr(buf, BYE))
                 {
                     strcpy(endcall.htype, BYE);
                     ring = -2;
-                    sendInfo(mainsock);
+                    sendInfo();
                     ring = 0;
                 }
                 else strcpy(endcall.htype, "-");
@@ -1416,7 +1463,7 @@ void doPoll(int events, int mainsock)
                          polld[pos].fd);
                  logMsg(LEVEL3, msgbuf);
                  writeLog(cidlog, buf);
-                 writeClients(mainsock, buf);
+                 writeClients(buf);
               }
               else if (strncmp(buf, HUPLINE, strlen(HUPLINE)) == 0)
               {
@@ -1431,7 +1478,7 @@ void doPoll(int events, int mainsock)
                          polld[pos].fd);
                  logMsg(LEVEL3, msgbuf);
                  writeLog(cidlog, buf);
-                 writeClients(mainsock, buf);
+                 writeClients(buf);
               }
               else if (strncmp(buf, OUTLINE, strlen(OUTLINE)) == 0)
               {
@@ -1446,7 +1493,7 @@ void doPoll(int events, int mainsock)
                          polld[pos].fd);
                  logMsg(LEVEL3, msgbuf);
                  writeLog(cidlog, buf);
-                 writeClients(mainsock, buf);
+                 writeClients(buf);
               }
               else if (strncmp(buf, CIDINFO, strlen(CIDINFO)) == 0)
               {
@@ -1460,33 +1507,46 @@ void doPoll(int events, int mainsock)
                          polld[pos].fd);
                  logMsg(LEVEL3, msgbuf);
                  writeLog(datalog, buf);
-                 writeClients(mainsock, buf);
+                 writeClients(buf);
               }
               else if (strncmp(buf, MSGLINE, strlen(MSGLINE)) == 0)
               {
                 /*
                  * Found a MSG: line
+                 * MSG: <message> ###DATE*mmddyyyy*TIME*hhmm*NAME*<name>*NMBR*<number>*LINE*<id>*
                  * Write message to cidlog and all clients
                  */
 
-                sprintf(msgbuf, "Client %d sent text message.\n",
-                        polld[pos].fd);
+                sprintf(msgbuf, "Client %d sent text message.\n", polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
-                writeLog(cidlog, buf);
-                writeClients(mainsock, buf);
+                writeLog(datalog, buf);
+                getINFO(buf);
+                sprintf(tmpbuf, MESSAGE, buf, mesg.date, mesg.time, mesg.name, mesg.nmbr, mesg.line);
+                writeLog(cidlog, tmpbuf);
+                writeClients(tmpbuf);
               }
               else if (strncmp(buf, NOTLINE, strlen(NOTLINE)) == 0)
               {
                 /*
                  * Found a NOT: (remote notification) line from a cell phone
+                 * NOT: <message> ###DATE*mmddyyyy*TIME*hhmm*NAME*<name>*NMBR*<number>*LINE*<id>*
                  * Write notice to cidlog and all clients
                  */
 
-                sprintf(msgbuf, "Gateway (sd %d) sent a notice.\n",
-                        polld[pos].fd);
+                sprintf(msgbuf, "Gateway (sd %d) sent a notice.\n", polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
-                writeLog(cidlog, buf);
-                writeClients(mainsock, buf);
+                writeLog(datalog, buf);
+                if (ack[pos])
+                {
+                    sprintf(msgbuf, "%s%s%s", ACKLINE, buf, CRLF);
+                    ret = write(polld[pos].fd, msgbuf, strlen (msgbuf));
+                    sprintf(msgbuf, "(sd %d) %s%s%s", polld[pos].fd, ACKLINE, buf, NL);
+                    logMsg(LEVEL3, msgbuf);
+                }
+                getINFO(buf);
+                sprintf(tmpbuf, MESSAGE, buf, mesg.date, mesg.time, mesg.name, mesg.nmbr, mesg.line);
+                writeLog(cidlog, tmpbuf);
+                writeClients(tmpbuf);
               }
               else if (strncmp (buf, REQLINE, strlen(REQLINE)) == 0)
               {
@@ -1539,8 +1599,7 @@ void doPoll(int events, int mainsock)
 
                     if (strstr (buf, UPDATES)) multi = "--multi";
                     if (ignore1) noone = "--ignore1";
-                    sprintf (tmpbuf, PROGDIR NCIDUPDATE,
-                             cidalias, cidlog, multi, noone);
+                    sprintf (tmpbuf, DOUPDATE, cidalias, cidlog, multi, noone);
                     respHandle = popen (tmpbuf, "r");
                     strcat(tmpbuf, "\n");
                     logMsg(LEVEL2, tmpbuf);
@@ -1563,22 +1622,32 @@ void doPoll(int events, int mainsock)
                         ret = write (polld[pos].fd, BEGIN_DATA1 CRLF,
                                      strlen (BEGIN_DATA1 CRLF));
                         logMsg(LEVEL2, BEGIN_DATA1 NL);
-                        ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                        ret = write(polld[pos].fd, msgbuf, strlen(msgbuf));
                         logMsg(LEVEL2, msgbuf);
-                        while (fgets (ptr, cnt, respHandle))
+                        while (fgets(ptr, cnt, respHandle))
                         {
-                            ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                            ret = write(polld[pos].fd, msgbuf, strlen(msgbuf));
                             logMsg(LEVEL2, msgbuf);
                         }
                     }
-                    ret = write (polld[pos].fd, END_DATA CRLF,
-                                 strlen (END_DATA CRLF));
+                    ret = write(polld[pos].fd, END_DATA CRLF,
+                                strlen (END_DATA CRLF));
                     pclose (respHandle);
                     logMsg(LEVEL2, END_DATA NL);
                  }
-                 else if (strstr (buf, REREAD))
+                 else if (strstr(buf, REREAD))
                  {
-                    sendLog (polld[pos].fd, buf);
+                    sendLog(polld[pos].fd, buf);
+                 }
+                 else if (strstr(buf, ACK))
+                 {
+                    ack[pos] = 1;
+                    sprintf(msgbuf, "(sd %d) sent %s\n", polld[pos].fd, buf);
+                    logMsg(LEVEL3, msgbuf);
+                    sprintf(msgbuf, "%s%s%s", ACKLINE, buf, CRLF);
+                    ret = write(polld[pos].fd, msgbuf, strlen (msgbuf));
+                    sprintf(msgbuf, "(sd %d) %s%s%s", polld[pos].fd, ACKLINE, buf, NL);
+                    logMsg(LEVEL3, msgbuf);
                  }
                  else 
                  {
@@ -1586,13 +1655,13 @@ void doPoll(int events, int mainsock)
 
                     multi[0] = '\0';
                     ptr = buf + strlen(REQLINE);
-                    if (strncmp (ptr, BLK_LST , strlen(BLK_LST)) == 0)
+                    if (strncmp(ptr, BLK_LST , strlen(BLK_LST)) == 0)
                     {
                        filename = blacklist;
                        ptr += strlen(BLK_LST);
                        type = "Blacklist";
                     }
-                    else if (strncmp (ptr, ALIAS_LST , strlen(ALIAS_LST)) == 0)
+                    else if (strncmp(ptr, ALIAS_LST , strlen(ALIAS_LST)) == 0)
                     {
                        filename = cidalias;
                        ptr += strlen(ALIAS_LST);
@@ -1600,44 +1669,50 @@ void doPoll(int events, int mainsock)
                        if (hangup) sprintf
                            (multi, "--multi \"%s %s\"", blacklist, whitelist);
                     }
-                    else if (strncmp (ptr, WHT_LST , strlen(WHT_LST)) == 0)
+                    else if (strncmp(ptr, WHT_LST , strlen(WHT_LST)) == 0)
                     {
                        filename = whitelist;
                        ptr += strlen(WHT_LST);
                        type = "Whitelist";
                     }
-                    else if (strncmp (ptr, INFO_REQ, strlen(INFO_REQ)) == 0)
+                    else if (strncmp(ptr, INFO_REQ, strlen(INFO_REQ)) == 0)
                     {
-                       /* found a REQ: INFO line */
-                       char  name[CIDSIZE], number[CIDSIZE], *temp;
+                       /* found a REQ: INFO <nmbr>&&<name>&&<line> line */
+                       char  name[CIDSIZE], number[CIDSIZE], line[CIDSIZE], *temp;
                        int   which;
 
-                        /* all this in case thr REQ: line is not complete */
-                        if (strlen(ptr) < (strlen(INFO_REQ) + 1))
-                          number[0] = name[0] = 0;
-                        else
+                        /* all this in case thr REQ: line is incomplete */
+                        number[0] = name[0] = line[0] = '\0';
+                        if (strlen(ptr) > (strlen(INFO_REQ) + 1))
                         {
                           ptr += strlen(INFO_REQ) + 1;
-                          if ((temp = strchr(ptr, '&'))) *temp = 0;
+                          if ((temp = strstr(ptr, "&&"))) *temp = 0;
                           strncpy (number, ptr, CIDSIZE-1);
                           number[CIDSIZE-1] = 0;
                           if (temp)
                           {
-                            ptr += strlen (number) + 2;
+                            ptr += strlen(number) + 2;
+                            if ((temp = strstr(ptr, "&&"))) *temp = 0;
                             strncpy (name, ptr, CIDSIZE-1);
                             name[CIDSIZE-1] = 0;
                           }
-                          else name[0] = 0;
+                          if (temp)
+                          {
+                            ptr += strlen(name) + 2;
+                            strncpy (line, ptr, CIDSIZE-1);
+                            line[CIDSIZE-1] = 0;
+                          }
                         }
-                        temp = findAlias (name, number);
-                        ret = write (polld[pos].fd, BEGIN_DATA3 CRLF,
-                                     strlen (BEGIN_DATA3 CRLF));
+                        temp = findAlias(name, number, line);
+                        ret = write(polld[pos].fd, BEGIN_DATA3 CRLF,
+                                     strlen(BEGIN_DATA3 CRLF));
                         logMsg(LEVEL2, BEGIN_DATA3 NL);
-                        sprintf (msgbuf, INFOLINE "alias %s\n", temp);
+                        sprintf(msgbuf, INFOLINE "alias %s\n", temp);
                         logMsg(LEVEL2, msgbuf);
-                        ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
+                        sprintf(msgbuf, INFOLINE "alias %s\r\n", temp);
+                        ret = write(polld[pos].fd, msgbuf, strlen(msgbuf));
 
-                        which = onBlackWhite (name, number);
+                        which = onBlackWhite(name, number);
                         switch (which)
                         {
                             case 0:
@@ -1659,7 +1734,7 @@ void doPoll(int events, int mainsock)
                                 temp = "";
                                 break;
                         }
-                        sprintf (msgbuf, INFOLINE "%s\n" END_RESP CRLF, temp);
+                        sprintf (msgbuf, INFOLINE "%s\r\n" END_RESP CRLF, temp);
                         ret = write (polld[pos].fd, msgbuf, strlen (msgbuf));
                         sprintf (msgbuf, INFOLINE "%s\n" END_RESP NL, temp);
                         logMsg(LEVEL2, msgbuf);
@@ -1683,8 +1758,7 @@ void doPoll(int events, int mainsock)
                         FILE        *respHandle;
 
                         ptr++;
-                        sprintf (tmpbuf, PROGDIR NCIDUTIL,
-                                 multi, filename, type, ptr);
+                        sprintf (tmpbuf, DOUTIL, multi, filename, type, ptr);
                         respHandle = popen (tmpbuf, "r");
                         strcat(tmpbuf, "\n");
                         logMsg(LEVEL2, tmpbuf);
@@ -1754,6 +1828,7 @@ void doPoll(int events, int mainsock)
                 sprintf(msgbuf, "Client %d sent unknown data.\n",
                         polld[pos].fd);
                 logMsg(LEVEL3, msgbuf);
+                writeLog(datalog, buf);
               }
             }
             else
@@ -1776,6 +1851,65 @@ void doPoll(int events, int mainsock)
     polld[pos].revents = 0;
     --events;
   }
+}
+
+/*
+ * Get or create the INFO from a MSG: or NOT:
+ */
+void getINFO(char *bufptr)
+{
+    char *ptr;
+
+    *mesg.date = *mesg.time = '\0';
+    if ((ptr = strstr(bufptr, " ###")))
+    {
+        getField(ptr, "DATE", mesg.date, "");
+        getField(ptr, "TIME", mesg.time, "");
+        getField(ptr, "NAME", mesg.name, NO_NAME);
+        getField(ptr, "NMBR", mesg.nmbr, NO_NMBR);
+        getField(ptr, "LINE", mesg.line, NO_LINE);
+        *ptr = '\0';
+
+    } else
+    {
+        /* fill in missing fields */
+        strcpy(mesg.name, NO_NAME);
+        strcpy(mesg.nmbr, NO_NMBR);
+        strcpy(mesg.line, NO_LINE);
+    }
+    userAlias(mesg.nmbr, mesg.name, mesg.line);
+
+    if (!*mesg.date || !*mesg.time)
+    {
+        /* no date and time, create both */
+        ptr = strdate(NOSEP);
+        strncpy(mesg.date, ptr, 8);
+        mesg.date[8] = 0;
+        strncpy(mesg.time, ptr + 9, 4);
+        mesg.time[4] = 0;
+    }
+}
+
+/*
+ * Get a INFO field from a MSG: or NOT:
+ */
+void getField(char *bufptr, char *field_name, char *mesgptr, char *noval)
+{
+    char tmpbuf[BUFSIZ], *ptr;
+
+    tmpbuf[BUFSIZ -1] = '\0';
+    if ((ptr = strstr(bufptr, field_name)))
+    {
+        if (*(ptr + 5) == '*') strncpy(mesgptr, noval, CIDSIZE - 1);
+        else
+        {
+            strncpy(tmpbuf, ptr + 5, BUFSIZ -1);
+            ptr = strchr(tmpbuf, '*');
+            if (ptr) *ptr = '\0';
+            strncpy(mesgptr, tmpbuf, CIDSIZE - 1);
+        }
+    }
+    else strncpy(mesgptr, noval, CIDSIZE - 1);
 }
 
 /*
@@ -1806,9 +1940,8 @@ void doPoll(int events, int mainsock)
  * ###DATEmmddhhss...CALL<IN|OUT>...LINEidentifier...NMBRnumber...NAMEwords+++\r
  */
 
-void formatCID(int mainsock, char *buf)
+void formatCID(char *buf)
 {
-    int hup = 0;
     char cidbuf[BUFSIZ], *ptr, *sptr, *linelabel;
     time_t t;
 
@@ -1840,7 +1973,7 @@ void formatCID(int mainsock, char *buf)
         if (sendinfo)
         {
             ++ring;
-            sendInfo(mainsock);
+            sendInfo();
         }
 
         if ((cid.status & CIDALL3) == CIDALL3)
@@ -2153,7 +2286,7 @@ void formatCID(int mainsock, char *buf)
         if (hangup)
         {
             /* hangup phone if on blacklist but not whitelist */
-            if ((hup = doHangup(cid.cidname, cid.cidnmbr))) linelabel = HUPLINE;
+            if (doHangup(cid.cidname, cid.cidnmbr)) linelabel = HUPLINE;
         }
 
         sprintf(cidbuf, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
@@ -2172,7 +2305,7 @@ void formatCID(int mainsock, char *buf)
         /*
          * Send the CID, OUT, or HUP text line to clients
          */
-        writeClients(mainsock, cidbuf);
+        writeClients(cidbuf);
 
         /*
          * Reset mesg, line, and status
@@ -2181,6 +2314,7 @@ void formatCID(int mainsock, char *buf)
          */
         strncpy(cid.cidmesg, NOMESG, CIDSIZE - 1); /* default message */
         strcpy(cid.cidline, lineid); /* default line indicator */
+        strcpy(infoline, lineid); /* default line indicator */
         cid.status = 0;
         cidsent = 1;
         if (calltype) calltype = 0;
@@ -2191,13 +2325,13 @@ void formatCID(int mainsock, char *buf)
  * Send string to all TCP/IP CID clients.
  */
 
-void writeClients(int mainsock, char *inbuf)
+void writeClients(char *inbuf)
 {
     int pos, ret;
     char buf[BUFSIZ];
 
     strcat(strcpy(buf, inbuf), CRLF);
-    for (pos = 0; pos < CONNECTIONS + 2; ++pos)
+    for (pos = 0; pos < MAXCONNECT; ++pos)
     {
         if (polld[pos].fd == 0 || polld[pos].fd == ttyfd ||
             polld[pos].fd == mainsock)
@@ -2222,10 +2356,10 @@ void sendLog(int sd, char *logbuf)
         if ((long unsigned int) statbuf.st_size > cidlogmax)
         {
             sprintf(logbuf, LOGMSG, (long unsigned int) statbuf.st_size,
-                    cidlogmax, CRLF);
+                    cidlogmax, strdate(WITHSEP), CRLF);
             ret = write(sd, logbuf, strlen(logbuf));
             sprintf(msgbuf, LOGMSG, (long unsigned int) statbuf.st_size,
-                    cidlogmax, NL);
+                    cidlogmax, strdate(WITHSEP), NL);
             logMsg(LEVEL1, msgbuf);
             sprintf(msgbuf, "%s%s", NOLOGSENT, CRLF);
             ret = write(sd, msgbuf, strlen(msgbuf));
@@ -2312,16 +2446,14 @@ void sendLog(int sd, char *logbuf)
         /* Indicate end of the Call Log */
         sprintf(msgbuf, "%s%s", LOGEND, CRLF);
         ret = write(sd, msgbuf, strlen(msgbuf));
-        sprintf(msgbuf, "Client %d from %s connected, sent call log: %s\n",
-            sd, ipaddr[sd], cidlog);
+        sprintf(msgbuf, "Sent call log: %s\n", cidlog);
         logMsg(LEVEL3, msgbuf);
     }
     else
     {
         sprintf(msgbuf, "%s%s", EMPTYLOG, CRLF);
         ret = write(sd, msgbuf, strlen(msgbuf));
-        sprintf(msgbuf, "Client %d from %s connected, call log empty: %s\n",
-            sd, ipaddr[sd], cidlog);
+        sprintf(msgbuf, "Call log empty: %s\n", cidlog);
         logMsg(LEVEL3, msgbuf);
     }
 }
@@ -2361,14 +2493,14 @@ void writeLog(char *logf, char *logbuf)
  * CIDINFO: *LINE*<label>*RING*<number>*TIME<hh:rr:mm>
  */
 
-void sendInfo(int mainsock)
+void sendInfo()
 {
     char buf[BUFSIZ];
 
     userAlias("", "", infoline);
     sprintf(buf, "%s%s%s%s%d%s%s%s",CIDINFO, LINE, infoline, \
             RING, ring, TIME, strdate(ONLYTIME), STAR);
-    writeClients(mainsock, buf);
+    writeClients(buf);
 
     strcat(buf, NL);
     logMsg(LEVEL3, buf);
@@ -2546,7 +2678,7 @@ void cleanup()
     }
 
     /* close open files */
-    for (pos = 0; pos < CONNECTIONS + 2; ++pos)
+    for (pos = 0; pos < MAXCONNECT; ++pos)
         if (polld[pos].fd != 0) close(polld[pos].fd);
 
     /* close log file, if open */

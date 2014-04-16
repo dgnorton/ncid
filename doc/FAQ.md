@@ -1,4 +1,4 @@
-Last edited: Mon Dec 30, 2013
+Last edited: Sun Feb 9, 2014
 
 ## <a name="faq_top"></a>NCID FAQ
 
@@ -136,20 +136,20 @@ Last edited: Mon Dec 30, 2013
 
 > An NCID gateway obtains the Caller ID information
   and sends it to the NCID server as a CID message. Currently included 
-  gateways are:  
+  gateways are:
 
 > - A SIP Gateway that obtains the CID information
-    using VoIP SIP packets and sends it to the NCID server.  
+    using VoIP SIP packets and sends it to the NCID server.
 > - A YAC (Yet Another Caller ID) Gateway that obtains the CID 
-    information from a YAC modem server.  
+    information from a YAC modem server.
 > - A [Whozz Calling](http://www.callerid.com/products/ethernet-link/)
    (WC) Ethernet Link device gateway that obtains the CID information 
-   from multiple POTS (Plain Old Telephone Service) lines.  
+   from multiple POTS (Plain Old Telephone Service) lines.
 > - A gateway for the Android app "Remote Notifier" that obtains smart phone 
-    CID and text messages.  
+    CID and text messages.
 > - An NCID-to-NCID Gateway that sends the CID information
     from one or more NCID servers to a selected NCID server.
-  
+
 
 - <a name="faq_yacok"></a> **Can NCID be used with YAC (Yet Another Caller ID)?**
 
@@ -191,12 +191,12 @@ Last edited: Mon Dec 30, 2013
   with a custom one that is more meaningful. You can configure several
   hundred aliases if you want.  Aliases are stored in the **ncidd.alias**
   file.
-  
+
 > For example, if an incoming call has the name "WIRELESS CALLER" you can use
   an alias to change it to the real name of the caller. You would use
   this form of alias:
 
->> **alias NAME "FROM" = "TO" if "TELEPHONE_NUMBER"**
+        alias NAME "FROM" = "TO" if "TELEPHONE_NUMBER"
 
 > Since we do not care what name is there, we will use '\*' in
   the FROM field.  The TO field can contain spaces so in our
@@ -206,7 +206,7 @@ Last edited: Mon Dec 30, 2013
   though it is not displayed.  Putting in the values, our alias
   looks like this:
 
->> **alias NAME * = "John on cell" if 14075551212**
+        alias NAME * = "John on cell" if 14075551212
 
 > The complete documentation for aliases is in the **ncidd.alias**
   man page, and as comments in the **ncidd.alias** file.
@@ -220,9 +220,9 @@ Last edited: Mon Dec 30, 2013
 > The name or number in the blacklist is treated as a substring of the
 caller name or number.  For example, using a 10 digit US number:
 
->> 3215551212 will only match 3215551212  
-   321555 will match any number with 321555 in it  
-   ^321555 will match any number  beginning with 321555
+        3215551212 - will only match 3215551212
+        321555     - will match any number with 321555 in it
+        ^321555    - will match any number beginning with 321555
 
 > The **ncidd.blacklist** file comes preconfigured for PRIVATE
   names, a spoofing area code, and a few expensive area codes.
@@ -241,7 +241,7 @@ caller name or number.  For example, using a 10 digit US number:
   the entire 999 unused area code.  If you want to allow a specific number
   from area code 999, you would add it to **ncidd.whitelist**:
 
->> 9995551212
+        9995551212
 
 > You might notice there are 2 entries in the blacklist file for each
   of the blacklisted area codes.  This is because in the US some systems
@@ -249,7 +249,7 @@ caller name or number.  For example, using a 10 digit US number:
   user might have, two entries are made to work with both types. Thus
   the above example becomes:
 
->> 9995551212 19995551212
+        9995551212 19995551212
 
 > The complete documentation for the whitelist is in the **ncidd.whitelist**
   man page, and as comments in the **ncidd.whitelist** file.
@@ -260,7 +260,7 @@ caller name or number.  For example, using a 10 digit US number:
   Hangup" section of the **ncidd.conf** file. Just remove the '#' from
   the line:
 
->> **\# set hangup = 1**
+        # set hangup = 1
 
 > Once you change **ncidd.conf**, you must start/restart ncidd to read it.
 
@@ -330,15 +330,18 @@ caller name or number.  For example, using a 10 digit US number:
   **wc2ncid.conf**.  If you have a different network, say 192.168.1.x, then you
   need to modify **wc2ncid.conf**:
 
->> Edit **wc2ncid.conf**:  
-   change the line: wcaddr = 192.168.0.90  
-   to: wcaddr = 192.168.1.90
+       Edit wc2ncid.conf:
+
+       change the line: wcaddr = 192.168.0.90
+       to: wcaddr = 192.168.1.90
 
 > The wc2ncid gateway script needs to be run at least once before using it with NCID. It also needs to be run whenever you change *wcaddr* in **wc2ncid.conf**.
->> wc2ncid --set-wc
+
+       wc2ncid --set-wc
 
 > Make sure the Whozz Calling device is set properly. Start wc2ncid in test mode:
->> wc2ncid -t
+
+       wc2ncid -t
 
 - <a name="faq_rn"></a> **How do I configure NCID to use the Remote Notifier Gateway?**
 
@@ -376,9 +379,9 @@ caller name or number.  For example, using a 10 digit US number:
 > The client receives the Caller ID from the server and displays
   it in one of three ways:
 
-> - **Its GUI Window**
-> - **A Terminal Window**
-> - **Using a Output Module**
+> - Its GUI Window
+> - A Terminal Window
+> - Using a Output Module
 
 > An output module can also send the information to a smart phone, pager,
   email address, and more.
@@ -429,38 +432,38 @@ caller name or number.  For example, using a 10 digit US number:
 > For distributions not based on Debian, Fedora, or BSD the modules
   need to be started manually, Here are three examples:
 
->> **ncid --no-gui --program ncid-page &**  
-   **ncid --no-gui --program ncid-notify &**  
-   **ncid --no-gui --program ncid-speak &**
+        ncid --no-gui --program ncid-page &
+        ncid --no-gui --program ncid-notify &
+        ncid --no-gui --program ncid-speak &
 
 > Each of the above commands start ncid using an output module
-  and puts it in the background.  
-  The first line starts ncid using the page output module.  
-  The second line starts ncid using the notify output module.  
+  and puts it in the background.
+  The first line starts ncid using the page output module.
+  The second line starts ncid using the notify output module.
   The third line starts ncid using the speak output module.
 
 - <a name="faq_page"></a> **How do I configure the page module to send the CID information to my cell phone?**
 
 > You need to modify one line in **ncid-page.conf** and maybe one line
   in **ncid.conf**.
-  
+
 > Find this line in **ncid.conf**:
 
->> **PageTo=**
+       PageTo=
 
-> *PageTo* needs to be set to your mobile provider's SMS e-mail address.
+> *PageTo* needs to be set to your mobile provider SMS e-mail address.
   Here are addresses for the major ones in the US:
 
->> **Sprint: phonenumber@messaging.sprintpcs.com**  
-   **Verizon: phonenumber@vtext.com**  
-   **T-Mobile: phonenumber@tmomail.com**  
-   **AT&T: phonenumber@txt.att.net**  
+       Sprint: phonenumber@messaging.sprintpcs.com
+       Verizon: phonenumber@vtext.com
+       T-Mobile: phonenumber@tmomail.com
+       AT&T: phonenumber@txt.att.net
 
 > For example, if your provider is AT&T and your cell number is 1-321-555-1212,
   then your *PageTo* line becomes:
   <pre>
   PageTo=13215551212@txt.att.net</pre>
-  
+
 > If you want a page anytime the phone rings, you are finished.
 
 > if you only want a page if the phone call is unanswered or is at a certain
@@ -478,12 +481,12 @@ caller name or number.  For example, using a 10 digit US number:
   A ring count of 4 is a good value to assume the phone was not answered.
   Remove the '#' so you have this line:
 
->> **set ncid_page {set Ring 4}**
+        set ncid_page {set Ring 4}
 
 > If you are using SIP, you can configure it to send the page on
   hangup without an answer by modifying the above line to:
 
->> **set ncid_page {set Ring -1}**
+        set ncid_page {set Ring -1}
 
 > See the comments in the **ncid.conf** file for more information
   on configuring the ring option line.

@@ -1,10 +1,10 @@
 # ncid-speak.conf - ncid-speak configuration file
 
-# Last Modified: Wed May 29, 2013
+# Last Modified: Sun Apr 13, 2014
 
 # Uncomment, comment. or give variables a different value
 
-# $CIDTYPE is one of:
+# $TYPE is one of:
 #   CID: incoming call
 #   OUT: outgoing call
 #   HUP: blacklisted hangup
@@ -14,13 +14,13 @@
 #
 # All types: "CID OUT HUP BLK MSG PID NOT"
 
-# $CIDTYPE's to process
-# default: "CID"
-SpeakTypes="CID MSG"
+# $TYPE's to process
+# default: "CID PID"
+SpeakTypes="CID PID"
 
 # What to say
-# the default is $CIDNAME but could also be $CIDNMBR or both
-SpeakThis='$CIDNAME'
+# the default is $NAME but could also be $NMBR or both
+SpeakThis='$NAME'
 
 # If using "festival" for text-to-speech:
 SpeakInput="echo $SpeakThis | festival --tts"   # tts default
@@ -50,4 +50,4 @@ SpeakDelay=2
 #
 # A leading "1" for the CID number is always ignored.
 # Default value = 3
-AreaCodeLength=0
+AreaCodeLength=3

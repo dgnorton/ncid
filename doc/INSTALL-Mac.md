@@ -1,10 +1,12 @@
-Last edited: Mon Dec 30, 2013
+Last edited: Sat Mar 8, 2014
 
 ## <a name="instl_mac_top"></a>Macintosh TAR Package Install
 
 > If NCID does not work, see [INSTALL](#instl_generic_top) for some simple tests.  
-  If using sip2ncid, see [sip2ncid setup](#gateways_sip).  
-  If using wc2ncid, see [wc2ncid setup](#gateways_wc).
+
+> If using sip2ncid, see [sip2ncid setup](#gateways_sip).  
+  If using wc2ncid, see [wc2ncid setup](#gateways_wc).  
+  If using yac, see [yac setup](#gateways_yac).
 
 > [Table of Contents](#doc_top)
 
@@ -26,7 +28,9 @@ Last edited: Mon Dec 30, 2013
      
 > In order to use the NCID GUI client on Mac OS X 10.4 (Tiger) and 10.5
   (Leopard), you must install ActiveTcl because the NCID GUI client requires
-  the new tcl/tk "tile" package. Furthermore, you must install a patch after
+  the new tcl/tk "tile" package.
+
+> Furthermore, you must install a patch after
   ActiveTcl is installed to prevent a "BGError: bad attribute" error from
   occuring when you try to change the font. See instructions under the
   FIRST STARTUP section.
@@ -47,18 +51,20 @@ Last edited: Mon Dec 30, 2013
 
 > - The NCID package normally installs in /usr/local.
 
-> - If a binary package is available:
-    + Copy ncid-VERSION.mac-osx.tgz to the Mac, then:
-    + sudo tar -xzvf ncid-VERSION-mac-osx.tgz -C /
-    + EXAMPLE: sudo tar -xzvf ncid-0.64.mac-osx.tgz -C /
-    <br><br>
+> - Install the NCID binary package if available:
 
-> - If there is no binary package, you need to compile the source:  
-    Copy ncid-VERSION-src.tar.gz to the Mac, then:
-    + tar -xzvf ncid-VERSION-src.tar.gz
-    + cd ncid
-    + make mac (compiles for /usr/local, see top of Makefile)
-    + sudo make mac-install
+          Copy ncid-VERSION.mac-osx.tgz to the Mac
+          sudo tar -xzvf ncid-VERSION-mac-osx.tgz -C /
+
+          EXAMPLE: sudo tar -xzvf ncid-0.64.mac-osx.tgz -C /
+
+> - Compile and install from source if there is no binary package:
+
+          Copy ncid-VERSION-src.tar.gz to the Mac
+          tar -xzvf ncid-VERSION-src.tar.gz
+          cd ncid
+          make mac (compiles for /usr/local, see top of Makefile)
+          sudo make mac-install
                         
 > #### Upgrade ncid:
 
@@ -66,19 +72,16 @@ Last edited: Mon Dec 30, 2013
     files are normally in /usr/local/etc/ncid.
           
 > - If a binary package is available:
-    Extracting the tar file will REPLACE the contents of all of
-    the NCID configuration files. Be sure to back them up first.
-    This includes:
-    + all files ending with .conf, including those in the conf.d directory
-    + ncidd.blacklist
-    + ncidd.whitelist
-    + ncidd.alias
-    <br><br>
-                 
+
+>> Extracting the tar file will REPLACE the contents of all of
+   the NCID configuration files. Be sure to back them up first.
+   This includes all files in /usr/local/etc/ncid/.
+
 > - Copy ncid-VERSION.mac-osx.tgz to the Mac, then:
-    + sudo tar -xzvf ncid-VERSION-mac-osx.tgz -C /
-    + EXAMPLE: sudo tar -xzvf ncid-0.64.mac-osx.tgz -C /
-    <br><br>
+
+          sudo tar -xzvf ncid-VERSION-mac-osx.tgz -C /
+
+          EXAMPLE: sudo tar -xzvf ncid-0.64.mac-osx.tgz -C
 
 > - You will need to manually compare your backed up configuration
     files with the new ones, and manually edit any differences.
@@ -88,11 +91,11 @@ Last edited: Mon Dec 30, 2013
     installed will have .new as the extension.
             
 > - Copy ncid-VERSION-src.tar.gz to the Mac, then:
-    + tar -xzvf ncid-VERSION-src.tar.gz
-    + cd ncid
-    + make mac (compiles for /usr/local, see top of Makefile)
-    + sudo make mac-install
-    <br><br>
+
+          tar -xzvf ncid-VERSION-src.tar.gz
+          cd ncid
+          make mac (compiles for /usr/local, see top of Makefile)
+          sudo make mac-install
 
 > - You will need to manually compare your current configuration
      files with the ".new" ones, and manually edit any differences.
@@ -104,10 +107,12 @@ Last edited: Mon Dec 30, 2013
 
 > - If you are using a gateway instead of a local modem,
     you need to set noserial to 1:
->> set noserial = 1
+
+          set noserial = 1
 
 > - If you are using a local modem with or without a gateway
->> set noserial = 0  (this is the default)
+
+          set noserial = 0  (this is the default)
 
 ### <a name="instl_mac_fs"></a>FIRST STARTUP:
 
@@ -116,20 +121,23 @@ Last edited: Mon Dec 30, 2013
     http://www.activestate.com/activetcl/downloads
       
 > - After downloading, double-click on the file:
-    ActiveTcl8.4.19.6.295590-macosx-universal-threaded.dmg
+
+          ActiveTcl8.4.19.6.295590-macosx-universal-threaded.dmg
 
 > - Then double-click on the icon where it says, "ActiveTcl-8.4.pkg"
     and follow the instructions.
       
 > - Finally, install the patch for ActiveTcl 8.4.19.6 by launching Terminal
-    and typing: sudo /usr/local/share/doc/ncid/fix-combobox
+    and typing:
+
+          sudo /usr/local/share/doc/ncid/fix-combobox
 
 > - If you are running the server and client on the same computer
     and using a modem:  
-    + In Terminal, type: sudo /usr/local/sbin/ncidd  
-    + In Finder, navigate to the Applications folder and double-click on "ncid-gui".
-    + Close the front Terminal window that says, "Completed Command" in the title bar.
-    <br><br>
+
+          In Terminal, type: sudo /usr/local/sbin/ncidd  
+          In Finder, navigate to the Applications folder and double-click on "ncid-gui".
+          Close the front Terminal window that says, "Completed Command" in the title bar.
 
 > - If you are running the server and using a SIP gateway:
     + In Terminal, type:
@@ -169,17 +177,17 @@ Last edited: Mon Dec 30, 2013
     
 >> Here is the complete list of plist files:
     
->>> /Library/LaunchDaemons/net.sourceforge.ncid-initmodem.plist  
-    /Library/LaunchDaemons/net.sourceforge.ncid-notify.plist  
-    /Library/LaunchDaemons/net.sourceforge.ncid-page.plist  
-    /Library/LaunchDaemons/net.sourceforge.ncid-samba.plist  
-    /Library/LaunchDaemons/net.sourceforge.ncid-speak.plist  
-    /Library/LaunchDaemons/net.sourceforge.ncid-yac.plist  
-    /Library/LaunchDaemons/net.sourceforge.ncid2ncid.plist  
-    /Library/LaunchDaemons/net.sourceforge.ncidd.plist  
-    /Library/LaunchDaemons/net.sourceforge.sip2ncid.plist  
-    /Library/LaunchDaemons/net.sourceforge.wc2ncid.plist  
-    /Library/LaunchDaemons/net.sourceforge.yac2ncid.plist
+          /Library/LaunchDaemons/net.sourceforge.ncid-initmodem.plist  
+          /Library/LaunchDaemons/net.sourceforge.ncid-notify.plist  
+          /Library/LaunchDaemons/net.sourceforge.ncid-page.plist  
+          /Library/LaunchDaemons/net.sourceforge.ncid-samba.plist  
+          /Library/LaunchDaemons/net.sourceforge.ncid-speak.plist  
+          /Library/LaunchDaemons/net.sourceforge.ncid-yac.plist  
+          /Library/LaunchDaemons/net.sourceforge.ncid2ncid.plist  
+          /Library/LaunchDaemons/net.sourceforge.ncidd.plist  
+          /Library/LaunchDaemons/net.sourceforge.sip2ncid.plist  
+          /Library/LaunchDaemons/net.sourceforge.wc2ncid.plist  
+          /Library/LaunchDaemons/net.sourceforge.yac2ncid.plist
     
 >> You do not interact with launchd directly, instead you use the 'launchctl'
    command line utility.
@@ -194,14 +202,18 @@ Last edited: Mon Dec 30, 2013
    the next time the system is booted.
     
 >> Here are some examples:
+
 >> - start the NCID server:  
-     sudo launchctl load -w /Library/LaunchDaemons/net.sourceforge.ncidd.plist
+
+              sudo launchctl load -w /Library/LaunchDaemons/net.sourceforge.ncidd.plist
 
 >> - stop the sip2ncid server:  
-     sudo launchctl unload -w /Library/LaunchDaemons/net.sourceforge.sip2ncid.plist
+
+              sudo launchctl unload -w /Library/LaunchDaemons/net.sourceforge.sip2ncid.plist
 
 >> - start ncid with ncid-page  
-     sudo launchctl load -w /Library/LaunchDaemons/net.sourceforge.ncid-page.plist
+
+              sudo launchctl load -w /Library/LaunchDaemons/net.sourceforge.ncid-page.plist
       
 >> Review the man page (man launchctl).
 
@@ -242,4 +254,4 @@ Last edited: Mon Dec 30, 2013
 > The Mac uses newsyslog to trim files. To trim the cidcall.log and the
   ciddata.log files, add this entry to /etc/newsyslog.conf
 
->>/var/log/cid\*.log   root:wheel 644 5 * $M1D0 GN
+        /var/log/cid\*.log   root:wheel 644 5 * $M1D0 GN

@@ -1,23 +1,26 @@
 #! /bin/sh
 
 # Created by John L. Chmielewski on Sun June 11, 2006
-# Last modified by jlc on Sun Jan 20, 2014
+# Last modified by jlc on Thu Mar 27, 2014
 
 # script runs ncidd in debug  or Mac OS X Launchd mode on port 3334
 # for testing a server or a client
 
+NCID="$1"
+MODE="-D"
+
 usage(){
-    echo "Usage: `basename $0` {<path>/ncidd} {-D|--osx-launchd} [-nciddOption(s)]"
+    echo "Usage: `basename $0` {<path>/ncidd} [--osx-launchd] [-nciddOption(s)]"
     exit 0
 }
 
 [ -x "$1" ] || { usage; exit 0; }
 
-[ "$2" != "-D" -a "$2" != "--osx-launchd" ] && { usage; exit 0; }
-
-NCID="$1"
-MODE="$2"
-shift
+[ "$2" = "--osx-launchd" ] && \
+{
+    MODE="$2"
+    shift
+}
 shift
 
 touch T-data

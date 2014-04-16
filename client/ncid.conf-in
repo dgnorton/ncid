@@ -65,8 +65,8 @@ set NoGUI       0
 #    "char"     Will wrap long lines between characters
 #    "word"     Will wrap long lines at word boundaries
 #    "none"     Will not wrap, long lines will be truncated in display
-# Default: "char"
-set WrapLines   "none"
+# Default: "word"
+set WrapLines   "word"
 
 # Country is used to display the number in a format for a particular country
 # or no format at all if set to "NONE"

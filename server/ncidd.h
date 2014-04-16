@@ -103,8 +103,11 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #ifndef LOCKFILE
 #define LOCKFILE    "/var/lock/LCK.."
 #endif
-#ifndef PROGDIR
-#define PROGDIR     "/usr/bin"
+#ifndef NCIDUPDATE
+#define NCIDUPDATE  "/usr/local/bin/cidupdate"
+#endif
+#ifndef NCIDUTIL
+#define NCIDUTIL    "/usr/local/bin/ncidutil"
 #endif
 
 #define STDOUT      1
@@ -130,19 +133,21 @@ Options: [-A aliasfile  | --alias <file>]\n\
 
 #define NOCHANGES   "no changes"
 #define DENIED      "denied"
-#define NCIDUPDATE  "/cidupdate -a %s -c %s %s %s < /dev/null 2>&1"
-#define NCIDUTIL    "/ncidutil %s \"%s\" %s %s 2>&1"
+#define DOUPDATE    NCIDUPDATE " -a %s -c %s %s %s < /dev/null 2>&1"
+#define DOUTIL      NCIDUTIL " %s \"%s\" %s %s 2>&1"
 
 /* server warning messages */
-#define LOGMSG      "MSG: Call Log too big: (%lu > %lu) bytes%s"
-#define TOOMSG      "MSG: Too many clients connected"
+#define LOGMSG      "MSG: Call Log too big: (%lu > %lu) bytes %s%s"
+#define TOOMSG      "MSG: Too many clients connected (%d) %s%s"
 
 #define INITSTR     "AT Z S0=0 E1 V1 Q0"
 #define INITCID1    "AT+VCID=1"
 #define INITCID2    "AT#CID=1"
 
 #define PORT        3333
-#define CONNECTIONS 25
+#define MAXCLIENTS  25      /* maximun number of clients that can connect */
+#define MAXCONNECT  MAXCLIENTS + 2 /* clients + mainsocket + ttyfd */
+#define MAXIPADDR   25      /* maximum number of characters in address */
 #define TIMEOUT     200     /* poll() timeout in milliseconds */
 #define RINGWAIT    29      /* number of poll() timeouts to wait for RING */
 
@@ -159,6 +164,9 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define NONUMB      "NO NUMBER"
 #define NOCID       "No Caller ID"
 #define NOMESG      "NONE"
+#define NO_NAME     "NONAME"
+#define NO_NMBR     "NONMBR"
+#define NO_LINE     "NOLINE"
 
 #define LOGMAX      110000
 #define LOGMAXNUM   100000000
@@ -179,22 +187,27 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define PIDLINE     "PID: "
 #define NOTLINE     "NOT: "
 #define REQLINE     "REQ: "
+#define WRKLINE     "WRK: "
+#define INFOLINE    "INFO: "
+#define RESPLINE    "RESP: "
+#define OPTLINE     "OPT: "
+#define ACKLINE     "ACK: "
+
+#define MESSAGE     "%s ***DATE*%s*TIME*%s*NAME*%s*NMBR*%s*LINE*%s*"
+
 #define RELOAD      "RELOAD"    /* reload alias, blacklist & whitelist files */
 #define UPDATE      "UPDATE"    /* update current CID call log file          */
 #define UPDATES     "UPDATES"   /* update all of the CID call log files      */
 #define REREAD      "REREAD"    /* reread current CID call log file          */
-#define WRKLINE     "WRK: "
-#define INFOLINE    "INFO: "
-#define RESPLINE    "RESP: "
 #define ACPT_LOG    "ACCEPT LOG"
 #define ACPT_LOGS   "ACCEPT LOGS"
 #define RJCT_LOG    "REJECT LOG"
 #define RJCT_LOGS   "REJECT LOGS"
-#define OPTION      "OPT: "
 #define BLK_LST     "black"
 #define ALIAS_LST   "alias"
 #define WHT_LST     "white"
 #define INFO_REQ    "INFO"
+#define ACK         "ACK"
 
 #define IN          0
 #define OUT         1

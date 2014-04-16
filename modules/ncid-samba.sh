@@ -3,7 +3,7 @@
 # ncid-samba
 # usage: ncid --no-gui --program ncid-samba
 
-# Last modified: Wed May 29, 2013
+# Last modified: Sun Apr 13, 2014
 
 # Samba Interface to create a popup
 # Requires smbclient
@@ -11,20 +11,21 @@
 # send the CID information to a windows machine via popup
 # This will not work if the messenger service is disabled.
 
-# input is always 6 lines
+# input is always 7 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
 #
 # if input is from a message
 # the message is in place of NAME:
-# input: \n\n\n<MESSAGE>\n\nMSG\n
+# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-samba.conf
 
-SambaClient=""
+# defaults (see ncid-samba.conf for description):
 SambaTypes="CID OUT HUP BLK MSG PID NOT"
+SambaClient=""
 
 [ -f $ConfigFile ] && . $ConfigFile
 
@@ -33,29 +34,33 @@ SambaTypes="CID OUT HUP BLK MSG PID NOT"
     exit 1
 }
 
-read CIDDATE
-read CIDTIME
-read CIDNMBR
-read CIDNAME
-read CIDLINE
-read CIDTYPE
+read DATE
+read TIME
+read NMBR
+read VAR1
+read LINE
+read TYPE
+read VAR2
 
-# Look for $CIDTYPE
+# Look for $TYPE
 for i in $SambaTypes
 do
-    [ $i = "$CIDTYPE" ] && { found=1; break; }
+    [ $i = "$TYPE" ] && { found=1; break; }
 done
 
-# Exit if $CIDTYPE not found
+# Exit if $TYPE not found
 [ -z "$found" ] && exit 0
 
-if [ "$CIDTYPE" = "MSG" -o "$CIDTYPE" = "NOT" ]
+if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
 then
+    NAME="$VAR2"
+    MESG="$VAR1"
     # Display Message or Notice
-    echo "$CIDNAME" | smbclient -M $SambaClient
+    echo "$MESG" | smbclient -M $SambaClient
 else
+    NAME="$VAR1"
     # Display Caller ID information
-    echo "$CIDTYPE $CIDDATE $CIDTIME $CIDLINE $CIDNMBR $CIDNAME" |
+    echo "$TYPE $DATE $TIME $LINE $NMBR $NAME" |
          smbclient -M $SambaClient
 fi
 

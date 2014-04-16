@@ -17,14 +17,18 @@
 #
 # ALIAS LINES FORMAT:
 #    alias [NMBR|NAME] ["]FROM["] = ["]TO["] [if ["]VALUE["]]
-#    alias [LINE] ["]FROM["] = ["]TO["]
+#    alias LINE ["]FROM["] = ["]TO["]
 #        where  NMBR, NAME or LINE is a KEYWORD
 #               FROM is a CID string, can be '*' when using 'if'
 #               TO is the alias for the FROM string
 #               VALUE is a NAME if KEYWORD = NMBR
 #               VALUE is a NMBR if KEYWORD = NAME
-#                      can contain a '^' (partial match from beginning)
-#               VALUE is a LINE if KEYWORD = LINE
+#
+#               FROM and VALUE can contain a '^' or a '*' at beginning
+#                   ^ = partial match from beginning
+#                   * = partial match after the '*'
+#               FROM and VALUE can contain a '*' at end
+#                   * = partial match from beginning to before the '*'
 
 ##################
 # Alias Examples #

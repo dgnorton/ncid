@@ -1,15 +1,15 @@
-Last edited: Sat Jan 18, 2014
+Last edited: Wed Apr 16, 2014
 
 ## <a name="devices_top"></a>Supported Devices
-  
+
 > [Table of Contents](#doc_top)
 
-### Modem Index
+### Devices Index
 
-> [Modems](#devices_modem)  
-  [ATA (Analog Terminal Adapter)](#devices_ata)  
-  [Whozz Calling](#devices_wc)  
-  [NetCallerID](#devices_id)
+> * [Modems](#devices_modem)
+> * [ATA (Analog Terminal Adapter)](#devices_ata)
+> * [Whozz Calling](#devices_wc)
+> * [NetCallerID](#devices_id)
 
 ### <a name="devices_modem"></a>Modems
 
@@ -41,9 +41,9 @@ Last edited: Sat Jan 18, 2014
 > In order to receive Caller ID from VoIP, the local network must be
   configured. Three configurations are considered here:
 
-> - [One device: Cable/DSL Modem with integrated ATA device](#devices_d)  
-> - [Two devices: Cable/DSL Modem + Router Switch with integrated ATA device](#devices_mr)  
-> - [Three devices: Cable/DSL Modem + Router Switch + ATA device](#devices_mrd)    
+> - [One device: Cable/DSL Modem with integrated ATA device](#devices_d)
+> - [Two devices: Cable/DSL Modem + Router Switch with integrated ATA device](#devices_mr)
+> - [Three devices: Cable/DSL Modem + Router Switch + ATA device](#devices_mrd)
 
 > #### <a name="devices_d"></a>One device: Cable/DSL Modem with integrated ATA device
 > Many cable companies such as Comcast and Time Warner now offer bundled
@@ -51,7 +51,7 @@ Last edited: Sat Jan 18, 2014
    delivers television, Internet service, and digital phone service via
    a single device.
 
-> The protocol used for the digital phone service is usually proprietary.  
+> The protocol used for the digital phone service is usually proprietary.
 
 > *NCID is not supported in this configuration.*
 
@@ -92,11 +92,11 @@ Last edited: Sat Jan 18, 2014
       The Dualcomm USB powered 5-port Ethernet Switch TAP provides mirrors all
       ethernet traffic on port 1 to port 5.   Simply plug your ATA into port 1
       and your NCID server into port 5. 
-  
+
 >      + The NCID server and ATA need to be (relatively) close together 
-      in order to connect directly to the ethernet TAP.  
+      in order to connect directly to the ethernet TAP.
 >      + Requires no software configuration beyond the sip2ncid setup.
->      + Requires additional hardware.  
+>      + Requires additional hardware.
 
 > 2. Use [port mirroring](https://en.wikipedia.org/wiki/Port_mirroring).
 
@@ -113,7 +113,7 @@ Last edited: Sat Jan 18, 2014
          either have to reboot DD-WRT or manually enter the commands via SSH 
          to restart the port mirror.
 >      + The NCID server and ATA can be located anywhere on your home network.
->      + No additional hardware needed.  
+>      + No additional hardware needed.
 
 >             STEPS TO CONFIGURE DD-WRT
 >             =========================
@@ -134,7 +134,7 @@ Last edited: Sat Jan 18, 2014
 >>                ....
 >>                219 152K ROUTE 0 -- * * IP-OF-SIP_ATA 0.0.0.0/0 ROUTE gw:IP-OF-NCID-SERVER tee
 >>                ....
->>        
+>>
 >>                Chain POSTROUTING (policy ACCEPT 17M packets, 7764M bytes)
 >>                pkts bytes target prot opt in out source destination
 >>                ....
@@ -142,12 +142,12 @@ Last edited: Sat Jan 18, 2014
 >>                ....
 
 >             Follow the sip2ncid setup instructions to make sure that SIP packets are being received.
->         
+>
 >             When everything is working properly, add the port mirroring commands to the DD-WRT 
 >             startup commands in the Management tab so that they will be run whenever DD-WRT is rebooted.
 
 
-> 3. Use [Ettercap](https://en.wikipedia.org/wiki/Ettercap_computing).
+> 3. Use [Ettercap](https://en.wikipedia.org/wiki/Ettercap_\(computing\)).
 
 >     Convince your router to send all SIP packets to your NCID server
       and have your NCID server pass the packets on to your ATA.  This is most
@@ -158,24 +158,24 @@ Last edited: Sat Jan 18, 2014
       SIP ATA and router are not physically isolated.
 >     + The NCID server and ATA can be located anywhere on your home network.
 >     + No manual configuration of router is required.
->     + No additional hardware needed.       
+>     + No additional hardware needed.
 
 >             STEPS TO CONFIGURE ETTERCAP
 >             ===========================
 >
 >             Perform these steps from a command prompt on your NCID server.
->             
+>
 >             To determine the proper INTERFACE for ettercap to use, `ifconfig` will show all available 
 >             interfaces. For example, wired ethernet is eth0 and wireless ethernet is wlan0 on Raspbian.
 
 >             For Ubuntu, Raspbian and other Debian-based systems:
 
->>                sudo apt-get install ettercap-text-only  
+>>                sudo apt-get install ettercap-text-only
 >>                sudo ettercap -T -D -i <INTERFACE> -M arp:remote <IP-OF-SIP_ATA> <IP-OF-HOME-ROUTER>
 
 >             For Fedora and other Redhat-based systems:
 
->>                sudo yum install ettercap  
+>>                sudo yum install ettercap
 >>                sudo ettercap -T -D -i <INTERFACE> -M arp:remote <IP-OF-SIP_ATA> <IP-OF-HOME-ROUTER>
 
 >             Follow the sip2ncid setup instructions to make sure that SIP packets are being received.
@@ -197,7 +197,7 @@ Last edited: Sat Jan 18, 2014
       hubs manufactured today are actually Ethernet switches in disguise.
       See the 
       [hub reference](http://wiki.wireshark.org/HubReference)
-      to determine if a hub is really a hub.    
+      to determine if a hub is really a hub.
 
 > 5. Use a router that supports SIP ALG
       ([Application-level gateway](http://www.voip-info.org/wiki/view/Routers+SIP+ALG)).
@@ -225,7 +225,7 @@ Last edited: Sat Jan 18, 2014
 > A Whozz Calling (WC) Caller ID and Call monitoring unit is used in place
   of one or more modems.  There are various models that all monitor incoming
   calls, and some can monitor outbound as well.
-  
+
 > Only the Whozz Calling Ethernet Link devices are currently supported.
   The serial Whozz Calling units are not.
 

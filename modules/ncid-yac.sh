@@ -3,54 +3,59 @@
 # ncid-yac
 # usage: ncid --no-gui --program ncid-yac
 
-# Last modified: Wed May 29, 2013
+# Last modified: Sun Apr 13 2014
 
 # NCID to YAC Clients
 # Requires a YAC Client
 
-# input is always 6 lines
+# input is always 7 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
 #
 # if input is from a message
 # the message is in place of NAME:
-# input: \n\n\n<MESSAGE>\n\nMSG\n
+# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
 
+# defaults (see ncid-yac.conf for descriptions)
 YACPORT=10629
 YACLIST=127.0.0.1
-YACTYPES="CID OUT HUP BLK MSG PID NOT"
+YACTYPES="CID OUT MSG PID NOT"
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-yac.conf
 
 [ -f $ConfigFile ] && . $ConfigFile
 
-read CIDDATE
-read CIDTIME
-read CIDNMBR
-read CIDNAME
-read CIDLINE
-read CIDTYPE
+read DATE
+read TIME
+read NMBR
+read VAR1
+read LINE
+read TYPE
+read VAR2
 
-# Look for $CIDTYPE
+# Look for $TYPE
 for i in $YACTYPES
 do
-    [ $i = "$CIDTYPE" ] && { found=1; break; }
+    [ $i = "$TYPE" ] && { found=1; break; }
 done
 
-# Exit if $CIDTYPE not found
+# Exit if $TYPE not found
 [ -z "$found" ] && exit 0
 
 for YACCLIENT in ${YACLIST}
 do
-    if [ "$CIDTYPE" = "MSG"-o "$CIDTYPE" = "NOT" ]
+    if [ "$TYPE" = "MSG"-o "$TYPE" = "NOT" ]
     then
+        NAME="$VAR2"
+        MESG="$VAR1"
         # Display Message or Notice
-        echo -n "$CIDNAME" | nc -w1 $YACCLIENT $YACPORT
+        echo -n "$MESG" | nc -w1 $YACCLIENT $YACPORT
     else
+        NAME="$VAR1"
         # Display Caller ID information
-        echo -n "@CALL${CIDNAME}~${CIDNMBR}" | nc -w1 $YACCLIENT $YACPORT
+        echo -n "@CALL${NAME}~${NMBR}" | nc -w1 $YACCLIENT $YACPORT
     fi
 done
 

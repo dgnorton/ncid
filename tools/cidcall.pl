@@ -3,39 +3,17 @@
 # cidcall - caller ID report
 
 # Created by John L. Chmielewski on Fri Sep 14, 2001
-# modified by jlc on Tue Jul 30, 2002
-#    - modified to look for lines that start with CID or EXTRA
-#    - modified to locate NUMBER or NMBR field
-#    - modified $date to work with MMDD and MMDDYYYY data
-# modified by Aron Green on Sun Nov 24, 2002
-#    fixed regular expression to handle "'" in the name field
-# modified by jlc on Mon Apr 7, 2003
-#    fixed regular expression to handle 11 digit numbers
-# modified by jlc on Fri Aug 12, 2005
-#    modified to display the new "LINE" filed
-# modified by jlc on Fri Apr 14, 2006
-#    added -m option, modified raw option to print all lines, changed name
-# modified by jlc on Wed Mar 28, 2007
-#    - modified regular expressions to look for * with key word
-# modified by jlc on Sun May 16, 2010
-#    - removed <> from enclosing line label,
-#    - changed number from (xxx)xxx-xxxx to xxx-xxx-xxxx
-# modified by jlc on Sun Feb 13, 2011
-#    - added -cho options
-#    - the -chmo options can be combined
-#    - formats and prints the entire call log file by default
-#    - prints the line labels when formatted
-# modified by jlc on Sat Jan 19, 2013
-#    - added -e option and fixed if statement for no options
-#    - changed format to handle END start and end call times
-#   - improved code, addcwedd long options, and added pod documentation
+#
+# Copyright (c) 2001-2014 by
+#   John L. Chmielewski <jlc@users.sourceforge.net>
+#   Aron Green
 
 use strict;
 use warnings;
 use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case_always);
 
-my ($cid, $end, $hup, $msg, $out, $help, $man, $raw);
+my ($cid, $end, $hup, $msg, $out, $pid, $not, $help, $man, $raw);
 my ($label, $date, $line, $name, $number);
 my ($stime, $etime);
 my $cidlog;
@@ -47,6 +25,8 @@ my ($result) = GetOptions(
     "HUP|H"  => \$hup,
     "MSG|M"  => \$msg,
     "OUT|O"  => \$out,
+    "PID|P"  => \$pid,
+    "NOT|N"  => \$not,
     "help|h" => \$help,
     "man|m"  => \$man,
     "raw|r"  => \$raw
@@ -64,9 +44,8 @@ $label, $name,           $number,       $line,    $date,    $stime,  $etime
 open(CIDLOG, $cidlog) || die "Could not open $cidlog\n";
 
 while (<CIDLOG>) {
-  if (!$raw && !$cid && !$end && !$hup && !$msg && !$out) {
-    if (/CID:|HUP:|OUT:|END:/) {&parseLine;}
-    if (/MSG:/) {print;}
+  if (!$raw && !$cid && !$end && !$hup && !$msg && !$out && !$pid && !$not) {
+    if (/CID:|HUP:|OUT:|PID:/) {&parseLine;}
   }
   elsif ($raw) {print;}
   else {
@@ -74,7 +53,9 @@ while (<CIDLOG>) {
     if ($end) { if (/END:/) {&parseLine;} }
     if ($hup) { if (/HUP:/) {&parseLine;} }
     if ($msg) { if (/MSG:/) {print;} }
+    if ($not) { if (/NOT:/) {print;} }
     if ($out) { if (/OUT:/) {&parseLine;} }
+    if ($out) { if (/PID:/) {&parseLine;} }
   }
 }
 
@@ -137,29 +118,41 @@ Default: Format the call file
 
 Display CID lines (incoming calls) in the call file.
 
-Default: Display all line types.
+Default: Display CID, HUP, and OUT lines.
 
 =item -E, --END
 
 Display END lines (gateway end of call) in the call file.
 
-Default: Display all line types.
+Default: Display CID, HUP, OUT, and PID lines.
 
 =item -H, --HUP
 
 Display HUP lines (terminated calls) in the call file.
 
-Default: Display all line types.
+Default: Display CID, HUP, OUT, and PID lines.
 
 =item -M, --MSG
 
 Display MSG lines (messages) in the call file.
 
-Default: Display all line types.
+Default: Display CID, HUP, OUT, and PID lines.
+
+=item -N, --NOT
+
+Display NOT lines (smart phone note (message)) in the call file.
+
+Default: Display CID, HUP, OUT, and PID lines.
 
 =item -O, --OUT
 
 Display OUT lines (outgoing calls) in the call file.
+
+Default: Display CID, HUP, OUT, and PID lines.
+
+=item -P, --PID
+
+Display PID lines (smart phone Caller ID) in the call file.
 
 Default: Display all line types.
 

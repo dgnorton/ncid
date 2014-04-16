@@ -76,9 +76,9 @@ Set the modem for Caller ID:
 	set initcid = "AT#CID=1"
 .RE
 .PP
-Set the modem port:
+Set the modem port for a USB modem:
 .RS 0
-	set ttyport=/dev/ttyS1
+	set ttyport=/dev/ttyACM0
 .RE
 .PP
 Set the Telephone Line Indicator for the modem:
@@ -86,14 +86,14 @@ Set the Telephone Line Indicator for the modem:
 	set lineid = POTS
 .RE
 .PP
-Configure ncidd to ignore modems that do not send Caller ID:
+Ignore modems that do not send Caller ID:
 .RS 0
 	set gencid = 0
 .RE
 .PP
-Use a modem and possibly a Gateway to obtain the Caller ID:
+Automatically hangup on a call in the blacklist using a modem:
 .RS 0
-	set noseriel = 0
+	set hangup = 1
 .RE
 .PP
 Only use Gateways to obtain the Caller ID:

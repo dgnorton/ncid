@@ -1,11 +1,10 @@
-<center><h1 name="top">NCID Project Man Pages</h1></center>
+<center><h1 name="top">NCID Man Pages</h1></center>
 
 <center>![NCID](ncid.gif)</center>
 
 ## Man Pages
 
-> The NCID Project consists of the *NCID*, *LCDncid*, and *OUT2OSD*
-  packages.
+> The NCID man pages are for the *NCID*, *LCDncid*, and *OUT2OSD* packages.
 
 ## Index
 

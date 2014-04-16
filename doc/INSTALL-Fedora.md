@@ -1,10 +1,14 @@
-Last edited: Mon Dec 30, 2013
+Last edited: Fri Mar 7, 2013
 
 ## <a name="instl_fed_top"></a>Fedora RPM Package Install
 
 > If NCID does not work, see [INSTALL](#instl_generic_top) for some simple tests.  
-  If using sip2ncid, see [sip2ncid setup](#gateways_sip).  
-  If using wc2ncid, see [wc2ncid setup](#gateways_wc).
+
+> If using sip2ncid, see [sip2ncid setup](#gateways_sip).  
+
+> If using wc2ncid, see [wc2ncid setup](#gateways_wc).
+
+> If using yac2ncid, see [yac2ncid setup](#gateways_yac).
 
 > [Table of Contents](#doc_top)
 
@@ -19,8 +23,9 @@ Last edited: Mon Dec 30, 2013
 
 ### <a name="instl_fed_comp"></a>COMPILE:
 
-> The following packages are required:
-> - sudo yum install libpcap-devel
+> The following package is required:
+
+         sudo yum install libpcap-devel
 
 > See INSTALL for compile instructions
 
@@ -38,36 +43,45 @@ Last edited: Mon Dec 30, 2013
   modules you want.
 
 > - List the NCID packages
->> sudo yum list ncid\*
+
+          sudo yum list ncid\*
 
 > - the most recent versions may be here:
->>  sudo yum install fedora-release-rawhide  
-    sudo yum --enablerepo=rawhide list ncid\*
+
+          sudo yum install fedora-release-rawhide  
+          sudo yum --enablerepo=rawhide list ncid\*
 
 > - Download the server and client packages:
->>  sudo yum install ncid-< rpm package >  
-    sudo yum install ncid-client-< rpm package >
+
+          sudo yum install ncid-< rpm package >  
+          sudo yum install ncid-client-< rpm package >
 
 > - Download any optional module packages wanted:
->>  sudo yum install ncid-< module rpm package >
+
+          sudo yum install ncid-< module rpm package >
 
 > If the current release is not in the Fedora repositories, download
   the RPM packages from https://sourceforge.net/projects/ncid/
 
+
 > - Download server and client RPM Packages from sourceforge
->> ncid RPM Package         (server and gateways)  
-   ncid-client RPM Package  (client and default output modules)
+
+          ncid RPM Package         (server and gateways)  
+          ncid-client RPM Package  (client and default output modules)
+
 
 > - Download any optional output modules wanted from sourceforge:
->> ncid-MODULE RPM Package  (optional client output modules)
+
+          ncid-MODULE RPM Package  (optional client output modules)
 
 > - Install or Upgrade the packages:
->> Using the file viewer:
->> - Open the file viewer to view the NCID RPM packages
->> - Select the RPM packages
->> - right click selections and select "Open with Package installer"
->> Using YUM:
->> - sudo yum install ncid\*.rpm
+
+         Using the file viewer:
+         - Open the file viewer to view the NCID RPM packages
+         - Select the RPM packages
+         - right click selections and select "Open with Package installer"
+         Using YUM:
+         - sudo yum install ncid\*.rpm
 
 ### <a name="instl_fed_conf"></a>CONFIGURE:
 
@@ -87,30 +101,39 @@ Last edited: Mon Dec 30, 2013
 
 > - If you are running the server and client on the same computer
     and using a modem:
->> sudo systemctl start ncidd  
-   ncid &
+
+          sudo systemctl start ncidd  
+          ncid &
 
 > - If you are running the server and using a SIP gateway:
->> sudo systemctl start ncidd sip2ncid  
-   ncid &
+
+          sudo systemctl start ncidd sip2ncid  
+          ncid &
 
 > - If you are running the server and using a Whozz Calling gateway:
->> sudo systemctl start ncidd wc2ncid  
-   ncid &
+
+          sudo systemctl start ncidd wc2ncid  
+          ncid &
 
 > - If you are running the server and using a YAC gateway:
->> sudo systemctl start ncidd yac2ncid
-   ncid &
+
+          sudo systemctl start ncidd yac2ncid
+          ncid &
 
 > - Call yourself and see if it works, if not,
->> stop the gateway used and stop the server:  
-   sudo systemctl stop sip2ncid ncidd  
-   and continue reading the test sections.
+
+>> stop the gateway and server:  
+
+          sudo systemctl stop sip2ncid ncidd  
+
+>> and continue reading the test sections.
 
 > - If everything is OK, enable the NCID server, gateways, and
     client modules you are using, to autostart at boot.
-    For example, to start ncidd and sip2ncid at boot:
->> sudo systemctl enable ncidd sip2ncid
+
+>> For example, to start ncidd and sip2ncid at boot:
+
+          sudo systemctl enable ncidd sip2ncid
 
 >> The GUI ncid client must be started after login, not boot.
 
@@ -130,19 +153,23 @@ Last edited: Mon Dec 30, 2013
 > Here are some examples:
 
 > - start the NCID server:
->> sudo systemctl start ncidd.service
+
+          sudo systemctl start ncidd.service
 
 > - stop the ncid2sip server:
->> sudo systemctl stop sip2ncid.service
+
 
 > - reload the server alias file:
->> sudo systemctl reload-or-restart ncidd.service
+
+          sudo systemctl reload-or-restart ncidd.service
 
 > - restart ncid using ncid-page:
->> sudo systemctl restart ncid-page.service
+
+          sudo systemctl restart ncid-page.service
 
 > - get the status of ncid using ncid-speak:
->> sudo status systemctl ncid-speak.service
+
+          sudo systemctl status ncid-speak.service
 
 > Review the man page (man systemctl).
 
@@ -153,12 +180,15 @@ Last edited: Mon Dec 30, 2013
 > Here are some examples:
 
 > - autostart ncidd at boot:
->>  sudo systemctl enable ncidd
+
+          sudo systemctl enable ncidd
 
 > - autostart ncidd and sip2ncid at boot:
->>  sudo systemctl enable ncidd sip2ncid
+
+          sudo systemctl enable ncidd sip2ncid
 
 > - remove ncid-speak from starting at boot:
->>  sudo systemctl disable ncid-speak
+
+          sudo systemctl disable ncid-speak
 
 > Review the manpage (man systemctl).

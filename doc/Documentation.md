@@ -4,9 +4,9 @@
 <center>![NCID](ncid-1.jpg)</center>
 
 <center>Copyright: 2014</center>
-<center>Author: John L Chmielewski</center>  
+<center>Author: John L Chmielewski</center>
 
-<center>Wed Jan 29, 2014</center>
+<center>Wed Mar 26, 2014</center>
 
 NCID documentation includes information on how to get started,
 information on configuring modems, information on configuring
@@ -35,4 +35,4 @@ a TODO.
 > [INSTALL-Win](#instl_win_top)  
 > [Verbose Levels](#verbose_top)  
 > [Contributors](#contrib_top)  
-> [TODO](#todo_top)  
+> [TODO](#todo_top)

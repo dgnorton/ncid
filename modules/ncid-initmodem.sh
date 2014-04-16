@@ -3,9 +3,9 @@
 # ncid-initmodem
 # usage: ncid --no-gui --program ncid-initmodem
 
-# Last modified: Wed May 29, 2013
+# Last Modified: Fri Apr 11, 2014
 
-# reinitialize a modem to handle Caller ID if CIDNMBR=RING
+# reinitialize a modem to handle Caller ID if NMBR=RING
 # this indicates modem droped out of Caller ID mode.  Do
 # not use with a modem that does not support Caller ID.
 # requires a modem
@@ -13,14 +13,14 @@
 # modem must send "RING" each time it sees the ringing signal
 # must be run as root
 
-# input is always 6 lines
+# input is always 7 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
 #
 # if input is from a message
 # the message is in place of NAME:
-# input: \n\n\n<MESSAGE>\n\nMSG\n
+# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-initmodem.conf
@@ -29,14 +29,15 @@ nciddconf=/usr/local/etc/ncid/ncidd.conf
 # Configuration file is not needed
 [ -f $ConfigFile ] && . $ConfigFile
 
-read CIDDATE
-read CIDTIME
-read CIDNMBR
-read CIDNAME
-read CIDLINE
-read CIDTYPE
+read DATE
+read TIME
+read NMBR
+read VAR1
+read LINE
+read TYPE
+read VAR2
 
-[ "$CIDNMBR" = "RING" ] &&
+[ "$NMBR" = "RING" ] &&
 {
     # try to get the modem port and lockfile from ncidd.conf: set word = value
     while read arg1 word arg3 value junk

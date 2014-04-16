@@ -14,8 +14,10 @@ alias NAME * = Telemarketer if 9549142285
 alias NAME * = "Telemarketer: boo hiss" if 5034776135
 alias NAME * = "Telemarketer" if "bad bad bad"
 
-alias NAME * = Telemarketer: hangup if 4075551212
+alias NAME * = "Telemarketer: hangup" if 4075551212
 
 alias NMBR UNKNOWN = "Probably a debt collector?"
 
 alias NAME * = "Telemarketer | debt collector" if 4075551234
+
+alias NAME * = "What-(in).{the} | [world]?" if 4075555542

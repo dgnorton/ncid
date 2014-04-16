@@ -5,19 +5,19 @@
 
 # Created by Randy L. Rasmussen on Thu Dec 20, 2007
 
-# Last modified: Wed May 29, 2013
+# Last modified: Fri Apr 11, 2014
 
 # Display a popup caption and speak the caller id
 # Requires kdialog (for popup) and festival (to speak)
 
-# input is always 6 lines
+# input is always 7 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMESG\n
 #
 # if input is from a message
 # the message is in place of NAME:
-# input: \n\n\n<MESSAGE>\n\nMSG\n
+# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-kpopup.conf
@@ -36,19 +36,20 @@ kpopup_speak=""
 
 ncid_speak=/usr/local/share/ncid/ncid-speak
 
-read CIDDATE
-read CIDTIME
-read CIDNMBR
-read CIDNAME
-read CIDLINE
-read CIDTYPE
+read DATE
+read TIME
+read NMBR
+read VAR1
+read LINE
+read TYPE
+read VAR2
 
-# Look for $CIDTYPE
+# Look for $TYPE
 for i in $kpopup_types
 do
-    [ $i = "$CIDTYPE" ] && \
+    [ $i = "$TYPE" ] && \
     {
-        case $CIDTYPE in
+        case $TYPE in
             CID) title="Incoming Call:";;
             OUT) title="Outgoing Call:";;
             HUP) title="Blacklisted Call Hangup:";;
@@ -56,38 +57,40 @@ do
             MSG) title="Message:";;
             PID) title="Caller ID from a smart phone:";;
             NOT) title="Notice of a smart phone message:";;
-              *) title="Unknown Call Type: ($CIDTYPE)";;
+              *) title="Unknown Call Type: ($TYPE)";;
         esac
         found=1
         break
     }
 done
 
-# Exit if $CIDTYPE not found
+# Exit if $TYPE not found
 [ -z "$found" ] && exit 0
 
-if [ "$CIDTYPE" = "MSG" -o "$CIDTYPE" = "NOT" ]
+if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
 then
+    NAME="$VAR2"
+    MESG="$VAR1"
     $kdialog --geometry $kpopup_geo --title "$title" --passivepopup \
-         "$CIDNAME" $kpopup_timeout &
+         "$MESG" $kpopup_timeout &
 else
+    NAME="$VAR1"
     $kdialog --geometry $kpopup_geo --title "$title" --passivepopup \
-         "$CIDTYPE $CIDNAME $CIDNMBR" $kpopup_timeout &
-fi
+         "$TYPE $NAME $NMBR" $kpopup_timeout &
 
-# this speaks if there is a match
-if [ "$kpopup_speak" = "enable" ]
-then
-    # Added the following to unmute Line in for kmix if muted
-    muted=$(dcop kmix Mixer0 mute 2)
-    if [ "$muted" = "true" ] #If volume is muted
+    # this speaks if there is a match
+    if [ "$kpopup_speak" = "enable" ]
     then
-      dcop kmix Mixer0 toggleMute 2
-    fi
+        # Added the following to unmute Line in for kmix if muted
+        muted=$(dcop kmix Mixer0 mute 2)
+        if [ "$muted" = "true" ] #If volume is muted
+        then
+        dcop kmix Mixer0 toggleMute 2
+        fi
 
-    # call the ncid-speak module
-    echo $use_e "$CIDDATE\n$CIDTIME\n$CIDNMBR\n$CIDNAME\n$CIDLINE\n$CIDTYPE" |
-        $ncid_speak
+        # call the ncid-speak module
+        echo $use_e "$DATE\n$TIME\n$NMBR\n$NAME\n$LINE\n$TYPE" | $ncid_speak
+    fi
 fi
 
 exit 0

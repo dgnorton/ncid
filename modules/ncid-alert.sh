@@ -3,20 +3,20 @@
 # ncid-alert
 # usage: ncid --no-gui --program ncid-alert
 
-# Last Modified: Wed May 29, 2013
+# Last Modified: Sun Apr 13, 2014
 
 # Notify Output Module
 # Pop-up a notification using 'send' from 'libnotify'
 # Requires 'libnotify'
 
-# input is always 6 lines
+# input is always 7 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
 #
 # if input is from a message
 # the message is in place of NAME:
-# input: \n\n\n<MESSAGE>\n\nMSG\n
+# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-alert.conf
@@ -33,19 +33,20 @@ alert_icon=call-start
 
 [ -f $ConfigFile ] && . $ConfigFile
 
-read CIDDATE
-read CIDTIME
-read CIDNMBR
-read CIDNAME
-read CIDLINE
-read CIDTYPE
+read DATE
+read TIME
+read NMBR
+read VAR1
+read LINE
+read TYPE
+read VAR2
 
-# Look for $CIDTYPE
+# Look for $TYPE
 for i in $alert_types
 do
-    [ $i = "$CIDTYPE" ] && \
+    [ $i = "$TYPE" ] && \
     {
-        case $CIDTYPE in
+        case $TYPE in
             CID) title="Incoming Call:    ";;
             OUT) title="Outgoing Call:    ";;
             HUP) title="Blacklisted Call Hangup:    ";;
@@ -53,26 +54,29 @@ do
             MSG) title="Message:    ";;
             PID) title="Caller ID from smart phone:    ";;
             NOT) title="Notice from a smart phone:    ";;
-              *) title="Unknown Call Type: ($CIDTYPE)    ";;
+              *) title="Unknown Call Type: ($TYPE)    ";;
         esac
         found=1
         break;
     }
 done
 
-# Exit if $CIDTYPE not found
+# Exit if $TYPE not found
 [ -z "$found" ] && exit 0
 
-if [ "$CIDTYPE" = "MSG" -o "$CIDTYPE" = "NOT" ]
+if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
 then
-#   Display Message or Notice
+    # Display Message or Notice
+    NAME="$VAR2"
+    MESG="$VAR1"
     $alert_send -u $alert_urgency -t $alert_timeout \
-        -i $alert_icon "$title" "$CIDNAME" &
+        -i $alert_icon "$title" "$MESG" &
 else
-#   Display Caller ID information
-    message=`echo $use_e "$CIDNAME\n$CIDNMBR\n$CIDTIME\n$CIDDATE\n$CIDLINE"`
+    # Display Caller ID information
+    NAME="$VAR1"
+    message=`echo $use_e "$NAME\n$NMBR\n$TIME\n$DATE\n$LINE"`
     $alert_send -u $alert_urgency -t $alert_timeout \
-        -i $alert_icon "$title" "$CIDNAME" &
+        -i $alert_icon "$title" "$NAME" &
 fi
 
 exit 0

@@ -1,4 +1,4 @@
-Last edited: Mon Dec 30, 2013
+Last edited: Sum Mar 23, 2014
 
 ## <a name="instl_tivo_top"></a>TiVo TAR Package Install
 
@@ -21,21 +21,21 @@ Last edited: Mon Dec 30, 2013
 
 ### Sections:
 
-> [COMPILE NCID](#instl_tivo_comp)  
-  [Install TiVoCID, TiVoNCID, sip2ncid, and ncidd](#instl_tivo_inst)  
-  [Optional: Install the TiVo OUT2OSD display program](#instl_tivo_out)  
-  [Optional: Install Perl](#instl_tivo_ip)  
-  [Configure ncidd, if you are running it on the TiVo](#instl_tivo_cs)  
-  [Start and verify the ncid package is working](#instl_tivo_sv)  
-  [Completing ncidd setup](#instl_tivo_cn)  
-  [Test using a Modem](#instl_tivo_mt)  
-  [TEST USING sip2ncid:](#instl_tivo_st)  
-  [TEST USING yac2ncid:](#instl_tivo_yt)  
-  [Install ncidd on a separate computer, if not using it on the TiVo](#instl_tivo_is)  
-  [Test the TiVo CID Client (if using tivocid)](#instl_tivo_cc)  
-  [Test the TiVo NCID Client (if using tivoncid)](#instl_tivo_nc)  
-  [Files installed and modem information](#instl_tivo_fi)  
-  [Notes](#instl_tivo_note)  
+> * [COMPILE NCID](#instl_tivo_comp)  
+> * [Install TiVoCID, TiVoNCID, sip2ncid, and ncidd](#instl_tivo_inst)  
+> * [Optional: Install the TiVo OUT2OSD display program](#instl_tivo_out)  
+> * [Optional: Install Perl](#instl_tivo_ip)  
+> * [Configure ncidd, if you are running it on the TiVo](#instl_tivo_cs)  
+> * [Start and verify the ncid package is working](#instl_tivo_sv)  
+> * [Completing ncidd setup](#instl_tivo_cn)  
+> * [Test using a Modem](#instl_tivo_mt)  
+> * [TEST USING sip2ncid:](#instl_tivo_st)  
+> * [TEST USING yac2ncid:](#instl_tivo_yt)  
+> * [Install ncidd on a separate computer, if not using it on the TiVo](#instl_tivo_is)  
+> * [Test the TiVo CID Client (if using tivocid)](#instl_tivo_cc)  
+> * [Test the TiVo NCID Client (if using tivoncid)](#instl_tivo_nc)  
+> * [Files installed and modem information](#instl_tivo_fi)  
+> * [Notes](#instl_tivo_note)  
 
 ### <a name="instl_tivo_comp"></a>COMPILE NCID
 
@@ -57,7 +57,9 @@ Last edited: Mon Dec 30, 2013
 > If you have a series 2 TiVo, Copy ncid-VERSION-tivo-mips.tgz to the tivo.
 
 > - tar -xzvf ncid-VERSION-tivo-mips.tgz -C /var
->>  EXAMPLE: tar -xzvf ncid-0.5-tivo-mips.tgz -C /var
+
+          EXAMPLE:
+          tar -xzvf ncid-0.5-tivo-mips.tgz -C /var
 
 > If this is an upgtade, modify any of the configuration files previously
   modified and saved in /var/hack/etc/ncid.old.  The new configuration
@@ -93,24 +95,24 @@ Last edited: Mon Dec 30, 2013
 >> The ncidd.conf file is preconfigured for a TiVo.
    These are the lines enabled for a Series1 and a Series2:
 
->>> set sttyclocal = 1  
-    set modem = /dev/ttyS1 # TiVo Modem Port  
-    set lockfile = /var/tmp/modemlock # needed for TiVo Modem Port
+            set sttyclocal = 1  
+            set modem = /dev/ttyS1 # TiVo Modem Port  
+            set lockfile = /var/tmp/modemlock # needed for TiVo Modem Port
 
 >>  If you are using a standalone series1 without the modem hardware
     modification to enable Caller ID, you need to uncomment the line:
 
->>> \# set modem = /dev/ttyS3 # TiVo Serial Port
+            # set modem = /dev/ttyS3 # TiVo Serial Port
 
 >> and comment out the line::
 
->>> set modem = /dev/ttyS1 # TiVo Modem Port
+            set modem = /dev/ttyS1 # TiVo Modem Port
 
 > If you are using using sip2ncid or yac2ncid instead of a modem:
 
 >> You need to uncomment the line:
 
->>> \# set noserial = 1
+            # set noserial = 1
 
 ### <a name="instl_tivo_sv"></a>Start and verify the ncid package is working
 
@@ -167,13 +169,14 @@ and are using tivoncid with a modem:
 
 >> modify ncid.conf:
 
-                change this line: set Host        127.0.0.1  
-                to this line:     set Host        < NCID server IP address >
+            change this line: set Host        127.0.0.1  
+            to this line:     set Host        < NCID server IP address >
 
 >> example using the command line:
 >>> tivoncid IP.Server.Address &
 
 >> If the server is at 192.168.0.10, the above becomes:
+
 >>> tivoncid 192.168.0.10 &
 
 > If you are running the server and client on the TiVo
@@ -234,49 +237,57 @@ and are using tivoncid with a modem:
 >> ncidd -Dv5
 
 > The last three lines will be similar to:
->> Modem set for CallerID.  
-   Network Port: 3333  
-   Wrote pid 20996 in pidfile: /var/run/ncidd.pid  
+
+          Modem set for CallerID.  
+          Port: 3333  
+          pid 20996 in pidfile: /var/run/ncidd.pid  
 
 > Call yourself and you should see the CallerID information.  
 
-> - If you just see RING and no Caller ID lines,  
+> - If you just see RING and no Caller ID lines,
     the modem does not support caller ID.
 
-> - If you see: /dev/ttyS1: No such file or directory  
+> - If you see: /dev/ttyS1: No such file or directory
     you need to set sttyclocal in ncidd.conf
                                                                   
 > - At any point, you can use command lines options to vary
     things like modem init and CID init.
 
 > Once it works, you would normally start it:
->> ncidd    
+
+          ncidd    
+
 > or, if, for example, you use /hack instead of /var/hack:  
->> ncidd -C /hack/etc/ncidd.conf
+
+          ncidd -C /hack/etc/ncidd.conf
 
 ### <a name="instl_tivo_st"></a>TEST USING sip2ncid:
 
 > - Start (in this order):
 
->> ncidd  
-   sip2ncid (may need to add options, review [sip2ncid setup](#gateways_sip))  
-   tivocid or tivoncid
+          ncidd  
+          sip2ncid (may need to add options, review [sip2ncid setup](#gateways_sip))  
+          or tivoncid
 
 > - Call yourself
 
 >> if you have problems, start ncidd in debug mode:
->>> ncidd -D
+
+          ncidd -D
 
 >> to get more information, add the verbose flag:
->>> ncidd -Dv3
+
+          ncidd -Dv3
 
 >> to also look at the alias structure
->>> ncidd -Dv5
+
+          ncidd -Dv5
 
 > - The last three lines will be similar to:
->> CallerID only from CID gateways  
-   Network Port: 3333  
-   Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+
+          CallerID only from CID gateways  
+          Network Port: 3333  
+          Wrote pid 20996 in pidfile: /var/run/ncidd.pid
 
 > - Once you solve any problems, restart ncidd normally
 
@@ -291,18 +302,22 @@ and are using tivoncid with a modem:
 > - Call yourself
 
 >> if you have problems, start ncidd in debug mode:
->>> ncidd -D
+
+            ncidd -D
 
 >> to get more information, add the verbose flag:
->>> ncidd -Dv3
+
+            ncidd -Dv3
 
 >> to also look at the alias structure
->>> ncidd -Dv5
+
+            ncidd -Dv5
 
 >> The last three lines will be similar to:
->>> CallerID only from CID gateways  
-    Network Port: 3333  
-    Wrote pid 20996 in pidfile: /var/run/ncidd.pid
+
+            CallerID only from CID gateways  
+            Port: 3333  
+            pid 20996 in pidfile: /var/run/ncidd.pid
 
 > - Once you solve any problems, restart ncidd normally
 
@@ -317,93 +332,104 @@ and are using tivoncid with a modem:
 
 > Start tivocid:
 
-> - If ncidd is on the TiVo:   
-    tivocid -V  
-	You should see the Server connect message.
+> - If ncidd is on the TiVo:
 
-> - If ncidd is on another computer:    
-    tivocid -V IP.Server.Address.  
-	You should see the Server connect message.
+          tivocid -V  
+          You should see the Server connect message.
+
+> - If ncidd is on another computer:
+
+          tivocid -V IP.Server.Address.  
+          You should see the Server connect message.
 
 > If it dosen't start, the error message should give you a clue.
 
 > There is one report of tivocid aborting with a message similar to:
 
->> bash-2.02# Tmk Assertion Failure:  
-   FsAllocateFunction, line 131 ()
+          bash-2.02# Tmk Assertion Failure:  
+          FsAllocateFunction, line 131 ()
 
 > If tivosh dies in the wrong place, the tivo will restart:
 
->> Tmk Fatal Error: Thread tivosh <252> died due to signal -2
-   f9c51c 100df1c 100e18c 100e1dc dabe9c dab55c 400c50 108a0b0 
-   Restarting system.
+          Tmk Fatal Error: Thread tivosh <252> died due to signal -2
+          f9c51c 100df1c 100e18c 100e1dc dabe9c dab55c 400c50 108a0b0 
+          Restarting system.
 
 > The fix is to start it this way:
 
->> tivosh ncid --no-gui -T --call-prog --program /var/hack/bin/out2osd &
+          tivosh ncid --no-gui -T --call-prog --program /var/hack/bin/out2osd &
 
 > Call yourself.  The display should show up for 10 seconds
   and then erase itself.
 
 > If tivocid dosen't display the Caller ID information, try:
->> tivocid -R -V IP.Server.Address.
+
+          tivocid -R -V IP.Server.Address.
 
 > This will show everything received from the server, and
   the CID information it processes.
 
 > If tivocid works, kill off tivocid and restart it:
 
->> If ncidd is on the TiVo:  
->  tivocid &
+>> If ncidd is on the TiVo:
 
->> If ncidd is on another computer:  
->  tivocid IP.Server.Address &
+          tivocid &
+
+>> If ncidd is on another computer:
+
+          tivocid IP.Server.Address &
 
 ### <a name="instl_tivo_nc"></a>Test the TiVo NCID Client (if using tivoncid)
 
 > Start tivoncid:
 
->> If ncidd is on the TiVo:  
->  tivoncid -V  
-   You should see the Server connect message.
+>> If ncidd is on the TiVo:
 
->> If ncidd is on another computer:  
->  tivoncid -V IP.Server.Address.
-   You should see the Server connect message.
+          tivoncid -V  
 
-> If it dosen't start, the error message should give you a clue.
+>> You should see the Server connect message.
+
+>> If ncidd is on another computer:
+
+          tivoncid -V IP.Server.Address.
+
+>> You should see the Server connect message.
+
+> If it does not start, the error message should give you a clue.
 
 > There is one report of tivocid aborting with a message similar to:
 
->> bash-2.02# Tmk Assertion Failure:  
-   FsAllocateFunction, line 131 ()
+          bash-2.02# Tmk Assertion Failure:  
+          FsAllocateFunction, line 131 ()
 
 > If tivosh dies in the wrong place, the tivo will restart:
 
->> Tmk Fatal Error: Thread tivosh <252> died due to signal -2
-   f9c51c 100df1c 100e18c 100e1dc dabe9c dab55c 400c50 108a0b0 Restarting
-   system.
+          Tmk Fatal Error: Thread tivosh <252> died due to signal -2
+          100df1c 100e18c 100e1dc dabe9c dab55c 400c50 108a0b0 Restarting
 
 > The fix for this is to start it this way:
 
->> tivosh ncid --no-gui --call-prog --program ncid-tivo &
+          tivosh ncid --no-gui --call-prog --program ncid-tivo &
 
 > Call yourself.  The display should show up for 10 seconds
   and then erase itself.
 
-> If tivocid doesn't display the Caller ID information, try:
->> tivoncid -R -V IP.Server.Address.
+> If tivocid does not display the Caller ID information, try:
+
+          tivoncid -R -V IP.Server.Address.
 
 > This will show everything received from the server, and
   the CID information it processes.
 
 > If tivoncid works, kill off tivoncid and restart it:
 
->> If ncidd is on the TiVo:  
->  tivoncid &
+>> If ncidd is on the TiVo:
 
->> If ncidd is on another computer:  
->  tivoncid IP.Server.Address &
+          tivoncid &
+
+>> If ncidd is on another computer:
+
+          tivoncid IP.Server.Address &
 
 ### <a name="instl_tivo_fi"></a>Files installed and modem information
 
@@ -432,5 +458,5 @@ and are using tivoncid with a modem:
 
 ### <a name="instl_tivo_note"></a>Notes
 
->> tivocid is a symbolic link to ncid  
-   tivoncid is also a symbolic link to ncid
+            tivocid is a symbolic link to ncid  
+            tivoncid is also a symbolic link to ncid

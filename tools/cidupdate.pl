@@ -3,52 +3,28 @@
 # cidupdate - update Caller ID call log file or files using the
 # current alias file.
 #
+# Created by Aron Green on Mon Nov 25, 2002
+#
 # Copyright (c) 2002-2014 by
 #   Aron Green,
 #   John L. Chmielewski <jlc@users.sourceforge.net> and
 #   Steve Limkemann
 #   Chris Lenderman
-#
-# Created by Aron Green on Mon Nov 25, 2002
-#   - Based on cidlog and cidalias
-# Cleanup by John L. Chmielewski on Tue Nov 26, 2002
-# Modified by John L. Chmielewski on Sat Aug 13, 2005
-#   - Changed from using config file to alias file
-# Modified by John L. Chmielewski on Fri Apr 14, 2006
-#   - Changed name from cidlogupd to cidupdate, updated variable names
-# Modified by John L. Chmielewski on Sun Feb 13, 2011
-#   - Changed the -a option to -A and the -c option to -C
-#   - Removed unused -l option
-# modified by John L. Chmielewski on Sat Jan 19, 2013
-#   - Improved code, added long options, and added pod documentation
-# modified by Steve Limkemann on Wed May 29, 2013
-#   - Changed from outputting the difference between the old and
-#     updated CID call logs to outputting a report of the changes and
-#     asking the user if the new log should be kept or discarded.  If
-#     kept, the new log has the same modification timestamp as the
-#     old log.
-#   - Changed from doing linear searches of a list based on the alias
-#     file for each CID call log entry to using a hash table and an
-#     array for leading digit number matches.
-#   - Modified to work either from the command line or when executed by
-#     the NCID server on behalf of the user via the NCID client.
-#   - Added the ability to update all of the CID call logs.
-# modified by Chris Lenderman on Mon Jan 6, 2014
-#   - added OUT PID BLK types, replaced printf with print
-# modified by John L. Chmielewski on Fri Jan 24, 2014
-#   - fixed a couple of problems, added --multi, and --ignore1
 
 use strict;
 use warnings;
 use Pod::Usage;
+use File::Basename;
 use Getopt::Long qw(:config no_ignore_case_always);
 
-my ($alias, $cidlog, $help, $man, $changed);
-my $newcidlog;
-my (@aliases, %hash);
+my (@aliases, $alias, $cidlog, $newcidlog, $changed);
+my ($help, $man, $version, $multiple);
 my ($type, $from, $to, $value, $mod_time, $logType, $ignore1);
 my ($date, $time, $line, $number, $mesg, $name, @log_files);
-my ($partialNumber, $length, $newValue, $multiple, $found);
+my ($htype, $scall, $ecall, $ctype);
+
+my $prog = basename($0);
+my $VERSION = "(NCID) XxXxX";
 
 my $ALIAS = "/etc/ncid/ncidd.alias";
 my $CIDLOG = "/var/log/cidcall.log";
@@ -60,8 +36,10 @@ my ($result) = GetOptions(
     'aliasfile|a=s' => \$alias,
     'cidlog|c=s'    => \$cidlog,
     'multi'         => \$multiple,
-    'ignore1'         => \$ignore1
+    'ignore1'       => \$ignore1,
+    'version|V'     => \$version
  ) || pod2usage(2);
+die "$prog $VERSION\n" if $version;
 pod2usage(-verbose => 1, -exitval => 0) if $help;
 pod2usage(-verbose => 2, -exitval => 0) if $man;
 
@@ -84,26 +62,14 @@ while (<ALIASFILE>) {
     } elsif (/^alias\s+(\w+)\s+"*([^"]+)"*\s+=\s+"*([^"]+)"*(.*)$/) {
         ($type, $from, $to, $value) = ($1, $2, $3, '');
     } elsif (/^alias\s+"*([^"]+)"*\s+=\s+"*([^"]+)"*(.*)$/) {
-        ($type, $from, $to, $value) = ('both', $1, $2, '');
+        ($type, $from, $to, $value) = ('NMBRNAME', $1, $2, '');
     } else {
         print "Unknown: $_\n";
         next;
     }
-    if ($value ne '') {
-        if ((substr $value, 0, 1) eq '^') {
-            $value = substr $value, 1;
-            push @aliases, ([$value, length $value, $type, $to]);
-        } else {
-            $hash{$value} = [$type, $to];
-        }
-    } else {
-        if ((substr $value, 0, 1) eq '^') {
-            $from = substr $from, 1;
-            push @aliases, ([$from, length $from, $type, $to]);
-        } else {
-            $hash{$from} = [$type, $to];
-        }
-    }
+    $to =~ s/\s*$//;
+    $value =~ s/\s*$//;
+    push @aliases, ([$type, $from, $to, $value]);
 }
 
 #CID: *DATE*11242002*TIME*2112*LINE*1*NMBR*9549142285*MESG*NONE*NAME*Cell*
@@ -114,55 +80,70 @@ foreach $cidlog (@log_files) {
     open(NEWCIDLOG, ">$newcidlog") || die "Could not open $newcidlog: $!\n";
 
     while (<CIDLOG>) {
-        if (/CID|HUP|OUT|PID|BLK/) {
+        if (/^CID|^HUP|^OUT|^PID|^BLKr|^END/) {
             ($logType, $date, $time, $line, $number, $mesg, $name) =
-                    (split /\*/) [0, 2, 4, 6, 8, 10, 12];
+                (split /\*/) [0, 2, 4, 6, 8, 10, 12];
+            if (/^END/) {
+                ($logType, $htype, $date, $time, $scall, $ecall, $ctype, $line, $number, $name) =
+                (split /\*/) [0, 2, 4, 6, 8, 10, 12, 14, 16, 18];
+            }
+
 
             if ($number eq 'RING') {
                 print NEWCIDLOG;
                 next;
             }
             $number =~ s/^1// if $ignore1;
-            if (exists $hash{$number}) {
-                if ($hash{$number}[0] eq 'NAME') {
-                    if ($hash{$number}[1] ne $name) {
-                        record_change ("1 Changed $name to $hash{$number}[1] for $number", $cidlog);
-                        $name = $hash{$number}[1];
-                    }
-                } else {
-                    if ($hash{$number}[1] ne $number) {
-                        record_change ("2 Changed $number to $hash{$number}[1]", $cidlog);
-                        $name = $hash{$number}[1];
+            foreach $alias (@aliases) {
+                ($type, $from, $to, $value) = @$alias;
+                if ($type eq "NAME" && $value) {
+                    if (strmatch($value, $number)&& !strmatch($name, $to)) {
+                        record_change ("1 Changed \"$name\" to \"$to\" for $number", $cidlog);
+                        $name = $to;
                     }
                 }
-            } elsif (exists $hash{$name}) {
-                if ($hash{$name}[0] eq 'NAME') {
-                    if ($hash{$name}[1] ne $name) {
-                        record_change ("3 Changed $name to $hash{$name}[1]", $cidlog);
-                        $name = $hash{$name}[1];
-                    }
-                } else {
-                    if ($hash{$name}[1] ne $number) {
-                        record_change ("4 Changed $number to $hash{$name}[1]", $cidlog);
-                        $number = $hash{$name}[1];
+                elsif ($type eq "NAME") {
+                    if (strmatch($from, $name)) {
+                        record_change ("3 Changed \"$name\" to \"$to\"", $cidlog);
+                        $name = $to;
                     }
                 }
-            } else {
-                $found = 0;
-                foreach $alias (@aliases) {
-                    ($partialNumber, $length, $type, $newValue) = @$alias;
-                    if (substr ($number, 0, $length) eq $partialNumber) {
-                        $found = 1;
-                        if ($name ne $newValue) {
-                            record_change ("1 Changed $name to $newValue for $number", $cidlog);
-                            $name = $newValue;
-                            last;
-                        }
+                if ($type eq "NMBR" && $value) {
+                    if (strmatch($value, $name) && !strmatch($number, $to)) {
+                        record_change ("2 Changed \"$number\" to \"$to\" for $name", $cidlog);
+                        $number = $to;
+                    }
+                }
+                elsif ($type eq "NMBR") {
+                    if (strmatch($from, $number)) {
+                        record_change ("4 Changed \"$number\" to \"$to\"", $cidlog);
+                        $number = $to;
+                    }
+                }
+                if ($type eq "LINE") {
+                    if (strmatch($from, $line)) {
+                        record_change ("5 Changed \"$line\" to \"$to\"", $cidlog);
+                        $line = $to;
+                    }
+                }
+                if ($type eq "NMBRNAME") {
+                    if (strmatch($from, $name)) {
+                        record_change ("6 Changed \"$name\" to \"$to\"", $cidlog);
+                        $name = $to;
+                    }
+                    if (strmatch($from, $name)) {
+                        record_change ("7 Changed \"$number\" to \"$to\"", $cidlog);
+                        $number = $to;
                     }
                 }
             }
-            print NEWCIDLOG
-                "$logType*DATE*$date*TIME*$time*LINE*$line*NMBR*$number*MESG*$mesg*NAME*$name*\n";
+            if ($logType eq "END: ") {
+                print NEWCIDLOG
+                  "$logType*HTYPE*$htype*DATE*$date*TIME*$time*SCALL*$scall*ECALL*$ecall*CTYPE*$ctype*LINE*$line*NMBR*$number*NAME*$name*\n";
+            } else {
+                print NEWCIDLOG
+                  "$logType*DATE*$date*TIME*$time*LINE*$line*NMBR*$number*MESG*$mesg*NAME*$name*\n";
+            }
         } else {
             print NEWCIDLOG;
         }
@@ -247,6 +228,28 @@ if ($changed) {
     }
 }
 
+sub strmatch {
+my($find, $string) = @_;
+
+if ($find =~ /^\^/) {
+    # handle ^<string> ^*<string> ^*<string>* ^<string>*
+    $find =~ s/\^\*/\^/;
+    if ($find =~ /\*$/) {$find =~ s/\*$//;}
+    else {$find =~ s/$/\$/;}
+}else {
+    # handle <string> *<string> *<string>* <string>*
+    if ($find =~ /^\*/) {$find =~ s/\*//;}
+    else {$find =~ s/^/\^/;}
+    if ($find =~ /\*$/) {$find =~ s/\*$//;}
+    else {$find =~ s/$/\$/;}
+}
+
+# some people like an alias with a "?" in it
+$find =~ s/([?+.()|{}\[\]-])/\\$1/g;
+
+return ($string =~ /$find/);
+}
+
 =head1 NAME
 
 cidupdate -  update aliases in the NCID call file
@@ -257,6 +260,7 @@ cidupdate [--help|-h]
           [--man|-m]
           [--multi]
           [--ignore1]
+          [--version|-V]
           [--aliasfile|-a <aliasfile>]
           [--cidlog|-c <cidlog>]
 
@@ -292,6 +296,10 @@ Updates all of the call log files
 
 Ignores a leading 1 in a call file number.
 Required when the ignore1 server option is set.
+
+=item -V, --version
+
+Displays the version.
 
 =item -a <aliasfile>, --aliasfile <aliasfile>
 

@@ -1,4 +1,4 @@
-Last edited: Sat Jan 18, 2014
+Last edited: Wed Mar 26, 2014
 
 ## <a name="modems_top"></a>Modems
 
@@ -6,14 +6,14 @@ Last edited: Sat Jan 18, 2014
 
 ### Index
 
-> [NCID Modem Requirements](#modems_specs)  
-  [Incomplete list of working modems](#modems_list)  
-  [Configuration](#modems_mconf)  
-  [Distinctive Ring (DR)](#modems_dr)  
-  [Modem Caller ID Test](#modems_test)  
-  [Modem Commands that configure Caller ID](#modems_cmds)  
-  [Modem Country Codes](#modems_codes)  
-  [TiVo Modems](#modems_tivo)  
+> * [NCID Modem Requirements](#modems_specs)
+  * [Incomplete list of working modems](#modems_list)
+  * [Configuration](#modems_mconf)
+  * [Distinctive Ring (DR)](#modems_dr)
+  * [Modem Caller ID Test](#modems_test)
+  * [Modem Commands that configure Caller ID](#modems_cmds)
+  * [Modem Country Codes](#modems_codes)
+  * [TiVo Modems](#modems_tivo)
 
 ### <a name="modems_specs"></a>NCID Modem Requirements
 
@@ -208,7 +208,7 @@ Lucent/Agere           AT+VDR=1,0
 
 ### <a name="modems_cmds"></a>Modem Commands that configure Caller ID
 
-> **AT#CID=1**    
+> **AT#CID=1**
 
 >> Enables Caller ID in USR, Texas Instruments, Rockwell compatible
    modems (excluding software modems and Rockwell HCF),

@@ -1,6 +1,6 @@
 # NCID - Network CallerID Server Config File
 
-# File last changed: Wed Jan 1, 2014
+# File last changed: Thu Apr 10, 2014
 
 ################################
 # Definitions and Line formats #
@@ -144,8 +144,14 @@ send cidinfo
 # call that has its name or number in a blacklist file but
 # not in a whitelist file.
 #
+# Set hangup to a 2 if you would like ncidd to pickup as a
+# FAX before terminating a call that has its name or number
+# in a blacklist file butnot in a whitelist file.
+#
 # hangup = 0 Default: do not terminate a call
-# hangup = 1          terminate a call based on the blacklist file
+# hangup = 1          terminate a call if in the blacklist file
+# hangup = 2          answer as a FAX, then terminate if in the blacklist
+#
 # set hangup = 1
 
 # The default blacklist file: /usr/local/etc/ncid/ncidd.blacklist

@@ -1,20 +1,11 @@
 #!/usr/bin/perl -w
 
 # Created by Aron Green on Sun Nov 24, 2002
-# based on cidlog
-# Cleanup by John L. Chmielewski on Tue Nov 26, 2002
-# modified by jlc on Tue Apr 8, 2003
-#    - modified to format output
-#    - added the raw ('r) option
-# modified by jlc on Sat May 21, 2005
-#   - changed config to alias, and CONFIGFILE to ALIASFILE
-#   - changed value of $alias
-# modified by Steve Limkemann on Sat Dec 1, 2012
-#   - improved code, improved display, and added blacklist feature
-# modified by jlc on Sat Jan 19, 2013
-#   - improved code, added long options, and added pod documentation
-# modified by jlc on Wed Jan 8, 2014
-#   - improved code, added whitelist feature, changed relust printing
+#
+# Copyright (c) 2001-2014 by
+#   Aron Green
+#   John L. Chmielewski <jlc@users.sourceforge.net>
+#   Steve Limkemann
 
 use strict;
 use warnings;

@@ -24,7 +24,7 @@ char *cidalias = CIDALIAS;
 
 struct alias alias[ALIASSIZE];
 
-int doAlias(), nextAlias();
+int doAlias(), nextAlias(), strmatch();
 char *cpy2mem(), *findAlias();
 void builtinAlias(), userAlias(), getAlias(), setAlias(), rmaliases();
 
@@ -47,7 +47,6 @@ void builtinAlias(char *to, char *from)
 void userAlias(char *nmbr, char *name, char *line)
 {
     int i;
-    char *ptr;
 
     /* we may want to skip the leading 1, if present */
     if (ignore1 && *nmbr == '1') ++nmbr;
@@ -57,51 +56,76 @@ void userAlias(char *nmbr, char *name, char *line)
         switch (alias[i].type)
         {
             case NMBRNAME:
-                if (!strcmp(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
-                if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
+                if (strmatch(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
+                if (strmatch(name, alias[i].from)) strcpy(name, alias[i].to);
                 break;
             case NMBRONLY:
-                if (!strcmp(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
+                if (strmatch(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
                 break;
             case NMBRDEP:
-                if (!strcmp(name, alias[i].depend) &&
-                    (!strcmp(nmbr, alias[i].from) ||
-                    !strcmp(alias[i].from, "*")))
+                if (strmatch(name, alias[i].depend) && strmatch(nmbr, alias[i].from))
                 {
                     strcpy(nmbr, alias[i].to);
                 }
                 break;
             case NAMEONLY:
-                if (!strcmp(name, alias[i].from)) strcpy(name, alias[i].to);
+                if (strmatch(name, alias[i].from)) strcpy(name, alias[i].to);
                 break;
             case NAMEDEP:
-                ptr = alias[i].depend;
-                if (*ptr == '^')
+                if (strmatch(nmbr, alias[i].depend) && strmatch(name, alias[i].from))
                 {
-                    ++ptr;
-                    if (!strncmp(nmbr, ptr, strlen(ptr)) &&
-                        (!strcmp(name, alias[i].from) ||
-                        !strcmp(alias[i].from, "*")))
-                    {
-                        strcpy(name, alias[i].to);
-                    }
-                }
-                else
-                {
-                    if (!strcmp(nmbr, ptr) &&
-                        (!strcmp(name, alias[i].from) ||
-                        !strcmp(alias[i].from, "*")))
-                    {
-                        strcpy(name, alias[i].to);
-                    }
+                    strcpy(name, alias[i].to);
                 }
                 break;
             case LINEONLY:
-                if (!strcmp(line, alias[i].from) ||
-                   !strcmp(alias[i].from, "*")) strcpy(line, alias[i].to);
+                if (strmatch(line, alias[i].from)) strcpy(line, alias[i].to); 
                 break;
         }
     }
+}
+
+/*
+ * compare value to string with wildcards
+ * ^ - at beginning: partial match from beginning
+ * * - at beginning and/or end:  partial match
+ *
+ * returns: 0 = no match
+ *          1 = match
+ *          2 = only "*" or "?*" in value
+ */
+
+int strmatch(char *string, char *value)
+{
+    int result = 0, len;
+    char *ptr;
+
+    if (!strcmp(value, "*") || !strcmp(value, "?*"))
+    {
+        result = 2;
+    }
+    else
+    {
+        len = strlen(value);
+        if (*value == '*')
+        {
+            ++value;
+            if ((ptr = strchr(string, value[0])))
+            {
+                string = ptr;
+                len = strlen(value);
+            }
+            else --len;
+        }
+        else if (*value == '^')
+        {
+            ++value;
+            --len;
+        }
+        if (value[len -1] == '*') --len;
+        result = !strncmp(string, value, len);
+    }
+
+return result;
 }
 
 /*
@@ -141,13 +165,14 @@ int doAlias()
     sprintf(msgbuf, "Processed alias file: %s\n", cidalias);
     logMsg(LEVEL1, msgbuf);
 
+    sprintf(msgbuf, "Alias Table ");
+    logMsg(LEVEL1, msgbuf);
+	
     if (!errorStatus && alias[0].type)
     {
-	
 	    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
         ;
-        sprintf(msgbuf, "Alias Entries: %d/%d\n",
-                i, ALIASSIZE);
+        sprintf(msgbuf, "Number of Entries: %d/%d\n", i, ALIASSIZE);
         logMsg(LEVEL1, msgbuf);
 
         /*
@@ -195,18 +220,33 @@ int doAlias()
 
             max_temp = strlen(alias[i].to);
             if (max_temp > max_to) max_to=max_temp;
-
         }
 
-        sprintf(msgbuf,
-            "Alias Entries: ELEMENT TYPE \"FROM\" \"TO\" [\"DEPEND\"]\n");
+        max_temp = strlen("FROM");
+        if (max_temp > max_from) max_from=max_temp;
+
+        max_temp = strlen("TO");
+        if (max_temp > max_to) max_to=max_temp;
+
+        sprintf(msgbuf, "    %-7s %s%-*s %s%-*s %s%-*s %s\n",
+                "ELEMENT",
+                "TYPE", max_type_txt - (int) strlen("TYPE"), "",
+                "FROM", max_from - (int) strlen("FROM"), "",
+                "TO", max_to - (int) strlen("TO"), "",
+                "DEPEND");
+        logMsg(LEVEL8, msgbuf);
+        sprintf(msgbuf, "    %-7s %s%-*s %s%-*s %s%-*s %s\n",
+                "-------",
+                "----", max_type_txt - (int) strlen("TYPE"), "",
+                "----", max_from - (int) strlen("FROM"), "",
+                "--", max_to - (int) strlen("TO"), "",
+                "------");
         logMsg(LEVEL8, msgbuf);
 
         for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
         {
-            sprintf(msgbuf, " %.3d %.2d (%s)%-*s \"%s\"%-*s \"%s\"%-*s ",
+            sprintf(msgbuf, "    %-7.3d %s%-*s %s%-*s %s%-*s ",
                 i,
-                alias[i].type,
                 alias[i].type_txt,
                 max_type_txt - (int) strlen(alias[i].type_txt), "",
                 alias[i].from,
@@ -220,6 +260,11 @@ int doAlias()
 
             logMsg(LEVEL8, msgbuf);
         }
+    }
+    else
+    {
+        sprintf(msgbuf, "Number of Entries: 0/%d\n", ALIASSIZE);
+        logMsg(LEVEL1, msgbuf);
     }
 
     return errorStatus;
@@ -330,23 +375,43 @@ void rmaliases()
     }
 }
 
-char *findAlias (char *name, char *number) {
+/*
+ * Find the an alias and return the type of alias.
+ * If multiple aliases, return the last one.
+ */
+char *findAlias(char *name, char *nmbr, char *line) {
     int i;
-    char *ret;
+    char *calltype, *linetype;
+    static char ret[BUFSIZ];
 
-    ret = NOALIAS_TXT;
+    /* set defaults */
+    calltype = linetype = NOALIAS_TXT;
+
     for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
     {
-        if (strcmp (alias[i].to, number) == 0)
+        if (strcmp(alias[i].to, nmbr) == 0)
         {
-            ret = alias[i].type_txt;
-            break;
+            calltype = alias[i].type_txt;
         }
-        if (strcmp (alias[i].to, name) == 0)
+        if (strcmp(alias[i].to, name) == 0)
         {
-            ret = alias[i].type_txt;
-            break;
+            calltype = alias[i].type_txt;
+        }
+        if (strcmp(alias[i].to, line) == 0)
+        {
+            linetype = alias[i].type_txt;
         }
     }
+    if (*line)
+    {
+        /* there is a line name so new format */
+        sprintf(ret, "%s %s ", calltype, linetype);
+    }
+    else
+    {
+        /* there is no line name so old format */
+        sprintf(ret, "%s", calltype);
+    }
+
     return ret;
 }

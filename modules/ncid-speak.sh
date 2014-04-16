@@ -3,7 +3,7 @@
 # ncid-speak
 # usage: ncid --no-gui --program ncid-speak
 
-# Last modified: Wed May 29, 2013
+# Last modified: Sun Apr 13, 2014
 
 # Announce the Caller ID
 # Requires festival
@@ -11,66 +11,71 @@
 # most of this program is taken from nciduser by Mace Moneta
 # requires festival: http://www.cstr.ed.ac.uk/projects/festival
 
-# input is always 6 lines
+# input is always 7 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
 #
 # if input is from a message
 # the message is in place of NAME:
-# input: \n\n\n<MESSAGE>\n\nMSG\n
+# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-speak.conf
 
 ### defaults if not using config file ###
-SpeakThis='$CIDNAME'
+SpeakThis='$NAME'
 SpeakInput="echo $SpeakThis | festival --tts"
 SpeakTimes=1
 SpeakDelay=2
-SpeakTypes="CID MSG PID NOT"
+SpeakTypes="CID PID"
 AreaCodeLength=3
+
+found=
 
 [ -f $ConfigFile ] && . $ConfigFile
 
-read CIDDATE
-read CIDTIME
-read CIDNMBR
-read CIDNAME
-read CIDLINE
-read CIDTYPE
+read DATE
+read TIME
+read NMBR
+read VAR1
+read LINE
+read TYPE
+read VAR2
 
 # Look for $SpeakType
 for i in $SpeakTypes
 do
-    [ $i = "$CIDTYPE" ] && { found=1; break; }
+    [ $i = "$TYPE" ] && { found=1; break; }
 done
 
-# Exit if $CIDTYPE not found
+# Exit if $TYPE not found
 [ -z "$found" ] && exit 0
 
-if [ "$CIDTYPE" = "CID" ] && [ "$CIDNAME" = "NO NAME" ] && [ $AreaCodeLength -ne 0 ]
+if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
 then
-    CIDNMBR=`echo $CIDNMBR |sed 's/[^0-9]//g; s/^1//'`
-    length=$((${#CIDNMBR}-AreaCodeLength))
-    if [ $length -le 0 ]
+    NAME="$VAR2"
+    MESG="$VAR1"
+    SpeakThis='$MESG'
+else
+    NAME="$VAR1"
+
+    if [ "$NAME" = "NO NAME" ] && [ $AreaCodeLength -ne 0 ]
     then
-        if [ ${#CIDNMBR} -gt 1 ]
+        NMBR=`echo $NMBR |sed 's/[^0-9]//g; s/^1//'`
+        length=$((${#NMBR}-AreaCodeLength))
+        if [ $length -le 0 ]
         then
-            CIDNAME=`echo $CIDNMBR |sed 's/./ &/g'`
+            if [ ${#NMBR} -gt 1 ]
+            then
+                NAME=`echo $NMBR |sed 's/./ &/g'`
+            fi
+        else
+            NAME="Area Code"`echo $NMBR | eval "sed -e 's/.\{$length\}\$//; s/./ &/g'"`
         fi
-    else
-        CIDNAME="Area Code"`echo $CIDNMBR | eval "sed -e 's/.\{$length\}\$//; s/./ &/g'"`
     fi
 fi
-echo "Name: $CIDNAME" > /tmp/ncid_debug
-
-if [ "$CIDTYPE" = "MSG" -o "$CIDTYPE" = "NOT" ]
-then
-    SpeakThis=$CIDNAME
-else
-    eval : $SpeakThis
-fi
+eval : $SpeakThis
 
 while [ ${SpeakTimes:=1} != 0 ]
 do

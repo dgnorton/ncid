@@ -28,6 +28,9 @@
 
 #define PICKUP      "AT H1"
 #define HANGUP      "AT H0"
+#define FAXANS      "AT A"
+#define FAXINIT     "AT+FCLASS=1.0"
+#define GETOK       "AT"
 #define HANGUPTRY   6
 #define HANGUPDELAY 400000  /* 400000 microseconds = 0.4 seconds */
 

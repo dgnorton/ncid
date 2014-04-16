@@ -1,10 +1,10 @@
 # ncid-notify.conf - ncid-notify configuration file
 
-# Last Modified: Wed May 29, 2013
+# Last Modified: Fri Apr 11, 2014
 
 # Uncomment, comment. or give variables a different value
 
-# $CIDTYPE is one of:
+# $TYPE is one of:
 #   CID: incoming call
 #   OUT: outgoing call
 #   HUP: blacklisted hangup
@@ -23,7 +23,7 @@
 #       - if you want to send notification only when a ring count is reached,
 #         configure ring by creating a "ncid_notify" variable in ncid.conf
 
-# $CIDTYPE's to process
+# $TYPE's to process
 # default: "CID OUT HUP BLK MSG"
 notify_types="CID OUT HUP BLK MSG"
 
@@ -64,8 +64,8 @@ notify_priority="0"
 notify_clock="12"
 
 # notify 'application', 'event' and 'notification' values: 
-# $CIDNAME $CIDNMBR $CIDLINE $CIDDATE $CIDTIME $CIDTYPE
-# $CIDDESC 
+# $NAME $NMBR $LINE $DATE $TIME $TYPE
+# $DESC 
 #
 # Three "rows" of information are available for Prowl:
 # Row 1 'application'                 e.g. NCID
@@ -80,11 +80,11 @@ notify_clock="12"
 #
 # Prowl defaults:
 #notify_application_prowl='NCID'
-#notify_event_prowl='$CIDDESC'
-#notify_notification_prowl='$CIDNAME $CIDNMBR $CIDLINE'
+#notify_event_prowl='$DESC'
+#notify_notification_prowl='$NAME $NMBR $LINE'
 notify_application_prowl='NCID'
-notify_event_prowl='$CIDDESC'
-notify_notification_prowl='$CIDNAME $CIDNMBR $CIDLINE'
+notify_event_prowl='$DESC'
+notify_notification_prowl='$NAME $NMBR $LINE'
 #
 # Four "rows" of information are available for NMA:
 # Row 1 'application' name            e.g.  NCID (CID)
@@ -93,12 +93,12 @@ notify_notification_prowl='$CIDNAME $CIDNMBR $CIDLINE'
 # Row 4 'url'                               http://callerr.com/4075557777
 #
 # NMA defaults: 
-#notify_application_nma='NCID \(${CIDTYPE}\)'
-#notify_event_nma='$CIDNAME $CIDNMBR $CIDLINE'
-#notify_notification_nma='$CIDDESC: $CIDDATE $CIDTIME'
-notify_application_nma='NCID \(${CIDTYPE}\)'
-notify_event_nma='$CIDNAME $CIDNMBR $CIDLINE'
-notify_notification_nma='$CIDDESC: $CIDDATE $CIDTIME'
+#notify_application_nma='NCID \(${TYPE}\)'
+#notify_event_nma='$NAME $NMBR $LINE'
+#notify_notification_nma='$DESC: $DATE $TIME'
+notify_application_nma='NCID \(${TYPE}\)'
+notify_event_nma='$NAME $NMBR $LINE'
+notify_notification_nma='$DESC: $DATE $TIME'
 
 # URL to website that can do reverse phone number lookup
 # - or -

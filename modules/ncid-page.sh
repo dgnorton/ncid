@@ -3,19 +3,19 @@
 # ncid-page
 # usage: ncid --no-gui --program ncid-page
 
-# Last modified: Wed May 29, 2013
+# Last modified: Sun Apr 13, 2014
 
 # sends Caller ID or message to a cell phone, pager, or any other email address
 # Requires a mail program
 
-# input is always 6 lines
+# input is always 7 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
 #
 # if input is from a message
 # the message is in place of NAME:
-# input: \n\n\n<MESSAGE>\n\nMSG\n
+# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-page.conf
@@ -35,7 +35,7 @@ PageFrom=mail
 # default page subject option, either "" or "-s"
 PageOpt=
 
-# default $CIDTYPES to send page
+# default $TYPES to send page (see ncid-page.conf for description):
 PageTypes="CID"
 
 [ -f $ConfigFile ] && . $ConfigFile
@@ -53,34 +53,37 @@ then
     [ "`id -nu`" = "root" ] && rootID=1
 fi
 
-read CIDDATE
-read CIDTIME
-read CIDNMBR
-read CIDNAME
-read CIDLINE
-read CIDTYPE
+read DATE
+read TIME
+read NMBR
+read VAR1
+read LINE
+read TYPE
+read VAR2
 
-# Look for $CIDTYPE
+# Look for $TYPE
 for i in $PageTypes
 do
-    [ $i = "$CIDTYPE" ] && { found=1; break; }
+    [ $i = "$TYPE" ] && { found=1; break; }
 done
 
-# Exit if $CIDTYPE not found
+# Exit if $TYPE not found
 [ -z "$found" ] && exit 0
 
-if [ "$CIDTYPE" = "MSG" ]
+# if line indicator = "" make it "-"
+[ -z "$LINE" ] && LINE="-"
+
+if [ "$TYPE" = "MSG" ]
 then
-    [ -n "$PageOpt" ] && PageOpt="$PageOpt \"Message\""
-    MailMsg="\n$CIDNAME"
+    MESG="$VAR1"
+    NAME="$VAR2"
+    MailMsg="NCID TYPE: $TYPE\nDATE: $DATE\nTIME: $TIME\nNAME: $NAME\nNMBR: $NMBR\nLINE: $LINE\n$MESG\n"
 else
-    [ -n "$PageOpt" ] && PageOpt="$PageOpt \"$CIDNMBR\""
-    MailMsg="\nNCID TYPE: $CIDTYPE\nNAME: $CIDNAME\nNMBR: $CIDNMBR\nTIME: $CIDTIME\nDATE: $CIDDATE\n"
+    NAME="$VAR1"
+    MailMsg="NCID TYPE: $TYPE\nDATE: $DATE\nTIME: $TIME\nNAME: $NAME\nNMBR: $NMBR\nLINE: $LINE\n"
 fi
 
-# if line indicator found, include it
-[ -n "$CIDLINE" ] && MailMsg="${MailMsg}LINE: $CIDLINE\n"
-
+[ -n "$PageOpt" ] && PageOpt="$PageOpt \"$NMBR\"\n"
 if [ -n "$rootID" ]
 then
     # send mail as user $PageFrom

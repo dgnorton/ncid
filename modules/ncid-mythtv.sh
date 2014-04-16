@@ -3,55 +3,66 @@
 # ncid-mythtv
 # usage: ncid --no-gui --program ncid-mythtv
 
-# Last modified: Wed May 29, 2013
+# Last modified: Sun Apr 13, 2014
 
 # MythTV Display
 # See http://www.mythtv.org/wiki/index.php/Little_Gems
 # Requires MythTV (mythtvosd)
 
-# input is always 6 lines
+# input is always 7 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
 #
 # if input is from a message
 # the message is in place of NAME:
-# input: \n\n\n<MESSAGE>\n\nMSG\n
+# input:  DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
 
-mythtv_types="CID OUT HUP BLK MSG PID NOT"
+# defaults (see ncid-mythtv.conf for description):
+mythtv_types="CID OUT HUP BLK PID MSG NOT"
+mythtv_bcastaddr=127.0.0.1
+mythtv_timeout=10
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-mythtv.conf
 
 [ -f $ConfigFile ] && . $ConfigFile
 
-read CIDDATE
-read CIDTIME
-read CIDNMBR
-read CIDNAME
-read CIDLINE
-read CIDTYPE
+read DATE
+read TIME
+read NMBR
+read VAR1
+read LINE
+read TYPE
+read VAR2
 
-# Look for $CIDTYPE
+# Look for $TYPE
 for i in $mythtv_types
 do
-    [ $i = "$CIDTYPE" ] && { found=1; break; }
+    [ $i = "$TYPE" ] && { found=1; break; }
 done
 
-# Exit if $CIDTYPE not found
+# Exit if $TYPE not found
 [ -z "$found" ] && exit 0
 
-if [ "$CIDTYPE" = "MSG" -o "$CIDTYPE" = "NOT" ]
+if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
 then
+    NAME="$VAR2"
+    MESG="$VAR1"
     # Display Message or Notice
-    mythtvosd --template="alert" --alert_text="$CIDNAME"
+    mythutil --notification \
+             --origin "NCID"
+             --message_text "$MESG" \
+             --timeout $mythtv_timeout \
+             --bcastaddr $mythtv_bcastaddr
 else
+    NAME="$VAR1"
     # Display Caller ID information
-    mythtvosd --template="cid" \
-              --caller_name="$CIDNAME" \
-              --caller_number="$CIDNMBR" \
-              --caller_date="$CIDDATE" \
-              --caller_time="$CIDTIME"
+    mythutil --notification \
+             --origin "NCID"
+             --message_text "$NMBR $NAME" \
+             --timeout $mythtv_timeout \
+             --bcastaddr $mythtv_bcastaddr
 fi
 
 exit 0

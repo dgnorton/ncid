@@ -38,21 +38,21 @@ Ubuntu files for building the package:
 
 ---------------------------------------------------
 Steps required to build a Ubuntu or Debian package:
-The steps use ncid-0.87-src.tar.gz as an example:
+The steps use ncid-0.89-src.tar.gz as an example:
 ---------------------------------------------------
 
     mkdir ncid (and put ncid-0.87-src.tar.gz in it)
     cd ncid
-    tar -xzvf ncid-0.87-src.tar.gz
-    mv ncid ncid-0.87
-    cd ncid-0.87
+    tar -xzvf ncid-0.89-src.tar.gz
+    mv ncid ncid-0.89
+    cd ncid-0.89
     fakeroot debian/rules build
     fakeroot debian/rules binary
     fakeroot debian/rules clean
 
 Binary package built:
 
-    ncid_0.87-1_i386.deb
+    ncid_0.89-1_i386.deb
 
 Build the source package (not needed)
 
@@ -64,10 +64,10 @@ Source file built:
 
 The ncid directory may contain:
 
-    ncid-0.87/
-    ncid-0.87.tar.gz
-    ncid_0.87-1_i386.deb
-    ncid_0.87-1.tar.gz
+    ncid-0.89/
+    ncid-0.89.tar.gz
+    ncid_0.89-1_i386.deb
+    ncid_0.89-1.tar.gz
 
 
- -- John L. Chmielewski <jlc@users.sourceforge.net>  Wed, 22 Feb 2013 15:42:00 -0400
+ -- John L. Chmielewski <jlc@users.sourceforge.net>

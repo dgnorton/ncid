@@ -142,12 +142,20 @@ void rmEntries(char **list)
 
 int doHangup(char *namep, char *nmbrp)
 {
+    int ret;
+
     if (onList(namep, nmbrp, blklist, 0))
     {
         if (!onList(namep, nmbrp, whtlist, 0))
         {
             /* a blacklist match must not also be a whitelist match */
-            if (!hangupCall()) return 1;
+            ret = hangupCall();
+
+            /* normal hangup, return must be 0 */
+            if (hangup == 1 && !ret) return 1;
+
+            /* Answer as a FAX will fail as "NO CARRIER", ret must be 1 */
+            if (hangup == 2 && ret) return 1;
         }
     }
 
@@ -211,11 +219,23 @@ int hangupCall()
         /* put tty port in raw mode */
         if (!(ret = tcsetattr(ttyfd, TCSANOW, &rtty) < 0))
         {
-            /* Send AT to get modem OK after switch to raw mode */
-            (void) initModem("AT", HANGUPTRY);
+            if (hangup == 1)
+            {
+                /* Send AT to get modem OK after switch to raw mode */
+                (void) initModem(GETOK, HANGUPTRY);
 
-            /* Pick up the call */
-            ret = initModem(PICKUP, HANGUPTRY);
+                /* Pick up the call */
+                ret = initModem(PICKUP, HANGUPTRY);
+            }
+            else
+            {
+                /* Initialize FAX mode after switch to raw mode */
+                (void) initModem(FAXINIT, HANGUPTRY);
+
+                /* Answer the call as a FAX */
+                ret = initModem(FAXANS, HANGUPTRY);
+            }
+
             if (ret == 0)
             {
                 /*

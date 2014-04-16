@@ -90,15 +90,19 @@ DATALOG      = $(LOG)/ciddata.log
 LOGFILE      = $(LOG)/ncidd.log
 PIDFILE      = $(RUN)/ncidd.pid
 
+NCIDUPDATE   = $(BIN)/cidupdate
+NCIDUTIL     = $(BIN)/ncidutil
+
 WISH         = wish
 TCLSH        = tclsh
 
 # local additions to CFLAGS
-MFLAGS  = -Wmissing-declarations -Wunused-variable -Wparentheses -Wreturn-type
+MFLAGS  = -Wmissing-declarations -Wunused-variable -Wparentheses \
+          -Wreturn-type -Wpointer-sign
 
 # Documentation for FreeBSD, Mac, and TiVo
 DOC     = doc/NCID_Documentation.md doc/ncid-1.jpg doc/README.docdir \
-          doc/ReleaseNotes attic/README.attic \
+          doc/ReleaseNotes.md attic/README.attic \
           server/README.server gateway/README.gateways test/README.test \
           client/README.client modules/README.modules tools/README.tools \
           logrotate/README.logrotate

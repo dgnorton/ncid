@@ -49,7 +49,8 @@ DEFINE1     = -D_BSD_SOURCE \
 DEFINE2     = -DCONFIG=\"$(CONFFILE2)\" \
               -DPIDFILE=\"$(PIDFILE2)\"
 
-MFLAGS      = -W -Wmissing-declarations -Wunused-variable
+MFLAGS      = -Wmissing-declarations -Wunused-variable -Wparentheses \
+              -Wreturn-type -Wpointer-sign
 
 CFLAGS      = -O2 -I. -I.. $(MFLAGS) $(EXTRA_CFLAGS)
 

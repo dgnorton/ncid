@@ -50,6 +50,9 @@ PIDFILE      = $(RUNDIR)/$(PROG).pid
 LOCKDIR      = $(VAR)/lock/lockdev
 LOCKFILE     = $(LOCKDIR)/LCK..
 
+NCIDUPDATE   = $(BIN)/cidupdate
+NCIDUTIL     = $(BIN)/ncidutil
+
 SITE         = $(DIST:-in=)
 
 OBJECT       = $(SRC:.c=.o)
@@ -64,10 +67,12 @@ DEFINES      = -DCIDCONF=\"$(CONF)\" \
                -DLOGFILE=\"$(LOGFILE)\" \
                -DPIDFILE=\"$(PIDFILE)\" \
                -DLOCKFILE=\"$(LOCKFILE)\" \
-               -DPROGDIR=\"$(BIN)\"
+               -DNCIDUPDATE=\"$(NCIDUPDATE)\" \
+               -DNCIDUTIL=\"$(NCIDUTIL)\"
 
 # local additions to CFLAGS
-MFLAGS       = -Wmissing-declarations -Wunused-variable
+MFLAGS       = -Wmissing-declarations -Wunused-variable -Wparentheses \
+               -Wreturn-type -Wpointer-sign
 
 CFLAGS       = -O2 -I. -I.. $(DEFINES) $(MFLAGS) $(EXTRA_CFLAGS)
 

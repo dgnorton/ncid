@@ -3,7 +3,7 @@
 # ncid-notify
 # usage: ncid --no-gui --program ncid-notify
 
-# Last modified: Wed May 29, 2013
+# Last modified: Mon Apr 14, 2014
 
 # sends a NCID notification to a iOS device or a Android device
 
@@ -23,14 +23,14 @@
 # curl
 # CA certificates
 
-# input is always 6 lines
+# input is always 7 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
 #
 # if input is from a message
 # the message is in place of NAME:
-# input: \n\n\n<MESSAGE>\n\nMSG\n
+# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-notify.conf
@@ -67,13 +67,13 @@ notify_types="CID"
 
 # Prowl defaults:
 notify_application_prowl='ncid'
-notify_event_prowl='$CIDDESC'
-notify_notification_prowl='$CIDNAME $CIDNMBR $CIDLINE'
+notify_event_prowl='$MESG'
+notify_notification_prowl='$NAME $NMBR $LINE'
 
 # NMA defaults: 
-notify_application_nma='NCID \(${CIDTYPE}\)'
-notify_event_nma='$CIDNAME $CIDNMBR $CIDLINE'
-notify_notification_nma='$CIDDESC: $CIDDATE $CIDTIME'
+notify_application_nma='NCID \(${TYPE}\)'
+notify_event_nma='$NAME $NMBR $LINE'
+notify_notification_nma='$MESG: $DATE $TIME'
 
 # default URL
 notify_url=
@@ -153,28 +153,29 @@ do
         notify_hvolkey[$count]=`cat ${notify_hvolkeyfile[$count]}`
 done
 	
-read CIDDATE
-read CIDTIME
-read CIDNMBR
-read CIDNAME
-read CIDLINE
-read CIDTYPE
+read DATE
+read TIME
+read NMBR
+read VAR1
+read LINE
+read TYPE
+read VAR2
 
 # Only send notification if current call type is known
 found=""
 for i in $notify_types
 do
-    [ $i = "$CIDTYPE" ] && \
+    [ $i = "$TYPE" ] && \
     {
         case $i in
-            CID) CIDDESC="Incoming Call";;
-            OUT) CIDDESC="Outgoing Call";;
-            HUP) CIDDESC="Blacklisted Call Hangup";;
-            BLK) CIDDESC="Blacklisted Call Blocked";;
-            MSG) CIDDESC="Message";
-		         CIDDATE=`date '+%m/%d/%Y'`;
-		         CIDTIME=`date '+%H:%M'`;;
-              *) CIDDESC='New Call Type: \(${CIDTYPE}\)';;
+            CID) DESC="Incoming Call";;
+            OUT) DESC="Outgoing Call";;
+            HUP) DESC="Blacklisted Call Hangup";;
+            BLK) DESC="Blacklisted Call Blocked";;
+            MSG) DESC="Message";
+		         DATE=`date '+%m/%d/%Y'`;
+		         TIME=`date '+%H:%M'`;;
+              *) DESC='New Call Type: \(${TYPE}\)';;
         esac
         found=1
         break
@@ -184,28 +185,38 @@ done
 # exit if call type is unknown
 [ -z "$found" ] && exit 1
 
+if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
+then
+    NAME="$VAR2"
+    MESG="$VAR1"
+    notify_event[2]='$MESG'
+    notify_notification[1]='$MESG'
+else
+    NAME="$VAR1"
+fi
+
 # determine if url should be used
-[ "$notify_url" -a "$CIDTYPE" = "CID" ] && \
+[ "$notify_url" -a "$TYPE" = "CID" ] && \
 {
     # no safeguard for number being word(s)
     # set clickable url to the url + raw number
-    rawnum=${CIDNMBR//-/}
+    rawnum=${NMBR//-/}
     clickable_url=$notify_url$rawnum
 }
 
-[ "$CIDTIME" -a "$notify_clock" = "12" ] && \
+[ "$TIME" -a "$notify_clock" = "12" ] && \
 {
     # convert time from 24 hour format to 12 hour format
-    hour=${CIDTIME/:*/}
-    minute=${CIDTIME/*:/}
+    hour=${TIME/:*/}
+    minute=${TIME/*:/}
     [ -z "$hour" ] && { hour=12 ampm=PM; }
     [ $hour -gt 11 ] && { hour=$(($hour - 12)); ampm=PM; } || ampm=AM
     notify_time="$hour:$minute $ampm"
-} || notify_time=$CIDTIME
+} || notify_time=$TIME
 
-# reset CIDTIME to $notify_time so the 'eval' below will use the newly
+# reset TIME to $notify_time so the 'eval' below will use the newly
 # reformatted 12 hour time
-CIDTIME=$notify_time
+TIME=$notify_time
 
 # send notification
 count=0

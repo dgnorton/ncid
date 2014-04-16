@@ -36,7 +36,7 @@ struct setword setword[] = {
     {"cidnoname",  WORDNUM,            0,          &cidnoname, OFF, ON},
     {"datalog",    WORDSTR,            &datalog,   0,          0,    0},
     {"gencid",     WORDNUM,            0,          &gencid,    OFF, ON},
-    {"hangup",     WORDNUM,            0,          &hangup,    OFF, ON},
+    {"hangup",     WORDNUM,            0,          &hangup,    0,    2},
     {"ignore1",    WORDNUM,            0,          &ignore1,   OFF, ON},
     {"initcid",    WORDSTR | WORDFLAG, &initcid,   &setcid,    0,    0},
     {"initstr",    WORDSTR,            &initstr,   0,          0,    0},

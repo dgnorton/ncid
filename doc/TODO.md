@@ -1,4 +1,4 @@
-Last edited: Tue Dec 31, 2013
+Last edited: Sun Feb 9, 2014
 
 ## <a name="todo_top"></a>TODO
 
@@ -6,8 +6,8 @@ Last edited: Tue Dec 31, 2013
 
 ### TODO Lists
 
-> [TODO](#todo_definitely)  
-  [Maybe](#todo_maybe)
+> * [TODO](#todo_definitely)
+  * [Maybe](#todo_maybe)
 
 ### <a name="todo_definitely"></a>The TODO list (in no particular order)
 

@@ -17,11 +17,11 @@ NOTLOG: PHONE 05b6: SMS from 999999
 
 MSG: Too many clients connected: 25 
 
-MSG: check out http://ncid.sourceforge.net
+MSG: check out http://ncid.sourceforge.net ***DATE*04102014*TIME*0515*NAME*-*NMBR*-*LINE*localhost*
 
-NOT: PHONE 05b6: SMS from smsbot@example.com
+NOT: Battery Low: 15% ***DATE*04102014*TIME*0633*NAME*-*NMBR*-*LINE*SPH-L710*
 
-NOT: PHONE 05b6: BATTERY NOT charging, remaining charge: 98%
+NOT: PHONE 05b6: BATTERY NOT charging, remaining charge: 98% ***DATE*04032014*TIME*1412*NAME*NONAME*NMBR*NONMBR*LINE*05b6*
 
 OUT: *DATE*07142011*TIME*0905*LINE*VOIP*NMBR*12345*MESG*NONE*NAME*NO NAME*
 

@@ -3,12 +3,17 @@
 # ncidutil - Perform various operations on the alias, black list
 #            and white list files.  Designed to be called by the
 #            server in response to client requests.
-
+#
 # Created by Steve Limkemann on Sat Mar 23, 2013
+#
+# Copyright (c) 2013-2014 by
+#   Steve Limkemann
+#   John L. Chmielewski <jlc@users.sourceforge.net>
 
 use strict;
 use warnings;
 use Pod::Usage;
+use File::Basename;
 use Getopt::Long qw(:config no_ignore_case_always);
 
 my ($filename, $filename1, $list, $action, $item, @tag, $tagged, $where);
@@ -16,21 +21,25 @@ my ($found, $finished, $sep, $alias, $comment, $extra, $type, $name);
 my ($multiple, $blacklist, $whitelist, $filein, $fileout, $nmbr, $quote);
 my ($aliasType, $listType, $search, $replace);
 
+my $prog = basename($0);
+my $VERSION = "(NCID) XxXxX";
+
 my @listTypes = ('Alias', 'Blacklist', 'Whitelist', 'UNKNOWN');
 my @aliasNo= ('NOALIAS');
 my @aliasTypes = ('NOALIAS', 'NAMEDEP', 'NMBRDEP', 'NMBRNAME', 'NMBRONLY', 'NAMEONLY', 'LINEONLY', 'UNKNOWN');
 
 @tag = ('', '##############', '# Auto Added #', '##############', '');
 
-my ($help, $man);
+my ($help, $man, $version);
 
 Getopt::Long::Configure ("bundling");
 my ($result) = GetOptions(
     'help|h'        => \$help,
     'man|m'         => \$man,
-    'multi=s'        => \$multiple
+    'multi=s'       => \$multiple,
+    'version|V'     => \$version
  ) || pod2usage(2);
-
+die "$prog $VERSION\n" if $version;
 pod2usage(-verbose => 2, -exitval => 0) if $man;
 pod2usage(-verbose => 1, -exitval => 0) if $help || scalar @ARGV < 4;
 
@@ -62,6 +71,7 @@ if ($list eq 'Alias') {
     foreach $aliasType (@aliasNo) {
         die "Unsupported alias type: \"$type\"" if $aliasType eq $type;
     }
+
     if ($type eq 'NAMEDEP' || $type eq 'NMBRONLY') {
        $search = $nmbr;
     } else { $search = $name; }
@@ -127,18 +137,17 @@ while (<INPUT>) {
                 die "Entry is already present.\n";
             }
             if ($action eq 'modify') {
-                $replace = $search;
                 if ($type eq 'NAMEDEP') {
-                    $_ = "alias NAME * = \"$alias\" if \"$nmbr\"";
+                    $_ = "alias NAME * = \"$alias\" if \"$search\"";
                 }
                 elsif ($type eq 'NMBRDEP') {
-                    $_ = "alias NMBR * = \"$alias\" if \"$name\"";
+                    $_ = "alias NMBR * = \"$alias\" if \"$search\"";
+                }
+                elsif ($type eq 'NMBRNAME') {
+                    $_ = "alias \"$search\" = \"$alias\"";
                 }
                 else {
-                    $quote = "\"$replace\"";
-                    $replace = $quote if /$quote/;
-                    $alias = "\"$alias\"";
-                    s/$replace/$alias/;
+                    $_ = "alias $type \"$search\" = \"$alias\"";
                 }
                 print OUTPUT "$_\n";
                 $finished = 1;
@@ -192,7 +201,7 @@ if ($action eq 'add') {
 
 =head1 NAME
 
-cidutil - add or modify entries in the alias, blacklist, and whitelist files
+ncidutil - add or modify entries in the alias, blacklist, and whitelist files
 
 =head1 SYNOPSIS
 
@@ -247,29 +256,32 @@ The type of list: Alias, Blacklist, Whitelist
 
 add, mofify, remove
 
- for list = Alias: add, remove, or modify
+ for list = Alias:     add, remove, or modify
  for list = Blacklist: add or remove
  for list = Whitelist: add or remove
 
 =item <item>
 
-For an alias, type is either "number&&alias" or "number&&".
+ For list = Alias,     item = "number&&alias".
+ For list = Blacklist, item = "number|name&&".
+ For list = Whitelist, item = "number|name&&".
+
 Quotes are required.
 
  number is the number in the call file
  alias is from the user
-
-For list = Blacklist or Whitelist, item is either a number or name.
+ name is the name in the call file
 
 =item <extra>
 
-For list = Alias,  extra is "type&&name".
+ For list = Alias,     extra is "type&&name".
+ For list = Blacklist, extra is a optional "comment".
+ For list = Whitelist, extra is a optional "comment".
+
 Quotes are required.
 
  type is the alias type
  name is the name in the call file
-
-For a blacklist or whitelist file, extra is a comment.
 
 =back
 

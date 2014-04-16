@@ -1,4 +1,4 @@
-Last edited: Mon Dec 30, 2013 
+Last edited: Sun Mar 9, 2014 
 
 ## <a name="instl_rasp_top"></a>Raspbian Install
 
@@ -8,8 +8,10 @@ Last edited: Mon Dec 30, 2013
 [Raspbian OS]: http://www.raspbian.org/
 
 > If NCID does not work, see [INSTALL](#instl_generic_top) for some simple tests.  
+
   If using sip2ncid, see [sip2ncid setup](#gateways_sip).  
-  If using wc2ncid, see [wc2ncid setup](#gateways_wc).
+  If using wc2ncid, see [wc2ncid setup](#gateways_wc).  
+  If using yac2ncid, see [yac2ncid setup](#gateways_yac).
 
 > [Table of Contents](#doc_top)
 
@@ -25,7 +27,8 @@ Last edited: Mon Dec 30, 2013
 ### <a name="instl_rasp_comp"></a>COMPILE:
 
 > The following packages are required:
-> - sudo apt-get install libpcap0.8\*
+
+          sudo apt-get install libpcap0.8\*
     
 > See INSTALL for compile instructions
 
@@ -39,33 +42,41 @@ Last edited: Mon Dec 30, 2013
   are optional output modules in their own DEB packages.
 
 > - Update the apt cache:
-      sudo apt-get update
+
+          sudo apt-get update
 
 > - List the available packages:  
-    sudo apt-cache search ncid
+
+          sudo apt-cache search ncid
 
 > - Install the server and client:  
-    sudo apt-get install ncid ncid-client
+
+          sudo apt-get install ncid ncid-client
 
 > - Install any optional output modules wanted:  
-    sudo apt-get install ncid-<module>
+
+          sudo apt-get install ncid-<module>
 
 > If the latest packages are not available at the repository:
 
 > - Download the latest NCID deb packages from sourceforge  
-    ncid DEB Package  
-    ncid-client DEB Package - client and default output modules
 
-> For example, to download ncid and ncid-client version 0.87
->> wget http://sourceforge.net/projects/ncid/files/ncid/0.87/ncid_0.87-1_armhf.deb  
-   wget http://sourceforge.net/projects/ncid/files/ncid/0.87/ncid_0.87-1_all.deb
+          ncid DEB Package  
+          ncid-client DEB Package - client and default output modules
+
+> For example, to download ncid and ncid-client version 0.89
+
+        wget http://sourceforge.net/projects/ncid/files/ncid/0.89/ncid_0.89-1_armhf.deb  
+        wget http://sourceforge.net/projects/ncid/files/ncid/0.89/ncid_0.89-1_all.deb
 
 > - Download any optional output modules wanted:  
-    ncid-MODULE DEB Package  - optional client output modules
+
+          ncid-MODULE DEB Package  - optional client output modules
 
 > Use gdebi to install the local NCID packages and dependent packages.  
-  Using "sudo dpkg -i < package >" will not install dependent packages.  
-  Using "sudo apt-get install < package >" will not install local packages.
+
+        Using "sudo dpkg -i < package >" will not install dependent packages.  
+        Using "sudo apt-get install < package >" will not install local packages.
 
 > - Install or Upgrade the packages using gdebi-gtk (GUI):
     + If needed use the the menu item "Add/Remove.." to install the
@@ -77,18 +88,27 @@ Last edited: Mon Dec 30, 2013
         "Open with GDebi Package installer"
 
 > - Install or Upgrade the packages using gdebi (command line):
-    + Install gdebi if needed:  
-      sudo apt-get install gdebi    
-    + Install the NCID server and gateways:  
-      sudo gdebi ncid-<version>_armhf.deb
-    + Install the client package and default modules:  
-      sudo gdebi ncid-client-<version>_all.deb
-    + Install any optional modules wanted:  
-      sudo gdebi ncid-<module-<version>_all.deb
+
+>> - Install gdebi if needed:  
+
+              sudo apt-get install gdebi    
+
+>> - Install the NCID server and gateways:  
+
+              sudo gdebi ncid-<version>_armhf.deb
+
+>> - Install the client package and default modules:  
+
+              sudo gdebi ncid-client-<version>_all.deb
+
+>> - Install any optional modules wanted:  
+
+              sudo gdebi ncid-<module-<version>_all.deb
 
 > #### Notes:  
->> < version > would be something like: 0.87-1  
-   < module > would be a module name like: kpopup, mythtc, samba
+
+        < version > would be something like: 0.89-1  
+        < module > would be a module name like: kpopup, mythtc, samba
 
 ### <a name="instl_rasp_conf"></a>CONFIGURE:
 
@@ -97,55 +117,64 @@ Last edited: Mon Dec 30, 2013
 > - The default modem port in ncidd is /dev/modem.  This is just a
     symbolic link to the real modem port. It is probably best to
     set your modem port in ncidd.conf.  This assumes serial port 1:  
-    set ttyport = /dev/ttyACM0
+
+          set ttyport = /dev/ttyACM0
 
 > - If you are using a SIP or YAC gateway instead of a local modem,
     you need to set noserial to 1:  
-    set noserial = 1
+
+          set noserial = 1
 
 > - If you are using a local modem with or without a SIP or YAC gateway:  
-    set noserial = 0  (this is the default)
+
+          set noserial = 0  (this is the default)
 
 ### <a name="instl_rasp_fs"></a>FIRST STARTUP:
 
 > - if you are running the server and client on the same computer
       and using a modem:
-        sudo invoke-rc.d ncidd start
-        ncid &
+
+          sudo invoke-rc.d ncidd start
+          ncid &
 
 > - If you are running the server and using a SIP gateway:
-        sudo invoke-rc.d ncidd start
-        sudo invoke-rc.d sip2ncid start
-        ncid &
+
+          sudo invoke-rc.d ncidd start
+          sudo invoke-rc.d sip2ncid start
+          ncid &
 
 > - If you are running the server and using a Whozz Calling gateway:
-      You need to install the Data::HexDump Perl module using cpan
-        cpan
-          interactive mode, first use will enter configure
-          configure as much as possible automatically
-          choose sudo from: (Choose 'local::lib', 'sudo' or 'manual')
-          automatically choose some CPAN mirror
-          when configure finished, it displays the cpan prompt: cpan[1]>
-        install Data::HexDump
-        quit (quits cpan)
-        sudo invoke-rc.d ncidd start
-        sudo invoke-rc.d wc2ncid start
-        ncid &
+      You need to install the Data::HexDump Perl module using cpan:
+
+          cpan
+            interactive mode, first use will enter configure
+            configure as much as possible automatically
+            choose sudo from: (Choose 'local::lib', 'sudo' or 'manual')
+            automatically choose some CPAN mirror
+            when configure finished, it displays the cpan prompt: cpan[1]>
+          install Data::HexDump
+          quit (quits cpan)
+          sudo invoke-rc.d ncidd start
+          sudo invoke-rc.d wc2ncid start
+          ncid &
 
 > - If you are running the server and using a YAC gateway:
->> sudo invoke-rc.d ncidd start  
-   sudo invoke-rc.d yac2ncid start  
-   ncid &
+
+          sudo invoke-rc.d ncidd start  
+          sudo invoke-rc.d yac2ncid start  
+          ncid &
 
 > - Call yourself and see if it works, if not,
 
->   + stop the gateway used:  
-      sudo invoke-rc.d sip2ncid stop
+>> + stop the gateway used:  
 
->   + stop the server:  
-      sudo invoke-rc.d ncidd stop
+              sudo invoke-rc.d sip2ncid stop
 
->   + and continue reading the test sections.
+>> + stop the server:  
+
+              sudo invoke-rc.d ncidd stop
+
+>> + and continue reading the test sections.
 
 > - If everything is OK, enable the NCID server, gateways, and
     client modules, your are using, to autostart at boot.  The
@@ -166,13 +195,29 @@ Last edited: Mon Dec 30, 2013
 
 > Here are some examples:
 
-> - start the NCID server: sudo invoke-rc.d ncidd start
-   - stop the ncid2sip server: sudo invoke-rc.d sip2ncid stop
-   - reload the server alias file: sudo invoke-rc.d ncidd reload
-   - start ncid with ncid-page: sudo invoke-rc.d ncid-page start
-   - status of ncid with ncid-speak: sudo invoke-rc.d ncid-speak status
+> - start the NCID server:
 
-> Review the man page (man invoke-rc.d).
+          sudo invoke-rc.d ncidd start
+
+> - stop the ncid2sip server:
+
+          sudo invoke-rc.d sip2ncid stop
+
+> - reload the server alias file:
+
+          sudo invoke-rc.d ncidd reload
+
+> - start ncid with ncid-page:
+
+          sudo invoke-rc.d ncid-page start
+
+> - status of ncid with ncid-speak:
+
+          sudo invoke-rc.d ncid-speak status
+
+> Review the man page:
+
+        man invoke-rc.d
 
 ### <a name="instl_rasp_as"></a>AUTOSTART:
 
@@ -180,7 +225,14 @@ Last edited: Mon Dec 30, 2013
 
 > Here are some examples:
 
-> - start ncidd at boot: sudo update-rc.d ncidd defaults
-  - start ncid-page at boot: sudo update-rc.d ncid-page defaults
+> - start ncidd at boot:
 
-> Review the man page (man update-rc.d).
+          sudo update-rc.d ncidd defaults
+
+> - start ncid-page at boot:
+
+          sudo update-rc.d ncid-page defaults
+
+> Review the man page:
+
+        man update-rc.d

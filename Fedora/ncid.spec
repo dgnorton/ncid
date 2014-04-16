@@ -1,5 +1,5 @@
 Name:       ncid
-Version:    0.88
+Version:    0.89
 Release:    1%{?dist}
 Summary:    Network Caller ID server, client, and gateways
 
@@ -103,7 +103,7 @@ rm -fr $RPM_BUILD_DIR/%{name}
 %defattr(-,root,root)
 %doc README VERSION doc/LICENSE doc/Makefile doc/NCID-SDK.odt
 %doc doc/NCID_Documentation.md doc/ncid-1.jpg doc/README.docdir
-%doc doc/ReleaseNotes man/README.mandir Fedora/README.Fedora
+%doc doc/ReleaseNotes.md man/README.mandir Fedora/README.Fedora
 %doc server/README.server gateway/README.gateways attic/README.attic
 %doc logrotate/README.logrotate tools/README.tools
 %{_bindir}/cidcall
@@ -337,6 +337,9 @@ if [ "$1" -ge "1" ]; then ### upgrade package ###
 fi
 
 %changelog
+
+* Tue Apr 8 2014 John Chmielewski <jlc@users.sourceforge.net> 0.89-1
+- new release
 
 * Wed Nov 20 2013 John Chmielewski <jlc@users.sourceforge.net> 0.88-1
 - changed documentation files in doc/

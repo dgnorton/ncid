@@ -167,9 +167,11 @@ and "No Caller ID" for the name.
 .br
 Default: gencid = 1
 .TP
-.B -H <0|1> | --hangup <0|1>
-Automatically hangup up a telephone if the caller name or number is in
+.B -H <0|1|2> | --hangup <0|1>
+Automatically hangup up on a call if the caller name or number is in
 the ncidd.blacklist file.  A hangup text line is sent to the clients.
+If hangup is set to 1, ncidd will do a normal hangup.  If hangup is set
+to a 2, ncidd will answer the call as a FAX, then hangup.
 .br
 Default: hangup = 0
 .TP

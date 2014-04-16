@@ -1,4 +1,4 @@
-Last edited: Tue Dec 31, 2013
+Last edited: Sun Feb 9, 2014
 
 ## <a name="getstarted_top"></a>Getting Started
 
@@ -12,7 +12,7 @@ Last edited: Tue Dec 31, 2013
 > In this document:
 
 > - NCID is the package name
-> - ncidd is the server name  
+> - ncidd is the server name
 > - ncid is the client name
 > - Unix is a generic term to mean any UNIX-like or Linux-like
     operating system, e.g., Fedora, FreeBSD, Mac OS X, Debian, etc.
@@ -20,10 +20,10 @@ Last edited: Tue Dec 31, 2013
 
 ### Getting Started Index
 
-> [Install the NCID package](#getstarted_pkg)  
-> [Configure the ncidd server](#getstarted_cs)  
-> [Configure the ncid client](#getstarted_cc)  
-> [NCID startup](#getstarted_ns)
+> * [Install the NCID package](#getstarted_pkg)
+> * [Configure the ncidd server](#getstarted_cs)
+> * [Configure the ncid client](#getstarted_cc)
+> * [NCID startup](#getstarted_ns)
 
 ### <a name="getstarted_pkg"></a>Install the NCID package
 
@@ -53,7 +53,7 @@ Last edited: Tue Dec 31, 2013
 
 > Now that you have installed NCID, you need to configure the method used
   to obtain Caller ID:
-  
+
   > - [a Caller ID modem connected to a Unix computer](#getstarted_modem)
   > - [the serial NetCallerID device connected to a Unix computer](#getstarted_netc)
   > - [a Caller ID modem on a Windows computer via the NCID YAC 
@@ -63,8 +63,8 @@ Last edited: Tue Dec 31, 2013
   > - [Whozz Calling (WC) Ethernet Link network device via the NCID WC 
       gateway](#getstarted_wc)
   > - [an Android smart phone via the NCID Remote Notifier (RN) gateway](#getstarted_rn)
-  
-  
+
+
 > ####  <a name="getstarted_modem"></a> **Using a modem connected to a Unix computer**
 
 >> Most modern modems support Caller ID but to determine if yours does follow
@@ -74,16 +74,15 @@ Last edited: Tue Dec 31, 2013
    by editing **ncidd.conf** and either uncomment one of these lines, 
    or add a line with the correct port:
 
->>> **# The default tty port: /dev/modem**  
-    **# set ttyport = /dev/cu.modem # default Mac OS X internal modem**  
-    **# set ttyport = /dev/cu.usbmodem24680241 # Mac OS X USB 
-        modem (DualComm, Zoom)**  
-    **# set ttyport = /dev/ttyS0 # Linux Serial Port 0**  
-    **# set ttyport = /dev/ttyACM0 # Linux USB modem 0**
+            # The default tty port: /dev/modem
+            # set ttyport = /dev/cu.modem # default Mac OS X internal modem
+            # set ttyport = /dev/cu.usbmodem24680241 # Mac OS X USB modem (DualComm, Zoom)
+            # set ttyport = /dev/ttyS0 # Linux Serial Port 0
+            # set ttyport = /dev/ttyACM0 # Linux USB modem 0
 
 >> If you wish to use the hangup feature, you need to uncomment this line:
 
->>> **# set hangup = 1**
+            # set hangup = 1
 
 >> After modifying **ncidd.conf**, ncidd must be started.
 
@@ -101,11 +100,11 @@ Last edited: Tue Dec 31, 2013
 
 >> Uncomment this line:
 
->>> **# set nomodem = 1**
+            # set nomodem = 1
 
 >> Leave this line commented:
 
->>> **# set hangup = 1**
+            # set hangup = 1
 
 >> After modifying **ncidd.conf**, ncidd must be started.
 
