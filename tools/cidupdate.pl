@@ -97,13 +97,13 @@ foreach $cidlog (@log_files) {
             foreach $alias (@aliases) {
                 ($type, $from, $to, $value) = @$alias;
                 if ($type eq "NAME" && $value) {
-                    if (strmatch($value, $number)&& !strmatch($name, $to)) {
+                    if (strmatch($value, $number) && !strmatch($name, $to)) {
                         record_change ("1 Changed \"$name\" to \"$to\" for $number", $cidlog);
                         $name = $to;
                     }
                 }
                 elsif ($type eq "NAME") {
-                    if (strmatch($from, $name)) {
+                    if (strmatch($from, $name) && !strmatch($name, $to)) {
                         record_change ("3 Changed \"$name\" to \"$to\"", $cidlog);
                         $name = $to;
                     }
@@ -115,23 +115,23 @@ foreach $cidlog (@log_files) {
                     }
                 }
                 elsif ($type eq "NMBR") {
-                    if (strmatch($from, $number)) {
+                    if (strmatch($from, $number) && !strmatch($number, $to)) {
                         record_change ("4 Changed \"$number\" to \"$to\"", $cidlog);
                         $number = $to;
                     }
                 }
                 if ($type eq "LINE") {
-                    if (strmatch($from, $line)) {
+                    if (strmatch($from, $line) && !strmatch($line, $to)) {
                         record_change ("5 Changed \"$line\" to \"$to\"", $cidlog);
                         $line = $to;
                     }
                 }
                 if ($type eq "NMBRNAME") {
-                    if (strmatch($from, $name)) {
+                    if (strmatch($from, $name) && !strmatch($name, $to)) {
                         record_change ("6 Changed \"$name\" to \"$to\"", $cidlog);
                         $name = $to;
                     }
-                    if (strmatch($from, $name)) {
+                    if (strmatch($from, $number) && !strmatch($number, $to)) {
                         record_change ("7 Changed \"$number\" to \"$to\"", $cidlog);
                         $number = $to;
                     }
