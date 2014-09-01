@@ -91,6 +91,7 @@ set NoExit      0
 set WakeUp      0
 set ExitOn      exit
 set AltDate     0
+set preClient_1_0  0
 
 ###  global variables that only can be changed by the configuration file
 set ProgDir     /usr/local/share/ncid
@@ -135,8 +136,8 @@ set Count       0
 set ExecSh      0
 set Socket      0
 set Try         0
-set Version     "(NCID) XxXxX"
-set VersionInfo "Client: ncid $Version"
+set Version     "ncid (NCID) XxXxX"
+set VersionInfo "Client: $Version"
 set Usage       {Usage:   ncid  [OPTS] [ARGS]
          OPTS: [--no-gui]
                [--alt-date               | -A]                      
@@ -590,7 +591,6 @@ proc getCID {} {
                         ($Ring == -9 && $ringinfo > 1))} {
                       sendCID $call($lineinfo)
                       doVerbose "$dataBlock" 1
-                      doVerbose "Sent $Program: $call($lineinfo)" 1
                     } else { doVerbose "$dataBlock" 5 }
                   }
                 } else {
@@ -606,12 +606,11 @@ proc getCID {} {
                 displayLog $msg 1
                 if {$label == 4} {
                     if {!$NoGUI} {
-                        displayCID "[lindex $msg 6]\n" 1
+                        displayCID "[lindex $msg 7]\n" 1
                         doPopup
                     }
                     if {$Program != ""} {
                         sendMSG $msg
-                        doVerbose "Sent $Program $msg" 1
                     }
                 }
             } elseif {$label == 1 || $label == 2} {
@@ -624,27 +623,21 @@ proc getCID {} {
                 set cid [formatCID $dataBlock]
                 if {$label == 1} {array set call "$lineLabel [list $cid]"}
                 # display log
-                # $cid set above, no need for $call($lineLabel)
                 displayLog $cid 0
                 # display CID
                 if {!$NoGUI} {
-                    # $cid set above, no need for $call($lineLabel)
                     displayCID $cid 0
                     doPopup
                 }
-                # $cid set above, no need for $call($lineLabel)
                 if {(!$CallOnRing || $Ring == -9) && $Program != ""} {
                     sendCID $cid
-                    doVerbose "Sent $Program: $cid" 1
                 }
             } elseif {$label == 6} {
                 # CIDLOG, HUPLOG, OUTLOG, BLKLOG, PIDLOG
                 set cid [formatCID $dataBlock]
-                array set call "$lineLabel [list $cid]"
                 # display log
-                # $cid set above, no need for $call($lineLabel)
                 displayLog $cid 0
-                if {$targetTime && [clock clicks -milliseconds] >= $targetTime} {
+                if {!$NoGUI && $targetTime && [clock clicks -milliseconds] >= $targetTime} {
                     set targetTime [expr [clock clicks -milliseconds] + 500]
                     .vh insert 3.end "."
                     update idletasks
@@ -732,6 +725,7 @@ proc checkType {dataBlock} {
 }
 
 # must be sure the line passed checkType
+# returns: $ciddate $cidtime $cidnumber $cidname $cidline $linetype "" ""
 proc formatCID {dataBlock} {
     global lineLabel lineLabelWidth
 
@@ -755,18 +749,18 @@ proc formatCID {dataBlock} {
     # make default line indicator a blank
     regsub {^-( *)$} $cidline {\1 } cidline
     # set type of call
-    if {![regsub {(\w+)LOG:.*} $dataBlock {\1} cidtype]} {
-        regsub {(\w+):.*} $dataBlock {\1} cidtype
+    if {![regsub {(\w+)LOG:.*} $dataBlock {\1} linetype]} {
+        regsub {(\w+):.*} $dataBlock {\1} linetype
     }
 
-    set cidmisc ""
-    return [list $ciddate $cidtime $cidnumber $cidname $cidline $cidtype $cidmisc]
+    return [list $ciddate $cidtime $cidnumber $cidname $cidline $linetype "" ""]
 }
 
+# returns: $msgdate $msgtime $msgnumber $msgname $msgline $linetype $mesgtype $message
 proc formatMSG {dataBlock} {
 
-if {![regsub {(\w+)LOG:.*} $dataBlock {\1} msgtype]} {
-        regsub {(\w+):.*} $dataBlock {\1} msgtype
+if {![regsub {(\w+)LOG:.*} $dataBlock {\1} linetype]} {
+        regsub {(\w+):.*} $dataBlock {\1} linetype
     }
 
     if {[regexp {\*\*\*DATE} $dataBlock]} {
@@ -775,14 +769,25 @@ if {![regsub {(\w+)LOG:.*} $dataBlock {\1} msgtype]} {
         set msgname [formatNAME $dataBlock]
         set msgnmbr [formatNMBR $dataBlock]
         set msgline [formatLINE $dataBlock]
-        regsub {\w+: (.*)\*\*\*DATE.*} $dataBlock {\1\2} message
-        set message [list $msgdate $msgtime $msgnmbr $msgname $msgline $msgtype $message]
+        set msgtype [formatMTYPE $dataBlock]
+        regsub {\w+: (.*)\*\*\*DATE.*} $dataBlock {\1\2} mesg
+        set message [list $msgdate $msgtime $msgnmbr $msgname $msgline $linetype $msgtype $mesg]
     } else {
-        regsub {\w+: (.*)} $dataBlock {\1} message
-        set message [list {} {} {} {} {} $msgtype $message]
+        regsub {\w+: (.*)} $dataBlock {\1} mesg
+        set message [list {} {} {} {} {} $linetype {} $mesg]
     }
 
     return $message
+}
+
+proc formatMTYPE {dataBlock} {
+    if {[regexp {\*\*\*DATE.*MTYPE} $dataBlock]} {
+        set msgtype [getField MTYPE $dataBlock]
+    } else {
+        set msgtype "NOTYPE"
+    }
+    set msgtype [format "%-7s " [lindex $msgtype]]
+    return $msgtype
 }
 
 proc formatLINE {dataBlock} {
@@ -837,6 +842,7 @@ proc formatTIME {dataBlock} {
 
 proc formatNAME {dataBlock} {
     set cidname [getField NAME $dataBlock]
+    if {$cidname == "-"} {set cidname "NONAME"}
     set cidname [format "%-18s " [lindex $cidname]]
     return $cidname
 }
@@ -845,6 +851,7 @@ proc formatNMBR {dataBlock} {
     global Country NoOne maxNumberWidth
 
     set cidnumber [getField NMBR $dataBlock]
+    if {$cidnumber == "-"} {set cidnumber "NONUMBER"}
     if {$Country  == "US"} {
     # https://en.wikipedia.org/wiki/North_American_Numbering_Plan
         if {![regsub \
@@ -982,63 +989,87 @@ proc convertTo24 {hours minutes AmPm} {
     return "$hours:$minutes"
 }
 
-# get a field from the CID data
+# get a field from the CID, MSG, or NOT data
 proc getField {dataString dataBlock} {
     regsub ".*\\*$dataString\\*" $dataBlock {} result
     regsub {(\**[\w\s-]*\**)\*.*} $result {\1} result
     return $result
 }
 
-# pass the CID information to an external program
-# Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype $cidmisc\n"
+# send the CID information to an external program
+# Input: $ciddate $cidtime $cidnumber $cidname $cidline $cidtype "" ""
 proc sendCID {cid} {
-    global Program
-    global TivoFlag
-    global ExecSh
-    global ProgDir
-    global WakeUp
+  global Program
+  global TivoFlag
+  global ExecSh
+  global ProgDir
+  global WakeUp
 
-      if $TivoFlag {
-        # pass NAME NUMBER\nLINE\n
-        catch {exec $Program << \
-          "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n" > @stdout} oops
-      } else {
-        # pass DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n
-        if $ExecSh {
-          catch {exec sh -c $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n[lindex $cid 6]\n > @stdout" &} oops
-        } else {
-          catch {exec $Program << \
-            "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n[lindex $cid 6]\n > @stdout" &} oops
-        }
-      }
+  set modcid "$cid"
+  if $TivoFlag {
+    # send NAME NUMBER\nLINE\n
+    set modtype "using a TiVo only module"
+    set modin "[lindex $cid 3] [lindex $cid 2]\n[lindex $cid 4]\n"
+    set modcid "[list [lindex $cid 3]] [list [lindex $cid 2]] [list [lindex $cid 4]]"
+    catch {exec $Program << "$modin" >@stdout} oops
+  } else {
+    # send DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMESG\nMTYPE\n
+    set modtype "using a module"
+    set modin "[lindex $cid 0]\n[lindex $cid 1]\n[lindex $cid 2]\n[lindex $cid 3]\n[lindex $cid 4]\n[lindex $cid 5]\n[lindex $cid 6]\n[lindex $cid 7]"
+    if $ExecSh {
+      catch {exec sh -c $Program << "$modin" >@stdout &} oops
+    } else {
+      catch {exec $Program << "$modin" >@stdout &} oops
+    }
+  }
+  doVerbose "$modtype\nSent $Program $modcid" 1
 }
 
 # pass the message to an external program
-# input: "$msgdate\n$msgtime\n$msgnumber\n$msgname\n$msgline\n$msgtype\n$msg\n"
+# input: $msgdate $msgtime $msgnumber $msgname $msgline $msgtype $mtype $msg
 proc sendMSG {msg} {
   global Program
   global TivoFlag
   global ExecSh
+  global preClient_1_0
 
+  set mesg "$msg"
   if $TivoFlag {
     # send "$msg\n"
-    catch {exec [lindex $Program 0] << "[lindex $msg 6\n" > @stdout} oops
+    set modtype "using a TiVo only module"
+    set modin "[lindex $msg 7]\n"
+    set mesg [list [lindex $msg 7]]
+    catch {exec $Program << "$modin" >@stdout} oops
   } else {
-    # send "\n\n\n$msg\n\n$msgtype\n"
-    if $ExecSh {
-      catch {exec sh -c $Program << \
-        "[lindex $msg 0]\n[lindex $msg 1]\n[lindex $msg 2]\n[lindex $msg 6]\n[lindex $msg 4]\n[lindex $msg 5]\n[lindex $msg 3]\n > @stdout" &} oops
+    if $preClient_1_0 {
+      # send "\n\n\nMESG\n\nTYPE\n"
+      set modtype "using a preClient 1.0 module"
+      set modin "[lindex $msg 0]\n[lindex $msg 1]\n[lindex $msg 2]\n[lindex $msg 6]\n[lindex $msg 4]\n[lindex $msg 5]\n[lindex $msg 3]\n"
+      set mesg [lreplace $mesg 3 3 [lindex $msg 7]]
+      set mesg [lreplace $mesg 7 7 [lindex $msg 3]]
+      if $ExecSh {
+        catch {exec sh -c $Program << "$modin" >@stdout &} oops
+      } else {
+        catch {exec $Program << "$modin" >@stdout &} oops
+      }
     } else {
-      catch {exec $Program << \
-        "[lindex $msg 0]\n[lindex $msg 1]\n[lindex $msg 2]\n[lindex $msg 6]\n[lindex $msg 4]\n[lindex $msg 5]\n[lindex $msg 3]\n > @stdout" &} oops
+      # send "DATE\nTIME\nNMBR\nNAME\nLINE\nTYPE\n\MESG\nMTYPE\n"
+      set modtype "usin a module that is not preClient 1.0"
+      set modin "[lindex $msg 0]\n[lindex $msg 1]\n[lindex $msg 2]\n[lindex $msg 3]\n[lindex $msg 4]\n[lindex $msg 5]\n[lindex $msg 7]\n[lindex $msg 6]\n"
+      set mesg "[list [lindex $msg 0]\n[lindex $msg 1]\n[lindex $msg 2]\n[lindex $msg 3]\n[lindex $msg 4]\n[lindex $msg 5]\n[lindex $msg 7]\n[lindex $msg 6]]\n"
+      if $ExecSh {
+        catch {exec sh -c $Program << "$modin" >@stdout &} oops
+      } else {
+        catch {exec $Program << "$modin" >@stdout &} oops
+      }
     }
   }
+  doVerbose "$modtype\nSent $Program $mesg" 1
 }
 
 # display CID information or message
-# Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype\n"
-#        "$msgdate $msgtime $msgnumber $msgname $msgline $msgtype mesage line"
+# Input: $ciddate $cidtime $cidnumber $cidname $cidline $type "" ""
+#        $msgdate $msgtime $msgnumber $msgname $msgline $type mesage msgio
 # ismsg = 0 for CID and 1 for message
 proc displayCID {cid ismsg} {
     global Txt
@@ -1051,20 +1082,20 @@ proc displayCID {cid ismsg} {
 }
 
 # display Call Log
-# Input: "$ciddate $cidtime $cidnumber $cidname $cidline $cidtype\n"
-# Input: "$msgdate $msgtime $msgnumber $msgname $msgline $msgtype message"
+# Input: $ciddate $cidtime $cidnumber $cidname $cidline $linetype "" ""
+# Input: $msgdate $msgtime $msgnumber $msgname $msgline $linetype $msgtype message
 proc displayLog {cid ismsg} {
     global Program
     global NoGUI
     global display_line_num doingLog
-    
+
     if $NoGUI {
         if {$Program == ""} {
             if $ismsg {
                 if {[lindex $cid 1] eq {}} {
-                    puts "[lindex $cid 5]: [lindex $cid 6]"
+                    puts "[lindex $cid 6]: [lindex $cid 7]"
                 } else {
-                    puts "[lindex $cid 5]: [lindex $cid 0]  [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3] [lindex $cid 6]"
+                    puts "[lindex $cid 5]: [lindex $cid 0]  [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3] [lindex $cid 6] [lindex $cid 7]"
                 }
             } else {
                 puts "[lindex $cid 5]: [lindex $cid 0]  [lindex $cid 1] [lindex $cid 4] [lindex $cid 2] [lindex $cid 3]"
@@ -1075,21 +1106,23 @@ proc displayLog {cid ismsg} {
         incr display_line_num
         if {! $doingLog} {.vh configure -state normal}
         if {[lindex $cid 1] eq {}} {
-            .vh insert end "\n[lindex $cid 5]: " purple [lindex $cid 6] black
+            .vh insert end "\n[lindex $cid 5]: " purple [lindex $cid 7] black
         } else {
             set ciddate [lindex $cid 0]
             set cidtime [lindex $cid 1]
             set cidnmbr [lindex $cid 2]
             set cidname [lindex $cid 3]
             set cidline [lindex $cid 4]
-            set cidtype [lindex $cid 5]
+            set linetype [lindex $cid 5]
 
-            .vh insert end "\n$cidtype: " purple "$ciddate " \
+            .vh insert end "\n$linetype: " purple "$ciddate " \
                     blue "$cidtime " red "$cidline " purple "$cidnmbr " blue \
                     "$cidname" red
 
             if $ismsg {
-                .vh insert end [lindex $cid 6] black
+                set msgtype [lindex $cid 6]
+                set message [lindex $cid 7]
+                .vh insert end "$msgtype " blue $message black
             }
         }
         if {! $doingLog} {
@@ -1167,8 +1200,6 @@ proc getArg {} {
             {^--no-gui$} {set NoGUI 1}
             {^-A$} -
             {^--alt-date$} {set AltDate 1}
-            {^-C$} -
-            {^--classic-display$} {set Classic 1 # obsolete, can be removed}
             {^-D$} -
             {^--delay$} {
                 incr cnt
@@ -2082,6 +2113,7 @@ if {[catch {encoding system utf-8} msg]} {
 getArg
 
 doVerbose "$VersionInfo" 1
+doVerbose "Server address: $Host:$Port" 1
 doVerbose "Verbose Level: $Verbose" 1
 doVerbose "Config file: $ConfigFile" 1
 doVerbose "Delay between reconnect tries to the server: $Delay (seconds)" 1
@@ -2140,9 +2172,9 @@ if {$Program != ""} {
     doVerbose "Using output Module: $Program" 1
     # change module name from <path>/ncid-<name> to ncid_<name>
     regsub {.*-(.*)} $Program {ncid_\1} modopt
-    # if it exists, set the module option variable in $$modopt
+    # set the module option variable in $$modopt
     if {[catch {eval [subst $$modopt]} oops]} {
-        doVerbose "No optional \"$modopt\" variable in ncid.conf" 1
+        doVerbose "Bad variable in ncid.conf: \"$modopt\"" 1
     } else {
         regsub {.*set *(\w+)\s+.*} [eval concat $$modopt] {\1} modvar
         regsub {.*set *(\w+)\s+(\w+).*} [eval concat $$modopt] {\2} modval

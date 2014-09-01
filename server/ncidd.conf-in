@@ -21,7 +21,7 @@
 #   set ITEM = VALUE [ITEM = VALUE] ...
 #       where ITEM = blacklist, cidalias, cidlog, cidlogmax, cidname,
 #                    datalog, gencid, hangup, ignore1, initcid, initstr,
-#                    lineid, lockfile, nomodem, noserial,
+#                    pickup, lineid, lockfile, nomodem, noserial,
 #                    pidfile, port, send,
 #                    ttyclocal, ttyport, ttyspeed,
 #                    verbose whitelist
@@ -139,20 +139,33 @@ send cidinfo
 # The automatic call hangup requires a modem to hangup the call,
 # but works if ncidd is using either a modem or gateway to obtain
 # the Caller ID information.
-
+#
+# hangup = 0 Default: do not terminate a call
+#
 # Set hangup to a 1 if you would like ncidd to terminate a
 # call that has its name or number in a blacklist file but
 # not in a whitelist file.
 #
-# Set hangup to a 2 if you would like ncidd to pickup as a
-# FAX before terminating a call that has its name or number
-# in a blacklist file butnot in a whitelist file.
-#
-# hangup = 0 Default: do not terminate a call
-# hangup = 1          terminate a call if in the blacklist file
-# hangup = 2          answer as a FAX, then terminate if in the blacklist
-#
+# hangup = 1          terminate the call
 # set hangup = 1
+#
+# Set hangup to a 2 if you would like ncidd to pickup and generate
+# FAX tones before terminating a call that has its name or number
+# in a blacklist file butnot in a whitelist file.  Not all modems
+# support FAX and the server will switch to hangup = 1 if FAX
+# is not support and generate a warning in the server log file.
+#
+# hangup = 2          generate FAX tones, then terminate the call
+# set hangup = 2
+#
+# Modems that support FAX normally in require a pickup command before
+# sending the FAX command to start the FAX tones.  Some older modems
+# will not generate FAX tones if a pickup command is sent.  If no FAX
+# tones are heard, do not send the pickup command.
+#
+# pickup = 1 Default: send the pickup command
+# pickup = 0          do not send the pickup command
+# set pickup = 0
 
 # The default blacklist file: /usr/local/etc/ncid/ncidd.blacklist
 # set blacklist = /usr/local/etc/ncid/ncidd.blacklist
@@ -186,7 +199,9 @@ send cidinfo
 
 ## Required if noserial is set to 0 or hangup is set to 1
 
-# The default tty port: /dev/modem
+# The default tty port: /dev/modem (general build)
+#                       /dev/com1 (cygwin build )
+#                       /def/ttyACM0 (fedora, redhat, ubuntu builds)
 # set ttyport = /dev/cu.modem            # default Mac OS X internal modem
 # set ttyport = /dev/cu.usbmodem24680241 # Mac OS X USB modem (DualComm, Zoom)
 # set ttyport = /dev/ttyS0               # Linux Serial Port 0

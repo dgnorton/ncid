@@ -15,6 +15,10 @@ NOTLOG: PHONE 05b6: SMS from 999999
 250 end of call log
 300 end of server startup
 
+PID: *DATE*07232014*TIME*1010*LINE*Nexus 4-5143*NMBR*9415551540*MESG*NONE*NAME*Bobby*
+
+PID: *DATE*07232014*TIME*1030*LINE*Nexus 4-5143*NMBR*9415551540*MESG*NONE*NAME*Bobby*
+
 MSG: Too many clients connected: 25 
 
 MSG: check out http://ncid.sourceforge.net ***DATE*04102014*TIME*0515*NAME*-*NMBR*-*LINE*localhost*

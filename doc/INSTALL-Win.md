@@ -1,4 +1,4 @@
-Last edited: Sum Mar 23, 2014 
+Last edited: Sat May 10, 2014 
 
 ## <a name="instl_win_top"></a>Windows Install
 
@@ -23,7 +23,7 @@ Last edited: Sum Mar 23, 2014
 
 >>  where ?.? is the version number, for example:
 
-          ncid-0.89-setup.exe
+          ncid-1.0-setup.exe
 
 > - Configure ncid in the configure screen.  The default address is
     127.0.0.1, so you will need to change it to the address of your

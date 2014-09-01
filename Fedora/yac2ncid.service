@@ -1,5 +1,6 @@
 [Unit]
 Description=YAC to NCID Gateway
+Wants=ncidd.service
 After=ncidd.service
 
 [Service]

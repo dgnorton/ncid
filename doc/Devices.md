@@ -1,4 +1,4 @@
-Last edited: Wed Apr 16, 2014
+Last edited: Wed Jul 23, 2014
 
 ## <a name="devices_top"></a>Supported Devices
 
@@ -168,15 +168,21 @@ Last edited: Wed Apr 16, 2014
 >             To determine the proper INTERFACE for ettercap to use, `ifconfig` will show all available 
 >             interfaces. For example, wired ethernet is eth0 and wireless ethernet is wlan0 on Raspbian.
 
->             For Ubuntu, Raspbian and other Debian-based systems:
+>             Install ettercap if on Ubuntu, Raspbian and other Debian-based systems:
 
 >>                sudo apt-get install ettercap-text-only
->>                sudo ettercap -T -D -i <INTERFACE> -M arp:remote <IP-OF-SIP_ATA> <IP-OF-HOME-ROUTER>
 
->             For Fedora and other Redhat-based systems:
+>             Install ettercap if on Fedora and other Redhat-based systems:
 
 >>                sudo yum install ettercap
->>                sudo ettercap -T -D -i <INTERFACE> -M arp:remote <IP-OF-SIP_ATA> <IP-OF-HOME-ROUTER>
+
+>             Execute ettercap if using IPV6
+
+>>                sudo ettercap -T -D -i <INTERFACE> -M arp:remote /<IP-OF-SIP_ATA>/ /<IP-OF-HOME-ROUTER>/
+
+>             Execute ettercap if using IPV4
+
+>>                sudo ettercap -T -D -i <INTERFACE> -M arp:remote //<IP-OF-SIP_ATA>// //<IP-OF-HOME-ROUTER>//
 
 >             Follow the sip2ncid setup instructions to make sure that SIP packets are being received.
 

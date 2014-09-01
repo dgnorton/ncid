@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # Created by Chris Lenderman on March 25, 2010
-# Modified by jlc on Wed Aug 22, 2012
+# Last Modified by jlc on Sat Aug 30, 2014
 # Copyright 2010-2012
 #
 # This script simulates a TTY connection and sends modem CallerID data to NCIDD

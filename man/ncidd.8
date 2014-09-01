@@ -18,7 +18,7 @@
 [-d <file>       | --datalog <logfile>]
 [-e <identifier> | --lineid <identifier>]
 [-g <0|1>        | --gencid <0|1>]
-[-H <0|1>        | --hangup <0|1>]
+[-H <0|1|2>      | --hangup <0|1|2>]
 [-h              | --help]
 [-I <modemstr>   | --initstr <modemstr>]
 [-i <cidstr>     | --initcid <cidstr>]
@@ -93,7 +93,11 @@ If the Caller ID is obtained from a Gateway that supports automatic
 hangup, ncidd will send hangup call text lines to the clients.
 
 If the \fBhangup\fR option is configured, ncidd will automatically hangup the
-call and send hangup call text lines to the clients.
+call and send hangup call text lines to the clients. The \fBhangup\fR option
+has 2 modes; hangup and FAX hangup.
+If the \fBhangup\fR option is configured for FAX hangup, but the modem does
+not support FAX, \fBncidd\fR changes hangup from a FAX hangup to a normal
+hangup.  A hangup (HUP) text line is sent to the clients.
 .PP
 A client can send \fBncidd\fR a text message.  The text message
 is then send to all connected clients, including the one that sent it.
@@ -167,11 +171,12 @@ and "No Caller ID" for the name.
 .br
 Default: gencid = 1
 .TP
-.B -H <0|1|2> | --hangup <0|1>
+.B -H <0|1|2> | --hangup <0|1|2>
 Automatically hangup up on a call if the caller name or number is in
-the ncidd.blacklist file.  A hangup text line is sent to the clients.
-If hangup is set to 1, ncidd will do a normal hangup.  If hangup is set
-to a 2, ncidd will answer the call as a FAX, then hangup.
+the ncidd.blacklist file but not the ncidd.whitelist file.
+If hangup is set to 1, ncidd will hangup the call.  If hangup is set
+to 2, ncidd will generate FAX tones, then hangup the call.  If FAX
+mode does produce FAX tones try setting pickup = 0 in ncidd.conf.
 .br
 Default: hangup = 0
 .TP

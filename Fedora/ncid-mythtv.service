@@ -1,5 +1,6 @@
 [Unit]
 Description=NCID client using the MythTV Module
+Wants=ncidd.service
 After=ncidd.service
 
 [Service]

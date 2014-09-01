@@ -1,5 +1,6 @@
 [Unit]
 Description=NCID using the NMA Output Module
+Wants=ncidd.service
 After=ncidd.service
 
 [Service]

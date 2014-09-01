@@ -25,7 +25,8 @@
 #define CIDALIAS     "/etc/ncid/ncidd.alias"
 #endif
 
-#define ALIASSIZE    500
+#define ALIASSIZE    3000
+#define CIDSIZE      50
 #define NMBRNAME     0x01
 #define NMBRONLY     0x10
 #define NMBRDEP      0x11
@@ -43,17 +44,22 @@
 
 #define ERRIF        "missing 'if' before word:"
 #define ERRLONG      "word is too long:"
-#define ERRALIAS     "too many aliases"
 
-struct alias
+struct alias_info
 {
     int type;
     char *type_txt;
-    char *from;
-    char *to;
-    char *depend;
+    char from[CIDSIZE];
+    char to[CIDSIZE];
+    char depend[CIDSIZE];
+};
+
+struct alias
+{
+    struct alias_info info;
+    struct alias *next;
 };
 
 extern char *name, *cidalias;
-extern char *cpy2mem(), *findAlias();
+extern char *findAlias();
 extern void builtinAlias(), userAlias(), rmaliases();

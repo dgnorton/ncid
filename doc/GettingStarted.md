@@ -1,4 +1,4 @@
-Last edited: Sun Feb 9, 2014
+Last edited: Thu May 29, 2014
 
 ## <a name="getstarted_top"></a>Getting Started
 
@@ -37,13 +37,21 @@ Last edited: Sun Feb 9, 2014
   however, they are not always up-to-date with the latest version at
   SourceForge.
 
-> The first step is to download and install the NCID package that contains
-  the server, gateways, and client for your operating system.  If you are
-  using Fedora, Ubuntu, or Raspbian, you can download the rpm or deb package 
-  directly from SourceForge. There are many distributions based on Redhat or
-  Ubuntu so the Fedora or Ubuntu packages may install just fine. (For example,
-  Linux Mint is an operating system based on Ubuntu.) Refer to the 
-  **INSTALL-"operating system"** section for your "operating system".
+> The first step is to download and install the NCID server and client.
+  You can download the NCID packages from sourceforge or a repository
+  for your operating system if it is up to date.
+
+> If you are using Fedora, Ubuntu, or Raspbian, NCID is split into
+  multiple rpm and deb packages.  The server, gateways, and tools
+  are one package.  The client and default output modules are another.
+
+> The Mac tar package and the FreeBSD tar package on sourceforge is the
+  complete NCID system.
+
+> There are many distributions based on Redhat or Ubuntu so the Fedora
+  or Ubuntu packages may install just fine. (For example, Linux Mint is
+  an operating system based on Ubuntu.) Refer to the **INSTALL-"operating
+  system"** section for your "operating system".
 
 > If you cannot locate a package, you can download the source, compile,
   and install it.  Refer to the [INSTALL (generic)](#instl_generic_top) section

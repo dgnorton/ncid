@@ -1,4 +1,7 @@
 /*
  * The version number is obtained from the file: VERSION
+ * The API line is copied directly from the file: VERSION
  */
-#define VERSION     "(NCID) XXX"
+
+#define VERSION "(NCID) XXX"
+#define API     "api"

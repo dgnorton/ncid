@@ -26,17 +26,29 @@
 #define WHITELIST   "/etc/ncid/ncidd.whitelist"
 #endif
 
-#define PICKUP      "AT H1"
-#define HANGUP      "AT H0"
-#define FAXANS      "AT A"
-#define FAXINIT     "AT+FCLASS=1.0"
+#define PICKUP      "ATH1"
+#define HANGUP      "ATH0"
+#define FAXMODE     "AT+FCLASS=1"
+#define DATAMODE    "AT+FCLASS=0"
+#define VOICEMODE   "AT+FCLASS=8"
+#define FAXANS      "ATA"
+#define FAXDELAY    10   /* seconds */
+
 #define GETOK       "AT"
 #define HANGUPTRY   6
-#define HANGUPDELAY 400000  /* 400000 microseconds = 0.4 seconds */
+#define HANGUPDELAY 1   /* second */
 
-#define LISTSIZE    500
-#define ERRLIST     "list too large"
+#define ENTRYSIZE   180 /* maximum size of a list entry */
 
-extern char *blacklist, *whitelist, *blklist[], *whtlist[];
+typedef struct list
+{
+    char entry[ENTRYSIZE];
+    struct list *next;
+}list_t;
+
+extern char *blacklist, *whitelist;
+extern int pickup;
+extern struct list *blkHead, *blkCurrent, *whtHead, *whtCurrent,
+                   *listHead, *listCurrent;
 extern int doList(), doHangup(), onBlackWhite();
 extern void rmEntries();

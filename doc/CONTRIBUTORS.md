@@ -1,4 +1,4 @@
-Last edited: Mon Dec 30, 2013
+Last edited: Sun Jun 1, 2014
 
 ## <a name="contrib_top"></a>NCID Contributors
 
@@ -120,7 +120,7 @@ Last edited: Mon Dec 30, 2013
 
 #### [Neven Ãosiã](mailto:senseitcom@email.t-com.hr)
 *   Added country code HR (Croatia) to `ncid` and `ncid.conf`.
-*   Added alternate date separators.
+*   Added alternate date formats and separators.
 *   Wrote a `ncid-tiny` module that became the basis for `ncid-alert`.
 *   In general, helps with various NCID programs and documentation.
 

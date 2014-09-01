@@ -1,4 +1,4 @@
-Last edited: Sun Mar 23, 2014
+Last edited: Sat May 10, 2014
 
 ## <a name="instl_ubuntu_top"></a>Ubuntu DEB Package Install
 
@@ -106,7 +106,7 @@ Last edited: Sun Mar 23, 2014
          - Install any optional modules:  
            sudo gdebi ncid-<module-<version>_all.deb  
 >      Notes:  
-        <version> would be something like: 0.89-1  
+        <version> would be something like: 1.0-1  
         <module> would be a module name like: kpopup, mythtc, samba
 <br><br>
 

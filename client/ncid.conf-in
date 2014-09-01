@@ -1,6 +1,6 @@
 # ncid configuration file
 
-# File last changed: Fri Feb 8, 2013
+# File last changed: Thu Jul 31, 2013
 
 # This configuration file takes effect every time ncid is started.
 
@@ -188,4 +188,15 @@ set CallOnRing  0
 # set ncid_notify {set Ring 4}
 # Uncomment this line if you want NCID data sent at hangup with no answer
 # set ncid_notify {set Ring -1}
+
+# ========================================================================
+# Compatibility mode for pre client version 1.0 modules that handle
+# messages.  Only the message input format changed, the CID input
+# format stayed the same.
+# ========================================================================
+# To set the pre API 1.0 client module input for a specific module, use the
+# module name with the "-" replaced by a "_" as a indirect variable to set
+# preClient_1_0.
+#
+#   set ncid_<name> {set preClient_1_0 1}
 

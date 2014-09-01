@@ -6,7 +6,7 @@
 <center>Copyright: 2014</center>
 <center>Author: John L Chmielewski</center>
 
-<center>Wed Mar 26, 2014</center>
+<center>Sun Aug 24, 2014</center>
 
 NCID documentation includes information on how to get started,
 information on configuring modems, information on configuring

@@ -3,24 +3,23 @@
 # ncid-mythtv
 # usage: ncid --no-gui --program ncid-mythtv
 
-# Last modified: Sun Apr 13, 2014
+# Last Modified: Fri Aug 22, 2014
 
 # MythTV Display
 # See http://www.mythtv.org/wiki/index.php/Little_Gems
 # Requires MythTV (mythtvosd)
 
-# input is always 7 lines
+# input is always 8 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n""\n""\n
 #
 # if input is from a message
-# the message is in place of NAME:
-# input:  DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
+# input:  DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMESG\nMTYPE\n
 
 # defaults (see ncid-mythtv.conf for description):
 mythtv_types="CID OUT HUP BLK PID MSG NOT"
-mythtv_bcastaddr=127.0.0.1
+mythtv_bcastaddr[0]=127.0.0.1
 mythtv_timeout=10
 
 ConfigDir=/usr/local/etc/ncid/conf.d
@@ -31,10 +30,11 @@ ConfigFile=$ConfigDir/ncid-mythtv.conf
 read DATE
 read TIME
 read NMBR
-read VAR1
+read NAME
 read LINE
 read TYPE
-read VAR2
+read MESG
+read MTYPE
 
 # Look for $TYPE
 for i in $mythtv_types
@@ -47,22 +47,20 @@ done
 
 if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
 then
-    NAME="$VAR2"
-    MESG="$VAR1"
-    # Display Message or Notice
-    mythutil --notification \
-             --origin "NCID"
-             --message_text "$MESG" \
-             --timeout $mythtv_timeout \
-             --bcastaddr $mythtv_bcastaddr
+    # Message or Notice
+    MSGTXT="$MESG"
 else
-    NAME="$VAR1"
-    # Display Caller ID information
+    # Caller ID information
+    MSGTXT="$NMBR $NAME"
+fi
+
+for client in "${mythtv_bcastaddr[@]}"
+do
     mythutil --notification \
              --origin "NCID"
-             --message_text "$NMBR $NAME" \
+             --message_text "$MSGTXT" \
              --timeout $mythtv_timeout \
-             --bcastaddr $mythtv_bcastaddr
-fi
+             --bcastaddr $client
+done
 
 exit 0

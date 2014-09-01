@@ -35,6 +35,7 @@ struct setword setword[] = {
     {"cidlogmax",  WORDNUM,            0,          (int *) &cidlogmax,1,    LOGMAXNUM},
     {"cidnoname",  WORDNUM,            0,          &cidnoname, OFF, ON},
     {"datalog",    WORDSTR,            &datalog,   0,          0,    0},
+    {"pickup",     WORDNUM,            0,          &pickup,    OFF, ON},
     {"gencid",     WORDNUM,            0,          &gencid,    OFF, ON},
     {"hangup",     WORDNUM,            0,          &hangup,    0,    2},
     {"ignore1",    WORDNUM,            0,          &ignore1,   OFF, ON},

@@ -1,4 +1,4 @@
-Last edited: Sun Feb 9, 2014 
+Last edited: Sun Aug 24, 2014 
 
 ## <a name="verbose_top"></a>Verbose Levels
 
@@ -163,7 +163,8 @@ Last edited: Sun Feb 9, 2014
 
 > LEVEL5:
 
-        not used
+        display data as a hexdump
+        show modem command return codes for hangup
 
 > LEVEL4:
 
@@ -174,6 +175,7 @@ Last edited: Sun Feb 9, 2014
 
         show number of tries to init modem
         show modem responses
+        show modem query commands for software version, country code, operation modes
         show client connect/disconnect
         indicate Non 7-bit ASCII message deleted
         indicate Gateway sent CALL data
@@ -243,6 +245,7 @@ Last edited: Sun Feb 9, 2014
         indicate Modem initialized.
         indicate Initialization string for modem is null.
         indicate Modem set for CallerID.
+        indicate Modem does or does not support FAX
         indicate CallerID initialization string for modem is null.
         indicate CallerID TTY port initialized
         indicate serial device hung up and terminated with date and time

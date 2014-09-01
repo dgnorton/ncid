@@ -1,4 +1,4 @@
-Last edited: Wed Mar 26, 2014
+Last edited: Sat May 10, 2014
 
 ## <a name="modems_top"></a>Modems
 
@@ -22,21 +22,27 @@ Last edited: Wed Mar 26, 2014
 
 ### <a name="modems_list"></a>Incomplete list of working modems
 
-> * U.S. Robotics USB modem, part number USR805637, using Fedora and the
-  UK British Telecom caller id system
-
-> * [DualComm](http://www.dual-comm.com/USB\_Caller\_ID\_Modem.htm)
-  Technology USB Adapter/Modem for Caller ID Display
-  (uses US Caller ID system)
+> * [DualComm Technology USB Adapter/Modem for Caller ID Display](http://www.dual-comm.com/USB\_Caller\_ID\_Modem.htm)
+  US Caller ID system - supports Linux
 
 > * Phoebe FAX MODEM, model number CMV1456VQE, serial port external modem
   (uses US Caller ID system)
+  supports Linux
 
-> * TRIXES USB 56K External Dial Up Voice Fax Data Modem Windows 7
+> * [Trendnet 56k USB Phone/Internet/Fax Modem TFM-561U](http://www.trendnet.com/products/proddetail.asp?prod=130_TFM-561U)
+  supports Linux
+
+> * [TRIXES USB 56K External Dial Up Voice Fax Data Modem Windows 7](http://www.amazon.co.uk/TRIXES-External-Voice-Modem-Windows/dp/B005C4680A)
+  UK British Telecom caller id system - supports Linux
+
+> * U.S. Robotics USB modem, part number USR805637, using Fedora and the
   UK British Telecom caller id system
 
-> * [Zoom V.92 56K USB Mini External Modem](http://www.zoomtel.com/products/dial_up_external_usb.html)
-  Model 3095
+> * [Zoom V.92 56K USB Mini External Modem Model 3095](http://www.zoomtel.com/products/dial_up_external_usb.html)
+  supports Linux
+
+> * [LB-LINK BL-UM03B 56K USB2.0 external modem]( http://www.lb-link.cn/index.php/products/view?pid=158)
+  supports supports data/fax/TAM operations
 
 ### <a name="modems_mconf"></a>Configuration
 

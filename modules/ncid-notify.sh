@@ -3,7 +3,7 @@
 # ncid-notify
 # usage: ncid --no-gui --program ncid-notify
 
-# Last modified: Mon Apr 14, 2014
+# Last Modified: Fri Aug 22, 2014
 
 # sends a NCID notification to a iOS device or a Android device
 
@@ -23,14 +23,13 @@
 # curl
 # CA certificates
 
-# input is always 7 lines
+# input is always 8 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n""\n""\n
 #
 # if input is from a message
-# the message is in place of NAME:
-# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMESG\nMTYPE\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-notify.conf
@@ -156,10 +155,11 @@ done
 read DATE
 read TIME
 read NMBR
-read VAR1
+read NAME
 read LINE
 read TYPE
-read VAR2
+read MESG
+read MTYPE
 
 # Only send notification if current call type is known
 found=""
@@ -187,12 +187,8 @@ done
 
 if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
 then
-    NAME="$VAR2"
-    MESG="$VAR1"
     notify_event[2]='$MESG'
     notify_notification[1]='$MESG'
-else
-    NAME="$VAR1"
 fi
 
 # determine if url should be used

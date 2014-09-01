@@ -5,19 +5,18 @@
 
 # Created by Randy L. Rasmussen on Thu Dec 20, 2007
 
-# Last modified: Fri Apr 11, 2014
+# Last Modified: Fri Aug 22, 2014
 
 # Display a popup caption and speak the caller id
 # Requires kdialog (for popup) and festival (to speak)
 
-# input is always 7 lines
+# input is always 8 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMESG\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n""\n""\n
 #
 # if input is from a message
-# the message is in place of NAME:
-# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMESG\nMTYPE\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-kpopup.conf
@@ -39,10 +38,11 @@ ncid_speak=/usr/local/share/ncid/ncid-speak
 read DATE
 read TIME
 read NMBR
-read VAR1
+read NAME
 read LINE
 read TYPE
-read VAR2
+read MESG
+read MTYPE
 
 # Look for $TYPE
 for i in $kpopup_types
@@ -69,12 +69,9 @@ done
 
 if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
 then
-    NAME="$VAR2"
-    MESG="$VAR1"
     $kdialog --geometry $kpopup_geo --title "$title" --passivepopup \
          "$MESG" $kpopup_timeout &
 else
-    NAME="$VAR1"
     $kdialog --geometry $kpopup_geo --title "$title" --passivepopup \
          "$TYPE $NAME $NMBR" $kpopup_timeout &
 

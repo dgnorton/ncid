@@ -22,11 +22,11 @@
 
 char *cidalias = CIDALIAS;
 
-struct alias alias[ALIASSIZE];
+struct alias *aliasHead = NULL, *aliasCurrent = NULL;
 
-int doAlias(), nextAlias(), strmatch();
-char *cpy2mem(), *findAlias();
-void builtinAlias(), userAlias(), getAlias(), setAlias(), rmaliases();
+int doAlias(), strmatch();
+char *findAlias();
+void builtinAlias(), nextAlias(), userAlias(), getAlias(), setAlias(), rmaliases();
 
 /*
  * Built-in Aliases for O, P, and A
@@ -46,41 +46,44 @@ void builtinAlias(char *to, char *from)
 
 void userAlias(char *nmbr, char *name, char *line)
 {
-    int i;
+    struct alias *node = aliasHead;
+    struct alias *nextnode;
 
     /* we may want to skip the leading 1, if present */
     if (ignore1 && *nmbr == '1') ++nmbr;
 
-    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+    while (node != NULL)
     {
-        switch (alias[i].type)
+        nextnode = node->next;
+        switch (node->info.type)
         {
             case NMBRNAME:
-                if (strmatch(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
-                if (strmatch(name, alias[i].from)) strcpy(name, alias[i].to);
+                if (strmatch(nmbr, node->info.from)) strcpy(nmbr, node->info.to);
+                if (strmatch(name, node->info.from)) strcpy(name, node->info.to);
                 break;
             case NMBRONLY:
-                if (strmatch(nmbr, alias[i].from)) strcpy(nmbr, alias[i].to);
+                if (strmatch(nmbr, node->info.from)) strcpy(nmbr, node->info.to);
                 break;
             case NMBRDEP:
-                if (strmatch(name, alias[i].depend) && strmatch(nmbr, alias[i].from))
+                if (strmatch(name, node->info.depend) && strmatch(nmbr, node->info.from))
                 {
-                    strcpy(nmbr, alias[i].to);
+                    strcpy(nmbr, node->info.to);
                 }
                 break;
             case NAMEONLY:
-                if (strmatch(name, alias[i].from)) strcpy(name, alias[i].to);
+                if (strmatch(name, node->info.from)) strcpy(name, node->info.to);
                 break;
             case NAMEDEP:
-                if (strmatch(nmbr, alias[i].depend) && strmatch(name, alias[i].from))
+                if (strmatch(nmbr, node->info.depend) && strmatch(name, node->info.from))
                 {
-                    strcpy(name, alias[i].to);
+                    strcpy(name, node->info.to);
                 }
                 break;
             case LINEONLY:
-                if (strmatch(line, alias[i].from)) strcpy(line, alias[i].to); 
+                if (strmatch(line, node->info.from)) strcpy(line, node->info.to); 
                 break;
         }
+        node = nextnode;
     }
 }
 
@@ -140,6 +143,8 @@ int doAlias()
     int lc, i;
     int max_temp = 0, max_type_txt = 0, max_from = 0, max_to = 0;
     FILE *fp;
+    struct alias *node;
+    struct alias *nextnode;
 
     if ((fp = fopen(cidalias, "r")) == NULL)
     {
@@ -165,14 +170,18 @@ int doAlias()
     sprintf(msgbuf, "Processed alias file: %s\n", cidalias);
     logMsg(LEVEL1, msgbuf);
 
-    sprintf(msgbuf, "Alias Table ");
+    sprintf(msgbuf, "Alias Table:\n");
     logMsg(LEVEL1, msgbuf);
 	
-    if (!errorStatus && alias[0].type)
+    node = aliasHead;
+    if (!errorStatus && node)
     {
-	    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
-        ;
-        sprintf(msgbuf, "Number of Entries: %d/%d\n", i, ALIASSIZE);
+        for (i = 0; node != NULL; i++)
+        {
+            nextnode = node->next;
+            node = nextnode;
+        }
+        sprintf(msgbuf, "    Number of Entries: %d\n", i);
         logMsg(LEVEL1, msgbuf);
 
         /*
@@ -180,46 +189,50 @@ int doAlias()
          * widths, and create human readable 'type'.
          */
 
-        for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+        node = aliasHead;
+        while(node != NULL)
         {
-            switch (alias[i].type)
+            nextnode = node->next;
+            switch (node->info.type)
             {
                 case NMBRNAME:
-                    alias[i].type_txt = NMBRNAME_TXT ;
+                    node->info.type_txt = NMBRNAME_TXT ;
                     break;
 
                 case NMBRONLY:
-                    alias[i].type_txt = NMBRONLY_TXT ;
+                    node->info.type_txt = NMBRONLY_TXT ;
                     break;
 
                 case NMBRDEP:
-                    alias[i].type_txt = NMBRDEP_TXT ;
+                    node->info.type_txt = NMBRDEP_TXT ;
                     break;
 
                 case NAMEONLY:
-                    alias[i].type_txt = NAMEONLY_TXT ;
+                    node->info.type_txt = NAMEONLY_TXT ;
                     break;
 
                 case NAMEDEP:
-                    alias[i].type_txt = NAMEDEP_TXT ;
+                    node->info.type_txt = NAMEDEP_TXT ;
                     break;
 
                 case LINEONLY:
-                    alias[i].type_txt = LINEONLY_TXT ;
+                    node->info.type_txt = LINEONLY_TXT ;
                     break;
 
                 default:
-                    alias[i].type_txt = "UNKNOWN" ;
+                    node->info.type_txt = "UNKNOWN" ;
             }
 
-            max_temp = strlen(alias[i].type_txt);
+            max_temp = strlen(node->info.type_txt);
             if (max_temp > max_type_txt) max_type_txt=max_temp;
 
-            max_temp = strlen(alias[i].from);
+            max_temp = strlen(node->info.from);
             if (max_temp > max_from) max_from=max_temp;
 
-            max_temp = strlen(alias[i].to);
+            max_temp = strlen(node->info.to);
             if (max_temp > max_to) max_to=max_temp;
+
+            node = nextnode;
         }
 
         max_temp = strlen("FROM");
@@ -228,42 +241,45 @@ int doAlias()
         max_temp = strlen("TO");
         if (max_temp > max_to) max_to=max_temp;
 
-        sprintf(msgbuf, "    %-7s %s%-*s %s%-*s %s%-*s %s\n",
-                "ELEMENT",
+        sprintf(msgbuf, "    %-4s %s%-*s %s%-*s %s%-*s %s\n",
+                "SLOT",
                 "TYPE", max_type_txt - (int) strlen("TYPE"), "",
                 "FROM", max_from - (int) strlen("FROM"), "",
                 "TO", max_to - (int) strlen("TO"), "",
                 "DEPEND");
         logMsg(LEVEL8, msgbuf);
-        sprintf(msgbuf, "    %-7s %s%-*s %s%-*s %s%-*s %s\n",
-                "-------",
+        sprintf(msgbuf, "    %-4s %s%-*s %s%-*s %s%-*s %s\n",
+                "----",
                 "----", max_type_txt - (int) strlen("TYPE"), "",
                 "----", max_from - (int) strlen("FROM"), "",
                 "--", max_to - (int) strlen("TO"), "",
                 "------");
         logMsg(LEVEL8, msgbuf);
 
-        for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+        node = aliasHead;
+        for (i = 0; node != NULL; i++)
         {
-            sprintf(msgbuf, "    %-7.3d %s%-*s %s%-*s %s%-*s ",
+            nextnode = node->next;
+            sprintf(msgbuf, "    %-4.3d %s%-*s %s%-*s %s%-*s ",
                 i,
-                alias[i].type_txt,
-                max_type_txt - (int) strlen(alias[i].type_txt), "",
-                alias[i].from,
-                max_from - (int) strlen(alias[i].from), "",
-                alias[i].to,
-                max_to - (int) strlen(alias[i].to), "");
+                node->info.type_txt,
+                max_type_txt - (int) strlen(node->info.type_txt), "",
+                node->info.from,
+                max_from - (int) strlen(node->info.from), "",
+                node->info.to,
+                max_to - (int) strlen(node->info.to), "");
 
-            if (alias[i].depend)
-                strcat(strcat(strcat(msgbuf, "\""), alias[i].depend), "\"");
+            if (node->info.depend)
+                strcat(strcat(strcat(msgbuf, "\""), node->info.depend), "\"");
             strcat(msgbuf, NL);
 
             logMsg(LEVEL8, msgbuf);
+            node = nextnode;
         }
     }
     else
     {
-        sprintf(msgbuf, "Number of Entries: 0/%d\n", ALIASSIZE);
+        sprintf(msgbuf, "    Number of Entries: 0\n");
         logMsg(LEVEL1, msgbuf);
     }
 
@@ -294,26 +310,22 @@ void getAlias(char *inptr, int lc)
 
 void setAlias(char *inptr, int lc, char *wdptr, int type)
 {
-    int cnt;
-    char *mem = 0;
-
-    if ((cnt = nextAlias(lc)) < 0) return;
+    nextAlias();
     if (type == NMBRNAME || (inptr = getWord(fnptr, inptr, wdptr, lc)))
     {
-        mem = cpy2mem(wdptr, mem);
-        if (strlen(mem) > CIDSIZE) configError(cidalias, lc, wdptr, ERRLONG);
-        alias[cnt].from = mem;
+        if (strlen(wdptr) > CIDSIZE) configError(cidalias, lc, wdptr, ERRLONG);
+        strcpy(aliasCurrent->info.from, wdptr);
         if ((inptr = getWord(fnptr, inptr, wdptr, lc)))
         {
             if (*wdptr == '=')
             {
                 if ((inptr = getWord(fnptr, inptr, wdptr, lc)))
                 {
-                    mem = cpy2mem(wdptr, mem);
-                    if (strlen(mem) > CIDSIZE)
+                    if (strlen(wdptr) > CIDSIZE)
                         configError(cidalias, lc, wdptr, ERRLONG);
-                    alias[cnt].to = mem;
-                    if (type == NMBRNAME) alias[cnt].type = type;
+                    strcpy(aliasCurrent->info.to, wdptr);
+                    if (type == NMBRNAME)
+                        aliasCurrent->info.type = type;
                     else
                     {
                         if ((inptr = getWord(fnptr, inptr, wdptr, lc)))
@@ -322,15 +334,14 @@ void setAlias(char *inptr, int lc, char *wdptr, int type)
                                 configError(cidalias, lc, wdptr, ERRIF);
                             else if ((inptr = getWord(fnptr, inptr, wdptr, lc)))
                             {
-                                mem = cpy2mem(wdptr, mem);
-                                if (strlen(mem) > CIDSIZE)
+                                if (strlen(wdptr) > CIDSIZE)
                                     configError(cidalias, lc, wdptr, ERRLONG);
-                                alias[cnt].depend = mem;
-                                alias[cnt].type = type + 1;
+                                strcpy(aliasCurrent->info.depend, wdptr);
+                                aliasCurrent->info.type = type + 1;
                             }
                             else configError(cidalias, lc, wdptr, ERRARG);
                         }
-                        else alias[cnt].type = type;
+                        else aliasCurrent->info.type = type;
                     }
                 }
                 else configError(cidalias, lc, wdptr, ERRARG);
@@ -342,37 +353,34 @@ void setAlias(char *inptr, int lc, char *wdptr, int type)
     else configError(cidalias, lc, wdptr, ERRARG);
 }
 
-int nextAlias(int lc)
+void nextAlias()
 {
-    int i;
-
-    for (i = 0; i < ALIASSIZE && alias[i].type; ++i);
-    if (i == ALIASSIZE)
-    {
-        configError(cidalias, lc, " ", ERRALIAS);
-        return -1;
-    }
-    return i;
-}
-
-char *cpy2mem(char *wdptr, char *memptr)
-{
-    if (!(memptr = (char *) malloc(strlen(wdptr) + 1)))
+    struct alias *node;
+    if (!(node = (struct alias *) malloc(sizeof(struct alias))))
         errorExit(-1, name, 0);
-    return strcpy(memptr, wdptr);
+    node->next = NULL;
+    if (aliasHead == NULL) aliasHead = node;
+    else aliasCurrent->next = node;
+    aliasCurrent = node;
 }
 
+/*
+ * Frees all alias nodes
+ */
 void rmaliases()
 {
-    int i;
+    struct alias *node = aliasHead;
+    struct alias *nextnode;
 
-    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+    while (node != NULL)
     {
-        alias[i].type = 0;
-        if (alias[i].from) free(alias[i].from);
-        if (alias[i].to) free(alias[i].to);
-        if (alias[i].depend) free(alias[i].depend);
+        nextnode = node->next;
+        free(node);
+        node = nextnode;
     }
+
+    aliasHead = NULL;
+    aliasCurrent = NULL;
 }
 
 /*
@@ -380,28 +388,32 @@ void rmaliases()
  * If multiple aliases, return the last one.
  */
 char *findAlias(char *name, char *nmbr, char *line) {
-    int i;
     char *calltype, *linetype;
     static char ret[BUFSIZ];
+    struct alias *node = aliasHead;
+    struct alias *nextnode;
 
     /* set defaults */
     calltype = linetype = NOALIAS_TXT;
 
-    for (i = 0; i < ALIASSIZE && alias[i].type; ++i)
+    while (node != NULL)
     {
-        if (strcmp(alias[i].to, nmbr) == 0)
+        nextnode = node->next;
+        if (strcmp(node->info.to, nmbr) == 0)
         {
-            calltype = alias[i].type_txt;
+            calltype = node->info.type_txt;
         }
-        if (strcmp(alias[i].to, name) == 0)
+        if (strcmp(node->info.to, name) == 0)
         {
-            calltype = alias[i].type_txt;
+            calltype = node->info.type_txt;
         }
-        if (strcmp(alias[i].to, line) == 0)
+        if (strcmp(node->info.to, line) == 0)
         {
-            linetype = alias[i].type_txt;
+            linetype = node->info.type_txt;
         }
+        node = nextnode;
     }
+
     if (*line)
     {
         /* there is a line name so new format */

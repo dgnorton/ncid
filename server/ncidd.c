@@ -43,6 +43,7 @@ pid_t pid;
 char tmpIPaddr[MAXIPADDR];
 char IPaddr[MAXCONNECT][MAXIPADDR];
 char infoline[CIDSIZE] = ONELINE;
+char modembuf[BUFSIZ];
 
 struct pollfd polld[MAXCONNECT];
 struct termios otty, rtty, ntty;
@@ -69,6 +70,7 @@ struct mesg
     char nmbr[CIDSIZE];
     char name[CIDSIZE];
     char line[CIDSIZE];
+    char type[CIDSIZE];
 } mesg;
 
 struct end
@@ -105,7 +107,7 @@ char *strdate();
 
 void exit(), finish(), free(), reload(), ignore(), doPoll(), formatCID(),
      writeClients(), writeLog(), sendLog(), sendInfo(), logMsg(), cleanup(),
-     update_cidcall_log(), getINFO(), getField();
+     update_cidcall_log(), getINFO(), getField(), hexdump();
 
 int getOptions(), doConf(), errorExit(), doAlias(), doTTY(), CheckForLockfile(),
     addPoll(), tcpOpen(), doModem(), initModem(), gettimeofday(), doPID(),
@@ -147,8 +149,8 @@ int main(int argc, char *argv[])
     logptr = fopen(logfile, "a+");
     errnum = errno;
 
-    sprintf(msgbuf, "Started: %s\nServer: %s %s\n",strdate(WITHSEP),
-            name, VERSION);
+    sprintf(msgbuf, "Started: %s\nServer: %s %s\n%s\n",strdate(WITHSEP),
+            name, VERSION, API);
     logMsg(LEVEL1, msgbuf);
 
     /* log command line and any options on separate lines */
@@ -226,13 +228,14 @@ int main(int argc, char *argv[])
     if (hangup)
     {
         /* read blacklist and whitelist files, exit on any errors */
+
         sprintf(msgbuf, "%s\n", BLMSG);
         logMsg(LEVEL1, msgbuf);
-        if (doList(blacklist, blklist)) errorExit(-114, 0, 0);
+        if (doList(blacklist, &blkHead, &blkCurrent)) errorExit(-114, 0, 0);
 
         sprintf(msgbuf, "%s\n", WLMSG);
         logMsg(LEVEL1, msgbuf);
-        if (doList(whitelist, whtlist)) errorExit(-114, 0, 0);
+        if (doList(whitelist, &whtHead, &whtCurrent)) errorExit(-114, 0, 0);
     }
 
     if (stat(cidlog, &statbuf) == 0)
@@ -396,9 +399,15 @@ int main(int argc, char *argv[])
 
     if (hangup)
     {
-        sprintf(msgbuf, "Hangup option set %s on a blacklisted call\n",
-        hangup == 1 ? "hangup" : "answer as a FAX then hangup");
+        sprintf(msgbuf, "Hangup option set to %s on a blacklisted call\n",
+        hangup == 1 ? "hangup" : "generate FAX tones then hangup");
         logMsg(LEVEL1, msgbuf);
+        if (hangup == 2)
+        {
+            sprintf(msgbuf, "Pickup %s for FAX hangup\n",
+            pickup == 1 ? "enabled" : "not enabled");
+            logMsg(LEVEL1, msgbuf);
+        }
         if (noserial)
         {
             (void) close(ttyfd);
@@ -619,7 +628,7 @@ int getOptions(int argc, char *argv[])
             case 'H':
                 hangup = atoi(optarg);
                 if (strlen(optarg) != 1 ||
-                    (!(hangup == 0 && *optarg == '0') && hangup > 2))
+                    (!(hangup == 0 && *optarg == '0') && hangup > 3))
                     errorExit(-107, "Invalid number", optarg);
                 if ((num = findWord("hangup")) >= 0) setword[num].type = 0;
                 break;
@@ -668,7 +677,7 @@ int getOptions(int argc, char *argv[])
                 if ((num = findWord("sttyclocal")) >= 0) setword[num].type = 0;
                 break;
             case 'V': /* version */
-                fprintf(stderr, SHOWVER, name, VERSION);
+                fprintf(stderr, SHOWVER, name, VERSION, API);
                 exit(0);
             case 'W':
                 if (!(whitelist = strdup(optarg))) errorExit(-1, name, 0);
@@ -839,6 +848,30 @@ int doModem()
 
         sprintf(msgbuf, "Modem initialized.\n");
         logMsg(LEVEL1, msgbuf);
+
+        /* Query modem software) */
+        ret = initModem(QUERYATI3, READTRY);
+
+        /* Query modem country setting (Unites states = B5) */
+        ret = initModem(QUERYATGCI, READTRY);
+
+        /* Query modem modes supported */
+        ret = initModem(QUERYATFCLASS, READTRY);
+
+        if (hangup == 2)
+        {
+            if (!ret && !strstr(modembuf, ",1"))
+            {
+                hangup = 1;
+                sprintf(msgbuf, "WARNING: Modem does not support FAX, using hangup instead of FAX hangup.\n");
+                logMsg(LEVEL1, msgbuf);
+            }
+            else
+            {
+                sprintf(msgbuf, "Modem supports FAX, using FAX hangup.\n");
+                logMsg(LEVEL1, msgbuf);
+            }
+        }
     }
     else
     {
@@ -893,58 +926,60 @@ int doModem()
 int initModem(char *ptr, int maxtry)
 {
     int num, size, try, ret = 2;
-    char buf[BUFSIZ];
     char msgbuf[BUFSIZ];
 
     /* send string to modem */
-    strcat(strncpy(buf, ptr, BUFSIZ - 2), CRLF);
-    size = strlen(buf);
-    if ((num = write(ttyfd, buf, size)) < 0) return -1;
-    sprintf(msgbuf, "Sent Modem %d of %d characters: \n%s", num, size, buf);
+    strcat(strncpy(modembuf, ptr, BUFSIZ - 2), CRLF);
+    size = strlen(modembuf);
+    if ((num = write(ttyfd, modembuf, size)) < 0) return -1;
+    sprintf(msgbuf, "Sent Modem %d of %d characters: \n%s", num, size, modembuf);
     logMsg(LEVEL3, msgbuf);
 
     /* read until OK or ERROR response detected or number of tries exceeded */
     for (size = try = 0; try < maxtry; try++)
     {
         usleep(READWAIT);
-        if ((num = read(ttyfd, buf + size, BUFSIZ - size - 1)) < 0) return -1;
+        if ((num = read(ttyfd, modembuf + size, BUFSIZ - size - 1)) < 0) return -1;
         size += num;
         if (size)
         {
             /* check response */
-            buf[size] = 0;
-            if (strstr(buf, "OK"))
+            modembuf[size] = 0;
+            if (strstr(modembuf, "OK"))
             {
                 ret = 0;
                 break;
             }
-            if (strstr(buf, "ERROR"))
+            if (strstr(modembuf, "ERROR"))
             {
                 ret = 1;
                 break;
             }
         }
     }
-    buf[size] = 0;
+    modembuf[size] = 0;
 
     if (size)
     {
         sprintf(msgbuf,
           "Modem response: %d characters in %d %s:\n%s",
             size, try > maxtry ? try -1 : try + 1,
-            try == 0 ? "read" : "reads", buf);
+            try == 0 ? "read" : "reads", modembuf);
         logMsg(LEVEL3, msgbuf);
-
-        /* Remove CRLF at end of string */
-        if (buf[size - 1] == '\n' || buf[size - 1] == '\r')
-            buf[size - 1] = '\0';
-        if (buf[size - 2] == '\r' || buf[size - 2] == '\n')
-            buf[size - 2] = '\0';
+        if (verbose >= HEXLEVEL) hexdump(modembuf,size);
     }
     else
     {
-        sprintf(msgbuf, "No Modem Response\n");
-        logMsg(LEVEL3, msgbuf);
+        /* maxtry can be zero to not read a modem response */
+        if (maxtry) {
+            sprintf(msgbuf, "No Modem Response\n");
+            logMsg(LEVEL3, msgbuf);
+        }
+        else
+        {
+            sprintf(msgbuf, "Skipped read for a modem response\n");
+            logMsg(LEVEL3, msgbuf);
+        }
     }
 
     return ret;
@@ -1159,6 +1194,8 @@ void doPoll(int events)
           {
             sprintf(buf, "%s %s %s%s", ANNOUNCE, name, VERSION, CRLF);
             ret = write(sd, buf, strlen(buf));
+            sprintf(buf, "%s%s%s", APIANNOUNCE, API, CRLF);
+            ret = write(sd, buf, strlen(buf));
             if ((ret = addPoll(sd)) < 0)
             {
               sprintf(msgbuf, "Client trying to connect.\n");
@@ -1314,6 +1351,13 @@ void doPoll(int events)
                 logMsg(LEVEL3, msgbuf);
 
                 writeLog(datalog, buf);
+                if (ack[pos])
+                {
+                    sprintf(msgbuf, "%s%s%s", ACKLINE, buf, CRLF);
+                    ret = write(polld[pos].fd, msgbuf, strlen (msgbuf));
+                    sprintf(msgbuf, "(sd %d) %s%s%s", polld[pos].fd, ACKLINE, buf, NL);
+                    logMsg(LEVEL3, msgbuf);
+                }
 
                 /* get and process end of call termination */
                 if (strstr(buf, CANCEL))
@@ -1513,7 +1557,7 @@ void doPoll(int events)
               {
                 /*
                  * Found a MSG: line
-                 * MSG: <message> ###DATE*mmddyyyy*TIME*hhmm*NAME*<name>*NMBR*<number>*LINE*<id>*
+                 * MSG: <message> ###DATE*mmddyyyy*TIME*hhmm*NAME*<name>*NMBR*<number>*LINE*<id>*MTYPE*<IN|OUT>*
                  * Write message to cidlog and all clients
                  */
 
@@ -1521,7 +1565,7 @@ void doPoll(int events)
                 logMsg(LEVEL3, msgbuf);
                 writeLog(datalog, buf);
                 getINFO(buf);
-                sprintf(tmpbuf, MESSAGE, buf, mesg.date, mesg.time, mesg.name, mesg.nmbr, mesg.line);
+                sprintf(tmpbuf, MESSAGE, buf, mesg.date, mesg.time, mesg.name, mesg.nmbr, mesg.line, mesg.type);
                 writeLog(cidlog, tmpbuf);
                 writeClients(tmpbuf);
               }
@@ -1529,7 +1573,7 @@ void doPoll(int events)
               {
                 /*
                  * Found a NOT: (remote notification) line from a cell phone
-                 * NOT: <message> ###DATE*mmddyyyy*TIME*hhmm*NAME*<name>*NMBR*<number>*LINE*<id>*
+                 * NOT: <message> ###DATE*mmddyyyy*TIME*hhmm*NAME*<name>*NMBR*<number>*LINE*<id>*MTYPE*<IN|OUT>*
                  * Write notice to cidlog and all clients
                  */
 
@@ -1544,7 +1588,7 @@ void doPoll(int events)
                     logMsg(LEVEL3, msgbuf);
                 }
                 getINFO(buf);
-                sprintf(tmpbuf, MESSAGE, buf, mesg.date, mesg.time, mesg.name, mesg.nmbr, mesg.line);
+                sprintf(tmpbuf, MESSAGE, buf, mesg.date, mesg.time, mesg.name, mesg.nmbr, mesg.line, mesg.type);
                 writeLog(cidlog, tmpbuf);
                 writeClients(tmpbuf);
               }
@@ -1639,9 +1683,9 @@ void doPoll(int events)
                  {
                     sendLog(polld[pos].fd, buf);
                  }
-                 else if (strstr(buf, ACK))
+                 else if (strstr(buf, ACK) || strstr(buf, YO))
                  {
-                    ack[pos] = 1;
+                    if (strstr(buf, ACK)) ack[pos] = 1;
                     sprintf(msgbuf, "(sd %d) sent %s\n", polld[pos].fd, buf);
                     logMsg(LEVEL3, msgbuf);
                     sprintf(msgbuf, "%s%s%s", ACKLINE, buf, CRLF);
@@ -1681,7 +1725,7 @@ void doPoll(int events)
                        char  name[CIDSIZE], number[CIDSIZE], line[CIDSIZE], *temp;
                        int   which;
 
-                        /* all this in case thr REQ: line is incomplete */
+                        /* all this in case the REQ: line is incomplete */
                         number[0] = name[0] = line[0] = '\0';
                         if (strlen(ptr) > (strlen(INFO_REQ) + 1))
                         {
@@ -1868,6 +1912,7 @@ void getINFO(char *bufptr)
         getField(ptr, "NAME", mesg.name, NO_NAME);
         getField(ptr, "NMBR", mesg.nmbr, NO_NMBR);
         getField(ptr, "LINE", mesg.line, NO_LINE);
+        getField(ptr, "MTYPE", mesg.type, NO_TYPE);
         *ptr = '\0';
 
     } else
@@ -1876,6 +1921,7 @@ void getINFO(char *bufptr)
         strcpy(mesg.name, NO_NAME);
         strcpy(mesg.nmbr, NO_NMBR);
         strcpy(mesg.line, NO_LINE);
+        strcpy(mesg.type, NO_TYPE);
     }
     userAlias(mesg.nmbr, mesg.name, mesg.line);
 
@@ -1900,10 +1946,10 @@ void getField(char *bufptr, char *field_name, char *mesgptr, char *noval)
     tmpbuf[BUFSIZ -1] = '\0';
     if ((ptr = strstr(bufptr, field_name)))
     {
-        if (*(ptr + 5) == '*') strncpy(mesgptr, noval, CIDSIZE - 1);
+        if (*(ptr + strlen(field_name) + 1) == '*') strncpy(mesgptr, noval, CIDSIZE - 1);
         else
         {
-            strncpy(tmpbuf, ptr + 5, BUFSIZ -1);
+            strncpy(tmpbuf, ptr + strlen(field_name) + 1, BUFSIZ -1);
             ptr = strchr(tmpbuf, '*');
             if (ptr) *ptr = '\0';
             strncpy(mesgptr, tmpbuf, CIDSIZE - 1);
@@ -1999,6 +2045,9 @@ void formatCID(char *buf)
             /*
              * number, name or both received but no date and time
              * add missing data and process
+             *
+             * name and number but no date and time should be caught
+             * below at comparison to CIDNODT
              */
             if (!(cid.status & CIDNMBR))
             {
@@ -2010,11 +2059,11 @@ void formatCID(char *buf)
                 strncpy(cid.cidname, NONAME, CIDSIZE - 1);
                 cid.status |= CIDNAME;
             }
-            ptr = strdate(NOSEP);     /* returns: MMDDYYYY HHMM */
-            for(sptr = cid.ciddate; *ptr && *ptr != ' ';) *sptr++ = *ptr++;
-            *sptr = '\0';
-            for(sptr = cid.cidtime, ptr++; *ptr;) *sptr++ = *ptr++;
-            *sptr = '\0';
+            ptr = strdate(NOSEP);           /* returns: MMDDYYYY HHMM */
+            strncpy(cid.ciddate, ptr, 8);   /*          0123456789012 */
+            cid.ciddate[8] = '\0';
+            strncpy(cid.cidtime, ptr + 9, 4);
+            cid.cidtime[4] = '\0';
             cid.status |= (CIDDATE | CIDTIME);
         }
         else if (gencid && cidsent == 0 && ring == 2 )
@@ -2039,9 +2088,9 @@ void formatCID(char *buf)
         {
             /*
              * CID not here yet or already processed
-             * Make sure status is clear
+             * Make sure status and cidsent are zero
              */
-            cid.status = 0;
+            cid.status = cidsent = 0;
             return;
         }
     }
@@ -2052,7 +2101,7 @@ void formatCID(char *buf)
      */
      if ((ptr = strstr(buf, "\020R\020X")))
      {
-        cid.status = 0;
+        cid.status = cidsent = 0;
      }
 
     /* Process Caller ID information */
@@ -2066,7 +2115,7 @@ void formatCID(char *buf)
          * The NetCallerID box does not have a LINE or CALL field
          */
 
-        /* Make sure the status field and cidsent is zero */
+        /* Make sure the status field and cidsent are zero */
         cid.status = cidsent = 0;
 
         if ((ptr = strstr(buf, "DATE")))
@@ -2166,12 +2215,16 @@ void formatCID(char *buf)
         if ((ptr = strchr(buf, '='))) ++ptr;
         else ptr = buf + 7; /* this should never happen */
         if (*ptr == ' ') ++ptr;
-        strncpy(cid.ciddate, ptr, CIDSIZE - 1);
-        t = time(NULL);
-        ptr = ctime(&t);
-        *(ptr + 24) = 0;
-        strncat(cid.ciddate, ptr + 20, CIDSIZE - strlen(cid.ciddate) - 1);
-        cid.status |= CIDDATE;
+        if (*ptr)
+        {
+            /* NetTalk sends no date but modem has line: "DATE=" */
+            strncpy(cid.ciddate, ptr, CIDSIZE - 1);
+            t = time(NULL);
+            ptr = ctime(&t);
+            *(ptr + 24) = 0;
+            strncat(cid.ciddate, ptr + 20, CIDSIZE - strlen(cid.ciddate) - 1);
+            cid.status |= CIDDATE;
+        }
         cidsent = 0;
     }
     else if (strncmp(buf, "TIME", 4) == 0)
@@ -2179,8 +2232,12 @@ void formatCID(char *buf)
         if ((ptr = strchr(buf, '='))) ++ptr;
         else ptr = buf + 7; /* this should never happen */
         if (*ptr == ' ') ++ptr;
-        strncpy(cid.cidtime, ptr, CIDSIZE - 1);
-        cid.status |= CIDTIME;
+        if (*ptr)
+        {
+            /* NetTalk sends no time but modem has line: "TIME=" */
+            strncpy(cid.cidtime, ptr, CIDSIZE - 1);
+            cid.status |= CIDTIME;
+        }
         cidsent = 0;
     }
     /*
@@ -2244,6 +2301,21 @@ void formatCID(char *buf)
         cidsent = 0;
     }
 
+    if ((cid.status & CIDNODT) == CIDNODT)
+    {
+        /*
+         * number and name received but no date and time
+         * add date and time and process
+         */
+
+        ptr = strdate(NOSEP);           /* returns: MMDDYYYY HHMM */
+        strncpy(cid.ciddate, ptr, 8);   /*          0123456789012 */
+        cid.ciddate[8] = '\0';
+        strncpy(cid.cidtime, ptr + 9, 4);
+        cid.cidtime[4] = '\0';
+        cid.status |= (CIDDATE | CIDTIME);
+    }
+
     if ((cid.status & CIDALL4) == CIDALL4)
     {
         /*
@@ -2283,9 +2355,12 @@ void formatCID(char *buf)
                 linelabel = CIDLINE;
                 break;
         }
-        if (hangup)
+        if (hangup && linelabel == CIDLINE)
         {
-            /* hangup phone if on blacklist but not whitelist */
+            /*
+             * hangup phone
+             * if a CID call and if on blacklist but not whitelist
+             */
             if (doHangup(cid.cidname, cid.cidnmbr)) linelabel = HUPLINE;
         }
 
@@ -2742,14 +2817,16 @@ void reload(int sig)
     if (hangup)
     {
         /* remove existing blacklist entries to free memory used */
-        rmEntries(blklist);
+        rmEntries(&blkHead, &blkCurrent);
+
+        /* reload blacklist file but quit on error */
+        if (doList(blacklist, &blkHead, &blkCurrent)) errorExit(-114, 0, 0);
 
         /* remove existing whitelist entries to free memory used */
-        rmEntries(whtlist);
+        rmEntries(&whtHead, &whtCurrent);
 
-    /* reload blacklist and whitelist files but quit on error */
-    if (doList(blacklist, blklist) || doList(whitelist, whtlist))
-         errorExit(-114, 0, 0);
+        /* reload whitelist file but quit on error */
+        if (doList(whitelist, &whtHead, &whtCurrent)) errorExit(-114, 0, 0);
     }
 }
 
@@ -2835,6 +2912,33 @@ int errorExit(int error, char *msg, char *arg)
     }
 
     exit(error);
+}
+
+/*
+ * hexdump from http://stackoverflow.com/a/29865 by user 'epatel' dated Aug 27 2008
+ */
+void hexdump(void *ptr, int buflen) {
+  unsigned char *buf = (unsigned char*)ptr;
+  char msgbuf[BUFSIZ];
+  char tmpbuf[BUFSIZ];
+  int i, j;
+  for (i=0; i<buflen; i+=16) {
+    sprintf(msgbuf,"%06x: ", i);
+    for (j=0; j<16; j++) 
+      if (i+j < buflen) {
+        sprintf(tmpbuf,"%02x ", buf[i+j]);
+        strcat(msgbuf,tmpbuf);
+      } else
+        strcat(msgbuf,"   ");
+    strcat(msgbuf," ");
+    for (j=0; j<16; j++) 
+      if (i+j < buflen) {
+        sprintf(tmpbuf,"%c", isprint(buf[i+j]) ? buf[i+j] : '.');
+        strcat(msgbuf,tmpbuf);
+      }
+    strcat(msgbuf,NL);
+    logMsg(HEXLEVEL,msgbuf);
+  }
 }
 
 /*

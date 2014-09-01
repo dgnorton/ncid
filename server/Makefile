@@ -7,6 +7,7 @@ SOURCE      = $(SRC) $(DIST) $(HEADER)
 FILES       = README.server Makefile $(SOURCE) $(ETCFILE)
 
 Version := $(shell sed 's/.* //; 1q' ../VERSION)
+API := $(shell sed '1d; 2q' ../VERSION)
 
 # the prefix must end in a - (if part of a name) or a / (if part of a path)
 MIPSXCOMPILE = mips-TiVo-linux-
@@ -132,7 +133,7 @@ $(PROG): $(SRC) $(HEADER) ../version.h
 	$(CC) $(CFLAGS) -o $@ $(SRC)
 
 ../version.h: ../version.h-in
-	sed "s/XXX/$(Version)/" $< > $@
+	sed "s/XXX/$(Version)/; s/api/$(API)/" $< > $@
 
 install: $(PROG) dirs install-etc
 	install -m 755 $(PROG) $(SBIN)

@@ -21,9 +21,9 @@ ebook-convert NCID_Documentation.md NCID_Documentation.epub \
     --tags "setup, admin" \
     --language English
 
-ebook-convert NCID-SDK.odt NCID-SDK.epub \
-    --title "NCID SDK" \
+ebook-convert NCID-API.odt NCID-API.epub \
+    --title "NCID API" \
     --authors "John L Chmielewski" \
     --cover ncid-1.jpg \
-    --tags "SDK" \
+    --tags "API" \
     --language English

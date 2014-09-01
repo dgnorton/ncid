@@ -47,6 +47,7 @@ subdirs      = server client gateway modules logrotate tools man test \
                doc debian Fedora FreeBSD Mac TiVo
 
 Version := $(shell sed 's/.* //; 1q' VERSION)
+API := $(shell sed '1d; 2q' VERSION)
 
 # the prefix must end in a - (if part of a name) or a / (if part of a path)
 MIPSXCOMPILE = mips-TiVo-linux-
@@ -138,7 +139,7 @@ local-base: serverdir clientdir moduledir gatewaydir tooldir docdir mandir
 local: local-base logrotatedir
 
 version.h: version.h-in
-	sed "s/XXX/$(Version)/" $< > $@
+	sed "s/XXX/$(Version)/; s/api/$(API)/" $< > $@
 
 fedoradir:
 	cd Fedora; $(MAKE) service service prefix=$(prefix) prefix2=$(prefix2) \
@@ -206,21 +207,24 @@ package-install:
 
 fedora:
 	$(MAKE) local fedoradir prefix=/usr prefix2= \
-            LOCKFILE=/var/lock/lockdev/LCK..
+            LOCKFILE=/var/lock/lockdev/LCK.. \
+			TTYPORT=$(DEV)/ttyACM0
 
 fedora-install:
 	$(MAKE) install install-fedora prefix=/usr prefix2=
 
 redhat:
 	$(MAKE) local redhatdir prefix=/usr prefix2= \
-            LOCKFILE=/var/lock/lockdev/LCK..
+            LOCKFILE=/var/lock/lockdev/LCK.. \
+			TTYPORT=$(DEV)/ttyACM0
 
 redhat-install:
 	$(MAKE) install install-redhat prefix=/usr prefix2=
 
 ubuntu:
 	$(MAKE) local ubuntudir prefix=/usr prefix2= \
-            LOCKFILE=/var/lock/LCK..
+            LOCKFILE=/var/lock/LCK.. \
+			TTYPORT=$(DEV)/ttyACM0
 
 ubuntu-install:
 	$(MAKE) install install-ubuntu prefix=/usr prefix2=

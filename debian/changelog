@@ -1,3 +1,8 @@
+ncid (1.0-1) Ubuntu-14.04 raspian; urgency=low
+
+  * new release
+ -- John L. Chmielewski <jlc@users.sourceforge.net>  Fri, 29 Aug 2014 17:58:00 -0400
+
 ncid (0.89-1) Ubuntu-13.10 raspian; urgency=low
 
   * new release

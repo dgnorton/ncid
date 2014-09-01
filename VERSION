@@ -1,11 +1,23 @@
-NCID Package Version 0.89
+NCID Package Version 1.0
+API: 1.0 Feature Set 1 2 3 4
 
 # The first line must contain the NCID package version number.
 # All programs will be compiled with this version.  All scripts
 # that contain a version number will also get it.
 
-# The version number must be last on the line and preceeded by a space.
-# First line format: ^<string> <version number>$
+# The version number must be last on the line and preceded by a space.
+# First line format: ^NCID <string> <version number>$
 #   The string may contain spaces but a space must be after it.
 #   The version number can be alpha numeric.
 #   The string is ignored, only the version number is used.
+
+# The second line is the API version and Feature Set supported by the server.
+# Feature set 1 is required, but feature sets 2,3, and 4 are optional.
+# Examples: API 1.0 Feature Set 1 2 3 4
+#           API 1.0 Feature Set 1 2 3
+#           API 1.0 Feature Set 1 2 4
+#           API 1.0 Feature Set 1 3 4
+#           API 1.0 Feature Set 1 2
+#           API 1.0 Feature Set 1 3
+#           API 1.0 Feature Set 1 4
+#           API 1.0 Feature Set 1

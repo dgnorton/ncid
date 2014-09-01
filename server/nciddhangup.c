@@ -21,12 +21,15 @@
 #include "ncidd.h"
 
 /* globals */
-char *blacklist = BLACKLIST, *blklist[LISTSIZE];
-char *whitelist = WHITELIST, *whtlist[LISTSIZE];
+int pickup = 1;
+char *blacklist = BLACKLIST;
+char *whitelist = WHITELIST;
+struct list *blkHead = NULL, *blkCurrent = NULL,
+            *whtHead = NULL, *whtCurrent = NULL;
 
-int doList(), nextEntry(), onList(), hangupCall(), doHangup(), onBlackWhite();
+int doList(), onList(), hangupCall(), doHangup(), onBlackWhite();
 
-void addEntry(), rmEntries();
+void addEntry(), nextEntry(), rmEntries();
 
 #ifndef __CYGWIN__
     extern char *strsignal();
@@ -37,20 +40,23 @@ void addEntry(), rmEntries();
  * Returns: 0 - no errors
  *          # of errors
  */
-int doList(char *filename, char **list)
+int doList(char *filename, list_t **listHead, list_t **listCurrent)
 {
     char input[BUFSIZ], word[BUFSIZ], msgbuf[BUFSIZ], *inptr;
-    int lc, i;
+    struct list *node, *nextnode;
+    int lc, i, bl;
     FILE *fp;
+
+    bl = !strcmp(blacklist, filename) ? 1 : 0;
 
     if ((fp = fopen(filename, "r")) == NULL)
     {
         sprintf(msgbuf, "%s file missing: %s\n",
-                blklist == list ? "Blacklist" : "Whitelist", filename);
+            bl ? "Blacklist" : "Whitelist", filename);
         logMsg(LEVEL1, msgbuf);
         return 1;
     }
-        fnptr = filename;
+    fnptr = filename;
 
     /* read each line of file, one line at a time */
     for (lc = 1; fgets(input, BUFSIZ, fp) != NULL; lc++)
@@ -61,73 +67,98 @@ int doList(char *filename, char **list)
         if (inptr == 0 || word[0] == '#') continue;
 
         /* get search strings on line */
-        addEntry(inptr, word, lc, list);
+        addEntry(inptr, word, lc, listHead, listCurrent);
     }
     (void) fclose(fp);
     sprintf(msgbuf, "Processed %s file: %s\n",
-            blklist == list ? "blacklist" : "whitelist", filename);
+            bl ? "blacklist" : "whitelist", filename);
     logMsg(LEVEL1, msgbuf);
 
-    if (!errorStatus && list[0])
+    sprintf(msgbuf, "%s Table:\n", bl ? "Blacklist" : "Whitelist");
+    logMsg(LEVEL1, msgbuf);
+
+    if (!errorStatus && *listHead)
     {
-        for (i = 0; i < LISTSIZE && list[i]; ++i);
-        sprintf(msgbuf, "%s Entries: %d/%d\n",
-                blklist == list ? "Blacklist" : "Whitelist", i, LISTSIZE);
+        node = *listHead;
+        for (i = 0; node != NULL; i++)
+        {
+            nextnode = node->next;
+            node = nextnode;
+        }
+
+        sprintf(msgbuf, "    Number of Entries: %d\n", i);
         logMsg(LEVEL1, msgbuf);
 
-        for (i = 0; i < LISTSIZE && list[i]; ++i)
+        sprintf(msgbuf, "    SLOT ENTRY\n    ---- -----\n");
+        logMsg(LEVEL8, msgbuf);
+
+        node = *listHead;
+        for (i = 0; node != NULL; i++)
         {
-            sprintf(msgbuf, " %.2d \"%s\"\n", i, list[i]);
+            nextnode = node->next;
+            sprintf(msgbuf, "    %-4.3d \"%s\"\n", i, node->entry);
             logMsg(LEVEL8, msgbuf);
+            node = nextnode;
         }
+    }
+    else
+    {
+        sprintf(msgbuf, "    Number of Entries: 0\n");
+        logMsg(LEVEL1, msgbuf);
     }
 
     return errorStatus;
 }
 
-/* Process blacklist or whitelist file lines */
-void addEntry(char *inptr, char *wdptr, int lc, char **list)
+/*
+ * Process blacklist or whitelist file lines
+ */
+void addEntry(char *inptr, char *wdptr, int lc, list_t
+              **listHead, list_t **listCurrent)
 {
-    int cnt;
-    char *mem = 0;
-
     /* process the blacklist or whitelist words */
     do
     {
         if (*wdptr == '#')    break; /* rest of line is comment */
-        if ((cnt = nextEntry(lc, list)) < 0) return;
-        mem = cpy2mem(wdptr, mem);
-        list[cnt] = mem;
-        
+        nextEntry(listHead, listCurrent);
+        if (strlen(wdptr) > ENTRYSIZE)
+            configError(cidalias, lc, wdptr, ERRLONG);
+        strcpy((*listCurrent)->entry, wdptr);
     }
     while ((inptr = getWord(fnptr, inptr, wdptr, lc)) != 0);
 }
 
-int nextEntry(int lc, char **list)
+/*
+ * Adds a node to the list for a new entry
+ */
+void nextEntry(list_t **listHead, list_t **listCurrent)
 {
-    int i;
+    list_t *node;
 
-    for (i = 0; i < LISTSIZE && list[i]; ++i);
-    if (i == LISTSIZE)
-    {
-        configError(blklist == list ? blacklist : whitelist, lc, " ", ERRLIST);
-        return -1;
-    }
-    return i;
+    if (!(node = (list_t *) malloc(sizeof(list_t)))) errorExit(-1, name, 0);
+    node->next = NULL;
+    if (*listHead == NULL) *listHead = node;
+    else (*listCurrent)->next = node;
+    *listCurrent = node;
 }
 
-void rmEntries(char **list)
+/*
+ * Frees all list nodes
+ */
+void rmEntries(list_t **listHead, list_t **listCurrent)
 {
-    int i;
+    struct list *node = *listHead;
+    struct list *nextnode;
 
-    for (i = 0; i < LISTSIZE; ++i)
+    while (node != NULL)
     {
-        if (list[i])
-        {
-            free(list[i]);
-            list[i] = 0;
-        }    
+        nextnode = node->next;
+        free(node);
+        node = nextnode;
     }
+
+    *listHead = NULL;
+    *listCurrent = NULL;
 }
 
 /*
@@ -144,18 +175,20 @@ int doHangup(char *namep, char *nmbrp)
 {
     int ret;
 
-    if (onList(namep, nmbrp, blklist, 0))
+    /* a blacklist match must never be on the whitelist */
+    if (!onList(namep, nmbrp, 0, &whtHead))
     {
-        if (!onList(namep, nmbrp, whtlist, 0))
+        /* no whitelist match */
+
+        if (onList(namep, nmbrp, 0, &blkHead))
         {
-            /* a blacklist match must not also be a whitelist match */
+            /* blacklist match */
+
+            /* try to hangup a call */
             ret = hangupCall();
 
             /* normal hangup, return must be 0 */
-            if (hangup == 1 && !ret) return 1;
-
-            /* Answer as a FAX will fail as "NO CARRIER", ret must be 1 */
-            if (hangup == 2 && ret) return 1;
+            if (!ret) return 1;
         }
     }
 
@@ -170,6 +203,7 @@ return 0;
 int hangupCall()
 {
     int ret = 0, ttyflag = 0;
+    unsigned int hangupdelay;
     char msgbuf[BUFSIZ];
     FILE *lockptr;
 
@@ -219,37 +253,60 @@ int hangupCall()
         /* put tty port in raw mode */
         if (!(ret = tcsetattr(ttyfd, TCSANOW, &rtty) < 0))
         {
-            if (hangup == 1)
-            {
-                /* Send AT to get modem OK after switch to raw mode */
-                (void) initModem(GETOK, HANGUPTRY);
+           /* Send AT to get modem OK after switch to raw mode */
+           (void) initModem(GETOK, HANGUPTRY);
 
+            if (hangup == 1)    /* hangup mode */
+            {
                 /* Pick up the call */
                 ret = initModem(PICKUP, HANGUPTRY);
-            }
-            else
-            {
-                /* Initialize FAX mode after switch to raw mode */
-                (void) initModem(FAXINIT, HANGUPTRY);
+                sprintf(msgbuf, "hangup mode %d: PICKUP sent, return code is %d\n",hangup,ret);
+                logMsg(LEVEL5, msgbuf);
 
-                /* Answer the call as a FAX */
+                /* set off-hook delay to make sure to hangup call */
+                hangupdelay = HANGUPDELAY;
+            }
+            else    /* FAX hangup mode */
+            {
+                /* Set FAX mode */
+                ret = initModem(FAXMODE, HANGUPTRY);
+                sprintf(msgbuf, "hangup mode %d: FAXMODE sent, return code is %d\n",hangup,ret);
+                logMsg(LEVEL5, msgbuf);
+
+                if (pickup)
+                {
+                    /* PICKUP required for some (mostly USB) modems */
+                    ret = initModem(PICKUP, HANGUPTRY);
+                    sprintf(msgbuf, "hangup mode %d: PICKUP sent, return code is %d\n",hangup,ret);
+                    logMsg(LEVEL5, msgbuf);
+                }
+
+                /* generate FAX tones */
                 ret = initModem(FAXANS, HANGUPTRY);
+                sprintf(msgbuf, "hangup mode %d: FAXANS sent, return code is %d\n",hangup,ret);
+                logMsg(LEVEL5, msgbuf);
+
+                /* set off-hook delay so caller hears annoying fax tones */
+                hangupdelay = FAXDELAY;
             }
 
-            if (ret == 0)
+            /* off-hook delay for all hangup modes */
+            usleep(hangupdelay * 1000000);
+            sprintf(msgbuf, "off-hook for %d %s\n", hangupdelay, hangupdelay == 1 ? "second" : "seconds");
+            logMsg(LEVEL3, msgbuf);
+
+            if (hangup == 2)    /* FAX hangup mode */
             {
-                /*
-                 * HANGUP only if PICKUP was successful
-                 *
-                 * delay while off-hook to make sure to hangup call
-                 */
-                usleep(HANGUPDELAY);
-                sprintf(msgbuf, "off-hook for %d microseconds\n", HANGUPDELAY);
-                logMsg(LEVEL3, msgbuf);
-
-                /* Hangup up the call */
-                ret = initModem(HANGUP, HANGUPTRY);
+                /* set voice mode */
+                ret = initModem(DATAMODE, HANGUPTRY);
+                sprintf(msgbuf, "hangup mode %d: DATAMODE sent, return code is %d\n", hangup, ret);
+                logMsg(LEVEL5, msgbuf);
             }
+
+            /* Hangup the call */
+            ret = initModem(HANGUP, HANGUPTRY);
+                sprintf(msgbuf, "hangup mode %d: HANGUP sent, return code is %d\n", hangup, ret);
+                logMsg(LEVEL5, msgbuf);
 
             /* take tty port out of raw mode */
             (void) tcsetattr(ttyfd, TCSAFLUSH, &ntty);
@@ -275,7 +332,7 @@ return ret;
 /*
  * Compare blacklist or whitelist strings to name and number
  *
- * If "flag" is zero, log a match message if verbose level is 3
+ * If "flag" is zero, log a match message
  *   Return = 1  if the number or matches
  *   Return = 0  if no match
  *
@@ -284,49 +341,52 @@ return ret;
  *   Return = 1  if the name matches
  *   Return = 0  if no match
  */
-int onList(char *namep, char *nmbrp, char **list, int flag)
+int onList(char *namep, char *nmbrp, int flag, list_t **listHead)
 {
-    int ret = 1, i, nbrMatch = 0;
+    int ret = 0, i, nbrMatch = 0;
 	char msgbuf[BUFSIZ], *ptr;
+    list_t *node, *nextnode;
 
-    for (i = 0; list[i] && i < LISTSIZE; ++i)
+    node = *listHead;
+    for (i = 0; node != 0; i++)
     {
-        if (*list[i] == '^')
+        nextnode = node->next;
+        if (node->entry[0] == '^')
         {
             /* must match at start of string */
-            ptr = list[i], ++ptr;
-            if (!(ret = strncmp(ptr, namep, strlen(ptr)))) break;
-            if (!(ret = strncmp(ptr, nmbrp, strlen(ptr)))) { nbrMatch = 2; break; }
+            ptr = node->entry, ++ptr;
+            if (!strncmp(ptr, namep, strlen(ptr))) { ret = 1; break; }
+            if (!strncmp(ptr, nmbrp, strlen(ptr))) { ret = 1, nbrMatch = 2; break; }
         }
         else
         {
             /* can match anywhere in string */
-            if (strstr(namep, list[i])) { ret = 0; break; }
-            if (strstr(nmbrp, list[i])) { ret = 0; nbrMatch = 2; break; }
+            if (strstr(namep, node->entry)) { ret = 1; break; }
+            if (strstr(nmbrp, node->entry)) { ret = 1, nbrMatch = 2; break; }
         }
+        node = nextnode;
     }
 
-    if (flag)
-        return (!ret) + nbrMatch;
-    if (!ret)
+    if (flag) return (ret + nbrMatch);
+    if (ret > 0)
     {
         sprintf(msgbuf, "%s Match #%.2d: %s    number: %s    name: %s\n",
-                blklist == list ? "Blacklist" : "Whitelist",
-                i, list[i], nmbrp, namep);
+                blkHead == *listHead ? "Blacklist" : "Whitelist",
+                i, node->entry, nmbrp, namep);
         logMsg(LEVEL3, msgbuf);
     }
 
-    return !ret;
+    return ret;
 }
 
 /*
  * Check for a name or a number being in the black or white list
  *
- * Return = 0  if not on either list
- * Return = 1  if name is on the blacklist and not on the whitelist
- * Return = 5  if number is on the blacklist and not on the whitelist
- * Return = 2  if name is on the whitelist; may or may not be on the blacklist
- * Return = 6  if number is on the whitelist; may or may not be on the blacklist
+ * Return = 0  not on either list
+ * Return = 1  name is on the blacklist and not on the whitelist
+ * Return = 5  number is on the blacklist and not on the whitelist
+ * Return = 2  name is on the whitelist; may or may not be on the blacklist
+ * Return = 6  number is on the whitelist; may or may not be on the blacklist
  *
  * Bits 0 and 1:
  *      0 - On neither list
@@ -341,9 +401,8 @@ int onBlackWhite (char *namep, char *nmbrp)
 {
     int ret;
 
-    if ((ret = onList (namep, nmbrp, whtlist, 1)))
-        return 2 * ret;
-    if ((ret = onList (namep, nmbrp, blklist, 1)))
-        return 2 * ret - 1;
+    /* ret will be either 0, 1, or 3 */
+    if ((ret = onList(namep, nmbrp, 1, &whtHead))) return 2 * ret;
+    if ((ret = onList(namep, nmbrp, 1, &blkHead))) return 2 * ret - 1;
     return 0;
 }

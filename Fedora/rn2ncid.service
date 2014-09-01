@@ -1,5 +1,6 @@
 [Unit]
 Description=Android smart phone app 'Remote Notifier' to NCID gateway
+Wants=ncidd.service
 After=ncidd.service
 
 [Service]

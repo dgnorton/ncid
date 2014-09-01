@@ -51,7 +51,7 @@
 # define O_SYNC 0
 #endif
 
-#define SHOWVER     "%s %s\n"
+#define SHOWVER     "%s %s\n%s\n"
 #define DESC        "%s - Network CallerID Server\n"
 #define NOOPT       "%s: not a option: %s\n"
 #define USAGE       "\
@@ -65,7 +65,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
          [-e lineid     | --lineid <identifier>]\n\
          [-g 0/1        | --gencid 0/1]\n\
          [-h            | --help]\n\
-         [-H 0/1        | --hangup 0/1]\n\
+         [-H 0|1|2      | --hangup 0|1|2]\n\
          [-I modemstr   | --initstr <initstring>]\n\
          [-i cidstr     | --initcid <cidstring>]\n\
          [-L logfile    | --logfile <file>]\n\
@@ -119,6 +119,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
 
 /* server messages */
 #define ANNOUNCE    "200 Server:"
+#define APIANNOUNCE "210 "
 #define LOGEND      "250 End of call log"
 #define NOLOGSENT   "251 Call log not sent"
 #define EMPTYLOG    "252 Call log empty"
@@ -143,6 +144,10 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define INITSTR     "AT Z S0=0 E1 V1 Q0"
 #define INITCID1    "AT+VCID=1"
 #define INITCID2    "AT#CID=1"
+#define HEXLEVEL    5
+#define QUERYATI3   "ATI3" 
+#define QUERYATGCI  "AT+GCI?" 
+#define QUERYATFCLASS "AT+FCLASS=?"
 
 #define PORT        3333
 #define MAXCLIENTS  25      /* maximun number of clients that can connect */
@@ -167,6 +172,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define NO_NAME     "NONAME"
 #define NO_NMBR     "NONMBR"
 #define NO_LINE     "NOLINE"
+#define NO_TYPE     "NOTYPE"
 
 #define LOGMAX      110000
 #define LOGMAXNUM   100000000
@@ -193,7 +199,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define OPTLINE     "OPT: "
 #define ACKLINE     "ACK: "
 
-#define MESSAGE     "%s ***DATE*%s*TIME*%s*NAME*%s*NMBR*%s*LINE*%s*"
+#define MESSAGE     "%s ***DATE*%s*TIME*%s*NAME*%s*NMBR*%s*LINE*%s*MTYPE*%s*"
 
 #define RELOAD      "RELOAD"    /* reload alias, blacklist & whitelist files */
 #define UPDATE      "UPDATE"    /* update current CID call log file          */
@@ -208,6 +214,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define WHT_LST     "white"
 #define INFO_REQ    "INFO"
 #define ACK         "ACK"
+#define YO          "YO"
 
 #define IN          0
 #define OUT         1
@@ -248,7 +255,6 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define A            "ANONYMOUS"
 #define P            "PRIVATE"
 
-#define CIDSIZE      50
 #define CIDDATE      0x01
 #define CIDTIME      0x02
 #define CIDNMBR      0x04
@@ -258,6 +264,7 @@ Options: [-A aliasfile  | --alias <file>]\n\
 #define CIDALT3      (CIDDATE | CIDTIME | CIDNAME)
 #define CIDALL4      (CIDDATE | CIDTIME | CIDNMBR | CIDNAME)
 #define CIDALT4      (CIDDATE | CIDTIME | CIDNMBR | CIDMESG)
+#define CIDNODT      (CIDNMBR | CIDNAME)
 
 #define MAXLEVEL     9
 enum

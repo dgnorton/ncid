@@ -1,5 +1,72 @@
 ncid - Network CallerID
 
+Version 1.0
+    Going to version 1.0 instead of 0.90
+    - Makefile: added default TTYPORT for fedora, redhat, and ubuntu builds
+                added API define and rule to generate the API in version.h
+    - VERSION: added API version
+    - version.h-in: added API line
+    - client/ncid.sh: getCID(): elseif {$label == 6}
+            - removed array set call "$lineLabel [list $cid]"
+            - removed comments: $cid set above, no need for $call($lineLabel
+            formatMSG{}: added new MSG field
+            displayLog{}: added new MSG field
+            sendMSG{}: simplified code, added vebose statements
+            sendCID{}: simplified code, added vebose statements
+    - client/ncid.conf-in: added Compatibility Mode section
+    - doc/Modems.md: added Trendnet modem, rearranged modem list, added links
+    - doc/GettingStarted.md: improved beginning wording in INSTALL section
+    - doc/: updated Devices.md, Modems.md, Verbose.md, mk-epub, Documentation.md
+            removed NCID-SDK.odt, added NCID-API.odt and NCID-SDK.md
+    - Fedora/*.service: added "Wants=ncidd.service" to all service files
+                        that depend on ncidd.service
+    - man/ncidd.8: updated
+    - modules/ncid-skel.sh: added another display format
+    - modules/ncid-skel.conf: added option for putput format
+    - modules/ncid-mythtv.sh: modified to send info to multiple clients
+    - modules/ncid-mythtv.conf: added config for multiple clients
+    - modules/ncid-*.sh: changed input so MESG line always last
+                         simplified shell scripts
+                         change MESG line to MESG="${MESG## ***}"
+    - server/Makefile: Updated to agree with the top Makefile for the API
+    - server/ncidd.c: changed if statement looking for ACK to ACK and YO
+                      added new if statement for line: ack[pos] = 1;
+                      added type to struct mesg
+                      added API version when ncidd version is displayed
+                      doPoll(): added ACK to a CALLINFO line
+                      formatCID(): fixed detection of no date or time
+                      doPoll(): added APIANNOUNCE 210 line
+                                added mesg.type to sprintf(tmpbuf, MESSAGE, ...
+                      getINFO() added lines for new "TYPE" field
+                      misc verbose output changes
+    - server/ncidd.h: added YO define
+                      added APIANNOUNCE define
+                      added define for NO_TYPE
+                      added second line to SHOWVER
+                      appended TYPE*%s* to MESSAGE
+                      added CIDNODT define
+                      removed CIDSIZE define
+    - server/nciddalias.c: changed alias structure to a linked list
+                           removed cpy2mem()
+    - server/nciddconf.c: added pickup to setword[]
+    - server/nciddhangup.h: removed defines LISTSIZE and ERRLIST
+                            removed ecterns *blklist[] & *whtlist[]
+                            added define ENTRYSIZE and struct list
+    - server/nciddhangup.c: changed list arrays to a linked list
+                            hangupCall(): rewrote FAX hangup section
+                                          added LEVEL5 to logMsg()
+    - server/nciddalias.h: added CIDSIZE define, changed struct alias
+                           added struct alias_info
+                           removed ERRALIAS define, cpy2mem() extern
+    - server/ncidd.conf-in: modified default ttyport comments
+    - test/test-client.data: updated
+    - test/test-gw-calls.data: updated
+    - test/test-modem-calls.data: updated
+    - tools/cidupdate.pl: - added same test used in NAMEDEP and NMBRDEP
+                            on all other aliases to make sure a change
+                          - fixed NMBRNAME alias so it actually checks
+                            the number for a change
+
 Version 0.89
     - Makefile: updated
                 added more warning options in MFLAGS

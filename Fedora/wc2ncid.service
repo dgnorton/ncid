@@ -1,5 +1,6 @@
 [Unit]
 Description=Whozz Calling Ethernet Link Device to NCID Gateway
+Wants=ncidd.service
 After=ncidd.service
 
 [Service]

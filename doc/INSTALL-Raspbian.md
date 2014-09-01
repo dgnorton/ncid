@@ -1,4 +1,4 @@
-Last edited: Sun Mar 9, 2014 
+Last edited: Sat May 10, 2014 
 
 ## <a name="instl_rasp_top"></a>Raspbian Install
 
@@ -64,10 +64,10 @@ Last edited: Sun Mar 9, 2014
           ncid DEB Package  
           ncid-client DEB Package - client and default output modules
 
-> For example, to download ncid and ncid-client version 0.89
+> For example, to download ncid and ncid-client version 1.0
 
-        wget http://sourceforge.net/projects/ncid/files/ncid/0.89/ncid_0.89-1_armhf.deb  
-        wget http://sourceforge.net/projects/ncid/files/ncid/0.89/ncid_0.89-1_all.deb
+        wget http://sourceforge.net/projects/ncid/files/ncid/1.0/ncid_1.0-1_armhf.deb  
+        wget http://sourceforge.net/projects/ncid/files/ncid/1.0/ncid_1.0-1_all.deb
 
 > - Download any optional output modules wanted:  
 
@@ -107,7 +107,7 @@ Last edited: Sun Mar 9, 2014
 
 > #### Notes:  
 
-        < version > would be something like: 0.89-1  
+        < version > would be something like: 1.0-1  
         < module > would be a module name like: kpopup, mythtc, samba
 
 ### <a name="instl_rasp_conf"></a>CONFIGURE:

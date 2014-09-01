@@ -1,6 +1,6 @@
 NCID - Network CallerID
 
-File last changed: Fri Apr 11, 2014
+File last changed: Sun Aug 24, 2014
 
 NCID is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License located
@@ -12,7 +12,9 @@ NCID Features: http://ncid.sourceforge.net/ncid/ncid.html
 
 Man Pages: http://ncid.sourceforge.net/man/man.html
 
-Software Development Kit: http://ncid.sourceforge.net/NCID-SDK.odt
+Application Programming Interface: http://ncid.sourceforge.net/doc/NCID-API.pdf
+
+Software Development Kit: http://ncid.sourceforge.net/doc/NCID-SDK.tar.gz
 
 Directories:
     attic:       obsolete programs and files
@@ -76,6 +78,11 @@ The NCID package has the following features:
     - Handles CID information from a modem, device or gateway.
     - Handles calls from modems that indicate ring but not Caller ID.
     - Handles outgoing or hangup calls from gateways that support them.
+    - Supports a hangup option to hangup on calls in the blacklist file
+      but not the whitelist file.  The hangup option has 2 modes, normal
+      hangup and FAX hangup.  If the hangup option is set for FAX hangup
+      but the modem does not support FAX, ncidd will change the hangup
+      mode to a normal hangup with a warning in the server log file.
     - Shares the modem for outgoing calls.
     - Supports CID devices like NetCallerID
     - Supports VoIP using a SIP gateway: sip2ncid

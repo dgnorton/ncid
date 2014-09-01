@@ -3,20 +3,19 @@
 # ncid-alert
 # usage: ncid --no-gui --program ncid-alert
 
-# Last Modified: Sun Apr 13, 2014
+# Last Modified: Fri Aug 22, 2014
 
 # Notify Output Module
 # Pop-up a notification using 'send' from 'libnotify'
 # Requires 'libnotify'
 
-# input is always 7 lines
+# input is always 8 lines
 #
 # if input is from a call:
-# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMISC\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\n""\n""\n
 #
 # if input is from a message
-# the message is in place of NAME:
-# input: DATE\nTIME\nNUMBER\nMESG\nLINE\nTYPE\nNAME\n
+# input: DATE\nTIME\nNUMBER\nNAME\nLINE\nTYPE\nMESG\nMTYPE\n
 
 ConfigDir=/usr/local/etc/ncid/conf.d
 ConfigFile=$ConfigDir/ncid-alert.conf
@@ -36,10 +35,11 @@ alert_icon=call-start
 read DATE
 read TIME
 read NMBR
-read VAR1
+read NAME
 read LINE
 read TYPE
-read VAR2
+read MESG
+read MTYPE
 
 # Look for $TYPE
 for i in $alert_types
@@ -67,13 +67,10 @@ done
 if [ "$TYPE" = "MSG" -o "$TYPE" = "NOT" ]
 then
     # Display Message or Notice
-    NAME="$VAR2"
-    MESG="$VAR1"
     $alert_send -u $alert_urgency -t $alert_timeout \
         -i $alert_icon "$title" "$MESG" &
 else
     # Display Caller ID information
-    NAME="$VAR1"
     message=`echo $use_e "$NAME\n$NMBR\n$TIME\n$DATE\n$LINE"`
     $alert_send -u $alert_urgency -t $alert_timeout \
         -i $alert_icon "$title" "$NAME" &

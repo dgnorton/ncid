@@ -20,6 +20,8 @@ DOCS  = Documentation.md \
 		CONTRIBUTORS.md \
 		TODO.md
 
+API   = NCID-API.odt
+
 MD    = NCID_Documentation.md
 HTML  = $(MD:.md=.html)
 
@@ -51,10 +53,20 @@ $(HTML): $(MD)
 
 htmlfiles: $(DOCS:.md=.html)
 
+NCID-API.pdf: $(API)
+	soffice --headless --convert-to pdf $(API)
+
+sdk: NCID-API.pdf NCID-SDK.md test
+	tar -czf NCID-SDK.tar.gz NCID-API.pdf NCID-SDK.md test
+
+test:
+	cp -a ../test .
+
 clean:
 
 clobber: clean
-	rm -f NCID_Documentation.md *.epub *.html *.bak
+	rm -f NCID_Documentation.md *.epub *.html *.bak *.pdf *.gz
+	rm -fr test
 
 distclean: clobber
 
