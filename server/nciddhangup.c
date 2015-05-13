@@ -116,6 +116,11 @@ int doList(char *filename, list_t **listHead, list_t **listCurrent)
 void addEntry(char *inptr, char *wdptr, int lc, list_t
               **listHead, list_t **listCurrent)
 {
+#ifndef NO_REGEX
+    int err;
+    char errbuf[80];
+#endif
+
     /* process the blacklist or whitelist words */
     do
     {
@@ -124,6 +129,15 @@ void addEntry(char *inptr, char *wdptr, int lc, list_t
         if (strlen(wdptr) > ENTRYSIZE)
             configError(cidalias, lc, wdptr, ERRLONG);
         strcpy((*listCurrent)->entry, wdptr);
+
+#ifndef NO_REGEX
+	err = regcomp(&(*listCurrent)->preg, wdptr, REG_EXTENDED|REG_NOSUB);
+        if (err)
+        {
+            regerror(err, &(*listCurrent)->preg, errbuf, sizeof(errbuf));
+            configError(cidalias, lc, wdptr, errbuf);
+        }
+#endif
     }
     while ((inptr = getWord(fnptr, inptr, wdptr, lc)) != 0);
 }
@@ -153,6 +167,9 @@ void rmEntries(list_t **listHead, list_t **listCurrent)
     while (node != NULL)
     {
         nextnode = node->next;
+#ifndef NO_REGEX
+        regfree(&node->preg);
+#endif
         free(node);
         node = nextnode;
     }
@@ -344,13 +361,20 @@ return ret;
 int onList(char *namep, char *nmbrp, int flag, list_t **listHead)
 {
     int ret = 0, i, nbrMatch = 0;
-	char msgbuf[BUFSIZ], *ptr;
+    char msgbuf[BUFSIZ];
     list_t *node, *nextnode;
+#ifdef NO_REGEX
+    char *ptr;
+#endif
 
     node = *listHead;
     for (i = 0; node != 0; i++)
     {
         nextnode = node->next;
+#ifndef NO_REGEX
+        if (!regexec(&node->preg, namep, 0, NULL, 0)) { ret = 1; break; }
+        if (!regexec(&node->preg, nmbrp, 0, NULL, 0)) { ret = 1, nbrMatch = 2; break; }
+#else
         if (node->entry[0] == '^')
         {
             /* must match at start of string */
@@ -364,6 +388,7 @@ int onList(char *namep, char *nmbrp, int flag, list_t **listHead)
             if (strstr(namep, node->entry)) { ret = 1; break; }
             if (strstr(nmbrp, node->entry)) { ret = 1, nbrMatch = 2; break; }
         }
+#endif
         node = nextnode;
     }
 
