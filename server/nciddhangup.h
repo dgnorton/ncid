@@ -18,6 +18,14 @@
  * along with ncidd.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef NCIDDHANGUP_H
+#define NCIDDHANGUP_H
+
+#ifndef NO_REGEX
+#include <sys/types.h>
+#include <regex.h>
+#endif
+
 #ifndef BLACKLIST
 #define BLACKLIST   "/etc/ncid/ncidd.blacklist"
 #endif
@@ -44,6 +52,9 @@ typedef struct list
 {
     char entry[ENTRYSIZE];
     struct list *next;
+#ifndef NO_REGEX
+    regex_t preg;
+#endif
 }list_t;
 
 extern char *blacklist, *whitelist;
@@ -52,3 +63,5 @@ extern struct list *blkHead, *blkCurrent, *whtHead, *whtCurrent,
                    *listHead, *listCurrent;
 extern int doList(), doHangup(), onBlackWhite();
 extern void rmEntries();
+
+#endif	/*NCIDDHANGUP_H*/
