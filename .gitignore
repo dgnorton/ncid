@@ -8,3 +8,4 @@ modules/
 server/
 tools/
 version.h
+*.patch
