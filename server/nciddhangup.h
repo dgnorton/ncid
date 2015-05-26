@@ -34,6 +34,9 @@
 #define WHITELIST   "/etc/ncid/ncidd.whitelist"
 #endif
 
+/* builtin rule return values */
+#define RULE_NAME_CONTAINS_NUMBER 1000
+
 #define PICKUP      "ATH1"
 #define HANGUP      "ATH0"
 #define FAXMODE     "AT+FCLASS=1"

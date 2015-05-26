@@ -19,6 +19,7 @@
  */
 
 #include "ncidd.h"
+#include <ctype.h>
 
 /* globals */
 int pickup = 1;
@@ -27,7 +28,8 @@ char *whitelist = WHITELIST;
 struct list *blkHead = NULL, *blkCurrent = NULL,
             *whtHead = NULL, *whtCurrent = NULL;
 
-int doList(), onList(), hangupCall(), doHangup(), onBlackWhite();
+int doList(), onList(), hangupCall(), doHangup(), onBlackWhite(),
+matchesBuiltinRules(), nameContainsNumber();
 
 void addEntry(), nextEntry(), rmEntries();
 
@@ -197,7 +199,7 @@ int doHangup(char *namep, char *nmbrp)
     {
         /* no whitelist match */
 
-        if (onList(namep, nmbrp, 0, &blkHead))
+        if (onList(namep, nmbrp, 0, &blkHead) || matchesBuiltinRules(namep, nmbrp))
         {
             /* blacklist match */
 
@@ -210,6 +212,63 @@ int doHangup(char *namep, char *nmbrp)
     }
 
 return 0;
+}
+
+/*
+ * Check if call matches built in blacklist rules
+ *
+ * return = 0 if no match
+ * return = #define RULE_* value if it matches
+ */
+ int matchesBuiltinRules(char *namep, char *nmbrp)
+ {
+    int ret = 0;
+
+    if ((ret = nameContainsNumber(namep, nmbrp)) != 0)
+    {
+        return ret;
+    }
+
+    return 0;
+ }
+
+ /*
+  * Check if the caller name contains phone number
+  *
+  * return = 0 if not a match
+  * return = 1 if they match
+  */
+int nameContainsNumber(char *namep, char *nmbrp)
+{
+    char name[64];
+    char nmbr[64];
+    char *nam1 = namep;
+    char *nam2 = name;
+    char *nbr1 = nmbrp;
+    char *nbr2 = nmbr;
+
+    /* Copy just the digits in the name */
+    for(;*nam1; nam1++)
+    {
+        if (isdigit(*nam1))
+        {
+            *nam2 = *nam1;
+            nam2++;
+        }
+    }
+
+    /* Copy just the digits in the number */
+    for(;*nbr1; nbr1++)
+    {
+        if (isdigit(*nbr1))
+        {
+            *nbr2 = *nbr1;
+            nbr2++;
+        }
+    }
+
+    /* Check if name contains number */
+    return strstr(name, nmbr) ? 1 : 0;
 }
 
 /*
