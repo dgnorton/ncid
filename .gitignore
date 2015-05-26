@@ -1,0 +1,10 @@
+client/
+debian/
+doc/
+gateway/
+logrotate/
+man/
+modules/
+server/
+tools/
+version.h
